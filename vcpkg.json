@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "libpng",
+    {
+      "name": "sdl3",
+      "features": ["vulkan", "wayland"]
+    },
+    "spdlog",
+    "tomlplusplus",
+    "vulkan",
+    "vulkan-memory-allocator",
+    "vulkan-memory-allocator-hpp",
+    "vulkan-validationlayers",
+    "zstd"
+  ]
+}

@@ -1,0 +1,41 @@
+[global]
+directory = "muon/logs/"
+
+# Main logger
+[[loggers]]
+name = "Main"
+
+[loggers.file]
+level = "trace"
+format = "[%Y-%m-%d %T.%e%z] [%8l] [%8n]: %v"
+filename = "main"
+
+[loggers.stdout]
+level = "debug"
+format = "[%Y-%m-%d %T.%e%z] [%^%8l%$] [%8n]: %v"
+
+# Vulkan logger
+[[loggers]]
+name = "Vulkan"
+
+[loggers.file]
+level = "trace"
+format = "[%Y-%m-%d %T.%e%z] [%8l] [%8n]: %v"
+filename = "vulkan"
+
+[loggers.stdout]
+level = "debug"
+format = "[%Y-%m-%d %T.%e%z] [%^%8l%$] [%8n]: %v"
+
+# Window logger
+[[loggers]]
+name = "Window"
+
+[loggers.file]
+level = "trace"
+format = "[%Y-%m-%d %T.%e%z] [%8l] [%8n]: %v"
+filename = "window"
+
+[loggers.stdout]
+level = "debug"
+format = "[%Y-%m-%d %T.%e%z] [%^%8l%$] [%8n]: %v"

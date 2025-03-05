@@ -1,0 +1,9 @@
+# Vulkan settings
+[vulkan]
+validation_layers = true
+
+# Window config
+[window]
+width = 1280
+height = 720
+title = "Muon"
