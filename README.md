@@ -2,6 +2,9 @@
 An amateur game engine being developed to pursue an interest in graphics programming.
 
 ## Running
+> [!IMPORTANT]
+> This project depends on system installed Vulkan, libpng, zstd and will not compile without them being installed.
+
 ```bash
 git clone https://github.com/howardliam/muon-engine
 cd muon-engine
