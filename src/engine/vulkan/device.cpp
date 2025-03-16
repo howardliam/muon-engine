@@ -11,29 +11,29 @@
 #include <stdexcept>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
-#include <vulkan-memory-allocator-hpp/vk_mem_alloc.hpp>
+#include <vk_mem_alloc.hpp>
 
 namespace muon::engine {
 
     /* Debug */
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT /* messageType */,
-        const VkDebugUtilsMessengerCallbackDataEXT *callbackData,
+    static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
+        vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        vk::DebugUtilsMessageTypeFlagsEXT /* messageType */,
+        const vk::DebugUtilsMessengerCallbackDataEXT *callbackData,
         void *userData /* Vulkan spdlog logger */
     ) {
         spdlog::logger *logger = reinterpret_cast<spdlog::logger *>(userData);
 
         switch (messageSeverity) {
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
             logger->trace(callbackData->pMessage);
             break;
 
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
             logger->warn(callbackData->pMessage);
             break;
 
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
             logger->error(callbackData->pMessage);
             break;
 
