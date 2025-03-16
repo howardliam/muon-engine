@@ -13,6 +13,3 @@
 [submodule "external/vulkan-memory-allocator"]
 	path = external/vulkan-memory-allocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "external/fmt"]
-	path = external/fmt
-	url = https://github.com/fmtlib/fmt
