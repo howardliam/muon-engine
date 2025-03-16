@@ -1,13 +1,15 @@
 # Muon
----
-## Contents
-- [Attributions](#attr)
+An amateur game engine being developed to pursue an interest in graphics programming.
 
 ## Running
-- `git clone __`
-- `cd __`
-- `cmake -B build -G 'Ninja' --preset vcpkg`
-- `cmake --build build && ./build/muon`
+```bash
+git clone https://github.com/howardliam/muon-engine
+cd muon-engine
+git submodule init
+git submodule update
+cmake -B build -G 'Ninja'
+cmake --build build && ./build/muon
+```
 
 ## Attributions {#attr}
 - [SDL3](https://wiki.libsdl.org/SDL3/FrontPage)
