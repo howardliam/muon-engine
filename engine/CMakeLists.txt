@@ -11,6 +11,4 @@ add_library(${LIB_NAME} SHARED
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog)
-
-add_library(muon::engine ALIAS ${LIB_NAME})
+target_link_libraries(${LIB_NAME} PRIVATE spdlog)

@@ -2,4 +2,4 @@ add_executable(test
     test.cpp
 )
 
-target_link_libraries(test PRIVATE muon::engine muon::common spdlog::spdlog)
+target_link_libraries(test PRIVATE muon-engine muon-common)

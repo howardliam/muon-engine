@@ -3,7 +3,7 @@
 namespace muon::common::fs {
 
     bool compressFile(std::filesystem::path path) {
-        if (std::filesystem::is_directory(path)) {
+        if (!std::filesystem::is_regular_file(path)) {
             return false;
         }
 

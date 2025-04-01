@@ -13,6 +13,8 @@ set(SPDLOG_USE_STD_FORMAT ON FORCE)
 add_subdirectory(external/spdlog)
 set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+find_package(zstd REQUIRED)
+
 if (MSVC)
     add_compile_options(/W4)
 else()

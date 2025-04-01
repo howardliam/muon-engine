@@ -7,16 +7,17 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(${LIB_NAME} SHARED
 
-    ${INCLUDE_DIR}/muon/common/log.hpp
-    ${SRC_DIR}/log.cpp
+    ${INCLUDE_DIR}/muon/common/compress.hpp
+    ${SRC_DIR}/compress.cpp
 
     ${INCLUDE_DIR}/muon/common/fs.hpp
     ${SRC_DIR}/fs.cpp
+
+    ${INCLUDE_DIR}/muon/common/log.hpp
+    ${SRC_DIR}/log.cpp
 
 )
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog)
-
-add_library(muon::common ALIAS ${LIB_NAME})
+target_link_libraries(${LIB_NAME} PRIVATE spdlog zstd)
