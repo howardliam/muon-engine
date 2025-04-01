@@ -7,7 +7,7 @@
 
 namespace muon::common::fs {
 
-    bool compressFile(std::filesystem::path &path) {
+    bool compressFile(std::filesystem::path &path, int32_t compressionLevel) {
         if (!std::filesystem::is_regular_file(path)) {
             return false;
         }
@@ -20,7 +20,7 @@ namespace muon::common::fs {
         std::vector<char> inputBuffer(size);
         inFile.read(inputBuffer.data(), inputBuffer.size());
 
-        auto result = compress::compressBuffer(inputBuffer, 3);
+        auto result = compress::compressBuffer(inputBuffer, compressionLevel);
         if (!result.has_value()) {
             return false;
         }
