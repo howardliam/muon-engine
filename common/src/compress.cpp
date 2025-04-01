@@ -1,10 +1,11 @@
 #include "muon/common/compress.hpp"
 
+#include <cassert>
 #include <zstd.h>
 
 namespace muon::common::compress {
 
-    std::optional<std::vector<char>> compressBuffer(std::vector<char> &buffer) {
+    std::optional<std::vector<char>> compressBuffer(std::vector<char> &buffer, int32_t compressionLevel) {
         size_t compressedSize = ZSTD_compressBound(buffer.size());
         std::vector<char> compressedBuffer(compressedSize);
 
@@ -13,12 +14,14 @@ namespace muon::common::compress {
             compressedBuffer.size(),
             buffer.data(),
             buffer.size(),
-            3
+            compressionLevel
         );
 
         if (ZSTD_isError(result)) {
            return {};
         }
+
+        compressedBuffer.resize(result);
 
         return compressedBuffer;
     }
