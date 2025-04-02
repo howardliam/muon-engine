@@ -5,27 +5,34 @@
 
 namespace muon::engine::window {
 
-    enum class FullscreenState {
-        BorderlessFullscreen,
-        Fullscreen,
+    /**
+     * @brief Wrapper for SDL window mode flags.
+    */
+    enum class DisplayMode {
         Windowed,
+        Fullscreen,
+        BorderlessFullscreen,
     };
 
     /**
-     * @brief Window
+     * @brief Properties for the window to be initialised with.
+    */
+    struct Properties {
+        uint32_t width;
+        uint32_t height;
+        DisplayMode mode = DisplayMode::Windowed;
+        std::string_view title;
+    };
+
+    /**
+     * @brief Window.
     */
     class Window {
     public:
-        struct Properties {
-            uint32_t width;
-            uint32_t height;
-            bool open = true;
-        };
-
         /**
-         * @brief Base initialiser for Window.
+         * @brief   Base initialiser for Window.
          *
-         * @throws program aborts if initialising SDL and window fails.
+         * @throws  program aborts if initialising SDL and window fails.
         */
         explicit Window(Properties &properties);
         ~Window();
@@ -38,7 +45,7 @@ namespace muon::engine::window {
          *
          * @return  SDL window handle.
         */
-        [[nodiscard]] SDL_Window *getWindow();
+        [[nodiscard]] SDL_Window *getWindow() const;
 
         /**
          * @brief   Gets the whether the window is open.
@@ -52,23 +59,43 @@ namespace muon::engine::window {
         */
         void setToClose();
 
-    private:
-        SDL_Window *window;
-        Properties &properties;
+        /**
+         * @brief   Sets the window's title.
+         *
+         * @param   title   new window title.
+        */
+        void setTitle(std::string_view title);
 
         /**
-         * @brief Initialises SDL.
+         * @brief   Sets the window's display mode.
          *
-         * @throws if SDL failed to initialise.
+         * @param   mode    new display mode.
+        */
+        void setDisplayMode(DisplayMode mode);
+
+    private:
+        SDL_Window *window;
+
+        uint32_t width;
+        uint32_t height;
+        bool open = true;
+
+        /**
+         * @brief   Initialises SDL.
+         *
+         * @throws  if SDL failed to initialise.
         */
         void initSdl();
 
         /**
-         * @brief Initialises SDL window.
+         * @brief   Initialises SDL window.
          *
-         * @throws if the window failed to initialise.
+         * @param   title   the title that the window will have.
+         * @param   mode    in what mode the window will start in.
+         *
+         * @throws  if the window failed to initialise.
         */
-        void initWindow(std::string_view title);
+        void initWindow(std::string_view title, DisplayMode mode);
     };
 
 }

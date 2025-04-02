@@ -8,10 +8,10 @@
 
 namespace muon::engine::window {
 
-    Window::Window(Window::Properties &properties) : properties(properties) {
+    Window::Window(Properties &properties) : width(properties.width), height(properties.height) {
         try {
             initSdl();
-            initWindow("test");
+            initWindow(properties.title, properties.mode);
         } catch (std::exception &e) {
             std::println("{}", e.what());
         }
@@ -22,16 +22,44 @@ namespace muon::engine::window {
         SDL_Quit();
     }
 
-    SDL_Window *Window::getWindow() {
+    SDL_Window *Window::getWindow() const {
         return window;
     }
 
     bool Window::isOpen() const {
-        return properties.open;
+        return open;
     }
 
     void Window::setToClose() {
-        properties.open = false;
+        open = false;
+    }
+
+    void Window::setTitle(std::string_view title) {
+        SDL_SetWindowTitle(window, title.data());
+    }
+
+    void Window::setDisplayMode(DisplayMode mode) {
+        bool fullscreen = false;
+        bool bordered = false;
+        switch (mode) {
+            case DisplayMode::Windowed:
+            fullscreen = false;
+            bordered = true;
+            break;
+
+            case DisplayMode::Fullscreen:
+            fullscreen = true;
+            bordered = true;
+            break;
+
+            case DisplayMode::BorderlessFullscreen:
+            fullscreen = true;
+            bordered = false;
+            break;
+        }
+
+        SDL_SetWindowFullscreen(window, fullscreen);
+        SDL_SetWindowBordered(window, bordered);
     }
 
     void Window::initSdl() {
@@ -40,10 +68,25 @@ namespace muon::engine::window {
         }
     }
 
-    void Window::initWindow(std::string_view title) {
-        SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE;
+    void Window::initWindow(std::string_view title, DisplayMode mode) {
+        SDL_WindowFlags modeFlag = 0;
+        switch (mode) {
+            case DisplayMode::Windowed:
+            modeFlag |= 0;
+            break;
 
-        window = SDL_CreateWindow(title.data(), static_cast<int32_t>(properties.width), static_cast<int32_t>(properties.height), flags);
+            case DisplayMode::Fullscreen:
+            modeFlag |= SDL_WINDOW_FULLSCREEN;
+            break;
+
+            case DisplayMode::BorderlessFullscreen:
+            modeFlag |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS;
+            break;
+        }
+
+        SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | modeFlag;
+
+        window = SDL_CreateWindow(title.data(), static_cast<int32_t>(width), static_cast<int32_t>(height), flags);
 
         if (window == nullptr) {
             throw std::runtime_error(std::format("failed to create window: {}", SDL_GetError()));
