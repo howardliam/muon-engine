@@ -11,6 +11,9 @@ namespace muon::engine::window {
         Windowed,
     };
 
+    /**
+     * @brief Window
+    */
     class Window {
     public:
         struct Properties {
@@ -19,6 +22,11 @@ namespace muon::engine::window {
             bool open = true;
         };
 
+        /**
+         * @brief Base initialiser for Window.
+         *
+         * @throws program aborts if initialising SDL and window fails.
+        */
         explicit Window(Properties &properties);
         ~Window();
 
@@ -26,20 +34,40 @@ namespace muon::engine::window {
         Window &operator=(const Window &) = delete;
 
         /**
-         * @brief   Returns the window handle
+         * @brief   Returns the window handle.
          *
-         * @return  SDL window handle
+         * @return  SDL window handle.
         */
-        [[nodiscard]] SDL_Window *getWindow() { return window; }
+        [[nodiscard]] SDL_Window *getWindow();
 
-        [[nodiscard]] bool isOpen() const { return properties.open; }
-        void setToClose() { properties.open = false; }
+        /**
+         * @brief   Gets the whether the window is open.
+         *
+         * @return  boolean value for whether the window is open.
+        */
+        [[nodiscard]] bool isOpen() const;
+
+        /**
+         * @brief   Sets the window to close.
+        */
+        void setToClose();
 
     private:
         SDL_Window *window;
         Properties &properties;
 
+        /**
+         * @brief Initialises SDL.
+         *
+         * @throws if SDL failed to initialise.
+        */
         void initSdl();
+
+        /**
+         * @brief Initialises SDL window.
+         *
+         * @throws if the window failed to initialise.
+        */
         void initWindow(std::string_view title);
     };
 
