@@ -1,13 +1,22 @@
-#include <filesystem>
 
-#include <muon/common/log.hpp>
-#include <muon/common/fs.hpp>
-#include <muon/common/compress.hpp>
+#include <SDL3/SDL_events.h>
+#include <muon/engine/window.hpp>
 
-// namespace log = muon::common::log;
-namespace fs = muon::common::fs;
+namespace window = muon::engine::window;
 
 int main() {
-    std::filesystem::path testFile("test.txt");
-    fs::compressFile(testFile);
+    window::Window::Properties properties;
+    properties.height = 900;
+    properties.width = 1600;
+
+    window::Window window{properties};
+
+    while (window.isOpen()) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) {
+                window.setToClose();
+            }
+        }
+    }
 }

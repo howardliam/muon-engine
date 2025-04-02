@@ -12,9 +12,9 @@ namespace muon::common::log {
      * First deletes all logs over max history, if any: 20 logs but max 15, five will be deleted.
      * Next deletes all older than the max age.
      *
-     * @param   directory:  directory to delete from.
-     * @param   maxHistory: max number of files to retain.
-     * @param   maxAge:     max age in days of files to retain.
+     * @param   directory   directory to delete from.
+     * @param   maxHistory  max number of files to retain.
+     * @param   maxAge      max age in days of files to retain.
      *
      * @return  option containing the number of files deleted. If anything went wrong, nothing will be returned.
     */

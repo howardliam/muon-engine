@@ -15,6 +15,13 @@ set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 find_package(zstd REQUIRED)
 
+set(SDL_SHARED OFF FORCE)
+set(SDL_STATIC ON FORCE)
+set(SDL_TEST_LIBRARY OFF FORCE)
+set(SDL_TESTS OFF FORCE)
+set(SDL_INSTALL_TESTS OFF FORCE)
+add_subdirectory(external/sdl)
+
 if (MSVC)
     add_compile_options(/W4)
 else()

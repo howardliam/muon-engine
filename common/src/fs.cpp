@@ -24,11 +24,10 @@ namespace muon::common::fs {
         if (!result.has_value()) {
             return false;
         }
-        std::vector compressedBuffer = result.value();
 
-        auto newPath = path.string() + "1.zst";
+        auto newPath = path.string() + ".zst";
         std::ofstream outFile{newPath, std::ios::binary};
-        outFile.write(compressedBuffer.data(), compressedBuffer.size());
+        outFile.write(result->data(), result->size());
 
         return true;
     }
