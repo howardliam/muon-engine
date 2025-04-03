@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <string_view>
+#include <vulkan/vulkan.h>
 
 namespace muon::engine::window {
 
@@ -39,6 +40,16 @@ namespace muon::engine::window {
 
         Window(const Window &) = delete;
         Window &operator=(const Window &) = delete;
+
+        /*
+         * @brief   Creates a Vulkan surface for the window.
+         *
+         * @param   instance    the instance to create the surface for.
+         * @param   surface     handle of the surface to be created.
+         *
+         * @return  boolean value whether it was successful.
+        */
+        [[nodiscard]] bool createSurface(VkInstance instance, VkSurfaceKHR *surface);
 
         /**
          * @brief   Returns the window handle.

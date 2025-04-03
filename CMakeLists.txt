@@ -22,6 +22,10 @@ set(SDL_TESTS OFF FORCE)
 set(SDL_INSTALL_TESTS OFF FORCE)
 add_subdirectory(external/sdl)
 
+find_package(Vulkan REQUIRED)
+add_subdirectory(external/vulkan-memory-allocator)
+add_subdirectory(external/vulkan-memory-allocator-hpp)
+
 if (MSVC)
     add_compile_options(/W4)
 else()

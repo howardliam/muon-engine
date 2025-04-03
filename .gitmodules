@@ -4,3 +4,9 @@
 [submodule "external/sdl"]
 	path = external/sdl
 	url = https://github.com/libsdl-org/SDL
+[submodule "external/vulkan-memory-allocator"]
+	path = external/vulkan-memory-allocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "external/vulkan-memory-allocator-hpp"]
+	path = external/vulkan-memory-allocator-hpp
+	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp

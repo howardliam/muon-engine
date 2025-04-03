@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3/SDL_vulkan.h>
 #include <format>
 #include <print>
 #include <stdexcept>
@@ -20,6 +21,10 @@ namespace muon::engine::window {
     Window::~Window() {
         SDL_DestroyWindow(window);
         SDL_Quit();
+    }
+
+    bool Window::createSurface(VkInstance instance, VkSurfaceKHR *surface) {
+        return SDL_Vulkan_CreateSurface(window, instance, nullptr, surface);
     }
 
     SDL_Window *Window::getWindow() const {
@@ -84,7 +89,7 @@ namespace muon::engine::window {
             break;
         }
 
-        SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | modeFlag;
+        SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | modeFlag;
 
         window = SDL_CreateWindow(title.data(), static_cast<int32_t>(width), static_cast<int32_t>(height), flags);
 

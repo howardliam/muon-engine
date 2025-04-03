@@ -3,8 +3,10 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <muon/engine/window.hpp>
+#include <muon/engine/device.hpp>
 
 namespace window = muon::engine::window;
+namespace engine = muon::engine;
 
 int main() {
     window::Properties props;
@@ -14,6 +16,7 @@ int main() {
     props.title = "Testing";
 
     window::Window window(props);
+    engine::Device device(window);
 
     while (window.isOpen()) {
         SDL_Event event;
