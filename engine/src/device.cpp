@@ -2,7 +2,9 @@
 
 #include "muon/engine/window.hpp"
 #include <SDL3/SDL_vulkan.h>
+#include <format>
 #include <print>
+#include <set>
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
 #define VMA_IMPLEMENTATION
@@ -81,9 +83,9 @@ namespace muon::engine {
         createInstance();
         createDebugMessenger();
         createSurface();
-        // selectPhysicalDevice();
-        // createLogicalDevice();
-        // createAllocator();
+        selectPhysicalDevice();
+        createLogicalDevice();
+        createAllocator();
     }
 
     Device::~Device() {
@@ -125,6 +127,14 @@ namespace muon::engine {
 
     vma::Allocator Device::getAllocator() {
         return allocator;
+    }
+
+    QueueFamilyIndices Device::getQueueFamilyIndices() {
+        return findQueueFamilies(physicalDevice);
+    }
+
+    SwapchainSupportDetails Device::getSwapchainSupportDetails() {
+        return querySwapchainSupport(physicalDevice);
     }
 
     void Device::createInstance() {
@@ -194,7 +204,7 @@ namespace muon::engine {
 
         auto result = vk::createInstance(&createInfo, nullptr, &instance);
         if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("Failed to create instance");
+            throw std::runtime_error("failed to create instance");
         }
     }
 
@@ -229,7 +239,179 @@ namespace muon::engine {
     void Device::createSurface() {
         auto success = window.createSurface(instance, reinterpret_cast<VkSurfaceKHR *>(&surface));
         if (!success) {
-            throw std::runtime_error("failed to create surface");
+            throw std::runtime_error(std::format("failed to create window surface: {}", SDL_GetError()));
         }
+    }
+
+    void Device::selectPhysicalDevice() {
+        std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+        if (physicalDevices.size() == 0) {
+            throw std::runtime_error("no GPUs available with Vulkan support");
+        }
+
+        auto checkDeviceExtensionSupport = [&](vk::PhysicalDevice device) -> bool {
+            std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
+
+            std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+            for (const auto &extension : availableExtensions) {
+                requiredExtensions.erase(extension.extensionName);
+            }
+
+            return requiredExtensions.empty();
+        };
+
+        auto isDeviceSuitable = [&](vk::PhysicalDevice device) -> bool {
+            vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
+            vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
+
+            bool isDiscrete = deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
+            bool hasCompleteIndices = findQueueFamilies(device).isComplete();
+            bool supportsGeometryShader = deviceFeatures.geometryShader;
+            bool extensionsSupported = checkDeviceExtensionSupport(device);
+            bool swapchainAdequate = false;
+            if (extensionsSupported) {
+                SwapchainSupportDetails supportDetails = querySwapchainSupport(device);
+                swapchainAdequate = !supportDetails.formats.empty() && !supportDetails.presentModes.empty();
+            }
+
+            return isDiscrete && hasCompleteIndices && supportsGeometryShader && extensionsSupported && swapchainAdequate;
+        };
+
+        for (const auto &pd : physicalDevices) {
+            if (isDeviceSuitable(pd)) {
+                physicalDevice = pd;
+                break;
+            }
+        }
+
+        if (physicalDevice == nullptr) {
+            throw std::runtime_error("unable to select a suitable GPU");
+        }
+
+        vk::PhysicalDeviceProperties deviceProperties = physicalDevice.getProperties();
+    }
+
+    void Device::createLogicalDevice() {
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+        std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+        std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+
+        float queuePriority = 1.0;
+
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            vk::DeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        vk::PhysicalDeviceFeatures deviceFeatures{};
+
+        vk::DeviceCreateInfo createInfo{};
+        createInfo.sType = vk::StructureType::eDeviceCreateInfo;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+        createInfo.pEnabledFeatures = &deviceFeatures;
+
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        auto result = physicalDevice.createDevice(&createInfo, nullptr, &device);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create a logical device");
+        }
+
+        device.getQueue(indices.graphicsFamily.value(), 0, &graphicsQueue);
+        device.getQueue(indices.presentFamily.value(), 0, &presentQueue);
+    }
+
+    void Device::createAllocator() {
+        vma::AllocatorCreateInfo allocatorInfo{};
+        allocatorInfo.instance = instance;
+        allocatorInfo.physicalDevice = physicalDevice;
+        allocatorInfo.device = device;
+
+        auto result = vma::createAllocator(&allocatorInfo, &allocator);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create allocator");
+        }
+    }
+
+    QueueFamilyIndices Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
+        QueueFamilyIndices indices;
+
+        std::vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
+
+        uint32_t i = 0;
+        for (const auto &queueFamily : queueFamilies) {
+            if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
+                indices.graphicsFamily = i;
+            }
+
+            vk::Bool32 presentSupport = false;
+            auto result = physicalDevice.getSurfaceSupportKHR(i, surface, &presentSupport);
+
+            if (presentSupport && result == vk::Result::eSuccess) {
+                indices.presentFamily = i;
+            }
+
+            if (indices.isComplete()) {
+                break;
+            }
+
+            i++;
+        }
+
+        return indices;
+    }
+
+    SwapchainSupportDetails Device::querySwapchainSupport(vk::PhysicalDevice physicalDevice) {
+        SwapchainSupportDetails details{};
+
+        auto result = physicalDevice.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to get surface capabilities");
+        }
+
+        uint32_t formatCount;
+        result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to get surface formats");
+        }
+
+        if (formatCount > 0) {
+            details.formats.resize(formatCount);
+            result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, details.formats.data());
+            if (result != vk::Result::eSuccess) {
+                std::println("failed to get surface formats");
+            }
+        }
+
+        uint32_t presentModeCount;
+        result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to get surface present modes");
+        }
+
+        if (presentModeCount > 0) {
+            details.presentModes.resize(presentModeCount);
+            result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, details.presentModes.data());
+            if (result != vk::Result::eSuccess) {
+                std::println("failed to get surface present modes");
+            }
+        }
+
+        return details;
     }
 }

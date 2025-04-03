@@ -78,6 +78,20 @@ namespace muon::engine {
         */
         [[nodiscard]] vma::Allocator getAllocator();
 
+        /**
+         * @brief   Gets queue family indices.
+         *
+         * @return  struct containing the indices of required queue families.
+        */
+        [[nodiscard]] QueueFamilyIndices getQueueFamilyIndices();
+
+        /**
+         * @brief   Gets swapchain support details.
+         *
+         * @return  struct containing the supported swapchain options.
+        */
+        [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
+
     private:
         window::Window &window;
 
