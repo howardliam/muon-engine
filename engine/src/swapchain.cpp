@@ -90,7 +90,6 @@ namespace muon::engine {
         createSyncObjects();
     }
 
-
     void Swapchain::createSwapchain() {
         auto selectSurfaceFormat = [](const std::vector<vk::SurfaceFormatKHR> &formats) -> vk::SurfaceFormatKHR {
             for (const auto& format : formats) {

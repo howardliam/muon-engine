@@ -24,15 +24,78 @@ namespace muon::engine {
         Swapchain(const Swapchain &) = delete;
         Swapchain &operator=(const Swapchain &) = delete;
 
+        /**
+         * @brief   Gets the number of images in the swapchain.
+         *
+         * @return  swapchain image count.
+        */
         [[nodiscard]] size_t imageCount() const;
+
+        /**
+         * @brief   Returns the swapchain.
+         *
+         * @return  swapchain handle.
+        */
         [[nodiscard]] vk::SwapchainKHR getSwapchain() const;
+
+        /**
+         * @brief   Returns the render pass.
+         *
+         * @return  render pass handle.
+        */
         [[nodiscard]] vk::RenderPass getRenderPass() const;
+
+        /**
+         * @brief   Returns framebuffer at image index.
+         *
+         * @param   index   the index of the swapchain framebuffer.
+         *
+         * @return  framebuffer at index.
+        */
         [[nodiscard]] vk::Framebuffer getFramebuffer(int32_t index) const;
+
+        /**
+         * @brief   Returns image view at image index.
+         *
+         * @param   index   the index of the swapchain image view.
+         *
+         * @return  image view at index.
+        */
         [[nodiscard]] vk::ImageView getImageView(int32_t index) const;
+
+        /**
+         * @brief   Returns image format of the swapchain.
+         *
+         * @return  image format.
+        */
         [[nodiscard]] vk::Format getSwapchainImageFormat() const;
+
+        /**
+         * @brief   Returns the two dimensional size of the swapchain.
+         *
+         * @return  2d extent of the swapchain.
+        */
         [[nodiscard]] vk::Extent2D getExtent() const;
+
+        /**
+         * @brief   Returns the width of the swapchain images.
+         *
+         * @return  image width.
+        */
         [[nodiscard]] uint32_t getWidth() const;
+
+        /**
+         * @brief   Returns the height of the swapchain images.
+         *
+         * @return  image height.
+        */
         [[nodiscard]] uint32_t getHeight() const;
+
+        /**
+         * @brief   Returns the aspect ratio of the swapchain images.
+         *
+         * @return  aspect ratio.
+        */
         [[nodiscard]] float getExtentAspectRatio() const;
 
     private:
@@ -60,12 +123,39 @@ namespace muon::engine {
         std::vector<vk::Semaphore> renderFinishedSemaphores;
         std::vector<vk::Fence> inFlightFences;
 
+        /**
+         * @brief   Initialises the swapchain.
+        */
         void init();
+
+        /**
+         * @brief   Creates the swapchain.
+        */
         void createSwapchain();
+
+        /**
+         * @brief   Creates all the image views.
+        */
         void createImageViews();
+
+        /**
+         * @brief   Creates the depth buffer resources.
+        */
         void createDepthResources();
+
+        /**
+         * @brief   Creates the render pass.
+        */
         void createRenderPass();
+
+        /**
+         * @brief   Creates all the framebuffers.
+        */
         void createFramebuffers();
+
+        /**
+         * @brief   Creates the synchronisation objects.
+        */
         void createSyncObjects();
 
     };
