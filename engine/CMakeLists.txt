@@ -10,6 +10,7 @@ add_library(${LIB_NAME} SHARED
     ${SRC_DIR}/device.cpp
 
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
+    ${SRC_DIR}/swapchain.cpp
 
     ${INCLUDE_DIR}/muon/engine/window.hpp
     ${SRC_DIR}/window.cpp

@@ -137,6 +137,44 @@ namespace muon::engine {
         return querySwapchainSupport(physicalDevice);
     }
 
+    vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+        for (auto format : candidates) {
+            vk::FormatProperties props{};
+            physicalDevice.getFormatProperties(format, &props);
+
+            if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
+                return format;
+            } else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+
+        throw std::runtime_error("failed to find a supported format");
+    }
+
+    void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation) {
+        auto result = device.createImage(&imageInfo, nullptr, &image);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create an image");
+        }
+
+        vk::MemoryRequirements memoryRequirements{};
+        device.getImageMemoryRequirements(image, &memoryRequirements);
+
+        vma::AllocationCreateInfo allocCreateInfo{};
+        allocCreateInfo.usage = vma::MemoryUsage::eGpuOnly;
+        allocCreateInfo.requiredFlags = properties;
+
+        vma::AllocationInfo allocationInfo;
+
+        result = allocator.allocateMemory(&memoryRequirements, &allocCreateInfo, &allocation, &allocationInfo);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to allocate image memory");
+        }
+
+        allocator.bindImageMemory(allocation, image);
+    }
+
     void Device::createInstance() {
         auto checkValidationLayerSupport = [&]() -> bool {
             std::vector<vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
@@ -302,7 +340,6 @@ namespace muon::engine {
 
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             vk::DeviceQueueCreateInfo queueCreateInfo{};
-            queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
             queueCreateInfo.queueFamilyIndex = queueFamily;
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
@@ -313,7 +350,6 @@ namespace muon::engine {
         vk::PhysicalDeviceFeatures deviceFeatures{};
 
         vk::DeviceCreateInfo createInfo{};
-        createInfo.sType = vk::StructureType::eDeviceCreateInfo;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());

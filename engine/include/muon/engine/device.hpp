@@ -29,6 +29,11 @@ namespace muon::engine {
         Device(window::Window &window);
         ~Device();
 
+        Device(const Device &) = delete;
+        Device &operator=(const Device& ) = delete;
+        Device(const Device &&) = delete;
+        Device &operator=(const Device &&) = delete;
+
         /**
          * @brief   Gets Vulkan instance.
          *
@@ -91,6 +96,10 @@ namespace muon::engine {
          * @return  struct containing the supported swapchain options.
         */
         [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
+
+        [[nodiscard]] vk::Format findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+
+        void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
 
     private:
         window::Window &window;

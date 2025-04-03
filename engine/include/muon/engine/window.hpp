@@ -2,7 +2,8 @@
 
 #include <SDL3/SDL.h>
 #include <string_view>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine::window {
 
@@ -57,6 +58,13 @@ namespace muon::engine::window {
          * @return  SDL window handle.
         */
         [[nodiscard]] SDL_Window *getWindow() const;
+
+        /**
+         * @brief   Returns the window extent.
+         *
+         * @return  2D vector of the window size.
+        */
+        [[nodiscard]] vk::Extent2D getExtent() const;
 
         /**
          * @brief   Gets the whether the window is open.

@@ -31,6 +31,10 @@ namespace muon::engine::window {
         return window;
     }
 
+    vk::Extent2D Window::getExtent() const {
+        return {width, height};
+    }
+
     bool Window::isOpen() const {
         return open;
     }
