@@ -88,9 +88,13 @@ namespace muon::engine::window {
         /**
          * @brief   Sets the window's display mode.
          *
-         * @param   mode    new display mode.
+         * @param   mode    new display mode.`
         */
         void setDisplayMode(DisplayMode mode);
+
+        void resize(uint32_t newWidth, uint32_t newHeight);
+        [[nodiscard]] bool wasResized() const;
+        void resetResized();
 
     private:
         SDL_Window *window;
@@ -98,6 +102,7 @@ namespace muon::engine::window {
         uint32_t width;
         uint32_t height;
         bool open = true;
+        bool resized = false;
 
         /**
          * @brief   Initialises SDL.

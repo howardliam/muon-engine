@@ -97,6 +97,8 @@ namespace muon::engine {
         */
         [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
 
+        [[nodiscard]] vk::CommandPool getCommandPool() const;
+
         [[nodiscard]] vk::Format findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 
         void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
@@ -113,6 +115,7 @@ namespace muon::engine {
         vk::SurfaceKHR surface;
         vk::PhysicalDevice physicalDevice;
         vk::Device device;
+        vk::CommandPool commandPool;
 
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
@@ -148,6 +151,8 @@ namespace muon::engine {
          * @brief   Creates GPU memory allocator.
         */
         void createAllocator();
+
+        void createCommandPool();
 
         /**
          * @brief   Finds queue family indices for the physical device.

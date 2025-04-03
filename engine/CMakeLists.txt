@@ -6,8 +6,14 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(${LIB_NAME} SHARED
+    ${INCLUDE_DIR}/muon/engine/buffer.hpp
+    ${SRC_DIR}/buffer.cpp
+
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${SRC_DIR}/device.cpp
+
+    ${INCLUDE_DIR}/muon/engine/renderer.hpp
+    ${SRC_DIR}/renderer.cpp
 
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${SRC_DIR}/swapchain.cpp

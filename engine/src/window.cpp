@@ -71,6 +71,20 @@ namespace muon::engine::window {
         SDL_SetWindowBordered(window, bordered);
     }
 
+    void Window::resize(uint32_t newWidth, uint32_t newHeight) {
+        width = newWidth;
+        height = newHeight;
+        resized = true;
+    }
+
+    bool Window::wasResized() const {
+        return resized;
+    }
+
+    void Window::resetResized() {
+        resized = false;
+    }
+
     void Window::initSdl() {
         if (!SDL_Init(SDL_INIT_VIDEO)) {
             throw std::runtime_error(std::format("failed to initialise SDL: {}", SDL_GetError()));

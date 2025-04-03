@@ -98,6 +98,11 @@ namespace muon::engine {
         */
         [[nodiscard]] float getExtentAspectRatio() const;
 
+        [[nodiscard]] vk::Format findDepthFormat();
+        [[nodiscard]] vk::Result acquireNextImage(uint32_t *imageIndex);
+        [[nodiscard]] vk::Result submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex);
+        [[nodiscard]] bool compareSwapFormats(const Swapchain &swapchain) const;
+
     private:
         Device &device;
         vk::Extent2D windowExtent;
@@ -122,6 +127,9 @@ namespace muon::engine {
         std::vector<vk::Semaphore> imageAvailableSemaphores;
         std::vector<vk::Semaphore> renderFinishedSemaphores;
         std::vector<vk::Fence> inFlightFences;
+        std::vector<vk::Fence> imagesInFlight;
+
+        int32_t currentFrame = 0;
 
         /**
          * @brief   Initialises the swapchain.

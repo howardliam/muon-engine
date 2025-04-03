@@ -1,5 +1,7 @@
 #include "muon/engine/swapchain.hpp"
 
+#include <print>
+
 namespace muon::engine {
 
     Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent) : device(device), windowExtent(windowExtent) {
@@ -79,6 +81,88 @@ namespace muon::engine {
 
     float Swapchain::getExtentAspectRatio() const {
         return static_cast<float>(swapchainExtent.width) / static_cast<float>(swapchainExtent.height);
+    }
+
+    vk::Format Swapchain::findDepthFormat() {
+        auto candidates = {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint};
+        auto tiling = vk::ImageTiling::eOptimal;
+        auto features = vk::FormatFeatureFlagBits::eDepthStencilAttachment;
+
+        return device.findSupportedFormat(candidates, tiling, features);
+    }
+
+    vk::Result Swapchain::acquireNextImage(uint32_t *imageIndex) {
+        auto result = device.getDevice().waitForFences(1, &inFlightFences[currentFrame], true, std::numeric_limits<uint64_t>::max());
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to wait for fences");
+        }
+
+        result = device.getDevice().acquireNextImageKHR(
+            swapchain,
+            std::numeric_limits<uint64_t>::max(),
+            imageAvailableSemaphores[currentFrame],
+            nullptr,
+            imageIndex
+        );
+
+        return result;
+    }
+
+    vk::Result Swapchain::submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex) {
+        if (imagesInFlight[*imageIndex] != nullptr) {
+            auto result = device.getDevice().waitForFences(1, &imagesInFlight[*imageIndex], vk::True, UINT64_MAX);
+            if (result != vk::Result::eSuccess) {
+                std::println("failed to wait for fences");
+            }
+        }
+        imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
+
+        vk::SubmitInfo submitInfo;
+
+        vk::Semaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+        vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = buffers;
+
+        vk::Semaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        auto result = device.getDevice().resetFences(1, &inFlightFences[currentFrame]);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to reset fences");
+        }
+        result = device.getGraphicsQueue().submit(1, &submitInfo, inFlightFences[currentFrame]);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to submit draw command buffer");
+        }
+
+        vk::PresentInfoKHR presentInfo = {};
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        vk::SwapchainKHR swapchains[] = {swapchain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapchains;
+
+        presentInfo.pImageIndices = imageIndex;
+
+        result = device.getPresentQueue().presentKHR(&presentInfo);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to present swapchain");
+        }
+
+        currentFrame = (currentFrame + 1) % constants::maxFramesInFlight;
+
+        return result;
+    }
+
+    bool Swapchain::compareSwapFormats(const Swapchain &swapchain) const {
+        return swapchain.depthImageFormat == depthImageFormat && swapchain.swapchainImageFormat == swapchainImageFormat;
     }
 
     void Swapchain::init() {
@@ -231,6 +315,8 @@ namespace muon::engine {
         depthImageViews.resize(imageCount());
         depthImageAllocations.resize(imageCount());
 
+        imagesInFlight.resize(imageCount(), nullptr);
+
         for (size_t i = 0; i < depthImages.size(); i++) {
             vk::ImageCreateInfo imageInfo{};
             imageInfo.sType = vk::StructureType::eImageCreateInfo;
@@ -264,7 +350,7 @@ namespace muon::engine {
 
             auto result = device.getDevice().createImageView(&viewInfo, nullptr, &depthImageViews[i]);
             if (result != vk::Result::eSuccess) {
-                throw std::runtime_error("Failed to create a depth image view");
+                throw std::runtime_error("failed to create a depth image view");
             }
         }
     }
@@ -355,7 +441,6 @@ namespace muon::engine {
             }
         }
     }
-
 
     void Swapchain::createSyncObjects() {
         imageAvailableSemaphores.resize(constants::maxFramesInFlight);

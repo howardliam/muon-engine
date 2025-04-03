@@ -86,10 +86,13 @@ namespace muon::engine {
         selectPhysicalDevice();
         createLogicalDevice();
         createAllocator();
+        createCommandPool();
     }
 
     Device::~Device() {
         allocator.destroy();
+
+        device.destroyCommandPool(commandPool, nullptr);
 
         device.destroy(nullptr);
 
@@ -135,6 +138,10 @@ namespace muon::engine {
 
     SwapchainSupportDetails Device::getSwapchainSupportDetails() {
         return querySwapchainSupport(physicalDevice);
+    }
+
+    vk::CommandPool Device::getCommandPool() const {
+        return commandPool;
     }
 
     vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
@@ -381,6 +388,19 @@ namespace muon::engine {
         auto result = vma::createAllocator(&allocatorInfo, &allocator);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create allocator");
+        }
+    }
+
+    void Device::createCommandPool() {
+        QueueFamilyIndices queueFamilyIndices = getQueueFamilyIndices();
+
+        vk::CommandPoolCreateInfo poolInfo;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        poolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+
+        auto result = device.createCommandPool(&poolInfo, nullptr, &commandPool);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to create command pool");
         }
     }
 
