@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
+#include <vector>
 
 namespace muon::common::fs {
 
@@ -16,4 +18,12 @@ namespace muon::common::fs {
     */
     bool compressFile(std::filesystem::path &path, int32_t compressionLevel = 3);
 
+    /**
+     * @brief   Reads the file at the path into a char vector.
+     *
+     * @param   path    the path of the file to be compressed.
+     *
+     * @return  optional, containing the char vector if successful.
+    */
+    std::optional<std::vector<char>> readFile(std::filesystem::path &path);
 }

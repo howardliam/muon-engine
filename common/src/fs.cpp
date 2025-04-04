@@ -32,4 +32,19 @@ namespace muon::common::fs {
         return true;
     }
 
+    std::optional<std::vector<char>> readFile(std::filesystem::path &path) {
+        if (!std::filesystem::is_regular_file(path)) {
+            return {};
+        }
+
+        std::ifstream file(path);
+        file.seekg(0, std::ios::end);
+        size_t size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        std::vector<char> buffer(size);
+        file.read(buffer.data(), buffer.size());
+        return buffer;
+    }
+
 }
