@@ -5,26 +5,28 @@
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan.hpp>
 
-namespace muon::engine::window {
+namespace muon::engine {
 
-    /**
-     * @brief Wrapper for SDL window mode flags.
-    */
-    enum class DisplayMode {
-        Windowed,
-        Fullscreen,
-        BorderlessFullscreen,
-    };
+    namespace window {
+        /**
+         * @brief Wrapper for SDL window mode flags.
+        */
+        enum class DisplayMode {
+            Windowed,
+            Fullscreen,
+            BorderlessFullscreen,
+        };
 
-    /**
-     * @brief Properties for the window to be initialised with.
-    */
-    struct Properties {
-        uint32_t width;
-        uint32_t height;
-        DisplayMode mode = DisplayMode::Windowed;
-        std::string_view title;
-    };
+        /**
+         * @brief Properties for the window to be initialised with.
+        */
+        struct Properties {
+            uint32_t width;
+            uint32_t height;
+            DisplayMode mode = DisplayMode::Windowed;
+            std::string_view title;
+        };
+    }
 
     /**
      * @brief Window.
@@ -36,7 +38,7 @@ namespace muon::engine::window {
          *
          * @throws  program aborts if initialising SDL and window fails.
         */
-        explicit Window(Properties &properties);
+        explicit Window(window::Properties &properties);
         ~Window();
 
         Window(const Window &) = delete;
@@ -90,7 +92,7 @@ namespace muon::engine::window {
          *
          * @param   mode    new display mode.`
         */
-        void setDisplayMode(DisplayMode mode);
+        void setDisplayMode(window::DisplayMode mode);
 
         void resize(uint32_t newWidth, uint32_t newHeight);
         [[nodiscard]] bool wasResized() const;
@@ -119,7 +121,7 @@ namespace muon::engine::window {
          *
          * @throws  if the window failed to initialise.
         */
-        void initWindow(std::string_view title, DisplayMode mode);
+        void initWindow(std::string_view title, window::DisplayMode mode);
     };
 
 }

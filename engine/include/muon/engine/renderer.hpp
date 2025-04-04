@@ -11,7 +11,7 @@ namespace muon::engine {
 
     class Renderer {
     public:
-        Renderer(window::Window &window, Device &device);
+        Renderer(Window &window, Device &device);
         ~Renderer();
 
         Renderer(const Renderer &) = delete;
@@ -31,7 +31,7 @@ namespace muon::engine {
         void endSwapchainRenderPass(vk::CommandBuffer commandBuffer);
 
     private:
-        window::Window &window;
+        Window &window;
         Device &device;
         std::unique_ptr<Swapchain> swapchain;
         std::vector<vk::CommandBuffer> commandBuffers;

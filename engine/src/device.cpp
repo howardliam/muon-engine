@@ -79,7 +79,7 @@ namespace muon::engine {
         return function(instance, debugMessenger, allocator);
     }
 
-    Device::Device(window::Window &window) : window(window) {
+    Device::Device(Window &window) : window(window) {
         createInstance();
         createDebugMessenger();
         createSurface();

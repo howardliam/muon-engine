@@ -26,7 +26,7 @@ namespace muon::engine {
 
     class Device {
     public:
-        Device(window::Window &window);
+        Device(Window &window);
         ~Device();
 
         Device(const Device &) = delete;
@@ -104,7 +104,7 @@ namespace muon::engine {
         void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
 
     private:
-        window::Window &window;
+        Window &window;
 
         bool enableValidationLayers = true;
         const std::vector<const char *> validationLayers = { "VK_LAYER_KHRONOS_validation" };

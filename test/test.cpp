@@ -16,7 +16,7 @@ int main() {
     props.mode = window::DisplayMode::Windowed;
     props.title = "Testing";
 
-    window::Window window(props);
+    engine::Window window(props);
     engine::Device device(window);
     engine::Renderer renderer(window, device);
     renderer.setClearColor({1.0f, 0.0f, 1.0f, 1.0f});

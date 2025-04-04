@@ -7,9 +7,9 @@
 #include <print>
 #include <stdexcept>
 
-namespace muon::engine::window {
+namespace muon::engine {
 
-    Window::Window(Properties &properties) : width(properties.width), height(properties.height) {
+    Window::Window(window::Properties &properties) : width(properties.width), height(properties.height) {
         try {
             initSdl();
             initWindow(properties.title, properties.mode);
@@ -47,21 +47,21 @@ namespace muon::engine::window {
         SDL_SetWindowTitle(window, title.data());
     }
 
-    void Window::setDisplayMode(DisplayMode mode) {
+    void Window::setDisplayMode(window::DisplayMode mode) {
         bool fullscreen = false;
         bool bordered = false;
         switch (mode) {
-            case DisplayMode::Windowed:
+            case window::DisplayMode::Windowed:
             fullscreen = false;
             bordered = true;
             break;
 
-            case DisplayMode::Fullscreen:
+            case window::DisplayMode::Fullscreen:
             fullscreen = true;
             bordered = true;
             break;
 
-            case DisplayMode::BorderlessFullscreen:
+            case window::DisplayMode::BorderlessFullscreen:
             fullscreen = true;
             bordered = false;
             break;
@@ -91,18 +91,18 @@ namespace muon::engine::window {
         }
     }
 
-    void Window::initWindow(std::string_view title, DisplayMode mode) {
+    void Window::initWindow(std::string_view title, window::DisplayMode mode) {
         SDL_WindowFlags modeFlag = 0;
         switch (mode) {
-            case DisplayMode::Windowed:
+            case window::DisplayMode::Windowed:
             modeFlag |= 0;
             break;
 
-            case DisplayMode::Fullscreen:
+            case window::DisplayMode::Fullscreen:
             modeFlag |= SDL_WINDOW_FULLSCREEN;
             break;
 
-            case DisplayMode::BorderlessFullscreen:
+            case window::DisplayMode::BorderlessFullscreen:
             modeFlag |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS;
             break;
         }

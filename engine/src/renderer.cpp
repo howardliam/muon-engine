@@ -5,7 +5,7 @@
 
 namespace muon::engine {
 
-    Renderer::Renderer(window::Window &window, Device &device) : window(window), device(device) {
+    Renderer::Renderer(Window &window, Device &device) : window(window), device(device) {
         recreateSwapchain();
         createCommandBuffers();
     }
