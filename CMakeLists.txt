@@ -26,6 +26,9 @@ find_package(Vulkan REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
 add_subdirectory(external/vulkan-memory-allocator-hpp)
 
+option(SPNG_SHARED OFF)
+add_subdirectory(external/libspng)
+
 if (MSVC)
     add_compile_options(/W4)
 else()

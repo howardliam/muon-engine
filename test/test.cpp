@@ -1,15 +1,18 @@
-
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <muon/engine/window.hpp>
 #include <muon/engine/renderer.hpp>
 #include <muon/engine/device.hpp>
+#include <muon/engine/assets/image.hpp>
+#include <muon/common/fs.hpp>
 
 namespace engine = muon::engine;
 namespace window = engine::window;
 
 int main() {
+
+
     window::Properties props;
     props.height = 900;
     props.width = 1600;
@@ -20,6 +23,11 @@ int main() {
     engine::Device device(window);
     engine::Renderer renderer(window, device);
     renderer.setClearColor({1.0f, 0.0f, 1.0f, 1.0f});
+
+    std::filesystem::path imagePath("./muon-logo.png");
+    auto imageData = muon::common::fs::readFile(imagePath);
+    auto res = engine::assets::loadImagePng(imageData.value());
+    window.setIcon(res.data);
 
     while (window.isOpen()) {
         SDL_Event event;

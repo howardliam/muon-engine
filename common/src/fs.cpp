@@ -37,7 +37,7 @@ namespace muon::common::fs {
             return {};
         }
 
-        std::ifstream file(path);
+        std::ifstream file{path, std::ios::binary};
         file.seekg(0, std::ios::end);
         size_t size = file.tellg();
         file.seekg(0, std::ios::beg);

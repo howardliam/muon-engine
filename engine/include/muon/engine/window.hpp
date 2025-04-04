@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <string_view>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan.hpp>
 
@@ -86,6 +87,8 @@ namespace muon::engine {
          * @param   title   new window title.
         */
         void setTitle(std::string_view title);
+
+        void setIcon(std::vector<char> imageData);
 
         /**
          * @brief   Sets the window's display mode.
