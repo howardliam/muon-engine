@@ -11,7 +11,6 @@ namespace muon::engine {
         vk::DeviceSize instanceSize,
         uint32_t instanceCount,
         vk::BufferUsageFlags usageFlags,
-        vk::MemoryPropertyFlags memoryPropertyFlags,
         vk::DeviceSize minOffsetAlignment
     ) : device(device), instanceSize(instanceSize), instanceCount(instanceCount), usageFlags(usageFlags) {
         auto getAlignment = [](vk::DeviceSize instanceSize, vk::DeviceSize minOffsetAlignment) -> vk::DeviceSize {

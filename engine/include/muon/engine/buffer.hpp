@@ -14,7 +14,6 @@ namespace muon::engine {
             vk::DeviceSize instanceSize,
             uint32_t instanceCount,
             vk::BufferUsageFlags usageFlags,
-            vk::MemoryPropertyFlags memoryPropertyFlags,
             vk::DeviceSize minOffsetAlignment = 1
         );
         ~Buffer();
@@ -30,7 +29,7 @@ namespace muon::engine {
         [[nodiscard]] vk::DescriptorBufferInfo descriptorInfo(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
         [[nodiscard]] vk::Result invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
 
-        void writeToIndex(void* data, int32_t index);
+        void writeToIndex(void *data, int32_t index);
         [[nodiscard]] vk::Result flushIndex(int32_t index);
         [[nodiscard]] vk::DescriptorBufferInfo descriptorInfoForIndex(int32_t index);
         [[nodiscard]] vk::Result invalidateIndex(int32_t index);
@@ -38,14 +37,14 @@ namespace muon::engine {
         [[nodiscard]] vk::Buffer getBuffer() const;
         [[nodiscard]] vk::DeviceSize getBufferSize() const;
         void *getMappedMemory() const;
-        uint32_t getInstanceCount() const;
+        [[nodiscard]] uint32_t getInstanceCount() const;
         [[nodiscard]] vk::DeviceSize getInstanceSize() const;
         [[nodiscard]] vk::DeviceSize getAlignmentSize() const;
         [[nodiscard]] vk::BufferUsageFlags getUsageFlags() const;
-        [[nodiscard]] vk::MemoryPropertyFlags getMemoryPropertyFlags() const;
 
     private:
         Device &device;
+
         vk::Buffer buffer;
         vk::DeviceSize bufferSize;
         vma::Allocation allocation;
@@ -56,7 +55,6 @@ namespace muon::engine {
         vk::DeviceSize instanceSize;
         vk::DeviceSize alignmentSize;
         vk::BufferUsageFlags usageFlags;
-
     };
 
 }
