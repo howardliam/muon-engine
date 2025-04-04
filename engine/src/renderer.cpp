@@ -14,35 +14,6 @@ namespace muon::engine {
         freeCommandBuffers();
     }
 
-    vk::RenderPass Renderer::getSwapchainRenderPass() const {
-        return swapchain->getRenderPass();
-    }
-
-    vk::CommandBuffer Renderer::getCurrentCommandBuffer() const {
-        return commandBuffers[currentFrameIndex];
-    }
-
-    void Renderer::setClearColor(vk::ClearColorValue newValue) {
-        clearColorValue = newValue;
-    }
-
-    void Renderer::setClearDepthStencil(vk::ClearDepthStencilValue newValue) {
-        clearDepthStencilValue = newValue;
-    }
-
-    int32_t Renderer::getFrameIndex() const {
-        return currentFrameIndex;
-    }
-
-    bool Renderer::isFrameInProgress() const {
-        return frameInProgress;
-    }
-
-    float Renderer::getAspectRatio() const {
-        return swapchain->getExtentAspectRatio();
-    }
-
-
     vk::CommandBuffer Renderer::beginFrame() {
         auto result = swapchain->acquireNextImage(&currentImageIndex);
 
@@ -121,6 +92,34 @@ namespace muon::engine {
 
     void Renderer::endSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
         commandBuffer.endRenderPass();
+    }
+
+    vk::RenderPass Renderer::getSwapchainRenderPass() const {
+        return swapchain->getRenderPass();
+    }
+
+    vk::CommandBuffer Renderer::getCurrentCommandBuffer() const {
+        return commandBuffers[currentFrameIndex];
+    }
+
+    void Renderer::setClearColor(vk::ClearColorValue newValue) {
+        clearColorValue = newValue;
+    }
+
+    void Renderer::setClearDepthStencil(vk::ClearDepthStencilValue newValue) {
+        clearDepthStencilValue = newValue;
+    }
+
+    int32_t Renderer::getFrameIndex() const {
+        return currentFrameIndex;
+    }
+
+    bool Renderer::isFrameInProgress() const {
+        return frameInProgress;
+    }
+
+    float Renderer::getAspectRatio() const {
+        return swapchain->getExtentAspectRatio();
     }
 
     void Renderer::createCommandBuffers() {

@@ -24,6 +24,11 @@ namespace muon::engine {
         Swapchain(const Swapchain &) = delete;
         Swapchain &operator=(const Swapchain &) = delete;
 
+        [[nodiscard]] vk::Format findDepthFormat();
+        [[nodiscard]] vk::Result acquireNextImage(uint32_t *imageIndex);
+        [[nodiscard]] vk::Result submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex);
+        [[nodiscard]] bool compareSwapFormats(const Swapchain &swapchain) const;
+
         /**
          * @brief   Gets the number of images in the swapchain.
          *
@@ -97,11 +102,6 @@ namespace muon::engine {
          * @return  aspect ratio.
         */
         [[nodiscard]] float getExtentAspectRatio() const;
-
-        [[nodiscard]] vk::Format findDepthFormat();
-        [[nodiscard]] vk::Result acquireNextImage(uint32_t *imageIndex);
-        [[nodiscard]] vk::Result submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex);
-        [[nodiscard]] bool compareSwapFormats(const Swapchain &swapchain) const;
 
     private:
         Device &device;

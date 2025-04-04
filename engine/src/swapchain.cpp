@@ -41,48 +41,6 @@ namespace muon::engine {
         device.getDevice().destroySwapchainKHR(swapchain, nullptr);
     }
 
-    size_t Swapchain::imageCount() const {
-        return swapchainImages.size();
-    }
-
-
-    vk::SwapchainKHR Swapchain::getSwapchain() const {
-        return swapchain;
-    }
-
-
-    vk::RenderPass Swapchain::getRenderPass() const {
-        return renderPass;
-    }
-
-    vk::Framebuffer Swapchain::getFramebuffer(int32_t index) const {
-        return swapchainFramebuffers[index];
-    }
-
-    vk::ImageView Swapchain::getImageView(int32_t index) const {
-        return swapchainImageViews[index];
-    }
-
-    vk::Format Swapchain::getSwapchainImageFormat() const {
-        return swapchainImageFormat;
-    }
-
-    vk::Extent2D Swapchain::getExtent() const {
-        return swapchainExtent;
-    }
-
-    uint32_t Swapchain::getWidth() const {
-        return swapchainExtent.width;
-    }
-
-    uint32_t Swapchain::getHeight() const {
-            return swapchainExtent.height;
-    }
-
-    float Swapchain::getExtentAspectRatio() const {
-        return static_cast<float>(swapchainExtent.width) / static_cast<float>(swapchainExtent.height);
-    }
-
     vk::Format Swapchain::findDepthFormat() {
         auto candidates = {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint};
         auto tiling = vk::ImageTiling::eOptimal;
@@ -163,6 +121,46 @@ namespace muon::engine {
 
     bool Swapchain::compareSwapFormats(const Swapchain &swapchain) const {
         return swapchain.depthImageFormat == depthImageFormat && swapchain.swapchainImageFormat == swapchainImageFormat;
+    }
+
+    size_t Swapchain::imageCount() const {
+        return swapchainImages.size();
+    }
+
+    vk::SwapchainKHR Swapchain::getSwapchain() const {
+        return swapchain;
+    }
+
+    vk::RenderPass Swapchain::getRenderPass() const {
+        return renderPass;
+    }
+
+    vk::Framebuffer Swapchain::getFramebuffer(int32_t index) const {
+        return swapchainFramebuffers[index];
+    }
+
+    vk::ImageView Swapchain::getImageView(int32_t index) const {
+        return swapchainImageViews[index];
+    }
+
+    vk::Format Swapchain::getSwapchainImageFormat() const {
+        return swapchainImageFormat;
+    }
+
+    vk::Extent2D Swapchain::getExtent() const {
+        return swapchainExtent;
+    }
+
+    uint32_t Swapchain::getWidth() const {
+        return swapchainExtent.width;
+    }
+
+    uint32_t Swapchain::getHeight() const {
+            return swapchainExtent.height;
+    }
+
+    float Swapchain::getExtentAspectRatio() const {
+        return static_cast<float>(swapchainExtent.width) / static_cast<float>(swapchainExtent.height);
     }
 
     void Swapchain::init() {
@@ -271,7 +269,6 @@ namespace muon::engine {
         swapchainExtent = extent;
     }
 
-
     void Swapchain::createImageViews() {
         swapchainImageViews.resize(imageCount());
 
@@ -298,7 +295,6 @@ namespace muon::engine {
             }
         }
     }
-
 
     void Swapchain::createDepthResources() {
         auto findDepthFormat = [&]() -> vk::Format {
@@ -354,7 +350,6 @@ namespace muon::engine {
             }
         }
     }
-
 
     void Swapchain::createRenderPass() {
         vk::AttachmentDescription colorAttachment{};
@@ -420,7 +415,6 @@ namespace muon::engine {
         }
     }
 
-
     void Swapchain::createFramebuffers() {
         swapchainFramebuffers.resize(imageCount());
 
@@ -464,4 +458,5 @@ namespace muon::engine {
             }
         }
     }
+
 }

@@ -34,6 +34,12 @@ namespace muon::engine {
         Device(const Device &&) = delete;
         Device &operator=(const Device &&) = delete;
 
+        [[nodiscard]] vk::Format findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+
+        void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer &buffer, vk::DeviceMemory &bufferMemory);
+
+        void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
+
         /**
          * @brief   Gets Vulkan instance.
          *
@@ -98,10 +104,6 @@ namespace muon::engine {
         [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
 
         [[nodiscard]] vk::CommandPool getCommandPool() const;
-
-        [[nodiscard]] vk::Format findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
-
-        void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
 
     private:
         Window &window;

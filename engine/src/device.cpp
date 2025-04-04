@@ -58,7 +58,6 @@ namespace muon::engine {
         return static_cast<vk::Result>(function(instance, createInfo, allocator, debugMessenger));
     }
 
-
     /**
      * @brief   Destroys the debug utils messenger.
      *
@@ -103,6 +102,43 @@ namespace muon::engine {
         instance.destroy(nullptr);
     }
 
+    vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+        for (auto format : candidates) {
+            vk::FormatProperties props{};
+            physicalDevice.getFormatProperties(format, &props);
+
+            if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
+                return format;
+            } else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+
+        throw std::runtime_error("failed to find a supported format");
+    }
+
+    void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation) {
+        auto result = device.createImage(&imageInfo, nullptr, &image);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create an image");
+        }
+
+        vk::MemoryRequirements memoryRequirements{};
+        device.getImageMemoryRequirements(image, &memoryRequirements);
+
+        vma::AllocationCreateInfo allocCreateInfo{};
+        allocCreateInfo.usage = vma::MemoryUsage::eGpuOnly;
+        allocCreateInfo.requiredFlags = properties;
+
+        vma::AllocationInfo allocationInfo;
+
+        result = allocator.allocateMemory(&memoryRequirements, &allocCreateInfo, &allocation, &allocationInfo);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to allocate image memory");
+        }
+
+        allocator.bindImageMemory(allocation, image);
+    }
 
     vk::Instance Device::getInstance() {
         return instance;
@@ -142,44 +178,6 @@ namespace muon::engine {
 
     vk::CommandPool Device::getCommandPool() const {
         return commandPool;
-    }
-
-    vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
-        for (auto format : candidates) {
-            vk::FormatProperties props{};
-            physicalDevice.getFormatProperties(format, &props);
-
-            if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
-                return format;
-            } else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
-                return format;
-            }
-        }
-
-        throw std::runtime_error("failed to find a supported format");
-    }
-
-    void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation) {
-        auto result = device.createImage(&imageInfo, nullptr, &image);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create an image");
-        }
-
-        vk::MemoryRequirements memoryRequirements{};
-        device.getImageMemoryRequirements(image, &memoryRequirements);
-
-        vma::AllocationCreateInfo allocCreateInfo{};
-        allocCreateInfo.usage = vma::MemoryUsage::eGpuOnly;
-        allocCreateInfo.requiredFlags = properties;
-
-        vma::AllocationInfo allocationInfo;
-
-        result = allocator.allocateMemory(&memoryRequirements, &allocCreateInfo, &allocation, &allocationInfo);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to allocate image memory");
-        }
-
-        allocator.bindImageMemory(allocation, image);
     }
 
     void Device::createInstance() {
@@ -470,4 +468,5 @@ namespace muon::engine {
 
         return details;
     }
+
 }

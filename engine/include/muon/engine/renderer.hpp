@@ -17,6 +17,11 @@ namespace muon::engine {
         Renderer(const Renderer &) = delete;
         Renderer &operator=(const Renderer &) = delete;
 
+        [[nodiscard]] vk::CommandBuffer beginFrame();
+        void endFrame();
+        void beginSwapchainRenderPass(vk::CommandBuffer commandBuffer);
+        void endSwapchainRenderPass(vk::CommandBuffer commandBuffer);
+
         [[nodiscard]] vk::RenderPass getSwapchainRenderPass() const;
         [[nodiscard]] vk::CommandBuffer getCurrentCommandBuffer() const;
         void setClearColor(vk::ClearColorValue newValue);
@@ -24,11 +29,6 @@ namespace muon::engine {
         [[nodiscard]] int32_t getFrameIndex() const;
         [[nodiscard]] bool isFrameInProgress() const;
         [[nodiscard]] float getAspectRatio() const;
-
-        [[nodiscard]] vk::CommandBuffer beginFrame();
-        void endFrame();
-        void beginSwapchainRenderPass(vk::CommandBuffer commandBuffer);
-        void endSwapchainRenderPass(vk::CommandBuffer commandBuffer);
 
     private:
         Window &window;
