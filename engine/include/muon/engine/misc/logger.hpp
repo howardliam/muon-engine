@@ -1,12 +1,7 @@
 #pragma once
 
 #include <format>
-#include <iostream>
-#include <print>
 #include <string>
-#include <utility>
-
-//std::format_string<Args ...> fmt, Args &&...args
 
 namespace muon::engine::misc {
     class ILogger {
