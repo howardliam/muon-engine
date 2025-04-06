@@ -47,7 +47,7 @@ namespace muon::engine {
         device.getAllocator().freeMemory(allocation);
     }
 
-    vk::Result Buffer::map(vk::DeviceSize size, vk::DeviceSize offset) {
+    vk::Result Buffer::map() {
         return device.getAllocator().mapMemory(allocation, &mapped);
     }
 
