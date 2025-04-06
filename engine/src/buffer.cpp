@@ -1,5 +1,6 @@
 #include "muon/engine/buffer.hpp"
 
+#include <cstring>
 #include <vk_mem_alloc_enums.hpp>
 #include <vk_mem_alloc_structs.hpp>
 #include <print>
@@ -57,6 +58,28 @@ namespace muon::engine {
 
         device.getAllocator().unmapMemory(allocation);
         mapped = nullptr;
+    }
+
+    void Buffer::writeToBuffer(void *data, vk::DeviceSize size, vk::DeviceSize offset) {
+        if (size == vk::WholeSize) {
+            memcpy(mapped, data, bufferSize);
+        } else {
+            auto memoryOffset = static_cast<char *>(mapped);
+            memoryOffset += offset;
+            memcpy(memoryOffset, data, size);
+        }
+    }
+
+    void Buffer::flush(vk::DeviceSize size, vk::DeviceSize offset) {
+        device.getAllocator().flushAllocation(allocation, offset, size);
+    }
+
+    vk::DescriptorBufferInfo Buffer::descriptorInfo(vk::DeviceSize size, vk::DeviceSize offset) {
+        return vk::DescriptorBufferInfo{ buffer, offset, size };
+    }
+
+    void Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) {
+        device.getAllocator().invalidateAllocation(allocation, offset, size);
     }
 
 }

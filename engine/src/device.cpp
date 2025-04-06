@@ -7,6 +7,7 @@
 #include <set>
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #include <vk_mem_alloc.hpp>
@@ -104,7 +105,7 @@ namespace muon::engine {
 
     vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
         for (auto format : candidates) {
-            vk::FormatProperties props{};
+            vk::FormatProperties props;
             physicalDevice.getFormatProperties(format, &props);
 
             if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
@@ -115,6 +116,80 @@ namespace muon::engine {
         }
 
         throw std::runtime_error("failed to find a supported format");
+    }
+
+    vk::CommandBuffer Device::beginSingleTimeCommands() {
+        vk::CommandBufferAllocateInfo allocateInfo;
+        allocateInfo.level = vk::CommandBufferLevel::ePrimary;
+        allocateInfo.commandPool = commandPool;
+        allocateInfo.commandBufferCount = 1;
+
+        vk::CommandBuffer commandBuffer;
+        auto result = device.allocateCommandBuffers(&allocateInfo, &commandBuffer);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to allocate single time command buffer");
+        }
+
+        vk::CommandBufferBeginInfo beginInfo;
+        beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+        result = commandBuffer.begin(&beginInfo);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to begin command buffer recording");
+        }
+
+        return commandBuffer;
+    }
+
+    void Device::endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
+        commandBuffer.end();
+
+        vk::SubmitInfo submitInfo;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        auto result = graphicsQueue.submit(1, &submitInfo, nullptr);
+        if (result != vk::Result::eSuccess) {
+            std::println("failed to submit command buffer to graphics queue");
+        }
+
+        graphicsQueue.waitIdle();
+
+        device.freeCommandBuffers(commandPool, 1, &commandBuffer);
+    }
+
+    void Device::copyBuffer(vk::Buffer src, vk::Buffer dest, vk::DeviceSize size) {
+        vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
+
+        vk::BufferCopy copyRegion;
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0;
+        copyRegion.size = size;
+
+        commandBuffer.copyBuffer(src, dest, 1, &copyRegion);
+
+        endSingleTimeCommands(commandBuffer);
+    }
+
+    void Device::copyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount) {
+        vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
+
+        vk::BufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+
+        region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = layerCount;
+
+        region.setImageOffset({0, 0, 0});
+        region.setImageExtent({width, height, 1});
+
+        commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+
+        endSingleTimeCommands(commandBuffer);
     }
 
     void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation) {
@@ -140,31 +215,35 @@ namespace muon::engine {
         allocator.bindImageMemory(allocation, image);
     }
 
-    vk::Instance Device::getInstance() {
+    vk::Instance Device::getInstance() const {
         return instance;
     }
 
-    vk::SurfaceKHR Device::getSurface() {
+    vk::SurfaceKHR Device::getSurface() const {
         return surface;
     }
 
-    vk::PhysicalDevice Device::getPhysicalDevice() {
+    vk::PhysicalDevice Device::getPhysicalDevice() const {
         return physicalDevice;
     }
 
-    vk::Device Device::getDevice() {
+    vk::Device Device::getDevice() const {
         return device;
     }
 
-    vk::Queue Device::getGraphicsQueue() {
+    vk::CommandPool Device::getCommandPool() const {
+        return commandPool;
+    }
+
+    vk::Queue Device::getGraphicsQueue() const {
         return graphicsQueue;
     }
 
-    vk::Queue Device::getPresentQueue() {
+    vk::Queue Device::getPresentQueue() const {
         return presentQueue;
     }
 
-    vma::Allocator Device::getAllocator() {
+    vma::Allocator Device::getAllocator() const {
         return allocator;
     }
 
@@ -174,10 +253,6 @@ namespace muon::engine {
 
     SwapchainSupportDetails Device::getSwapchainSupportDetails() {
         return querySwapchainSupport(physicalDevice);
-    }
-
-    vk::CommandPool Device::getCommandPool() const {
-        return commandPool;
     }
 
     void Device::createInstance() {
