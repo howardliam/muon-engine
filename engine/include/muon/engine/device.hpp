@@ -78,6 +78,17 @@ namespace muon::engine {
         void copyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount);
 
         /**
+         * @brief   copies contents of an image into a buffer.
+         *
+         * @param   image       the image to copy from.
+         * @param   buffer      the buffer to copy into.
+         * @param   width       the width of the image.
+         * @param   height      the height of the image.
+         * @param   layerCount  how many layers the image has.
+         */
+        void copyImageToBuffer(vk::Image image, vk::Buffer buffer, uint32_t width, uint32_t height, uint32_t layerCount);
+
+        /**
          * @brief   allocates a new image.
          *
          * @param   imageInfo   the information to create the image.
@@ -115,6 +126,11 @@ namespace muon::engine {
          */
         [[nodiscard]] vk::Device getDevice() const;
 
+        /**
+         * @brief   gets command pool.
+         *
+         * @return  command pool.
+         */
         [[nodiscard]] vk::CommandPool getCommandPool() const;
 
         /**
