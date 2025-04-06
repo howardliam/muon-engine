@@ -2,7 +2,7 @@ add_executable(test
     test.cpp
 )
 
-target_link_libraries(test PRIVATE muon-engine muon-common)
+target_link_libraries(test PRIVATE spdlog muon-engine muon-common)
 
 set(SHADER_DIR test/assets/shaders)
 file(GLOB SHADERS

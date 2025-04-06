@@ -5,13 +5,41 @@
 #include <muon/engine/renderer.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/assets/image.hpp>
+#include <muon/engine/misc/logger.hpp>
 #include <muon/common/fs.hpp>
+#include <spdlog/spdlog.h>
 
 namespace engine = muon::engine;
 namespace window = engine::window;
 
-int main() {
+class LoggerImpl : public engine::misc::ILogger {
+public:
+    LoggerImpl() : engine::misc::ILogger() {}
 
+    void traceImpl(std::string message) override {
+        spdlog::trace(message);
+    }
+
+    void debugImpl(std::string message) override {
+        spdlog::debug(message);
+    }
+
+    void infoImpl(std::string message) override {
+        spdlog::info(message);
+    }
+
+    void warnImpl(std::string message) override {
+        spdlog::warn(message);
+    }
+
+    void errorImpl(std::string message) override {
+        spdlog::error(message);
+    }
+};
+
+int main() {
+    LoggerImpl logger;
+    logger.info("Hello, {}", "test");
 
     window::Properties props;
     props.height = 900;
