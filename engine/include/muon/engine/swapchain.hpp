@@ -24,7 +24,6 @@ namespace muon::engine {
         Swapchain(const Swapchain &) = delete;
         Swapchain &operator=(const Swapchain &) = delete;
 
-        [[nodiscard]] vk::Format findDepthFormat();
         [[nodiscard]] vk::Result acquireNextImage(uint32_t *imageIndex);
         [[nodiscard]] vk::Result submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex);
         [[nodiscard]] bool compareSwapFormats(const Swapchain &swapchain) const;

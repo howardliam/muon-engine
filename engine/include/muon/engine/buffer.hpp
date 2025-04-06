@@ -25,9 +25,9 @@ namespace muon::engine {
         void unmap();
 
         void writeToBuffer(void *data, vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
-        [[nodiscard]] vk::Result flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
+        void flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
         [[nodiscard]] vk::DescriptorBufferInfo descriptorInfo(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
-        [[nodiscard]] vk::Result invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
+        void invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
 
         void writeToIndex(void *data, int32_t index);
         [[nodiscard]] vk::Result flushIndex(int32_t index);

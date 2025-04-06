@@ -34,74 +34,123 @@ namespace muon::engine {
         Device(const Device &&) = delete;
         Device &operator=(const Device &&) = delete;
 
+        /**
+         * @brief   finds supported image format.
+         *
+         * @param   candidates  a vector of image formats.
+         * @param   tiling      the preferred image tiling method.
+         * @param   features    the required features of the image format.
+         *
+         * @return  the suitable image format from the candidates.
+         */
         [[nodiscard]] vk::Format findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 
+        /**
+         * @brief   creates a command buffer for a single task, not part of the rendering pipeline.
+         *
+         * @return  command buffer instance.
+         */
+        [[nodiscard]] vk::CommandBuffer beginSingleTimeCommands();
+
+        /**
+         * @brief   ends an active command buffer, used to end <beginSingleTimeCommands>"()".
+         */
+        void endSingleTimeCommands(vk::CommandBuffer commandBuffer);
+
+        /**
+         * @brief   copies one buffer into another.
+         *
+         * @param   src     the source buffer.
+         * @param   dst     the destination buffer.
+         * @param   size    the size of the buffer contents.
+         */
+        void copyBuffer(vk::Buffer src, vk::Buffer dest, vk::DeviceSize size);
+
+        /**
+         * @brief   copies contents of a buffer into an image.
+         *
+         * @param   buffer      the buffer to copy from.
+         * @param   image       the image to copy into.
+         * @param   width       the width of the image.
+         * @param   height      the height of the image.
+         * @param   layerCount  how many layers the image has.
+         */
+        void copyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount);
+
+        /**
+         * @brief   allocates a new image.
+         *
+         * @param   imageInfo   the information to create the image.
+         * @param   properties  the memory properties required for the image.
+         * @param   image       image handle.
+         * @param   allocation  allocation handle.
+         */
         void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
 
         /**
-         * @brief   Gets Vulkan instance.
+         * @brief   gets instance.
          *
-         * @return  Vulkan instance.
-        */
-        [[nodiscard]] vk::Instance getInstance();
+         * @return  instance.
+         */
+        [[nodiscard]] vk::Instance getInstance() const;
 
         /**
-         * @brief   Gets Vulkan surface.
+         * @brief   gets surface.
          *
-         * @return  Vulkan surface.
-        */
-        [[nodiscard]] vk::SurfaceKHR getSurface();
+         * @return  surface.
+         */
+        [[nodiscard]] vk::SurfaceKHR getSurface() const;
 
         /**
-         * @brief   Gets physical device.
+         * @brief   gets physical device.
          *
          * @return  physical device.
-        */
-        [[nodiscard]] vk::PhysicalDevice getPhysicalDevice();
+         */
+        [[nodiscard]] vk::PhysicalDevice getPhysicalDevice() const;
 
         /**
-         * @brief   Gets logical device.
+         * @brief   gets logical device.
          *
          * @return  logical device.
-        */
-        [[nodiscard]] vk::Device getDevice();
+         */
+        [[nodiscard]] vk::Device getDevice() const;
+
+        [[nodiscard]] vk::CommandPool getCommandPool() const;
 
         /**
-         * @brief   Gets graphics queue.
+         * @brief   gets graphics queue.
          *
          * @return  graphics queue.
-        */
-        [[nodiscard]] vk::Queue getGraphicsQueue();
+         */
+        [[nodiscard]] vk::Queue getGraphicsQueue() const;
 
         /**
-         * @brief   Gets present queue.
+         * @brief   gets present queue.
          *
          * @return  present queue.
-        */
-        [[nodiscard]] vk::Queue getPresentQueue();
+         */
+        [[nodiscard]] vk::Queue getPresentQueue() const;
 
         /**
-         * @brief   Gets allocator.
+         * @brief   gets allocator.
          *
          * @return  allocator.
-        */
-        [[nodiscard]] vma::Allocator getAllocator();
+         */
+        [[nodiscard]] vma::Allocator getAllocator() const;
 
         /**
-         * @brief   Gets queue family indices.
+         * @brief   gets queue family indices.
          *
          * @return  struct containing the indices of required queue families.
-        */
+         */
         [[nodiscard]] QueueFamilyIndices getQueueFamilyIndices();
 
         /**
-         * @brief   Gets swapchain support details.
+         * @brief   gets swapchain support details.
          *
          * @return  struct containing the supported swapchain options.
-        */
+         */
         [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
-
-        [[nodiscard]] vk::CommandPool getCommandPool() const;
 
     private:
         Window &window;
@@ -123,53 +172,56 @@ namespace muon::engine {
         vma::Allocator allocator;
 
         /**
-         * @brief   Creates Vulkan instance.
-        */
+         * @brief   creates instance.
+         */
         void createInstance();
 
         /**
-         * @brief   Creates debug messenger.
-        */
+         * @brief   creates debug messenger.
+         */
         void createDebugMessenger();
 
         /**
-         * @brief   Creates window surface.
-        */
+         * @brief   creates window surface.
+         */
         void createSurface();
 
         /**
-         * @brief   Selects the physical device.
-        */
+         * @brief   selects the physical device.
+         */
         void selectPhysicalDevice();
 
         /**
-         * @brief   Creates logical device.
-        */
+         * @brief   creates logical device.
+         */
         void createLogicalDevice();
 
         /**
-         * @brief   Creates GPU memory allocator.
-        */
+         * @brief   creates GPU memory allocator.
+         */
         void createAllocator();
 
+        /**
+         * @brief   creates the command pool for making command buffers.
+         */
         void createCommandPool();
 
         /**
-         * @brief   Finds queue family indices for the physical device.
+         * @brief   finds queue family indices for the physical device.
          *
          * @param   physicalDevice  the physical device to query queue index information about.
          *
          * @return  struct containing the indices of required queue families.
-        */
+         */
         [[nodiscard]] QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice physicalDevice);
 
         /**
-         * @brief   Queries the physical device for supported swapchain features.
+         * @brief   queries the physical device for supported swapchain features.
          *
          * @param   physicalDevice  the physical device to query swapchain information.
          *
          * @return  struct containing the supported swapchain options.
-        */
+         */
         [[nodiscard]] SwapchainSupportDetails querySwapchainSupport(vk::PhysicalDevice physicalDevice);
     };
 
