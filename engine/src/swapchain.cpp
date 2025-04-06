@@ -60,7 +60,7 @@ namespace muon::engine {
 
     vk::Result Swapchain::submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex) {
         if (imagesInFlight[*imageIndex] != nullptr) {
-            auto result = device.getDevice().waitForFences(1, &imagesInFlight[*imageIndex], vk::True, UINT64_MAX);
+            auto result = device.getDevice().waitForFences(1, &imagesInFlight[*imageIndex], true, UINT64_MAX);
             if (result != vk::Result::eSuccess) {
                 std::println("failed to wait for fences");
             }
@@ -102,9 +102,6 @@ namespace muon::engine {
         presentInfo.pImageIndices = imageIndex;
 
         result = device.getPresentQueue().presentKHR(&presentInfo);
-        if (result != vk::Result::eSuccess) {
-            std::println("failed to present swapchain");
-        }
 
         currentFrame = (currentFrame + 1) % constants::maxFramesInFlight;
 
