@@ -4,12 +4,11 @@ add_executable(test
 
 target_link_libraries(test PRIVATE spdlog muon-engine muon-common)
 
-set(SHADER_DIR test/assets/shaders)
+set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders)
 file(GLOB SHADERS
     "${SHADER_DIR}/*.vert"
     "${SHADER_DIR}/*.frag"
 )
-
 foreach(SHADER ${SHADERS})
     get_filename_component(SHADER_NAME ${SHADER} NAME)
     set(SPIRV_OUTPUT_FILE ${SHADER_DIR}/${SHADER_NAME}.spv)

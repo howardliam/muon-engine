@@ -10,6 +10,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/misc/logger.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
+    ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/renderer.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/window.hpp
@@ -19,6 +20,7 @@ set (SRC_FILES
     ${SRC_DIR}/assets/image.cpp
     ${SRC_DIR}/buffer.cpp
     ${SRC_DIR}/device.cpp
+    ${SRC_DIR}/pipeline.cpp
     ${SRC_DIR}/renderer.cpp
     ${SRC_DIR}/swapchain.cpp
     ${SRC_DIR}/window.cpp

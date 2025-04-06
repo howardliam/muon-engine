@@ -1,6 +1,8 @@
+#include "muon/engine/pipeline.hpp"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
+#include <memory>
 #include <muon/engine/window.hpp>
 #include <muon/engine/renderer.hpp>
 #include <muon/engine/device.hpp>
@@ -38,8 +40,7 @@ public:
 };
 
 int main() {
-    LoggerImpl logger;
-    logger.info("Hello, {}", "test");
+    auto logger = std::make_shared<LoggerImpl>();
 
     window::Properties props;
     props.height = 900;
@@ -48,9 +49,15 @@ int main() {
     props.title = "Testing";
 
     engine::Window window(props);
-    engine::Device device(window);
+    engine::Device device(logger, window);
     engine::Renderer renderer(window, device);
     renderer.setClearColor({1.0f, 0.0f, 1.0f, 1.0f});
+
+    std::filesystem::path vertPath("./test/assets/shaders/shader.vert.spv");
+    std::filesystem::path fragPath("./test/assets/shaders/shader.frag.spv");
+    engine::pipeline::ConfigInfo configInfo;
+    engine::Pipeline::defaultConfigInfo(configInfo);
+    engine::Pipeline pipeline(device, vertPath, fragPath, configInfo);
 
     std::filesystem::path imagePath("./muon-logo.png");
     auto imageData = muon::common::fs::readFile(imagePath);
@@ -66,6 +73,10 @@ int main() {
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
                     window.setToClose();
+                }
+
+                if (event.key.scancode == SDL_SCANCODE_F1) {
+                    renderer.setClearColor({1.0f, 1.0f, 0.0f, 1.0f});
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <cstdint>
 #include <vector>
+#include "muon/engine/misc/logger.hpp"
 #include "muon/engine/window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
@@ -26,7 +28,7 @@ namespace muon::engine {
 
     class Device {
     public:
-        Device(Window &window);
+        Device(std::shared_ptr<misc::ILogger> logger, Window &window);
         ~Device();
 
         Device(const Device &) = delete;
@@ -169,6 +171,8 @@ namespace muon::engine {
         [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
 
     private:
+        std::shared_ptr<misc::ILogger> logger;
+
         Window &window;
 
         bool enableValidationLayers = true;

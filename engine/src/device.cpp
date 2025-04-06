@@ -79,7 +79,7 @@ namespace muon::engine {
         return function(instance, debugMessenger, allocator);
     }
 
-    Device::Device(Window &window) : window(window) {
+    Device::Device(std::shared_ptr<misc::ILogger> logger, Window &window) : window(window), logger(logger) {
         createInstance();
         createDebugMessenger();
         createSurface();
@@ -91,16 +91,22 @@ namespace muon::engine {
 
     Device::~Device() {
         allocator.destroy();
+        logger->info("destroyed allocator");
 
         device.destroyCommandPool(commandPool, nullptr);
+        logger->info("destroyed command pool");
 
         device.destroy(nullptr);
+        logger->info("destroyed device");
 
         instance.destroySurfaceKHR(surface, nullptr);
+        logger->info("destroyed surface");
 
         destroyDebugUtilsMessenger(instance, debugMessenger, nullptr);
+        logger->info("destroyed debug utils messenger");
 
         instance.destroy(nullptr);
+        logger->info("destroyed instance");
     }
 
     vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
@@ -375,6 +381,8 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create instance");
         }
+
+        logger->info("created instance");
     }
 
     void Device::createDebugMessenger() {
