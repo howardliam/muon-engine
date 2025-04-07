@@ -6,7 +6,7 @@
 
 namespace muon::assets {
 
-    void loadModel(const std::filesystem::path &modelPath) {
+    std::optional<aiMesh *> loadModel(const std::filesystem::path &modelPath) {
         Assimp::Importer importer;
 
         auto flags = aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType;
@@ -14,17 +14,16 @@ namespace muon::assets {
         const aiScene *scene = importer.ReadFile(modelPath, flags);
 
         if (scene == nullptr) {
-            // handle failure
+            return {};
         }
 
         if (scene->mNumMeshes <= 0) {
-            // handle failure
+            return {};
         }
 
         aiMesh *mesh = scene->mMeshes[0];
 
-        // load vertices and indices
-
+        return mesh;
     }
 
 }
