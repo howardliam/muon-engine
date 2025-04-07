@@ -1,5 +1,6 @@
 #include "muon/engine/device.hpp"
 
+#include "muon/engine/misc/logger.hpp"
 #include "muon/engine/window.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
@@ -30,7 +31,8 @@ namespace muon::engine {
         const vk::DebugUtilsMessengerCallbackDataEXT *callbackData,
         void *userData
     ) {
-        std::println("{}", callbackData->pMessage);
+        misc::ILogger *logger = reinterpret_cast<misc::ILogger *>(userData);
+        logger->info("{}", callbackData->pMessage);
 
         return false;
     }
@@ -400,6 +402,7 @@ namespace muon::engine {
             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
         createInfo.pfnUserCallback = debugCallback;
+        createInfo.pUserData = logger.get();
 
         auto result = createDebugUtilsMessenger(
             instance,
