@@ -95,6 +95,12 @@ int main() {
                 if (event.key.scancode == SDL_SCANCODE_F1) {
                     renderer.setClearColor({1.0f, 1.0f, 0.0f, 1.0f});
                 }
+                if (event.key.scancode == SDL_SCANCODE_F2) {
+                    renderer.setClearColor({1.0f, 0.0f, 1.0f, 1.0f});
+                }
+                if (event.key.scancode == SDL_SCANCODE_F3) {
+                    renderer.setClearColor({0.0f, 1.0f, 1.0f, 1.0f});
+                }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 window.resize(event.window.data1, event.window.data2);
@@ -105,6 +111,7 @@ int main() {
             renderer.beginSwapchainRenderPass(commandBuffer);
 
             pipeline.bind(commandBuffer);
+            commandBuffer.draw(3, 1, 0, 0);
 
             renderer.endSwapchainRenderPass(commandBuffer);
             renderer.endFrame();
