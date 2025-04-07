@@ -2,6 +2,7 @@
 
 #include "muon/engine/device.hpp"
 #include <filesystem>
+#include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_handles.hpp>
 
 namespace muon::engine {

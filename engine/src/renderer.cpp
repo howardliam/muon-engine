@@ -29,6 +29,9 @@ namespace muon::engine {
         frameInProgress = true;
 
         const auto commandBuffer = getCurrentCommandBuffer();
+        if (commandBuffer == nullptr) {
+            std::println("I am null");
+        }
 
         vk::CommandBufferBeginInfo beginInfo;
 
@@ -42,6 +45,9 @@ namespace muon::engine {
 
     void Renderer::endFrame() {
         const auto commandBuffer = getCurrentCommandBuffer();
+        if (commandBuffer == nullptr) {
+            std::println("I am null");
+        }
         commandBuffer.end();
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);

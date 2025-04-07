@@ -135,9 +135,16 @@ namespace muon::engine {
         shaderStages[idx].pNext = nullptr;
         shaderStages[idx].pSpecializationInfo = nullptr;
 
+        vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputInfo.vertexBindingDescriptionCount = 0;
+        vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+        vertexInputInfo.pVertexBindingDescriptions = nullptr;
+
         vk::GraphicsPipelineCreateInfo pipelineCreateInfo;
         pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
         pipelineCreateInfo.pStages = shaderStages.data();
+        pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
         pipelineCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
         pipelineCreateInfo.pViewportState = &configInfo.viewportInfo;
         pipelineCreateInfo.pRasterizationState = &configInfo.rasterizationInfo;

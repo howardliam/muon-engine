@@ -39,8 +39,8 @@ namespace muon::engine {
         vk::ClearColorValue clearColorValue{0.0f, 0.0f, 0.0f, 1.0f};
         vk::ClearDepthStencilValue clearDepthStencilValue{1.0f, 0};
 
-        uint32_t currentImageIndex;
-        int32_t currentFrameIndex;
+        uint32_t currentImageIndex{0};
+        int32_t currentFrameIndex{0};
         bool frameInProgress = false;
 
         void createCommandBuffers();

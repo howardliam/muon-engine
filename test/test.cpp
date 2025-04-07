@@ -10,6 +10,7 @@
 #include <muon/engine/misc/logger.hpp>
 #include <muon/common/fs.hpp>
 #include <spdlog/spdlog.h>
+#include <vulkan/vulkan_enums.hpp>
 
 namespace engine = muon::engine;
 namespace window = engine::window;
@@ -57,6 +58,22 @@ int main() {
     std::filesystem::path fragPath("./test/assets/shaders/shader.frag.spv");
     engine::pipeline::ConfigInfo configInfo;
     engine::Pipeline::defaultConfigInfo(configInfo);
+
+    configInfo.renderPass = renderer.getSwapchainRenderPass();
+
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
+    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.pPushConstantRanges = nullptr;
+
+    vk::PipelineLayout layout;
+    auto result = device.getDevice().createPipelineLayout(&pipelineLayoutInfo, nullptr, &layout);
+    if (result != vk::Result::eSuccess) {
+        logger->error("broke");
+    }
+    configInfo.pipelineLayout = layout;
+
     engine::Pipeline pipeline(device, vertPath, fragPath, configInfo);
 
     std::filesystem::path imagePath("./muon-logo.png");
@@ -87,6 +104,7 @@ int main() {
         if (const auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapchainRenderPass(commandBuffer);
 
+            pipeline.bind(commandBuffer);
 
             renderer.endSwapchainRenderPass(commandBuffer);
             renderer.endFrame();
