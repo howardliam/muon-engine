@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace muon::engine::assets {
+namespace muon::assets {
 
     struct ImageData {
         uint32_t width;

@@ -1,10 +1,10 @@
-#include "muon/engine/assets/image.hpp"
+#include "muon/assets/image.hpp"
 
 #include <print>
 #include <spng.h>
 #include <vector>
 
-namespace muon::engine::assets {
+namespace muon::assets {
 
     ImageData loadImagePng(std::vector<char> imageData) {
         spng_ctx *ctx = spng_ctx_new(0);

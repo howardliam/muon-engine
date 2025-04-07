@@ -3,7 +3,8 @@
 #include <format>
 #include <string>
 
-namespace muon::engine::misc {
+namespace muon::misc {
+
     class ILogger {
     public:
         virtual void traceImpl(std::string message) = 0;
@@ -41,4 +42,5 @@ namespace muon::engine::misc {
             errorImpl(std::format(fmt, std::forward<Args>(args)...));
         }
     };
+
 }

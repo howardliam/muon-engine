@@ -4,7 +4,7 @@
 #include <optional>
 #include <cstdint>
 #include <vector>
-#include "muon/engine/misc/logger.hpp"
+#include "muon/misc/logger.hpp"
 #include "muon/engine/window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>

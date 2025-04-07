@@ -1,13 +1,13 @@
-#include "muon/engine/pipeline.hpp"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <memory>
 #include <muon/engine/window.hpp>
+#include <muon/engine/pipeline.hpp>
 #include <muon/engine/renderer.hpp>
 #include <muon/engine/device.hpp>
-#include <muon/engine/assets/image.hpp>
-#include <muon/engine/misc/logger.hpp>
+#include <muon/assets/image.hpp>
+#include <muon/misc/logger.hpp>
 #include <muon/common/fs.hpp>
 #include <spdlog/spdlog.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -15,9 +15,9 @@
 namespace engine = muon::engine;
 namespace window = engine::window;
 
-class LoggerImpl : public engine::misc::ILogger {
+class LoggerImpl : public muon::misc::ILogger {
 public:
-    LoggerImpl() : engine::misc::ILogger() {}
+    LoggerImpl() : muon::misc::ILogger() {}
 
     void traceImpl(std::string message) override {
         spdlog::trace(message);
@@ -52,7 +52,7 @@ int main() {
     engine::Window window(props);
     engine::Device device(logger, window);
     engine::Renderer renderer(window, device);
-    renderer.setClearColor({1.0f, 0.0f, 1.0f, 1.0f});
+    renderer.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     std::filesystem::path vertPath("./test/assets/shaders/shader.vert.spv");
     std::filesystem::path fragPath("./test/assets/shaders/shader.frag.spv");
@@ -78,7 +78,7 @@ int main() {
 
     std::filesystem::path imagePath("./muon-logo.png");
     auto imageData = muon::common::fs::readFile(imagePath);
-    auto res = engine::assets::loadImagePng(imageData.value());
+    auto res = muon::assets::loadImagePng(imageData.value());
     window.setIcon(res.data);
 
     while (window.isOpen()) {
@@ -90,16 +90,6 @@ int main() {
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
                     window.setToClose();
-                }
-
-                if (event.key.scancode == SDL_SCANCODE_F1) {
-                    renderer.setClearColor({1.0f, 1.0f, 0.0f, 1.0f});
-                }
-                if (event.key.scancode == SDL_SCANCODE_F2) {
-                    renderer.setClearColor({1.0f, 0.0f, 1.0f, 1.0f});
-                }
-                if (event.key.scancode == SDL_SCANCODE_F3) {
-                    renderer.setClearColor({0.0f, 1.0f, 1.0f, 1.0f});
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {

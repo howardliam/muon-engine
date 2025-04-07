@@ -6,24 +6,24 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
-    ${INCLUDE_DIR}/muon/engine/assets/image.hpp
-    ${INCLUDE_DIR}/muon/engine/misc/logger.hpp
+    ${INCLUDE_DIR}/muon/assets/image.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/renderer.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/window.hpp
+    ${INCLUDE_DIR}/muon/misc/logger.hpp
 )
 
 set (SRC_FILES
     ${SRC_DIR}/assets/image.cpp
-    ${SRC_DIR}/buffer.cpp
-    ${SRC_DIR}/device.cpp
-    ${SRC_DIR}/pipeline.cpp
-    ${SRC_DIR}/renderer.cpp
-    ${SRC_DIR}/swapchain.cpp
-    ${SRC_DIR}/window.cpp
+    ${SRC_DIR}/engine/buffer.cpp
+    ${SRC_DIR}/engine/device.cpp
+    ${SRC_DIR}/engine/pipeline.cpp
+    ${SRC_DIR}/engine/renderer.cpp
+    ${SRC_DIR}/engine/swapchain.cpp
+    ${SRC_DIR}/engine/window.cpp
 )
 
 add_library(${LIB_NAME} SHARED
