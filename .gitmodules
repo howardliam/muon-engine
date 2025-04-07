@@ -13,3 +13,6 @@
 [submodule "external/libspng"]
 	path = external/libspng
 	url = https://github.com/randy408/libspng
+[submodule "external/assimp"]
+	path = external/assimp
+	url = https://github.com/assimp/assimp
