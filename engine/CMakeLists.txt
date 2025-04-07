@@ -7,6 +7,7 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
     ${INCLUDE_DIR}/muon/assets/image.hpp
+    ${INCLUDE_DIR}/muon/assets/model.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline.hpp
@@ -18,6 +19,7 @@ set(HEADER_FILES
 
 set(SRC_FILES
     ${SRC_DIR}/assets/image.cpp
+    ${SRC_DIR}/assets/model.cpp
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/pipeline.cpp
@@ -33,5 +35,5 @@ add_library(${LIB_NAME} SHARED
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
-target_link_libraries(${LIB_NAME} PRIVATE spng)
-target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator)
+target_link_libraries(${LIB_NAME} PRIVATE spng assimp)
+target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
