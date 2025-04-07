@@ -39,31 +39,31 @@ namespace muon::engine {
     }
 
     void Pipeline::defaultConfigInfo(pipeline::ConfigInfo &configInfo) {
-        configInfo.inputAssemblyInfo.topology = vk::PrimitiveTopology::eTriangleList;
-        configInfo.inputAssemblyInfo.primitiveRestartEnable = false;
+        configInfo.inputAssemblyState.topology = vk::PrimitiveTopology::eTriangleList;
+        configInfo.inputAssemblyState.primitiveRestartEnable = false;
 
-        configInfo.viewportInfo.viewportCount= 1;
-        configInfo.viewportInfo.pViewports = nullptr;
-        configInfo.viewportInfo.scissorCount = 1;
-        configInfo.viewportInfo.pScissors = nullptr;
+        configInfo.viewportState.viewportCount= 1;
+        configInfo.viewportState.pViewports = nullptr;
+        configInfo.viewportState.scissorCount = 1;
+        configInfo.viewportState.pScissors = nullptr;
 
-        configInfo.rasterizationInfo.depthClampEnable = false;
-        configInfo.rasterizationInfo.rasterizerDiscardEnable = false;
-        configInfo.rasterizationInfo.polygonMode = vk::PolygonMode::eFill;
-        configInfo.rasterizationInfo.lineWidth = 1.0f;
-        configInfo.rasterizationInfo.cullMode = vk::CullModeFlagBits::eNone;
-        configInfo.rasterizationInfo.frontFace = vk::FrontFace::eClockwise;
-        configInfo.rasterizationInfo.depthBiasEnable = false;
-        configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;
-        configInfo.rasterizationInfo.depthBiasClamp = 0.0f;
-        configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;
+        configInfo.rasterizationState.depthClampEnable = false;
+        configInfo.rasterizationState.rasterizerDiscardEnable = false;
+        configInfo.rasterizationState.polygonMode = vk::PolygonMode::eFill;
+        configInfo.rasterizationState.lineWidth = 1.0f;
+        configInfo.rasterizationState.cullMode = vk::CullModeFlagBits::eNone;
+        configInfo.rasterizationState.frontFace = vk::FrontFace::eClockwise;
+        configInfo.rasterizationState.depthBiasEnable = false;
+        configInfo.rasterizationState.depthBiasConstantFactor = 0.0f;
+        configInfo.rasterizationState.depthBiasClamp = 0.0f;
+        configInfo.rasterizationState.depthBiasSlopeFactor = 0.0f;
 
-        configInfo.multisampleInfo.sampleShadingEnable = false;
-        configInfo.multisampleInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
-        configInfo.multisampleInfo.minSampleShading = 1.0f;
-        configInfo.multisampleInfo.pSampleMask = nullptr;
-        configInfo.multisampleInfo.alphaToCoverageEnable = false;
-        configInfo.multisampleInfo.alphaToOneEnable = false;
+        configInfo.multisampleState.sampleShadingEnable = false;
+        configInfo.multisampleState.rasterizationSamples = vk::SampleCountFlagBits::e1;
+        configInfo.multisampleState.minSampleShading = 1.0f;
+        configInfo.multisampleState.pSampleMask = nullptr;
+        configInfo.multisampleState.alphaToCoverageEnable = false;
+        configInfo.multisampleState.alphaToOneEnable = false;
 
         configInfo.colorBlendAttachment.colorWriteMask =
             vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
@@ -76,26 +76,26 @@ namespace muon::engine {
         configInfo.colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
         configInfo.colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
 
-        configInfo.colorBlendInfo.logicOpEnable = false;
-        configInfo.colorBlendInfo.logicOp = vk::LogicOp::eCopy;
-        configInfo.colorBlendInfo.attachmentCount = 1;
-        configInfo.colorBlendInfo.pAttachments = &configInfo.colorBlendAttachment;
-        configInfo.colorBlendInfo.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
+        configInfo.colorBlendState.logicOpEnable = false;
+        configInfo.colorBlendState.logicOp = vk::LogicOp::eCopy;
+        configInfo.colorBlendState.attachmentCount = 1;
+        configInfo.colorBlendState.pAttachments = &configInfo.colorBlendAttachment;
+        configInfo.colorBlendState.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
 
-        configInfo.depthStencilInfo.depthTestEnable = true;
-        configInfo.depthStencilInfo.depthWriteEnable = true;
-        configInfo.depthStencilInfo.depthCompareOp = vk::CompareOp::eLess;
-        configInfo.depthStencilInfo.depthBoundsTestEnable = false;
-        configInfo.depthStencilInfo.minDepthBounds = 0.0f;
-        configInfo.depthStencilInfo.maxDepthBounds = 1.0f;
-        configInfo.depthStencilInfo.stencilTestEnable = false;
-        configInfo.depthStencilInfo.front = vk::StencilOpState{};
-        configInfo.depthStencilInfo.back = vk::StencilOpState{};
+        configInfo.depthStencilState.depthTestEnable = true;
+        configInfo.depthStencilState.depthWriteEnable = true;
+        configInfo.depthStencilState.depthCompareOp = vk::CompareOp::eLess;
+        configInfo.depthStencilState.depthBoundsTestEnable = false;
+        configInfo.depthStencilState.minDepthBounds = 0.0f;
+        configInfo.depthStencilState.maxDepthBounds = 1.0f;
+        configInfo.depthStencilState.stencilTestEnable = false;
+        configInfo.depthStencilState.front = vk::StencilOpState{};
+        configInfo.depthStencilState.back = vk::StencilOpState{};
 
         configInfo.dynamicStateEnables = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
-        configInfo.dynamicStateInfo.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
-        configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
-        configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
+        configInfo.dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
+        configInfo.dynamicState.pDynamicStates = configInfo.dynamicStateEnables.data();
+        configInfo.dynamicState.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     }
 
     void Pipeline::createShaderModule(const std::vector<char> &byteCode, vk::ShaderModule &shaderModule) {
@@ -145,13 +145,13 @@ namespace muon::engine {
         pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
         pipelineCreateInfo.pStages = shaderStages.data();
         pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
-        pipelineCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
-        pipelineCreateInfo.pViewportState = &configInfo.viewportInfo;
-        pipelineCreateInfo.pRasterizationState = &configInfo.rasterizationInfo;
-        pipelineCreateInfo.pMultisampleState = &configInfo.multisampleInfo;
-        pipelineCreateInfo.pColorBlendState = &configInfo.colorBlendInfo;
-        pipelineCreateInfo.pDepthStencilState = &configInfo.depthStencilInfo;
-        pipelineCreateInfo.pDynamicState = &configInfo.dynamicStateInfo;
+        pipelineCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyState;
+        pipelineCreateInfo.pViewportState = &configInfo.viewportState;
+        pipelineCreateInfo.pRasterizationState = &configInfo.rasterizationState;
+        pipelineCreateInfo.pMultisampleState = &configInfo.multisampleState;
+        pipelineCreateInfo.pColorBlendState = &configInfo.colorBlendState;
+        pipelineCreateInfo.pDepthStencilState = &configInfo.depthStencilState;
+        pipelineCreateInfo.pDynamicState = &configInfo.dynamicState;
 
         pipelineCreateInfo.layout = configInfo.pipelineLayout;
         pipelineCreateInfo.renderPass = configInfo.renderPass;

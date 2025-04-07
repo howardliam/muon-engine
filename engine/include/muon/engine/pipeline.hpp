@@ -14,15 +14,15 @@ namespace muon::engine {
             ConfigInfo(const ConfigInfo &) = delete;
             ConfigInfo &operator=(const ConfigInfo &) = delete;
 
-            vk::PipelineViewportStateCreateInfo viewportInfo;
-            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-            vk::PipelineRasterizationStateCreateInfo rasterizationInfo;
-            vk::PipelineMultisampleStateCreateInfo multisampleInfo;
+            vk::PipelineViewportStateCreateInfo viewportState;
+            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+            vk::PipelineRasterizationStateCreateInfo rasterizationState;
+            vk::PipelineMultisampleStateCreateInfo multisampleState;
             vk::PipelineColorBlendAttachmentState colorBlendAttachment;
-            vk::PipelineColorBlendStateCreateInfo colorBlendInfo;
-            vk::PipelineDepthStencilStateCreateInfo depthStencilInfo;
+            vk::PipelineColorBlendStateCreateInfo colorBlendState;
+            vk::PipelineDepthStencilStateCreateInfo depthStencilState;
             std::vector<vk::DynamicState> dynamicStateEnables;
-            vk::PipelineDynamicStateCreateInfo dynamicStateInfo;
+            vk::PipelineDynamicStateCreateInfo dynamicState;
             vk::PipelineLayout pipelineLayout = nullptr;
             vk::RenderPass renderPass = nullptr;
             uint32_t subpass = 0;
