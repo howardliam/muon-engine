@@ -16,7 +16,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/misc/logger.hpp
 )
 
-set (SRC_FILES
+set(SRC_FILES
     ${SRC_DIR}/assets/image.cpp
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/device.cpp
