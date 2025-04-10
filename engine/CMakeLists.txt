@@ -35,5 +35,5 @@ add_library(${LIB_NAME} SHARED
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
-target_link_libraries(${LIB_NAME} PRIVATE spng assimp)
-target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
+target_link_libraries(${LIB_NAME} PRIVATE spng opus)
+target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm assimp)

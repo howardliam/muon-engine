@@ -7,17 +7,18 @@
 #include <muon/engine/renderer.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/assets/image.hpp>
+#include <muon/assets/model.hpp>
 #include <muon/misc/logger.hpp>
 #include <muon/common/fs.hpp>
+#include <print>
 #include <spdlog/spdlog.h>
 #include <vulkan/vulkan_enums.hpp>
 
-namespace engine = muon::engine;
-namespace window = engine::window;
+using namespace muon;
 
-class LoggerImpl : public muon::misc::ILogger {
+class LoggerImpl : public misc::ILogger {
 public:
-    LoggerImpl() : muon::misc::ILogger() {}
+    LoggerImpl() : misc::ILogger() {}
 
     void traceImpl(std::string message) override {
         spdlog::trace(message);
@@ -43,10 +44,10 @@ public:
 int main() {
     auto logger = std::make_shared<LoggerImpl>();
 
-    window::Properties props;
+    engine::window::Properties props;
     props.height = 900;
     props.width = 1600;
-    props.mode = window::DisplayMode::Windowed;
+    props.mode = engine::window::DisplayMode::Windowed;
     props.title = "Testing";
 
     engine::Window window(props);
@@ -77,9 +78,23 @@ int main() {
     engine::Pipeline pipeline(device, vertPath, fragPath, configInfo);
 
     std::filesystem::path imagePath("./muon-logo.png");
-    auto imageData = muon::common::fs::readFile(imagePath);
-    auto res = muon::assets::loadImagePng(imageData.value());
-    window.setIcon(res.data);
+    auto fileData = muon::common::fs::readFile(imagePath);
+    auto image = muon::assets::loadImagePng(fileData.value());
+    window.setIcon(image.data);
+
+    /* assimp doesn't load fbx, glb/gltf + bin, usdc??? */
+    // std::filesystem::path modelPath("test/assets/models/Cube.obj");
+    // auto model = muon::assets::loadModel(modelPath);
+    // if (model.has_value()) {
+    //     if (model.value()->HasPositions()) {
+    //         logger->info("number of vertices: {}", model.value()->mNumVertices);
+    //         for (uint32_t i = 0; i < model.value()->mNumVertices; i++) {
+    //             logger->info("x: {}, y: {}, z: {}", model.value()->mVertices[i].x, model.value()->mVertices[i].y, model.value()->mVertices[i].z);
+    //         }
+    //     } else {
+    //         logger->error("model not loaded correctly");
+    //     }
+    // }
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -108,5 +123,6 @@ int main() {
         }
     }
 
+    device.getDevice().destroyPipelineLayout(configInfo.pipelineLayout, nullptr);
     device.getDevice().waitIdle();
 }

@@ -51,4 +51,17 @@ namespace muon::engine {
         void createGraphicsPipeline(const std::filesystem::path &vertPath, const std::filesystem::path &fragPath, const pipeline::ConfigInfo &configInfo);
     };
 
+    class Pipeline2 {
+    public:
+        class Builder {
+        public:
+
+        private:
+        };
+
+
+    private:
+
+    };
+
 }
