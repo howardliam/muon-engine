@@ -9,6 +9,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/assets/image.hpp
     ${INCLUDE_DIR}/muon/assets/model.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
+    ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/renderer.hpp
@@ -20,6 +21,9 @@ set(HEADER_FILES
 set(SRC_FILES
     ${SRC_DIR}/assets/image.cpp
     ${SRC_DIR}/assets/model.cpp
+    ${SRC_DIR}/engine/descriptor/pool.cpp
+    ${SRC_DIR}/engine/descriptor/setlayout.cpp
+    ${SRC_DIR}/engine/descriptor/writer.cpp
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/pipeline.cpp

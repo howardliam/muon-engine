@@ -10,7 +10,6 @@
 #include <muon/assets/model.hpp>
 #include <muon/misc/logger.hpp>
 #include <muon/common/fs.hpp>
-#include <print>
 #include <spdlog/spdlog.h>
 #include <vulkan/vulkan_enums.hpp>
 
