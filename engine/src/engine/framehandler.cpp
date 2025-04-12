@@ -5,16 +5,16 @@
 
 namespace muon::engine {
 
-    Renderer::Renderer(Window &window, Device &device) : window(window), device(device) {
+    FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
         recreateSwapchain();
         createCommandBuffers();
     }
 
-    Renderer::~Renderer() {
+    FrameHandler::~FrameHandler() {
         freeCommandBuffers();
     }
 
-    vk::CommandBuffer Renderer::beginFrame() {
+    vk::CommandBuffer FrameHandler::beginFrame() {
         auto result = swapchain->acquireNextImage(&currentImageIndex);
 
         if (result == vk::Result::eErrorOutOfDateKHR) {
@@ -43,7 +43,7 @@ namespace muon::engine {
         return commandBuffer;
     }
 
-    void Renderer::endFrame() {
+    void FrameHandler::endFrame() {
         const auto commandBuffer = getCurrentCommandBuffer();
         if (commandBuffer == nullptr) {
             std::println("I am null");
@@ -63,7 +63,7 @@ namespace muon::engine {
         currentFrameIndex = (currentFrameIndex + 1) % constants::maxFramesInFlight;
     }
 
-    void Renderer::beginSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
+    void FrameHandler::beginSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
         vk::RenderPassBeginInfo renderPassInfo{};
         renderPassInfo.renderPass = swapchain->getRenderPass();
         renderPassInfo.framebuffer = swapchain->getFramebuffer(currentImageIndex);
@@ -96,39 +96,39 @@ namespace muon::engine {
         commandBuffer.setScissor(0, 1, &scissor);
     }
 
-    void Renderer::endSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
+    void FrameHandler::endSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
         commandBuffer.endRenderPass();
     }
 
-    vk::RenderPass Renderer::getSwapchainRenderPass() const {
+    vk::RenderPass FrameHandler::getSwapchainRenderPass() const {
         return swapchain->getRenderPass();
     }
 
-    vk::CommandBuffer Renderer::getCurrentCommandBuffer() const {
+    vk::CommandBuffer FrameHandler::getCurrentCommandBuffer() const {
         return commandBuffers[currentFrameIndex];
     }
 
-    void Renderer::setClearColor(vk::ClearColorValue newValue) {
+    void FrameHandler::setClearColor(vk::ClearColorValue newValue) {
         clearColorValue = newValue;
     }
 
-    void Renderer::setClearDepthStencil(vk::ClearDepthStencilValue newValue) {
+    void FrameHandler::setClearDepthStencil(vk::ClearDepthStencilValue newValue) {
         clearDepthStencilValue = newValue;
     }
 
-    int32_t Renderer::getFrameIndex() const {
+    int32_t FrameHandler::getFrameIndex() const {
         return currentFrameIndex;
     }
 
-    bool Renderer::isFrameInProgress() const {
+    bool FrameHandler::isFrameInProgress() const {
         return frameInProgress;
     }
 
-    float Renderer::getAspectRatio() const {
+    float FrameHandler::getAspectRatio() const {
         return swapchain->getExtentAspectRatio();
     }
 
-    void Renderer::createCommandBuffers() {
+    void FrameHandler::createCommandBuffers() {
         commandBuffers.resize(constants::maxFramesInFlight);
 
         vk::CommandBufferAllocateInfo allocInfo{};
@@ -142,12 +142,12 @@ namespace muon::engine {
         }
     }
 
-    void Renderer::freeCommandBuffers() {
+    void FrameHandler::freeCommandBuffers() {
         device.getDevice().freeCommandBuffers(device.getCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
         commandBuffers.clear();
     }
 
-    void Renderer::recreateSwapchain() {
+    void FrameHandler::recreateSwapchain() {
         auto extent = window.getExtent();
         while (extent.width == 0 || extent.height == 0) {
             extent = window.getExtent();

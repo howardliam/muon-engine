@@ -9,13 +9,13 @@
 
 namespace muon::engine {
 
-    class Renderer {
+    class FrameHandler {
     public:
-        Renderer(Window &window, Device &device);
-        ~Renderer();
+        FrameHandler(Window &window, Device &device);
+        ~FrameHandler();
 
-        Renderer(const Renderer &) = delete;
-        Renderer &operator=(const Renderer &) = delete;
+        FrameHandler(const FrameHandler &) = delete;
+        FrameHandler &operator=(const FrameHandler &) = delete;
 
         [[nodiscard]] vk::CommandBuffer beginFrame();
         void endFrame();
@@ -33,6 +33,7 @@ namespace muon::engine {
     private:
         Window &window;
         Device &device;
+
         std::unique_ptr<Swapchain> swapchain;
         std::vector<vk::CommandBuffer> commandBuffers;
 
@@ -41,7 +42,7 @@ namespace muon::engine {
 
         uint32_t currentImageIndex{0};
         int32_t currentFrameIndex{0};
-        bool frameInProgress = false;
+        bool frameInProgress{false};
 
         void createCommandBuffers();
         void freeCommandBuffers();

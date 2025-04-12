@@ -4,7 +4,7 @@
 #include <memory>
 #include <muon/engine/window.hpp>
 #include <muon/engine/pipeline.hpp>
-#include <muon/engine/renderer.hpp>
+#include <muon/engine/framehandler.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/assets/image.hpp>
 #include <muon/assets/model.hpp>
@@ -51,15 +51,15 @@ int main() {
 
     engine::Window window(props);
     engine::Device device(logger, window);
-    engine::Renderer renderer(window, device);
-    renderer.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+    engine::FrameHandler frameHandler(window, device);
+    frameHandler.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     std::filesystem::path vertPath("./test/assets/shaders/shader.vert.spv");
     std::filesystem::path fragPath("./test/assets/shaders/shader.frag.spv");
     engine::pipeline::ConfigInfo configInfo;
     engine::Pipeline::defaultConfigInfo(configInfo);
 
-    configInfo.renderPass = renderer.getSwapchainRenderPass();
+    configInfo.renderPass = frameHandler.getSwapchainRenderPass();
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
     pipelineLayoutInfo.setLayoutCount = 0;
@@ -111,14 +111,14 @@ int main() {
             }
         }
 
-        if (const auto commandBuffer = renderer.beginFrame()) {
-            renderer.beginSwapchainRenderPass(commandBuffer);
+        if (const auto commandBuffer = frameHandler.beginFrame()) {
+            frameHandler.beginSwapchainRenderPass(commandBuffer);
 
             pipeline.bind(commandBuffer);
             commandBuffer.draw(3, 1, 0, 0);
 
-            renderer.endSwapchainRenderPass(commandBuffer);
-            renderer.endFrame();
+            frameHandler.endSwapchainRenderPass(commandBuffer);
+            frameHandler.endFrame();
         }
     }
 
