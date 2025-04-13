@@ -24,21 +24,7 @@ namespace muon::engine {
         return buffer;
     }
 
-    Pipeline::Pipeline(Device &device, const std::filesystem::path &vertPath, const std::filesystem::path &fragPath, const pipeline::ConfigInfo &configInfo) : device(device) {
-        createGraphicsPipeline(vertPath, fragPath, configInfo);
-    }
-
-    Pipeline::~Pipeline() {
-        device.getDevice().destroyShaderModule(vertShader, nullptr);
-        device.getDevice().destroyShaderModule(fragShader, nullptr);
-        device.getDevice().destroyPipeline(graphicsPipeline, nullptr);
-    }
-
-    void Pipeline::bind(vk::CommandBuffer commandBuffer) {
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline);
-    }
-
-    void Pipeline::defaultConfigInfo(pipeline::ConfigInfo &configInfo) {
+    void pipeline::defaultConfigInfo(pipeline::ConfigInfo &configInfo) {
         configInfo.inputAssemblyState.topology = vk::PrimitiveTopology::eTriangleList;
         configInfo.inputAssemblyState.primitiveRestartEnable = false;
 
@@ -98,6 +84,37 @@ namespace muon::engine {
         configInfo.dynamicState.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     }
 
+    Pipeline::Builder::Builder(Device &device) : device(device) {}
+
+    Pipeline::Builder &Pipeline::Builder::addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path) {
+        shaderPaths[stage] = path;
+        return *this;
+    }
+
+    Pipeline Pipeline::Builder::build(const pipeline::ConfigInfo &configInfo) const {
+        return Pipeline(device, shaderPaths, configInfo);
+    }
+
+    Pipeline::Pipeline(
+        Device &device,
+        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+        const pipeline::ConfigInfo &configInfo
+    ) : device(device) {
+        createGraphicsPipeline(shaderPaths, configInfo);
+    }
+
+    Pipeline::~Pipeline() {
+        for (const auto shader : shaders) {
+            device.getDevice().destroyShaderModule(shader, nullptr);
+        }
+
+        device.getDevice().destroyPipeline(graphicsPipeline, nullptr);
+    }
+
+    void Pipeline::bind(vk::CommandBuffer commandBuffer) {
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline);
+    }
+
     void Pipeline::createShaderModule(const std::vector<char> &byteCode, vk::ShaderModule &shaderModule) {
         vk::ShaderModuleCreateInfo createInfo;
         createInfo.sType = vk::StructureType::eShaderModuleCreateInfo;
@@ -106,34 +123,33 @@ namespace muon::engine {
 
         auto result = device.getDevice().createShaderModule(&createInfo, nullptr, &shaderModule);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to create shader module");
+            throw std::runtime_error("failed to create shader module");
         }
     }
 
-    void Pipeline::createGraphicsPipeline(const std::filesystem::path &vertPath, const std::filesystem::path &fragPath, const pipeline::ConfigInfo &configInfo) {
-        auto vert = readFile(vertPath);
-        auto frag = readFile(fragPath);
-
-        createShaderModule(vert, vertShader);
-        createShaderModule(frag, fragShader);
-
-        std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages;
+    void Pipeline::createGraphicsPipeline(const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths, const pipeline::ConfigInfo &configInfo) {
+        shaders.resize(shaderPaths.size());
+        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages(shaderPaths.size());
 
         size_t idx = 0;
-        shaderStages[idx].stage = vk::ShaderStageFlagBits::eVertex;
-        shaderStages[idx].module = vertShader;
-        shaderStages[idx].pName = "main";
-        shaderStages[idx].flags = vk::PipelineShaderStageCreateFlags{};
-        shaderStages[idx].pNext = nullptr;
-        shaderStages[idx].pSpecializationInfo = nullptr;
+        for (auto [stage, path] : shaderPaths) {
+            std::vector byteCode = readFile(path);
+            vk::ShaderModule shaderModule;
+            createShaderModule(byteCode, shaderModule);
+            shaders[idx] = shaderModule;
 
-        idx += 1;
-        shaderStages[idx].stage = vk::ShaderStageFlagBits::eFragment;
-        shaderStages[idx].module = fragShader;
-        shaderStages[idx].pName = "main";
-        shaderStages[idx].flags = vk::PipelineShaderStageCreateFlags{};
-        shaderStages[idx].pNext = nullptr;
-        shaderStages[idx].pSpecializationInfo = nullptr;
+            vk::PipelineShaderStageCreateInfo stageCreateInfo{};
+            stageCreateInfo.stage = stage;
+            stageCreateInfo.module = shaderModule;
+            stageCreateInfo.pName = "main";
+            stageCreateInfo.flags = vk::PipelineShaderStageCreateFlags{};
+            stageCreateInfo.pNext = nullptr;
+            stageCreateInfo.pSpecializationInfo = nullptr;
+
+            shaderStages[idx] = stageCreateInfo;
+
+            idx += 1;
+        }
 
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
         vertexInputInfo.vertexAttributeDescriptionCount = 0;
@@ -162,8 +178,7 @@ namespace muon::engine {
 
         auto result = device.getDevice().createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo, nullptr, &graphicsPipeline);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to create graphics pipeline");
+            throw std::runtime_error("failed to create graphics pipeline");
         }
     }
-
 }

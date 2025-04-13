@@ -7,9 +7,10 @@
 
 namespace muon::engine {
 
-    class IRenderSystem {
+    class RenderSystem {
     public:
-        IRenderSystem(Device &device/*, vk::DescriptorSetLayout layouts... */);
+        RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts, vk::RenderPass renderPass);
+        ~RenderSystem();
 
         virtual void renderModel(/* FrameInfo frameInfo, Model &model */) = 0;
 
@@ -19,7 +20,7 @@ namespace muon::engine {
         std::unique_ptr<Pipeline> pipeline;
         vk::PipelineLayout pipelineLayout;
 
-        void createPipelineLayout(/*vk::DescriptorSetLayout layouts... */);
+        void createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts);
         void createPipeline(vk::RenderPass renderPass);
     };
 

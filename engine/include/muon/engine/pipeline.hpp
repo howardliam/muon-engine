@@ -2,6 +2,7 @@
 
 #include "muon/engine/device.hpp"
 #include <filesystem>
+#include <map>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_handles.hpp>
 
@@ -27,11 +28,28 @@ namespace muon::engine {
             vk::RenderPass renderPass = nullptr;
             uint32_t subpass = 0;
         };
+
+        void defaultConfigInfo(pipeline::ConfigInfo &configInfo);
     }
 
     class Pipeline {
     public:
-        Pipeline(Device &device, const std::filesystem::path &vertPath, const std::filesystem::path &fragPath, const pipeline::ConfigInfo &configInfo);
+        class Builder {
+        public:
+            Builder(Device &device);
+
+            Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
+
+            Pipeline build(const pipeline::ConfigInfo &configInfo) const;
+
+        private:
+            Device &device;
+
+            std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
+            pipeline::ConfigInfo configInfo{};
+        };
+
+        Pipeline(Device &device, const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths, const pipeline::ConfigInfo &configInfo);
         ~Pipeline();
 
         Pipeline(const Pipeline &) = delete;
@@ -39,29 +57,14 @@ namespace muon::engine {
 
         void bind(vk::CommandBuffer commandBuffer);
 
-        static void defaultConfigInfo(pipeline::ConfigInfo &configInfo);
-
     private:
         Device &device;
+
         vk::Pipeline graphicsPipeline;
-        vk::ShaderModule vertShader;
-        vk::ShaderModule fragShader;
+        std::vector<vk::ShaderModule> shaders;
 
         void createShaderModule(const std::vector<char> &byteCode, vk::ShaderModule &shaderModule);
-        void createGraphicsPipeline(const std::filesystem::path &vertPath, const std::filesystem::path &fragPath, const pipeline::ConfigInfo &configInfo);
-    };
-
-    class Pipeline2 {
-    public:
-        class Builder {
-        public:
-
-        private:
-        };
-
-
-    private:
-
+        void createGraphicsPipeline(const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths, const pipeline::ConfigInfo &configInfo);
     };
 
 }

@@ -11,6 +11,7 @@
 #include <muon/misc/logger.hpp>
 #include <muon/common/fs.hpp>
 #include <spdlog/spdlog.h>
+#include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
 
 using namespace muon;
@@ -56,10 +57,6 @@ int main() {
 
     std::filesystem::path vertPath("./test/assets/shaders/shader.vert.spv");
     std::filesystem::path fragPath("./test/assets/shaders/shader.frag.spv");
-    engine::pipeline::ConfigInfo configInfo;
-    engine::Pipeline::defaultConfigInfo(configInfo);
-
-    configInfo.renderPass = frameHandler.getSwapchainRenderPass();
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
     pipelineLayoutInfo.setLayoutCount = 0;
@@ -72,9 +69,17 @@ int main() {
     if (result != vk::Result::eSuccess) {
         logger->error("broke");
     }
+
+    engine::pipeline::ConfigInfo configInfo;
+    engine::pipeline::defaultConfigInfo(configInfo);
+    configInfo.renderPass = frameHandler.getSwapchainRenderPass();
     configInfo.pipelineLayout = layout;
 
-    engine::Pipeline pipeline(device, vertPath, fragPath, configInfo);
+    engine::Pipeline pipeline = engine::Pipeline::Builder(device)
+        .addShader(vk::ShaderStageFlagBits::eVertex, vertPath)
+        .addShader(vk::ShaderStageFlagBits::eFragment, fragPath)
+        .build(configInfo);
+
 
     std::filesystem::path imagePath("./muon-logo.png");
     auto fileData = muon::common::fs::readFile(imagePath);

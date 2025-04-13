@@ -17,6 +17,7 @@ namespace muon::engine {
             Builder &addPoolSize(vk::DescriptorType descriptorType, uint32_t count);
             Builder &setPoolFlags(vk::DescriptorPoolCreateFlags flags);
             Builder &setMaxSets(uint32_t count);
+
             std::unique_ptr<DescriptorPool> build() const;
 
         private:
@@ -52,6 +53,7 @@ namespace muon::engine {
             explicit Builder(Device &device);
 
             Builder &addBinding(uint32_t binding, vk::DescriptorType descriptorType, vk::ShaderStageFlags stageFlags, uint32_t count = 1);
+
             std::unique_ptr<DescriptorSetLayout> build() const;
 
         private:

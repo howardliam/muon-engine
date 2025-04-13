@@ -35,7 +35,6 @@ add_subdirectory(external/libspng)
 
 add_subdirectory(external/assimp)
 
-add_subdirectory(external/opus)
 
 if (MSVC)
     add_compile_options(/W4)
