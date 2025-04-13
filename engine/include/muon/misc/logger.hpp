@@ -1,7 +1,6 @@
 #pragma once
 
 #include <format>
-#include <print>
 #include <string>
 
 namespace muon::misc {
