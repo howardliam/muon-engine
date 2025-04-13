@@ -80,7 +80,6 @@ int main() {
         .addShader(vk::ShaderStageFlagBits::eFragment, fragPath)
         .build(configInfo);
 
-
     std::filesystem::path imagePath("./muon-logo.png");
     auto fileData = muon::common::fs::readFile(imagePath);
     auto image = muon::assets::loadImagePng(fileData.value());

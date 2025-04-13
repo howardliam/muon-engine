@@ -131,8 +131,17 @@ namespace muon::engine {
         shaders.resize(shaderPaths.size());
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages(shaderPaths.size());
 
+        bool hasVertShader = false;
+        bool hasFragShader = false;
+
         size_t idx = 0;
         for (auto [stage, path] : shaderPaths) {
+            if (stage == vk::ShaderStageFlagBits::eVertex) {
+                hasVertShader = true;
+            } else if (stage == vk::ShaderStageFlagBits::eFragment) {
+                hasFragShader = true;
+            }
+
             std::vector byteCode = readFile(path);
             vk::ShaderModule shaderModule;
             createShaderModule(byteCode, shaderModule);
@@ -149,6 +158,10 @@ namespace muon::engine {
             shaderStages[idx] = stageCreateInfo;
 
             idx += 1;
+        }
+
+        if (!hasVertShader || !hasFragShader) {
+            throw std::runtime_error("cannot create a pipeline without vertex and fragment shaders");
         }
 
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
