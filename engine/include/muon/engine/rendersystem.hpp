@@ -9,19 +9,19 @@ namespace muon::engine {
 
     class RenderSystem {
     public:
-        RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts, vk::RenderPass renderPass);
+        RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts);
         ~RenderSystem();
 
-        virtual void renderModel(/* FrameInfo frameInfo, Model &model */) = 0;
+        virtual void renderModel(vk::CommandBuffer commandBuffer /* FrameInfo frameInfo, Model &model */) = 0;
 
-    private:
+    protected:
         Device &device;
 
         std::unique_ptr<Pipeline> pipeline;
         vk::PipelineLayout pipelineLayout;
 
         void createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts);
-        void createPipeline(vk::RenderPass renderPass);
+        virtual void createPipeline(vk::RenderPass renderPass) = 0;
     };
 
 }

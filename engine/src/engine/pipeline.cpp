@@ -95,6 +95,10 @@ namespace muon::engine {
         return Pipeline(device, shaderPaths, configInfo);
     }
 
+    std::unique_ptr<Pipeline> Pipeline::Builder::buildUniquePointer(const pipeline::ConfigInfo &configInfo) const {
+        return std::make_unique<Pipeline>(device, shaderPaths, configInfo);
+    }
+
     Pipeline::Pipeline(
         Device &device,
         const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,

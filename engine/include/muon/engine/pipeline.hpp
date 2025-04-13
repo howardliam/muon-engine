@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <map>
 #include <vulkan/vulkan_core.h>
@@ -61,9 +62,18 @@ namespace muon::engine {
              *
              * @param   configInfo  config information for the pipeline to be created with.
              *
-             * @return  reference to Builder.
+             * @return  new Pipeline object.
              */
             Pipeline build(const pipeline::ConfigInfo &configInfo) const;
+
+            /**
+             * @brief   builds the pipeline from the provided info.
+             *
+             * @param   configInfo  config information for the pipeline to be created with.
+             *
+             * @return  unique pointer to new Pipeline object.
+             */
+            std::unique_ptr<Pipeline> buildUniquePointer(const pipeline::ConfigInfo &configInfo) const;
 
         private:
             Device &device;

@@ -8,9 +8,8 @@
 
 namespace muon::engine {
 
-    RenderSystem::RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts, vk::RenderPass renderPass) : device(device) {
+    RenderSystem::RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts) : device(device) {
         createPipelineLayout(setLayouts);
-        createPipeline(renderPass);
     }
 
     RenderSystem::~RenderSystem() {
@@ -18,7 +17,6 @@ namespace muon::engine {
     }
 
     void RenderSystem::createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts) {
-
         vk::PipelineLayoutCreateInfo createInfo{};
         createInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
         createInfo.pSetLayouts = setLayouts.data();
@@ -30,16 +28,5 @@ namespace muon::engine {
             throw std::runtime_error("failed to create pipeline layout");
         }
     }
-
-    void RenderSystem::createPipeline(vk::RenderPass renderPass) {
-        pipeline::ConfigInfo config{};
-        pipeline::defaultConfigInfo(config);
-
-        config.renderPass = renderPass;
-        config.pipelineLayout = pipelineLayout;
-
-        // pipeline = std::make_unique<Pipeline>()
-    }
-
 
 }

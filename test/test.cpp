@@ -1,3 +1,4 @@
+#include "muon/engine/rendersystem.hpp"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
@@ -39,6 +40,29 @@ private:
 
     void errorImpl(std::string message) override {
         spdlog::error(message);
+    }
+};
+
+class RenderSystemTest : public engine::RenderSystem {
+public:
+    RenderSystemTest(engine::Device &device, std::vector<vk::DescriptorSetLayout> setLayouts, vk::RenderPass renderPass) : engine::RenderSystem(device, setLayouts)  {
+        createPipeline(renderPass);
+    }
+
+    void renderModel(vk::CommandBuffer commandBuffer) override {
+        pipeline->bind(commandBuffer);
+    }
+
+    void createPipeline(vk::RenderPass renderPass) override {
+        engine::pipeline::ConfigInfo configInfo;
+        engine::pipeline::defaultConfigInfo(configInfo);
+        configInfo.renderPass = renderPass;
+        configInfo.pipelineLayout = pipelineLayout;
+
+        pipeline = engine::Pipeline::Builder(device)
+            .addShader(vk::ShaderStageFlagBits::eVertex, std::filesystem::path("./test/assets/shaders/shader.vert.spv"))
+            .addShader(vk::ShaderStageFlagBits::eFragment, std::filesystem::path("./test/assets/shaders/shader.frag.spv"))
+            .buildUniquePointer(configInfo);
     }
 };
 
