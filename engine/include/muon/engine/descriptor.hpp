@@ -88,6 +88,13 @@ namespace muon::engine {
          */
         void resetPool();
 
+        /**
+         * @brief   gets the descriptor pool handle.
+         *
+         * @return  descriptor pool handle.
+         */
+        vk::DescriptorPool getDescriptorPool() const;
+
     private:
         Device &device;
 

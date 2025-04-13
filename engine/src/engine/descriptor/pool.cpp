@@ -69,4 +69,8 @@ namespace muon::engine {
         device.getDevice().resetDescriptorPool(descriptorPool, vk::DescriptorPoolResetFlags{});
     }
 
+    vk::DescriptorPool DescriptorPool::getDescriptorPool() const {
+        return descriptorPool;
+    }
+
 }

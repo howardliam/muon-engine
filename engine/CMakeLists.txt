@@ -35,12 +35,34 @@ set(SRC_FILES
     ${SRC_DIR}/misc/logger.cpp
 )
 
+set(IMGUI_DIR ../external/imgui)
+set(IMGUI_FILES
+    ${IMGUI_DIR}/imconfig.h
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui.h
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_internal.h
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imstb_rectpack.h
+    ${IMGUI_DIR}/imstb_textedit.h
+    ${IMGUI_DIR}/imstb_truetype.h
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.h
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
+)
+
+
 add_library(${LIB_NAME} SHARED
     ${HEADER_FILES}
     ${SRC_FILES}
+
+    ${IMGUI_FILES}
 )
 
-target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
+target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE spng)
 target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm assimp)
