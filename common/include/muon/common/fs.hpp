@@ -25,5 +25,5 @@ namespace muon::common::fs {
      *
      * @return  optional, containing the char vector if successful.
     */
-    std::optional<std::vector<char>> readFile(std::filesystem::path &path);
+    std::optional<std::vector<char>> readFile(const std::filesystem::path &path);
 }

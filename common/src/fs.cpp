@@ -32,7 +32,7 @@ namespace muon::common::fs {
         return true;
     }
 
-    std::optional<std::vector<char>> readFile(std::filesystem::path &path) {
+    std::optional<std::vector<char>> readFile(const std::filesystem::path &path) {
         if (!std::filesystem::is_regular_file(path)) {
             return {};
         }
