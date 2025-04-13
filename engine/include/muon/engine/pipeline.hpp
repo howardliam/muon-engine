@@ -1,7 +1,6 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
-#include <algorithm>
 #include <filesystem>
 #include <map>
 #include <vulkan/vulkan_core.h>

@@ -51,6 +51,7 @@ public:
 
     void renderModel(vk::CommandBuffer commandBuffer) override {
         pipeline->bind(commandBuffer);
+        commandBuffer.draw(3, 1, 0, 0);
     }
 
     void createPipeline(vk::RenderPass renderPass) override {
@@ -80,30 +81,7 @@ int main() {
     engine::FrameHandler frameHandler(window, device);
     frameHandler.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
-    std::filesystem::path vertPath("./test/assets/shaders/shader.vert.spv");
-    std::filesystem::path fragPath("./test/assets/shaders/shader.frag.spv");
-
-    vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pSetLayouts = nullptr;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
-
-    vk::PipelineLayout layout;
-    auto result = device.getDevice().createPipelineLayout(&pipelineLayoutInfo, nullptr, &layout);
-    if (result != vk::Result::eSuccess) {
-        logger->error("broke");
-    }
-
-    engine::pipeline::ConfigInfo configInfo;
-    engine::pipeline::defaultConfigInfo(configInfo);
-    configInfo.renderPass = frameHandler.getSwapchainRenderPass();
-    configInfo.pipelineLayout = layout;
-
-    engine::Pipeline pipeline = engine::Pipeline::Builder(device)
-        .addShader(vk::ShaderStageFlagBits::eVertex, vertPath)
-        .addShader(vk::ShaderStageFlagBits::eFragment, fragPath)
-        .build(configInfo);
+    RenderSystemTest renderSystem(device, {}, frameHandler.getSwapchainRenderPass());
 
     auto fileData = common::fs::readFile(std::filesystem::path("./muon-logo.png"));
     auto image = assets::loadImagePng(fileData.value());
@@ -142,14 +120,13 @@ int main() {
         if (const auto commandBuffer = frameHandler.beginFrame()) {
             frameHandler.beginSwapchainRenderPass(commandBuffer);
 
-            pipeline.bind(commandBuffer);
-            commandBuffer.draw(3, 1, 0, 0);
+            renderSystem.renderModel(commandBuffer);
 
             frameHandler.endSwapchainRenderPass(commandBuffer);
             frameHandler.endFrame();
         }
     }
 
-    device.getDevice().destroyPipelineLayout(configInfo.pipelineLayout, nullptr);
+    // device.getDevice().destroyPipelineLayout(configInfo.pipelineLayout, nullptr);
     device.getDevice().waitIdle();
 }
