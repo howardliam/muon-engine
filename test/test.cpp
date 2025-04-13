@@ -81,9 +81,8 @@ int main() {
         .addShader(vk::ShaderStageFlagBits::eFragment, fragPath)
         .build(configInfo);
 
-    std::filesystem::path imagePath("./muon-logo.png");
-    auto fileData = muon::common::fs::readFile(imagePath);
-    auto image = muon::assets::loadImagePng(fileData.value());
+    auto fileData = common::fs::readFile(std::filesystem::path("./muon-logo.png"));
+    auto image = assets::loadImagePng(fileData.value());
     window.setIcon(image.data);
 
     /* assimp doesn't load fbx, glb/gltf + bin, usdc??? */
