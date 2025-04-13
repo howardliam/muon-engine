@@ -1,5 +1,7 @@
 #include "muon/misc/logger.hpp"
 
+#include <print>
+
 namespace muon::misc {
     BasicLogger::BasicLogger() : ILogger() {}
 
