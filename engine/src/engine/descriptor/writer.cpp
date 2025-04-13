@@ -4,7 +4,7 @@ namespace muon::engine {
 
     DescriptorWriter::DescriptorWriter(DescriptorSetLayout &setLayout, DescriptorPool &pool) : setLayout(setLayout), pool(pool) {}
 
-    DescriptorWriter &DescriptorWriter::writeToBuffer(uint32_t binding, vk::DescriptorBufferInfo *bufferInfo) {
+    DescriptorWriter &DescriptorWriter::writeBuffer(uint32_t binding, vk::DescriptorBufferInfo *bufferInfo) {
         auto &binding_description = setLayout.bindings[binding];
 
         vk::WriteDescriptorSet write{};
@@ -31,7 +31,7 @@ namespace muon::engine {
     }
 
     bool DescriptorWriter::build(vk::DescriptorSet &set) {
-        bool success = pool.allocateDescriptor(setLayout.getDescriptorSetLayout(), set);
+        bool success = pool.allocateDescriptorSet(setLayout.getDescriptorSetLayout(), set);
         if (!success) {
             return false;
         }

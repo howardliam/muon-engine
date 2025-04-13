@@ -7,8 +7,8 @@ namespace muon::engine {
 
     DescriptorPool::Builder::Builder(Device &device) : device(device) {}
 
-    DescriptorPool::Builder &DescriptorPool::Builder::addPoolSize(vk::DescriptorType descriptorType, uint32_t count) {
-        poolSizes.push_back({ descriptorType, count });
+    DescriptorPool::Builder &DescriptorPool::Builder::addPoolSize(vk::DescriptorType descriptorType, uint32_t size) {
+        poolSizes.push_back({ descriptorType, size });
         return *this;
     }
 
@@ -48,21 +48,21 @@ namespace muon::engine {
         device.getDevice().destroyDescriptorPool(descriptorPool, nullptr);
     }
 
-    bool DescriptorPool::allocateDescriptor(const vk::DescriptorSetLayout descriptorSetLayout, vk::DescriptorSet &descriptor) const {
+    bool DescriptorPool::allocateDescriptorSet(const vk::DescriptorSetLayout descriptorSetLayout, vk::DescriptorSet &descriptorSet) const {
         vk::DescriptorSetAllocateInfo allocInfo{};
         allocInfo.descriptorPool = descriptorPool;
         allocInfo.pSetLayouts = &descriptorSetLayout;
         allocInfo.descriptorSetCount = 1;
 
-        auto result = device.getDevice().allocateDescriptorSets(&allocInfo, &descriptor);
+        auto result = device.getDevice().allocateDescriptorSets(&allocInfo, &descriptorSet);
         if (result != vk::Result::eSuccess) {
             return false;
         }
         return true;
     }
 
-    void DescriptorPool::freeDescriptors(std::vector<vk::DescriptorSet> &descriptors) const {
-        device.getDevice().freeDescriptorSets(descriptorPool, static_cast<uint32_t>(descriptors.size()), descriptors.data());
+    void DescriptorPool::freeDescriptorSets(std::vector<vk::DescriptorSet> &descriptorSets) const {
+        device.getDevice().freeDescriptorSets(descriptorPool, static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data());
     }
 
     void DescriptorPool::resetPool() {

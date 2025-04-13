@@ -7,6 +7,9 @@
 
 namespace muon::engine {
 
+    /**
+     * @brief wrapper around vulkan buffer.
+     */
     class Buffer {
     public:
         Buffer(
