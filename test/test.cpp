@@ -20,6 +20,7 @@ class LoggerImpl : public misc::ILogger {
 public:
     LoggerImpl() : misc::ILogger() {}
 
+private:
     void traceImpl(std::string message) override {
         spdlog::trace(message);
     }

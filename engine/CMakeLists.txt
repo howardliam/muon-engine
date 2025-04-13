@@ -32,6 +32,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/rendersystem.cpp
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/window.cpp
+    ${SRC_DIR}/misc/logger.cpp
 )
 
 add_library(${LIB_NAME} SHARED
