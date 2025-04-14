@@ -45,7 +45,11 @@ private:
 
 class RenderSystemTest : public engine::RenderSystem {
 public:
-    RenderSystemTest(engine::Device &device, std::vector<vk::DescriptorSetLayout> setLayouts, vk::RenderPass renderPass) : engine::RenderSystem(device, setLayouts)  {
+    RenderSystemTest(
+        engine::Device &device,
+        std::vector<vk::DescriptorSetLayout> setLayouts,
+        vk::RenderPass renderPass
+    ) : engine::RenderSystem(device, setLayouts)  {
         createPipeline(renderPass);
     }
 
@@ -127,6 +131,5 @@ int main() {
         }
     }
 
-    // device.getDevice().destroyPipelineLayout(configInfo.pipelineLayout, nullptr);
     device.getDevice().waitIdle();
 }
