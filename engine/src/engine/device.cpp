@@ -15,7 +15,7 @@
 namespace muon::engine {
 
     /**
-     * @brief   Callback function for Vulkan validation layers.
+     * @brief   callback function for Vulkan validation layers.
      *
      * @param   messageSeverity the severity of the message.
      * @param   messageType     what type is the message.
@@ -23,7 +23,7 @@ namespace muon::engine {
      * @param   userData        arbitrary data to be loaded into the callback.
      *
      * @return  false.
-    */
+     */
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
         vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         vk::DebugUtilsMessageTypeFlagsEXT messageType,
@@ -37,7 +37,7 @@ namespace muon::engine {
     }
 
     /**
-     * @brief   Creates the debug utils messenger.
+     * @brief   creates the debug utils messenger.
      *
      * @param   instance        the instance to create debug messenger for.
      * @param   createInfo      what info to create messenger with.
@@ -45,7 +45,7 @@ namespace muon::engine {
      * @param   debugMessenger  handle to a debug messenger to be created.
      *
      * @return  result based on the function being executed, otherwise an error.
-    */
+     */
     vk::Result createDebugUtilsMessenger(
         VkInstance instance,
         const VkDebugUtilsMessengerCreateInfoEXT *createInfo,
@@ -61,12 +61,12 @@ namespace muon::engine {
     }
 
     /**
-     * @brief   Destroys the debug utils messenger.
+     * @brief   destroys the debug utils messenger.
      *
      * @param   instance        the instance to destroy debug messenger for.
      * @param   debugMessenger  handle to a debug messenger to be destroyed.
      * @param   allocator       pointer to an allocator.
-    */
+     */
     void destroyDebugUtilsMessenger(
         VkInstance instance,
         VkDebugUtilsMessengerEXT debugMessenger,

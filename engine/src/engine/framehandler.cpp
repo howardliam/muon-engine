@@ -2,6 +2,7 @@
 #include "muon/engine/swapchain.hpp"
 
 #include <print>
+#include <stdexcept>
 
 namespace muon::engine {
 
@@ -23,21 +24,18 @@ namespace muon::engine {
         }
 
         if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
-            std::println("failed to acquire next swapchain image");
+            throw std::runtime_error("failed to acquire next swapchain image");
         }
 
         frameInProgress = true;
 
         const auto commandBuffer = getCurrentCommandBuffer();
-        if (commandBuffer == nullptr) {
-            std::println("I am null");
-        }
 
         vk::CommandBufferBeginInfo beginInfo;
 
         result = commandBuffer.begin(&beginInfo);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to begin recording command buffer");
+            throw std::runtime_error("failed to begin recording command buffer");
         }
 
         return commandBuffer;
@@ -45,9 +43,6 @@ namespace muon::engine {
 
     void FrameHandler::endFrame() {
         const auto commandBuffer = getCurrentCommandBuffer();
-        if (commandBuffer == nullptr) {
-            std::println("I am null");
-        }
         commandBuffer.end();
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
@@ -56,7 +51,7 @@ namespace muon::engine {
             window.resetResized();
             recreateSwapchain();
         } else if (result != vk::Result::eSuccess) {
-            std::println("failed to present swapchain image");
+            throw std::runtime_error("failed to present swapchain image");
         }
 
         frameInProgress = false;
@@ -138,7 +133,7 @@ namespace muon::engine {
 
         auto result = device.getDevice().allocateCommandBuffers(&allocInfo, commandBuffers.data());
         if (result != vk::Result::eSuccess) {
-            std::println("failed to allocate command buffers");
+            throw std::runtime_error("failed to allocate command buffers");
         }
     }
 
@@ -160,9 +155,9 @@ namespace muon::engine {
         if (swapchain == nullptr) {
             swapchain = std::make_unique<Swapchain>(device, extent);
         } else {
-            std::shared_ptr old_swap_chain = std::move(swapchain);
-            swapchain = std::make_unique<Swapchain>(device, extent, old_swap_chain);
-            if (!swapchain->compareSwapFormats(*old_swap_chain)) {
+            std::shared_ptr oldSwapChain = std::move(swapchain);
+            swapchain = std::make_unique<Swapchain>(device, extent, oldSwapChain);
+            if (!swapchain->compareSwapFormats(*oldSwapChain)) {
                 std::println("swapchain does not match swap formats");
             }
         }
