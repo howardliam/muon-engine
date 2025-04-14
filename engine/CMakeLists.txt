@@ -12,9 +12,11 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
+    ${INCLUDE_DIR}/muon/engine/model.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/rendersystem.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
+    ${INCLUDE_DIR}/muon/engine/texture.hpp
     ${INCLUDE_DIR}/muon/engine/window.hpp
     ${INCLUDE_DIR}/muon/misc/logger.hpp
 )
@@ -28,9 +30,11 @@ set(SRC_FILES
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/framehandler.cpp
+    ${SRC_DIR}/engine/model.cpp
     ${SRC_DIR}/engine/pipeline.cpp
     ${SRC_DIR}/engine/rendersystem.cpp
     ${SRC_DIR}/engine/swapchain.cpp
+    ${SRC_DIR}/engine/texture.cpp
     ${SRC_DIR}/engine/window.cpp
     ${SRC_DIR}/misc/logger.cpp
 )
