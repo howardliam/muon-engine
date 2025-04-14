@@ -53,7 +53,7 @@ public:
         createPipeline(renderPass);
     }
 
-    void renderModel(vk::CommandBuffer commandBuffer) override {
+    void renderModel(vk::CommandBuffer commandBuffer) {
         pipeline->bind(commandBuffer);
         commandBuffer.draw(3, 1, 0, 0);
     }

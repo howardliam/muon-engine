@@ -12,8 +12,6 @@ namespace muon::engine {
         RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts);
         ~RenderSystem();
 
-        virtual void renderModel(vk::CommandBuffer commandBuffer /* FrameInfo frameInfo, Model &model */) = 0;
-
     protected:
         Device &device;
 
