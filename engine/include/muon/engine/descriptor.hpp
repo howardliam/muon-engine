@@ -137,7 +137,7 @@ namespace muon::engine {
             std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
         };
 
-        DescriptorSetLayout(Device &device, std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings);
+        DescriptorSetLayout(Device &device, const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings);
         ~DescriptorSetLayout();
 
         DescriptorSetLayout(const DescriptorSetLayout &) = delete;
