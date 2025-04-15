@@ -5,10 +5,10 @@ namespace muon::engine {
     DescriptorWriter::DescriptorWriter(DescriptorSetLayout &setLayout, DescriptorPool &pool) : setLayout(setLayout), pool(pool) {}
 
     DescriptorWriter &DescriptorWriter::writeBuffer(uint32_t binding, vk::DescriptorBufferInfo *bufferInfo) {
-        auto &binding_description = setLayout.bindings[binding];
+        auto &bindingDescription = setLayout.bindings[binding];
 
         vk::WriteDescriptorSet write{};
-        write.descriptorType = binding_description.descriptorType;
+        write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
         write.pBufferInfo = bufferInfo;
         write.descriptorCount = 1;
@@ -18,10 +18,10 @@ namespace muon::engine {
     }
 
     DescriptorWriter &DescriptorWriter::writeImage(uint32_t binding, vk::DescriptorImageInfo *imageInfo) {
-        auto &binding_description = setLayout.bindings[binding];
+        auto &bindingDescription = setLayout.bindings[binding];
 
         vk::WriteDescriptorSet write{};
-        write.descriptorType = binding_description.descriptorType;
+        write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
         write.pImageInfo = imageInfo;
         write.descriptorCount = 1;

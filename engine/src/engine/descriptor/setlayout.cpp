@@ -20,8 +20,7 @@ namespace muon::engine {
         return std::make_unique<DescriptorSetLayout>(device, bindings);
     }
 
-
-    DescriptorSetLayout::DescriptorSetLayout(Device &device, std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings) : device(device) {
+    DescriptorSetLayout::DescriptorSetLayout(Device &device, std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings) : device(device), bindings(bindings) {
         std::vector<vk::DescriptorSetLayoutBinding> setLayoutBindings{};
         for (auto [key, value] : bindings) {
             setLayoutBindings.push_back(value);
