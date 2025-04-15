@@ -1,8 +1,13 @@
-#include "muon/engine/rendersystem.hpp"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <muon/engine/swapchain.hpp>
+#include <vk_mem_alloc_enums.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <memory>
+#include <muon/engine/buffer.hpp>
+#include <muon/engine/descriptor.hpp>
+#include <muon/engine/rendersystem.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/engine/pipeline.hpp>
 #include <muon/engine/framehandler.hpp>
@@ -14,6 +19,9 @@
 #include <spdlog/spdlog.h>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
+#include <glm/glm.hpp>
+#include <vulkan/vulkan_handles.hpp>
+
 
 using namespace muon;
 
@@ -53,8 +61,19 @@ public:
         createPipeline(renderPass);
     }
 
-    void renderModel(vk::CommandBuffer commandBuffer) {
+    void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set) {
         pipeline->bind(commandBuffer);
+
+        commandBuffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eGraphics,
+            pipelineLayout,
+            0,
+            1,
+            &set,
+            0,
+            nullptr
+        );
+
         commandBuffer.draw(3, 1, 0, 0);
     }
 
@@ -81,15 +100,50 @@ int main() {
     props.title = "Testing";
 
     engine::Window window(props);
+    auto fileData = common::fs::readFile(std::filesystem::path("./muon-logo.png"));
+    auto image = assets::loadImagePng(fileData.value());
+    window.setIcon(image.data);
+
     engine::Device device(logger, window);
     engine::FrameHandler frameHandler(window, device);
     frameHandler.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
-    RenderSystemTest renderSystem(device, {}, frameHandler.getSwapchainRenderPass());
+    std::unique_ptr pool = engine::DescriptorPool::Builder(device)
+        .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
+        .build();
 
-    auto fileData = common::fs::readFile(std::filesystem::path("./muon-logo.png"));
-    auto image = assets::loadImagePng(fileData.value());
-    window.setIcon(image.data);
+    struct Ubo {
+        glm::mat4 projection;
+        glm::mat4 view;
+    };
+
+    std::vector<std::unique_ptr<engine::Buffer>> uboBuffers(engine::constants::maxFramesInFlight);
+    for (size_t i = 0; i < uboBuffers.size(); i++) {
+        uboBuffers[i] = std::make_unique<engine::Buffer>(
+            device,
+            sizeof(Ubo),
+            1,
+            vk::BufferUsageFlagBits::eUniformBuffer,
+            vma::MemoryUsage::eCpuOnly
+        );
+
+        auto _ = uboBuffers[i]->map();
+    }
+
+    std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
+        .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
+        .build();
+
+    std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
+    for (size_t i = 0; i < descriptorSets.size(); i++) {
+        auto bufferInfo = uboBuffers[i]->descriptorInfo();
+
+        engine::DescriptorWriter(*setLayout, *pool)
+            .writeBuffer(0, &bufferInfo)
+            .build(descriptorSets[i]);
+    }
+
+    RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
 
     /* assimp doesn't load fbx, glb/gltf + bin, usdc??? */
     // std::filesystem::path modelPath("test/assets/models/Cube.obj");
@@ -104,6 +158,8 @@ int main() {
     //         logger->error("model not loaded correctly");
     //     }
     // }
+
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -122,9 +178,19 @@ int main() {
         }
 
         if (const auto commandBuffer = frameHandler.beginFrame()) {
+            const int32_t frameIndex = frameHandler.getFrameIndex();
+
+            Ubo ubo{};
+            ubo.view = 0;
+            ubo.projection = projection;
+
+            uboBuffers[frameIndex]->writeToBuffer(&ubo);
+            uboBuffers[frameIndex]->flush();
+
+
             frameHandler.beginSwapchainRenderPass(commandBuffer);
 
-            renderSystem.renderModel(commandBuffer);
+            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex]);
 
             frameHandler.endSwapchainRenderPass(commandBuffer);
             frameHandler.endFrame();
