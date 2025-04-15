@@ -91,6 +91,17 @@ namespace muon::engine {
         void copyImageToBuffer(vk::Image image, vk::Buffer buffer, uint32_t width, uint32_t height, uint32_t layerCount);
 
         /**
+         * @brief   allocates a new buffer.
+         *
+         * @param   size        the size of the buffer.
+         * @param   usage       the usage flags for the buffer.
+         * @param   memoryUsage the memory usage for the buffer.
+         * @param   buffer      buffer handle.
+         * @param   allocation  allocation handle.
+         */
+        void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vma::MemoryUsage memoryUsage, vk::Buffer &buffer, vma::Allocation &allocation);
+
+        /**
          * @brief   allocates a new image.
          *
          * @param   imageInfo   the information to create the image.

@@ -4,6 +4,7 @@
 #include <vk_mem_alloc_enums.hpp>
 #include <vk_mem_alloc_structs.hpp>
 #include <print>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 
@@ -12,6 +13,7 @@ namespace muon::engine {
         vk::DeviceSize instanceSize,
         uint32_t instanceCount,
         vk::BufferUsageFlags usageFlags,
+        vma::MemoryUsage memoryUsage,
         vk::DeviceSize minOffsetAlignment
     ) : device(device), instanceSize(instanceSize), instanceCount(instanceCount), usageFlags(usageFlags) {
         auto getAlignment = [](vk::DeviceSize instanceSize, vk::DeviceSize minOffsetAlignment) -> vk::DeviceSize {
@@ -24,27 +26,12 @@ namespace muon::engine {
         alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
         bufferSize = alignmentSize * instanceCount;
 
-        vk::BufferCreateInfo bufferCreateInfo;
-        bufferCreateInfo.size = bufferSize;
-        bufferCreateInfo.usage = usageFlags;
-
-        vma::AllocationCreateInfo allocationCreateInfo;
-        allocationCreateInfo.usage = vma::MemoryUsage::eAuto;
-        vma::AllocationInfo allocationInfo;
-
-        auto result = device.getAllocator().createBuffer(&bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, &allocationInfo);
-        if (result != vk::Result::eSuccess) {
-            std::println("failed to allocate buffer");
-        }
-
-        memory = allocationInfo.deviceMemory;
-        mapped = allocationInfo.pMappedData;
+        device.createBuffer(bufferSize, usageFlags, memoryUsage, buffer, allocation);
     }
 
     Buffer::~Buffer() {
         unmap();
         device.getAllocator().destroyBuffer(buffer, allocation);
-        device.getAllocator().freeMemory(allocation);
     }
 
     vk::Result Buffer::map() {

@@ -17,6 +17,7 @@ namespace muon::engine {
             vk::DeviceSize instanceSize,
             uint32_t instanceCount,
             vk::BufferUsageFlags usageFlags,
+            vma::MemoryUsage memoryUsage,
             vk::DeviceSize minOffsetAlignment = 1
         );
         ~Buffer();
@@ -146,8 +147,7 @@ namespace muon::engine {
         vk::Buffer buffer;
         vk::DeviceSize bufferSize;
         vma::Allocation allocation;
-        vk::DeviceMemory memory = nullptr;
-        void *mapped = nullptr;
+        void *mapped{nullptr};
 
         uint32_t instanceCount;
         vk::DeviceSize instanceSize;

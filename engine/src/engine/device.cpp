@@ -273,6 +273,23 @@ namespace muon::engine {
         allocator.bindImageMemory(allocation, image);
     }
 
+    void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vma::MemoryUsage memoryUsage, vk::Buffer &buffer, vma::Allocation &allocation) {
+        vk::BufferCreateInfo bufferInfo{};
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+
+        vma::AllocationCreateInfo allocCreateInfo{};
+        allocCreateInfo.usage = memoryUsage;
+
+        vma::AllocationInfo allocationInfo;
+
+        auto result = allocator.createBuffer(&bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocationInfo);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create buffer");
+        }
+    }
+
     vk::Instance Device::getInstance() const {
         return instance;
     }
