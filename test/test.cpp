@@ -1,33 +1,37 @@
-#include <glm/ext/matrix_clip_space.hpp>
-#include <muon/engine/swapchain.hpp>
-#include <vk_mem_alloc_enums.hpp>
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_mouse.h>
-#include <SDL3/SDL_scancode.h>
 #include <memory>
+
+#include <glm/glm.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+
+#include <muon/common/fs.hpp>
 #include <muon/engine/buffer.hpp>
 #include <muon/engine/descriptor.hpp>
-#include <muon/engine/rendersystem.hpp>
-#include <muon/engine/window.hpp>
-#include <muon/engine/pipeline.hpp>
-#include <muon/engine/framehandler.hpp>
 #include <muon/engine/device.hpp>
+#include <muon/engine/framehandler.hpp>
+#include <muon/engine/pipeline.hpp>
+#include <muon/engine/rendersystem.hpp>
+#include <muon/engine/swapchain.hpp>
+#include <muon/engine/vertex.hpp>
+#include <muon/engine/window.hpp>
 #include <muon/assets/image.hpp>
 #include <muon/assets/model.hpp>
 #include <muon/misc/logger.hpp>
-#include <muon/common/fs.hpp>
-#include <spdlog/spdlog.h>
-#include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_enums.hpp>
-#include <glm/glm.hpp>
-#include <vulkan/vulkan_handles.hpp>
 
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_scancode.h>
+
+#include <spdlog/spdlog.h>
+
+#include <vk_mem_alloc_enums.hpp>
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 using namespace muon;
 
-class LoggerImpl : public misc::ILogger {
+class Logger : public misc::ILogger {
 public:
-    LoggerImpl() : misc::ILogger() {}
+    Logger() : misc::ILogger() {}
 
 private:
     void traceImpl(std::string message) override {
@@ -91,7 +95,7 @@ public:
 };
 
 int main() {
-    auto logger = std::make_shared<LoggerImpl>();
+    auto logger = std::make_shared<Logger>();
 
     engine::window::Properties props;
     props.height = 900;
