@@ -1,8 +1,11 @@
 #include "muon/engine/framehandler.hpp"
-#include "muon/engine/swapchain.hpp"
 
+#include "muon/engine/swapchain.hpp"
 #include <print>
 #include <stdexcept>
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 

@@ -106,10 +106,11 @@ namespace muon::engine {
          *
          * @param   imageInfo   the information to create the image.
          * @param   properties  the memory properties required for the image.
+         * @param   memoryUsage the memory usage for the image.
          * @param   image       image handle.
          * @param   allocation  allocation handle.
          */
-        void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation);
+        void createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vma::MemoryUsage memoryUsage, vk::Image &image, vma::Allocation &allocation);
 
         /**
          * @brief   gets instance.

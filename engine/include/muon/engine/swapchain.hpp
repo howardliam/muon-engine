@@ -83,6 +83,15 @@ namespace muon::engine {
         [[nodiscard]] vk::Framebuffer getFramebuffer(int32_t index) const;
 
         /**
+         * @brief   returns image at image index.
+         *
+         * @param   index   the index of the swapchain image.
+         *
+         * @return  image at index.
+         */
+        [[nodiscard]] vk::Image getImage(int32_t index) const;
+
+        /**
          * @brief   returns image view at image index.
          *
          * @param   index   the index of the swapchain image view.

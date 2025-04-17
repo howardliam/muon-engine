@@ -202,21 +202,6 @@ namespace muon::engine {
     void Device::copyImageToBuffer(vk::Image image, vk::Buffer buffer, uint32_t width, uint32_t height, uint32_t layerCount) {
         vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
 
-        vk::ImageMemoryBarrier imageMemoryBarrier;
-        imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-        imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
-        imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-        imageMemoryBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
-        imageMemoryBarrier.image = image;
-
-        imageMemoryBarrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-        imageMemoryBarrier.subresourceRange.levelCount = 1;
-        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-        imageMemoryBarrier.subresourceRange.layerCount = layerCount;
-
-        commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}, nullptr, nullptr, imageMemoryBarrier);
-
         vk::BufferImageCopy region;
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
@@ -227,30 +212,20 @@ namespace muon::engine {
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = layerCount;
 
-        region.setImageOffset({0, 0, 0});
-        region.setImageExtent({width, height, 1});
+        region.imageOffset.x = 0;
+        region.imageOffset.y = 0;
+        region.imageOffset.z = 0;
+
+        region.imageExtent.width = width;
+        region.imageExtent.height = height;
+        region.imageExtent.depth = 1;
 
         commandBuffer.copyImageToBuffer(image, vk::ImageLayout::eTransferSrcOptimal, buffer, 1, &region);
-
-        vk::ImageMemoryBarrier imageMemoryBarrierBack;
-        imageMemoryBarrierBack.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-        imageMemoryBarrierBack.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-        imageMemoryBarrierBack.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
-        imageMemoryBarrierBack.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        imageMemoryBarrierBack.image = image;
-
-        imageMemoryBarrierBack.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        imageMemoryBarrierBack.subresourceRange.baseMipLevel = 0;
-        imageMemoryBarrierBack.subresourceRange.levelCount = 1;
-        imageMemoryBarrierBack.subresourceRange.baseArrayLayer = 0;
-        imageMemoryBarrierBack.subresourceRange.layerCount = layerCount;
-
-        commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, nullptr, nullptr, imageMemoryBarrierBack);
 
         endSingleTimeCommands(commandBuffer);
     }
 
-    void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vk::Image &image, vma::Allocation &allocation) {
+    void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vma::MemoryUsage memoryUsage, vk::Image &image, vma::Allocation &allocation) {
         auto result = device.createImage(&imageInfo, nullptr, &image);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create an image");
@@ -260,7 +235,7 @@ namespace muon::engine {
         device.getImageMemoryRequirements(image, &memoryRequirements);
 
         vma::AllocationCreateInfo allocCreateInfo{};
-        allocCreateInfo.usage = vma::MemoryUsage::eGpuOnly;
+        allocCreateInfo.usage = memoryUsage;
         allocCreateInfo.requiredFlags = properties;
 
         vma::AllocationInfo allocationInfo;

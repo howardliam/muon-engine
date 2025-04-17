@@ -128,6 +128,10 @@ namespace muon::engine {
         return swapchainFramebuffers[index];
     }
 
+    vk::Image Swapchain::getImage(int32_t index) const {
+        return swapchainImages[index];
+    }
+
     vk::ImageView Swapchain::getImageView(int32_t index) const {
         return swapchainImageViews[index];
     }
@@ -262,15 +266,15 @@ namespace muon::engine {
         swapchainImageViews.resize(imageCount());
 
         for (size_t i = 0; i < imageCount(); i++) {
-            vk::ImageViewCreateInfo createInfo;
+            vk::ImageViewCreateInfo createInfo{};
             createInfo.image = swapchainImages[i];
             createInfo.viewType = vk::ImageViewType::e2D;
             createInfo.format = swapchainImageFormat;
 
-            createInfo.components.r = vk::ComponentSwizzle::eIdentity;
-            createInfo.components.g = vk::ComponentSwizzle::eIdentity;
-            createInfo.components.b = vk::ComponentSwizzle::eIdentity;
-            createInfo.components.a = vk::ComponentSwizzle::eIdentity;
+            createInfo.components.r = vk::ComponentSwizzle::eR;
+            createInfo.components.g = vk::ComponentSwizzle::eG;
+            createInfo.components.b = vk::ComponentSwizzle::eB;
+            createInfo.components.a = vk::ComponentSwizzle::eA;
 
             createInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
             createInfo.subresourceRange.baseMipLevel = 0;
@@ -299,7 +303,7 @@ namespace muon::engine {
         imagesInFlight.resize(imageCount(), nullptr);
 
         for (size_t i = 0; i < depthImages.size(); i++) {
-            vk::ImageCreateInfo imageInfo;
+            vk::ImageCreateInfo imageInfo{};
             imageInfo.imageType = vk::ImageType::e2D;
             imageInfo.extent.width = swapchainExtent.width;
             imageInfo.extent.height = swapchainExtent.height;
@@ -314,9 +318,9 @@ namespace muon::engine {
             imageInfo.sharingMode = vk::SharingMode::eExclusive;
             imageInfo.flags = vk::ImageCreateFlags(0);
 
-            device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageAllocations[i]);
+            device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, vma::MemoryUsage::eGpuOnly, depthImages[i], depthImageAllocations[i]);
 
-            vk::ImageViewCreateInfo viewInfo;
+            vk::ImageViewCreateInfo viewInfo{};
             viewInfo.image = depthImages[i];
             viewInfo.viewType = vk::ImageViewType::e2D;
             viewInfo.format = depthImageFormat;
@@ -335,7 +339,7 @@ namespace muon::engine {
     }
 
     void Swapchain::createRenderPass() {
-        vk::AttachmentDescription colorAttachment;
+        vk::AttachmentDescription colorAttachment{};
         colorAttachment.format = swapchainImageFormat;
         colorAttachment.samples = vk::SampleCountFlagBits::e1;
         colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
@@ -345,11 +349,11 @@ namespace muon::engine {
         colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
         colorAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
-        vk::AttachmentReference colorAttachmentRef;
+        vk::AttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
 
-        vk::AttachmentDescription depthAttachment;
+        vk::AttachmentDescription depthAttachment{};
         depthAttachment.format = depthImageFormat;
         depthAttachment.samples = vk::SampleCountFlagBits::e1;
         depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
@@ -359,26 +363,27 @@ namespace muon::engine {
         depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
         depthAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-        vk::AttachmentReference depthAttachmentRef;
+        vk::AttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = 1;
         depthAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-        vk::SubpassDescription subpass;
+        vk::SubpassDescription subpass{};
         subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-        vk::SubpassDependency subpassDependency;
+        vk::SubpassDependency subpassDependency{};
+        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         subpassDependency.dstSubpass = 0;
+        subpassDependency.srcAccessMask = vk::AccessFlagBits{};
         subpassDependency.dstAccessMask =
             vk::AccessFlagBits::eColorAttachmentWrite |
             vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-        subpassDependency.dstStageMask =
+        subpassDependency.srcStageMask =
             vk::PipelineStageFlagBits::eColorAttachmentOutput |
             vk::PipelineStageFlagBits::eEarlyFragmentTests;
-        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        subpassDependency.srcAccessMask = vk::AccessFlags(0);
-        subpassDependency.srcStageMask =
+        subpassDependency.dstStageMask =
             vk::PipelineStageFlagBits::eColorAttachmentOutput |
             vk::PipelineStageFlagBits::eEarlyFragmentTests;
 
@@ -404,7 +409,7 @@ namespace muon::engine {
         for (size_t i = 0; i < imageCount(); i++) {
             std::array<vk::ImageView, 2> attachments = { swapchainImageViews[i], depthImageViews[i] };
 
-            vk::FramebufferCreateInfo createInfo;
+            vk::FramebufferCreateInfo createInfo{};
             createInfo.renderPass = renderPass;
             createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
             createInfo.pAttachments = attachments.data();
@@ -424,9 +429,9 @@ namespace muon::engine {
         renderFinishedSemaphores.resize(constants::maxFramesInFlight);
         inFlightFences.resize(constants::maxFramesInFlight);
 
-        vk::SemaphoreCreateInfo semaphoreInfo;
+        vk::SemaphoreCreateInfo semaphoreInfo{};
 
-        vk::FenceCreateInfo fenceInfo;
+        vk::FenceCreateInfo fenceInfo{};
         fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
 
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
