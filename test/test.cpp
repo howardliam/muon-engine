@@ -9,6 +9,7 @@
 #include <muon/engine/descriptor.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framehandler.hpp>
+#include <muon/engine/model.hpp>
 #include <muon/engine/pipeline.hpp>
 #include <muon/engine/rendersystem.hpp>
 #include <muon/engine/swapchain.hpp>
@@ -56,6 +57,10 @@ private:
     }
 };
 
+struct Vertex {
+    glm::vec3 position{};
+};
+
 class RenderSystemTest : public engine::RenderSystem {
 public:
     RenderSystemTest(
@@ -66,7 +71,7 @@ public:
         createPipeline(renderPass);
     }
 
-    void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set) {
+    void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, const engine::Model<Vertex> &model) {
         pipeline->bind(commandBuffer);
 
         commandBuffer.bindDescriptorSets(
@@ -79,7 +84,8 @@ public:
             nullptr
         );
 
-        commandBuffer.draw(3, 1, 0, 0);
+        model.bind(commandBuffer);
+        model.draw(commandBuffer);
     }
 
     void createPipeline(vk::RenderPass renderPass) override {
@@ -91,7 +97,7 @@ public:
         pipeline = engine::Pipeline::Builder(device)
             .addShader(vk::ShaderStageFlagBits::eVertex, std::filesystem::path("./test/assets/shaders/shader.vert.spv"))
             .addShader(vk::ShaderStageFlagBits::eFragment, std::filesystem::path("./test/assets/shaders/shader.frag.spv"))
-            // .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
+            .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
             .buildUniquePointer(configInfo);
     }
 };
@@ -151,6 +157,14 @@ int main() {
 
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
 
+    std::vector<Vertex> vertices = {
+        {{0.0f, -0.5f, -5.0f}},
+        {{0.5f, 0.5f, -5.0f}},
+        {{-0.5f, 0.5f, -5.0f}},
+    };
+
+    engine::Model<Vertex> model(device, vertices, {});
+
     /* assimp doesn't load fbx, glb/gltf + bin, usdc??? */
     // std::filesystem::path modelPath("test/assets/models/Cube.obj");
     // auto model = muon::assets::loadModel(modelPath);
@@ -198,7 +212,7 @@ int main() {
 
             frameHandler.beginSwapchainRenderPass(commandBuffer);
 
-            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex]);
+            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], model);
 
             frameHandler.endSwapchainRenderPass(commandBuffer);
             frameHandler.endFrame();
