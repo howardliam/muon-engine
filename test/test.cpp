@@ -1,3 +1,4 @@
+#include <X11/Xlib.h>
 #include <memory>
 
 #include <glm/glm.hpp>
@@ -8,9 +9,11 @@
 #include <muon/engine/buffer.hpp>
 #include <muon/engine/descriptor.hpp>
 #include <muon/engine/device.hpp>
+#include <muon/engine/framebuffer.hpp>
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/model.hpp>
 #include <muon/engine/pipeline.hpp>
+#include <muon/engine/renderpass.hpp>
 #include <muon/engine/rendersystem.hpp>
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/vertex.hpp>
@@ -155,8 +158,6 @@ int main() {
             .build(descriptorSets[i]);
     }
 
-    RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
-
     std::vector<Vertex> triangleVertices = {
         {{0.0f, -0.5f, -5.0f}},
         {{0.5f, 0.5f, -5.0f}},
@@ -179,22 +180,16 @@ int main() {
 
     engine::Model<Vertex> square(device, squareVertices, squareIndices);
 
-    /* assimp doesn't load fbx, glb/gltf + bin, usdc??? */
-    // std::filesystem::path modelPath("test/assets/models/Cube.obj");
-    // auto model = muon::assets::loadModel(modelPath);
-    // if (model.has_value()) {
-    //     if (model.value()->HasPositions()) {
-    //         logger->info("number of vertices: {}", model.value()->mNumVertices);
-    //         for (uint32_t i = 0; i < model.value()->mNumVertices; i++) {
-    //             logger->info("x: {}, y: {}, z: {}", model.value()->mVertices[i].x, model.value()->mVertices[i].y, model.value()->mVertices[i].z);
-    //         }
-    //     } else {
-    //         logger->error("model not loaded correctly");
-    //     }
-    // }
-
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    engine::RenderPass scenePass(device);
+    engine::Framebuffer sceneFramebuffer(device, scenePass, window.getExtent());
+
+    // RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
+    RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
+
+    bool screenshotRequested{false};
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -205,6 +200,10 @@ int main() {
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
                     window.setToClose();
+                }
+
+                if (event.key.scancode == SDL_SCANCODE_F2) {
+                    screenshotRequested = true;
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
@@ -224,12 +223,29 @@ int main() {
             uboBuffers[frameIndex]->flush();
 
 
+            scenePass.beginRenderPass(commandBuffer, sceneFramebuffer.getFramebuffer(), sceneFramebuffer.getExtent());
+
+            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
+
+            scenePass.endRenderPass(commandBuffer);
+
+            if (screenshotRequested) {
+                auto sceneImage = sceneFramebuffer.getImage();
+
+                /* copy image to buffer, save buffer as image */
+            }
+
             frameHandler.beginSwapchainRenderPass(commandBuffer);
 
+            /*
+                Will actually render despite using a different render pass from the swapchain if
+                the render passes are the same, otherwise it will spray out a load of validation
+                messages
+            */
             renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
-            // renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
 
             frameHandler.endSwapchainRenderPass(commandBuffer);
+
             frameHandler.endFrame();
         }
     }
