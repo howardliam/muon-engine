@@ -90,6 +90,7 @@ public:
         pipeline = engine::Pipeline::Builder(device)
             .addShader(vk::ShaderStageFlagBits::eVertex, std::filesystem::path("./test/assets/shaders/shader.vert.spv"))
             .addShader(vk::ShaderStageFlagBits::eFragment, std::filesystem::path("./test/assets/shaders/shader.frag.spv"))
+            .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
             .buildUniquePointer(configInfo);
     }
 };
