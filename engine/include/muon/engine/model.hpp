@@ -103,7 +103,7 @@ namespace muon::engine {
             device,
             indexSize,
             indexCount,
-            vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
             vma::MemoryUsage::eGpuOnly
         );
 
