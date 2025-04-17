@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include <muon/common/fs.hpp>
 #include <muon/engine/buffer.hpp>
@@ -90,7 +91,7 @@ public:
         pipeline = engine::Pipeline::Builder(device)
             .addShader(vk::ShaderStageFlagBits::eVertex, std::filesystem::path("./test/assets/shaders/shader.vert.spv"))
             .addShader(vk::ShaderStageFlagBits::eFragment, std::filesystem::path("./test/assets/shaders/shader.frag.spv"))
-            .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
+            // .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
             .buildUniquePointer(configInfo);
     }
 };
@@ -165,6 +166,7 @@ int main() {
     // }
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -185,8 +187,9 @@ int main() {
         if (const auto commandBuffer = frameHandler.beginFrame()) {
             const int32_t frameIndex = frameHandler.getFrameIndex();
 
+
             Ubo ubo{};
-            ubo.view = 0;
+            ubo.view = view;
             ubo.projection = projection;
 
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
