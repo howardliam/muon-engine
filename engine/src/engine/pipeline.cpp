@@ -127,11 +127,12 @@ namespace muon::engine {
     void Pipeline::Builder::updateBindingDescription() {
         if (!vertexLayout.bindingDescription.has_value()) {
             vertexLayout.bindingDescription = vk::VertexInputBindingDescription{};
+
+            vertexLayout.bindingDescription->binding = 0;
+            vertexLayout.bindingDescription->inputRate = vk::VertexInputRate::eVertex;
         }
 
-        vertexLayout.bindingDescription->binding = 0;
         vertexLayout.bindingDescription->stride = offset;
-        vertexLayout.bindingDescription->inputRate = vk::VertexInputRate::eVertex;
     }
 
     Pipeline Pipeline::Builder::build(const pipeline::ConfigInfo &configInfo) const {
