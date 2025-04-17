@@ -157,13 +157,27 @@ int main() {
 
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
 
-    std::vector<Vertex> vertices = {
+    std::vector<Vertex> triangleVertices = {
         {{0.0f, -0.5f, -5.0f}},
         {{0.5f, 0.5f, -5.0f}},
         {{-0.5f, 0.5f, -5.0f}},
     };
 
-    engine::Model<Vertex> model(device, vertices, {});
+    engine::Model<Vertex> triangle(device, triangleVertices, {});
+
+    std::vector<Vertex> squareVertices = {
+        {{0.5f, 0.5f, -5.0f}},
+        {{0.5f, -0.5f, -5.0f}},
+        {{-0.5f, -0.5f, -5.0f}},
+        {{-0.5f, 0.5f, -5.0f}},
+    };
+
+    std::vector<uint32_t> squareIndices = {
+        0, 1, 2,
+        0, 2, 3,
+    };
+
+    engine::Model<Vertex> square(device, squareVertices, squareIndices);
 
     /* assimp doesn't load fbx, glb/gltf + bin, usdc??? */
     // std::filesystem::path modelPath("test/assets/models/Cube.obj");
@@ -212,7 +226,8 @@ int main() {
 
             frameHandler.beginSwapchainRenderPass(commandBuffer);
 
-            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], model);
+            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
+            // renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
 
             frameHandler.endSwapchainRenderPass(commandBuffer);
             frameHandler.endFrame();
