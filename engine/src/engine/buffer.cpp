@@ -69,4 +69,32 @@ namespace muon::engine {
         device.getAllocator().invalidateAllocation(allocation, offset, size);
     }
 
+    vk::Buffer Buffer::getBuffer() const {
+        return buffer;
+    }
+
+    vk::DeviceSize Buffer::getBufferSize() const {
+        return bufferSize;
+    }
+
+    void *Buffer::getMappedMemory() const {
+        return mapped;
+    }
+
+    uint32_t Buffer::getInstanceCount() const {
+        return instanceCount;
+    }
+
+    vk::DeviceSize Buffer::getInstanceSize() const {
+        return instanceSize;
+    }
+
+    vk::DeviceSize Buffer::getAlignmentSize() const {
+        return alignmentSize;
+    }
+
+    vk::BufferUsageFlags Buffer::getUsageFlags() const {
+        return usageFlags;
+    }
+
 }
