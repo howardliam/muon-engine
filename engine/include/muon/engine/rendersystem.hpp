@@ -18,7 +18,20 @@ namespace muon::engine {
         std::unique_ptr<Pipeline> pipeline;
         vk::PipelineLayout pipelineLayout;
 
+        /**
+         * @brief   creates a pipeline layout for the render system.
+         *
+         * @param   setLayouts  the descriptor set layouts to use.
+         */
         void createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts);
+
+        /**
+         * @brief   creates a pipeline for the render system.
+         *
+         * Use your implementation to configure push constants.
+         *
+         * @param   renderPass  the render pass to use.
+         */
         virtual void createPipeline(vk::RenderPass renderPass) = 0;
     };
 

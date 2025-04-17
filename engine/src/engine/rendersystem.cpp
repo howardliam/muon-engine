@@ -1,7 +1,5 @@
 #include "muon/engine/rendersystem.hpp"
 
-#include "muon/engine/pipeline.hpp"
-#include <memory>
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>

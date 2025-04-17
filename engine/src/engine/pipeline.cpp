@@ -6,6 +6,8 @@
 #include <print>
 #include <stdexcept>
 #include <vector>
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 
@@ -91,20 +93,63 @@ namespace muon::engine {
         return *this;
     }
 
+    Pipeline::Builder &Pipeline::Builder::addVertexAttribute(vk::Format format) {
+        auto offsetFromFormat = [](vk::Format &format) {
+            switch (format) {
+                case vk::Format::eR32G32B32A32Sfloat:
+                    return 16;
+                case vk::Format::eR32G32B32Sfloat:
+                    return 12;
+                case vk::Format::eR32G32Sfloat:
+                    return 8;
+                case vk::Format::eR32Sfloat:
+                    return 4;
+                default:
+                    throw std::runtime_error("unsupported vertex input format");
+            }
+        };
+
+        vertexLayout.attributeDescriptions.push_back({
+            location,
+            0,
+            format,
+            offset,
+        });
+
+        location += 1;
+        offset += offsetFromFormat(format);
+
+        updateBindingDescription();
+
+        return *this;
+    }
+
+    void Pipeline::Builder::updateBindingDescription() {
+        if (!vertexLayout.bindingDescription.has_value()) {
+            vertexLayout.bindingDescription = vk::VertexInputBindingDescription{};
+        }
+
+        vertexLayout.bindingDescription->binding = 0;
+        vertexLayout.bindingDescription->stride = offset;
+        vertexLayout.bindingDescription->inputRate = vk::VertexInputRate::eVertex;
+    }
+
     Pipeline Pipeline::Builder::build(const pipeline::ConfigInfo &configInfo) const {
-        return Pipeline(device, shaderPaths, configInfo);
+
+        return Pipeline(device, shaderPaths, vertexLayout, configInfo);
     }
 
     std::unique_ptr<Pipeline> Pipeline::Builder::buildUniquePointer(const pipeline::ConfigInfo &configInfo) const {
-        return std::make_unique<Pipeline>(device, shaderPaths, configInfo);
+        return std::make_unique<Pipeline>(device, shaderPaths, vertexLayout, configInfo);
     }
 
     Pipeline::Pipeline(
         Device &device,
         const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+        const VertexLayout &vertexLayout,
         const pipeline::ConfigInfo &configInfo
     ) : device(device) {
-        createGraphicsPipeline(shaderPaths, configInfo);
+        createGraphicsPipeline(shaderPaths, vertexLayout, configInfo);
     }
 
     Pipeline::~Pipeline() {
@@ -131,7 +176,11 @@ namespace muon::engine {
         }
     }
 
-    void Pipeline::createGraphicsPipeline(const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths, const pipeline::ConfigInfo &configInfo) {
+    void Pipeline::createGraphicsPipeline(
+        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+        const VertexLayout &vertexLayout,
+        const pipeline::ConfigInfo &configInfo
+    ) {
         shaders.resize(shaderPaths.size());
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages(shaderPaths.size());
 
@@ -168,16 +217,23 @@ namespace muon::engine {
             throw std::runtime_error("cannot create a pipeline without vertex and fragment shaders");
         }
 
-        vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-        vertexInputInfo.pVertexBindingDescriptions = nullptr;
+        vk::PipelineVertexInputStateCreateInfo vertexInputState{};
+        if (vertexLayout.bindingDescription.has_value()) {
+            vertexInputState.vertexBindingDescriptionCount = 1;
+            vertexInputState.pVertexBindingDescriptions = &vertexLayout.bindingDescription.value();
+            vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexLayout.attributeDescriptions.size());
+            vertexInputState.pVertexAttributeDescriptions = vertexLayout.attributeDescriptions.data();
+        } else {
+            vertexInputState.vertexBindingDescriptionCount = 0;
+            vertexInputState.pVertexBindingDescriptions = nullptr;
+            vertexInputState.vertexAttributeDescriptionCount = 0;
+            vertexInputState.pVertexAttributeDescriptions = nullptr;
+        }
 
-        vk::GraphicsPipelineCreateInfo pipelineCreateInfo;
+        vk::GraphicsPipelineCreateInfo pipelineCreateInfo{};
         pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
         pipelineCreateInfo.pStages = shaderStages.data();
-        pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
+        pipelineCreateInfo.pVertexInputState = &vertexInputState;
         pipelineCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyState;
         pipelineCreateInfo.pViewportState = &configInfo.viewportState;
         pipelineCreateInfo.pRasterizationState = &configInfo.rasterizationState;

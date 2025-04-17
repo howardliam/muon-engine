@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
+#include "muon/engine/vertex.hpp"
 #include <filesystem>
 #include <map>
 #include <vulkan/vulkan_core.h>
@@ -15,8 +16,8 @@ namespace muon::engine {
             ConfigInfo(const ConfigInfo &) = delete;
             ConfigInfo &operator=(const ConfigInfo &) = delete;
 
-            vk::PipelineViewportStateCreateInfo viewportState;
             vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+            vk::PipelineViewportStateCreateInfo viewportState;
             vk::PipelineRasterizationStateCreateInfo rasterizationState;
             vk::PipelineMultisampleStateCreateInfo multisampleState;
             vk::PipelineColorBlendAttachmentState colorBlendAttachment;
@@ -57,6 +58,15 @@ namespace muon::engine {
             Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
 
             /**
+             * @brief   adds a vertex input attribute, order matters here; must follow shader order.
+             *
+             * @param   format  the format of the vertex attribute.
+             *
+             * @return  reference to Builder.
+             */
+            Builder &addVertexAttribute(vk::Format format);
+
+            /**
              * @brief   builds the pipeline from the provided info.
              *
              * @param   configInfo  config information for the pipeline to be created with.
@@ -78,10 +88,23 @@ namespace muon::engine {
             Device &device;
 
             std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
+            uint32_t offset{0};
+            uint32_t location{0};
+            VertexLayout vertexLayout{};
             pipeline::ConfigInfo configInfo{};
+
+            /**
+             * @brief   updates the binding description for the pipeline.
+             */
+            void updateBindingDescription();
         };
 
-        Pipeline(Device &device, const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths, const pipeline::ConfigInfo &configInfo);
+        Pipeline(
+            Device &device,
+            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+            const VertexLayout &vertexLayout,
+            const pipeline::ConfigInfo &configInfo
+        );
         ~Pipeline();
 
         Pipeline(const Pipeline &) = delete;
@@ -114,7 +137,11 @@ namespace muon::engine {
          * @param   shaderPaths ordered map of shaders.
          * @param   configInfo  config info to create the pipeline with.
          */
-        void createGraphicsPipeline(const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths, const pipeline::ConfigInfo &configInfo);
+        void createGraphicsPipeline(
+            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+            const VertexLayout &vertexLayout,
+            const pipeline::ConfigInfo &configInfo
+        );
     };
 
 }

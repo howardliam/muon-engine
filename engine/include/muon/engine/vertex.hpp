@@ -6,9 +6,9 @@
 
 namespace muon::engine {
 
-    struct IVertexLayout {
-        virtual std::vector<vk::VertexInputBindingDescription> getBindingDescriptions() const = 0;
-        virtual std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions() const = 0;
+    struct VertexLayout {
+        std::optional<vk::VertexInputBindingDescription> bindingDescription;
+        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
     };
 
 }
