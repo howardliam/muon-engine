@@ -1,5 +1,5 @@
-#include <X11/Xlib.h>
 #include <memory>
+#include <fstream>
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -184,7 +184,7 @@ int main() {
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     engine::RenderPass scenePass(device);
-    engine::Framebuffer sceneFramebuffer(device, scenePass, window.getExtent());
+    std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
 
     // RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
@@ -208,12 +208,13 @@ int main() {
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 window.resize(event.window.data1, event.window.data2);
+
+                sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
             }
         }
 
         if (const auto commandBuffer = frameHandler.beginFrame()) {
             const int32_t frameIndex = frameHandler.getFrameIndex();
-
 
             Ubo ubo{};
             ubo.view = view;
@@ -222,17 +223,54 @@ int main() {
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();
 
+            scenePass.beginRenderPass(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
 
-            scenePass.beginRenderPass(commandBuffer, sceneFramebuffer.getFramebuffer(), sceneFramebuffer.getExtent());
-
-            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
+            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
 
             scenePass.endRenderPass(commandBuffer);
 
             if (screenshotRequested) {
-                auto sceneImage = sceneFramebuffer.getImage();
+                auto sceneImage = sceneFramebuffer->getImage();
 
-                /* copy image to buffer, save buffer as image */
+                auto extent = sceneFramebuffer->getExtent();
+                auto size = extent.width * extent.height;
+
+                engine::Buffer stagingBuffer(
+                    device,
+                    4,
+                    size,
+                    vk::BufferUsageFlagBits::eTransferDst,
+                    vma::MemoryUsage::eGpuToCpu
+                );
+
+                device.copyImageToBuffer(sceneImage, stagingBuffer.getBuffer(), extent.width, extent.height, 1);
+
+                assets::ImageData imageData{};
+                imageData.width = extent.width;
+                imageData.height = extent.height;
+                imageData.bitDepth = 8;
+
+                if (stagingBuffer.map() != vk::Result::eSuccess) {
+                    logger->error("failed to map screenshot buffer");
+                }
+
+                std::vector<char> data(stagingBuffer.getBufferSize());
+                std::memcpy(data.data(), stagingBuffer.getMappedMemory(), stagingBuffer.getBufferSize());
+
+                for (size_t i = 0; i < size; i++) {
+                    char *pixel = data.data() + (i * 4);
+                    std::swap(pixel[0], pixel[2]);
+                }
+
+                imageData.data = data;
+
+                std::vector png = assets::encodeImagePng(imageData);
+                std::ofstream outputFile("./new.png");
+                outputFile.write(reinterpret_cast<char *>(png.data()), png.size());
+
+                logger->info("screenshot saved");
+
+                screenshotRequested = false;
             }
 
             frameHandler.beginSwapchainRenderPass(commandBuffer);
@@ -242,7 +280,7 @@ int main() {
                 the render passes are the same, otherwise it will spray out a load of validation
                 messages
             */
-            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
+            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
 
             frameHandler.endSwapchainRenderPass(commandBuffer);
 
