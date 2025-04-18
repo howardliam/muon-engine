@@ -54,7 +54,9 @@ namespace muon::engine {
         configInfo.multisampleState.alphaToOneEnable = false;
 
         configInfo.colorBlendAttachment.colorWriteMask =
-            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
+            vk::ColorComponentFlagBits::eR |
+            vk::ColorComponentFlagBits::eG |
+            vk::ColorComponentFlagBits::eB |
             vk::ColorComponentFlagBits::eA;
         configInfo.colorBlendAttachment.blendEnable = false;
         configInfo.colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eOne;
@@ -68,7 +70,7 @@ namespace muon::engine {
         configInfo.colorBlendState.logicOp = vk::LogicOp::eCopy;
         configInfo.colorBlendState.attachmentCount = 1;
         configInfo.colorBlendState.pAttachments = &configInfo.colorBlendAttachment;
-        configInfo.colorBlendState.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
+        configInfo.colorBlendState.blendConstants = vk::ArrayWrapper1D<float, 4>({ 0.0f, 0.0f, 0.0f, 0.0f });
 
         configInfo.depthStencilState.depthTestEnable = true;
         configInfo.depthStencilState.depthWriteEnable = true;

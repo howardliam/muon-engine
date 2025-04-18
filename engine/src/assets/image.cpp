@@ -30,4 +30,38 @@ namespace muon::assets {
         };
     }
 
+    std::vector<uint8_t> encodeImagePng(const ImageData &imageData) {
+        spng_ctx *ctx = spng_ctx_new(SPNG_CTX_ENCODER);
+        spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1);
+
+        spng_ihdr ihdr{};
+        ihdr.width = imageData.width;
+        ihdr.height = imageData.height;
+        ihdr.bit_depth = imageData.bitDepth;
+        ihdr.color_type = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA;
+
+        int32_t result = spng_set_ihdr(ctx, &ihdr);
+        if (result > 0) {
+            std::println("spng_set_ihdr() error: {}", spng_strerror(result));
+        }
+
+        result = spng_encode_image(ctx, imageData.data.data(), imageData.data.size(), SPNG_FMT_PNG, SPNG_ENCODE_FINALIZE);
+        if (result > 0) {
+            std::println("spng_encode_image() error: {}", spng_strerror(result));
+        }
+
+        size_t encodedSize{0};
+        int32_t error{0};
+        void *data = spng_get_png_buffer(ctx, &encodedSize, &error);
+        if (error > 0) {
+            std::println("spng_get_png_buffer() error: {}", spng_strerror(result));
+        }
+
+        std::vector<uint8_t> pngData(static_cast<uint8_t *>(data), static_cast<uint8_t *>(data) + encodedSize);
+
+        free(data);
+        spng_ctx_free(ctx);
+
+        return pngData;
+    }
 }

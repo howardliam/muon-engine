@@ -14,4 +14,6 @@ namespace muon::assets {
 
     ImageData loadImagePng(std::vector<char> imageData);
 
+    std::vector<uint8_t> encodeImagePng(const ImageData &imageData);
+
 }
