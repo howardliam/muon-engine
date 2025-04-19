@@ -103,6 +103,38 @@ namespace muon::engine {
 
         const auto commandBuffer = getCurrentCommandBuffer();
 
+        {
+            vk::ImageMemoryBarrier barrier{};
+            barrier.oldLayout = vk::ImageLayout::eUndefined;
+            barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+
+            barrier.srcAccessMask = vk::AccessFlagBits{};
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+            barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+            barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+
+            barrier.image = swapchainImage;
+
+            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+
+            commandBuffer.pipelineBarrier(
+                vk::PipelineStageFlagBits::eBottomOfPipe,
+                vk::PipelineStageFlagBits::eTransfer,
+                vk::DependencyFlagBits{},
+                0,
+                nullptr,
+                0,
+                nullptr,
+                1,
+                &barrier
+            );
+        }
+
         vk::ImageCopy imageCopy{};
         imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
         imageCopy.srcSubresource.mipLevel = 0;
@@ -125,6 +157,35 @@ namespace muon::engine {
             1,
             &imageCopy
         );
+
+        {
+            vk::ImageMemoryBarrier barrier{};
+            barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+            barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+
+            barrier.image = swapchainImage;
+
+            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+
+            commandBuffer.pipelineBarrier(
+                vk::PipelineStageFlagBits::eTransfer,
+                vk::PipelineStageFlagBits::eBottomOfPipe,
+                vk::DependencyFlagBits{},
+                0,
+                nullptr,
+                0,
+                nullptr,
+                1,
+                &barrier
+            );
+        }
     }
 
     vk::RenderPass FrameHandler::getSwapchainRenderPass() const {
