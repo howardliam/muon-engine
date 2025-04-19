@@ -46,6 +46,8 @@ namespace muon::engine {
          */
         void endSwapchainRenderPass(vk::CommandBuffer commandBuffer);
 
+        void copyImageToSwapchain(vk::Image image);
+
         /**
          * @brief   gets the render pass from the swapchain.
          *

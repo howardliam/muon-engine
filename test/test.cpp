@@ -229,9 +229,9 @@ int main() {
 
             scenePass.endRenderPass(commandBuffer);
 
-            if (screenshotRequested) {
-                auto sceneImage = sceneFramebuffer->getImage();
+            auto sceneImage = sceneFramebuffer->getImage();
 
+            if (screenshotRequested) {
                 auto extent = sceneFramebuffer->getExtent();
                 auto size = extent.width * extent.height;
 
@@ -257,6 +257,7 @@ int main() {
                 std::vector<char> data(stagingBuffer.getBufferSize());
                 std::memcpy(data.data(), stagingBuffer.getMappedMemory(), stagingBuffer.getBufferSize());
 
+                /* replace with compute shader for swizzling */
                 for (size_t i = 0; i < size; i++) {
                     char *pixel = data.data() + (i * 4);
                     std::swap(pixel[0], pixel[2]);
@@ -265,7 +266,7 @@ int main() {
                 imageData.data = data;
 
                 std::vector png = assets::encodeImagePng(imageData);
-                std::ofstream outputFile("./new.png");
+                std::ofstream outputFile("./screenshot.png");
                 outputFile.write(reinterpret_cast<char *>(png.data()), png.size());
 
                 logger->info("screenshot saved");
@@ -273,16 +274,18 @@ int main() {
                 screenshotRequested = false;
             }
 
-            frameHandler.beginSwapchainRenderPass(commandBuffer);
+            // frameHandler.beginSwapchainRenderPass(commandBuffer);
 
-            /*
-                Will actually render despite using a different render pass from the swapchain if
-                the render passes are the same, otherwise it will spray out a load of validation
-                messages
-            */
-            renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
+            // /*
+            //     Will actually render despite using a different render pass from the swapchain if
+            //     the render passes are the same, otherwise it will spray out a load of validation
+            //     messages
+            // */
+            // renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
 
-            frameHandler.endSwapchainRenderPass(commandBuffer);
+            // frameHandler.endSwapchainRenderPass(commandBuffer);
+
+            frameHandler.copyImageToSwapchain(sceneImage);
 
             frameHandler.endFrame();
         }

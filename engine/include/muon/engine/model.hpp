@@ -16,20 +16,42 @@ namespace muon::engine {
         Model(const Model &) = delete;
         Model &operator=(const Model &) = delete;
 
+        /**
+         * @brief   bind the model to the command buffer.
+         *
+         * @param   commandBuffer   the command buffer to bind the model to.
+         */
         void bind(vk::CommandBuffer commandBuffer) const;
+
+        /**
+         * @brief   draw the model.
+         *
+         * @param   commandBuffer   the command buffer to record the draw call.
+         */
         void draw(vk::CommandBuffer commandBuffer) const;
 
     private:
         Device &device;
 
-        std::unique_ptr<Buffer> vertexBuffer;
+        std::unique_ptr<Buffer> vertexBuffer{nullptr};
         uint32_t vertexCount{0};
 
         bool hasIndexBuffer{false};
-        std::unique_ptr<Buffer> indexBuffer;
+        std::unique_ptr<Buffer> indexBuffer{nullptr};
         uint32_t indexCount{0};
 
+        /**
+         * @brief   creates the vertex buffer.
+         *
+         * @param   vertices    vector of generic type (expected to be a vertex).
+         */
         void createVertexBuffer(const std::vector<T> &vertices);
+
+        /**
+         * @brief   creates the index buffer.
+         *
+         * @param   indices vector of indices.
+         */
         void createIndexBuffer(const std::vector<uint32_t> &indices);
     };
 
@@ -41,6 +63,27 @@ namespace muon::engine {
     ) : device(device) {
         createVertexBuffer(vertices);
         createIndexBuffer(indices);
+    }
+
+    template<typename T>
+    void Model<T>::bind(vk::CommandBuffer commandBuffer) const {
+        const vk::Buffer buffer = vertexBuffer->getBuffer();
+        const vk::DeviceSize offset = 0;
+
+        commandBuffer.bindVertexBuffers(0, 1, &buffer, &offset);
+
+        if (hasIndexBuffer) {
+            commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
+        }
+    }
+
+    template<typename T>
+    void Model<T>::draw(vk::CommandBuffer commandBuffer) const {
+        if (hasIndexBuffer) {
+            commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
+        } else {
+            commandBuffer.draw(vertexCount, 1, 0, 0);
+        }
     }
 
     template<typename T>
@@ -110,24 +153,4 @@ namespace muon::engine {
         device.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
     }
 
-    template<typename T>
-    void Model<T>::bind(vk::CommandBuffer commandBuffer) const {
-        const vk::Buffer buffer = vertexBuffer->getBuffer();
-        const vk::DeviceSize offset = 0;
-
-        commandBuffer.bindVertexBuffers(0, 1, &buffer, &offset);
-
-        if (hasIndexBuffer) {
-            commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
-        }
-    }
-
-    template<typename T>
-    void Model<T>::draw(vk::CommandBuffer commandBuffer) const {
-        if (hasIndexBuffer) {
-            commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
-        } else {
-            commandBuffer.draw(vertexCount, 1, 0, 0);
-        }
-    }
 }

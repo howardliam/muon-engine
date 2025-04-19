@@ -98,6 +98,35 @@ namespace muon::engine {
         commandBuffer.endRenderPass();
     }
 
+    void FrameHandler::copyImageToSwapchain(vk::Image image) {
+        auto swapchainImage = swapchain->getImage(currentImageIndex);
+
+        const auto commandBuffer = getCurrentCommandBuffer();
+
+        vk::ImageCopy imageCopy{};
+        imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imageCopy.srcSubresource.mipLevel = 0;
+        imageCopy.srcSubresource.baseArrayLayer = 0;
+        imageCopy.srcSubresource.layerCount = 1;
+        imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
+
+        imageCopy.dstSubresource = imageCopy.srcSubresource;
+        imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
+
+        imageCopy.extent.width = swapchain->getExtent().width;
+        imageCopy.extent.height = swapchain->getExtent().height;
+        imageCopy.extent.depth = 1;
+
+        commandBuffer.copyImage(
+            image,
+            vk::ImageLayout::eTransferSrcOptimal,
+            swapchainImage,
+            vk::ImageLayout::eTransferDstOptimal,
+            1,
+            &imageCopy
+        );
+    }
+
     vk::RenderPass FrameHandler::getSwapchainRenderPass() const {
         return swapchain->getRenderPass();
     }
