@@ -39,23 +39,23 @@ public:
     Logger() : misc::ILogger() {}
 
 private:
-    void traceImpl(std::string message) override {
+    void traceImpl(const std::string &message) override {
         spdlog::trace(message);
     }
 
-    void debugImpl(std::string message) override {
+    void debugImpl(const std::string &message) override {
         spdlog::debug(message);
     }
 
-    void infoImpl(std::string message) override {
+    void infoImpl(const std::string &message) override {
         spdlog::info(message);
     }
 
-    void warnImpl(std::string message) override {
+    void warnImpl(const std::string &message) override {
         spdlog::warn(message);
     }
 
-    void errorImpl(std::string message) override {
+    void errorImpl(const std::string &message) override {
         spdlog::error(message);
     }
 };
