@@ -8,6 +8,7 @@ set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders)
 file(GLOB SHADERS
     "${SHADER_DIR}/*.vert"
     "${SHADER_DIR}/*.frag"
+    "${SHADER_DIR}/*.comp"
 )
 foreach(SHADER ${SHADERS})
     get_filename_component(SHADER_NAME ${SHADER} NAME)

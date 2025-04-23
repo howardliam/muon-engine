@@ -1,0 +1,15 @@
+#version 460 core
+
+layout(local_size_x = 256) in;
+
+layout(binding = 0, rgba8) readonly uniform image2D inputImage;
+layout(binding = 1, rgba8) writeonly uniform image2D outputImage;
+
+void main() {
+    ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
+    vec4 color = imageLoad(inputImage, coords);
+
+    color.rgb = vec3(1.0) - color.rgb;
+
+    imageStore(outputImage, coords, color);
+}

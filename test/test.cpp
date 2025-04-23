@@ -1,3 +1,4 @@
+#include "muon/engine/image.hpp"
 #include <memory>
 #include <fstream>
 
@@ -105,6 +106,27 @@ public:
     }
 };
 
+// class ComputeShaderRenderSystem : public engine::RenderSystem {
+// public:
+//     ComputeShaderRenderSystem(
+//         engine::Device &device,
+//         std::vector<vk::DescriptorSetLayout> setLayouts,
+//         vk::RenderPass renderPass
+//     ) : engine::RenderSystem(device, setLayouts)  {
+//         createPipeline(renderPass);
+//     }
+
+//     void createPipeline(vk::RenderPass renderPass) override {
+//         engine::pipeline::ConfigInfo configInfo;
+//         engine::pipeline::defaultConfigInfo(configInfo);
+//         configInfo.pipelineLayout = pipelineLayout;
+
+//         pipeline = engine::Pipeline::Builder(device)
+//             .addShader(vk::ShaderStageFlagBits::eCompute, std::filesystem::path("./test/assets/shaders/shader.comp.spv"))
+//             .buildUniquePointer(configInfo);
+//     }
+// };
+
 int main() {
     auto logger = std::make_shared<Logger>();
 
@@ -125,6 +147,7 @@ int main() {
 
     std::unique_ptr pool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
+        .addPoolSize(vk::DescriptorType::eStorageImage, engine::constants::maxFramesInFlight * 2)
         .build();
 
     struct Ubo {
@@ -186,8 +209,29 @@ int main() {
     engine::RenderPass scenePass(device);
     std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
 
-    // RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, frameHandler.getSwapchainRenderPass());
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
+
+    auto usageFlags = vk::ImageUsageFlagBits::eStorage;
+    engine::Image computeImage(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eB8G8R8A8Unorm, usageFlags);
+
+    // device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, vma::MemoryUsage::eGpuOnly, postProcessingImage, imageAllocation);
+
+    // std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
+    //     .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
+    //     .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
+    //     .build();
+
+    // std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
+    // for (size_t i = 0; i < descriptorSets.size(); i++) {
+    //     vk::DescriptorImageInfo imageInfo{};
+
+    //     engine::DescriptorWriter(*setLayout, *pool)
+    //         .writeImage(0, &imageInfo)
+    //         .writeImage(1, &imageInfo)
+    //         .build(computeDescriptorSets[i]);
+    // }
+
+    // ComputeShaderRenderSystem computeShader(device, {computeSetLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
 
     bool screenshotRequested{false};
 
