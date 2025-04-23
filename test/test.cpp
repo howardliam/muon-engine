@@ -1,4 +1,3 @@
-#include "muon/engine/image.hpp"
 #include <memory>
 #include <fstream>
 
@@ -12,6 +11,7 @@
 #include <muon/engine/device.hpp>
 #include <muon/engine/framebuffer.hpp>
 #include <muon/engine/framehandler.hpp>
+#include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
 #include <muon/engine/pipeline.hpp>
 #include <muon/engine/renderpass.hpp>
@@ -75,7 +75,7 @@ public:
         createPipeline(renderPass);
     }
 
-    void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, const engine::Model<Vertex> &model) {
+    void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, const engine::Model &model) {
         pipeline->bind(commandBuffer);
 
         commandBuffer.bindDescriptorSets(
@@ -181,27 +181,26 @@ int main() {
             .build(descriptorSets[i]);
     }
 
-    std::vector<Vertex> triangleVertices = {
-        {{0.0f, -0.5f, -5.0f}},
-        {{0.5f, 0.5f, -5.0f}},
-        {{-0.5f, 0.5f, -5.0f}},
+    struct TestVertex {
+        glm::vec3 position{};
     };
+    auto stride = sizeof(TestVertex);
 
-    engine::Model<Vertex> triangle(device, triangleVertices, {});
-
-    std::vector<Vertex> squareVertices = {
+    std::vector<TestVertex> vertices = {
         {{0.5f, 0.5f, -5.0f}},
         {{0.5f, -0.5f, -5.0f}},
         {{-0.5f, -0.5f, -5.0f}},
         {{-0.5f, 0.5f, -5.0f}},
     };
 
-    std::vector<uint32_t> squareIndices = {
+    std::vector vertexData = engine::Model::getRawVertexData(vertices);
+
+    std::vector<uint32_t> indices = {
         0, 1, 2,
         0, 2, 3,
     };
 
-    engine::Model<Vertex> square(device, squareVertices, squareIndices);
+    engine::Model square(device, vertexData, stride, indices);
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
