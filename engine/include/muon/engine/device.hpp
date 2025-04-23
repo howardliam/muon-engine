@@ -13,10 +13,14 @@ namespace muon::engine {
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> computeFamily;
         std::optional<uint32_t> presentFamily;
 
         bool isComplete() {
-            return graphicsFamily.has_value() && graphicsFamily.has_value();
+            return
+                graphicsFamily.has_value() &&
+                computeFamily.has_value() &&
+                graphicsFamily.has_value();
         }
     };
 
@@ -155,6 +159,13 @@ namespace muon::engine {
         [[nodiscard]] vk::Queue getGraphicsQueue() const;
 
         /**
+            * @brief   gets compute queue.
+            *
+            * @return  compute queue.
+            */
+        [[nodiscard]] vk::Queue getComputeQueue() const;
+
+        /**
          * @brief   gets present queue.
          *
          * @return  present queue.
@@ -199,6 +210,7 @@ namespace muon::engine {
         vk::CommandPool commandPool;
 
         vk::Queue graphicsQueue;
+        vk::Queue computeQueue;
         vk::Queue presentQueue;
 
         vma::Allocator allocator;

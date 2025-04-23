@@ -274,16 +274,7 @@ int main() {
                 screenshotRequested = false;
             }
 
-            // frameHandler.beginSwapchainRenderPass(commandBuffer);
 
-            // /*
-            //     Will actually render despite using a different render pass from the swapchain if
-            //     the render passes are the same, otherwise it will spray out a load of validation
-            //     messages
-            // */
-            // renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], triangle);
-
-            // frameHandler.endSwapchainRenderPass(commandBuffer);
 
             frameHandler.copyImageToSwapchain(sceneImage);
 

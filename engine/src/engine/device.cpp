@@ -134,7 +134,7 @@ namespace muon::engine {
         vk::CommandBuffer commandBuffer;
         auto result = device.allocateCommandBuffers(&allocateInfo, &commandBuffer);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to allocate single time command buffer");
+            throw std::runtime_error("failed to allocate single time command buffer");
         }
 
         vk::CommandBufferBeginInfo beginInfo;
@@ -142,7 +142,7 @@ namespace muon::engine {
 
         result = commandBuffer.begin(&beginInfo);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to begin command buffer recording");
+            throw std::runtime_error("failed to begin command buffer recording");
         }
 
         return commandBuffer;
@@ -157,7 +157,7 @@ namespace muon::engine {
 
         auto result = graphicsQueue.submit(1, &submitInfo, nullptr);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to submit command buffer to graphics queue");
+            throw std::runtime_error("failed to submit command buffer to graphics queue");
         }
 
         graphicsQueue.waitIdle();
@@ -287,6 +287,10 @@ namespace muon::engine {
 
     vk::Queue Device::getGraphicsQueue() const {
         return graphicsQueue;
+    }
+
+    vk::Queue Device::getComputeQueue() const {
+        return computeQueue;
     }
 
     vk::Queue Device::getPresentQueue() const {
@@ -526,7 +530,7 @@ namespace muon::engine {
 
         auto result = device.createCommandPool(&poolInfo, nullptr, &commandPool);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to create command pool");
+            throw std::runtime_error("failed to create command pool");
         }
     }
 
@@ -539,6 +543,10 @@ namespace muon::engine {
         for (const auto &queueFamily : queueFamilies) {
             if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
                 indices.graphicsFamily = i;
+            }
+
+            if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) {
+                indices.computeFamily = i;
             }
 
             vk::Bool32 presentSupport = false;
@@ -563,34 +571,34 @@ namespace muon::engine {
 
         auto result = physicalDevice.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to get surface capabilities");
+            logger->error("failed to get surface capabilities");
         }
 
         uint32_t formatCount;
         result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to get surface formats");
+            logger->error("failed to get surface formats");
         }
 
         if (formatCount > 0) {
             details.formats.resize(formatCount);
             result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, details.formats.data());
             if (result != vk::Result::eSuccess) {
-                std::println("failed to get surface formats");
+                logger->error("failed to get surface formats");
             }
         }
 
         uint32_t presentModeCount;
         result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to get surface present modes");
+            logger->error("failed to get surface present modes");
         }
 
         if (presentModeCount > 0) {
             details.presentModes.resize(presentModeCount);
             result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, details.presentModes.data());
             if (result != vk::Result::eSuccess) {
-                std::println("failed to get surface present modes");
+                logger->error("failed to get surface present modes");
             }
         }
 
