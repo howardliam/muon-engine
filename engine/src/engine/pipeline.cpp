@@ -189,6 +189,7 @@ namespace muon::engine {
 
         bool hasVertShader = false;
         bool hasFragShader = false;
+        bool hasComputeShader = false;
 
         size_t idx = 0;
         for (auto [stage, path] : shaderPaths) {
@@ -196,6 +197,8 @@ namespace muon::engine {
                 hasVertShader = true;
             } else if (stage == vk::ShaderStageFlagBits::eFragment) {
                 hasFragShader = true;
+            } else if (stage == vk::ShaderStageFlagBits::eCompute) {
+                hasComputeShader = true;
             }
 
             std::vector byteCode = readFile(path);
@@ -216,8 +219,10 @@ namespace muon::engine {
             idx += 1;
         }
 
-        if (!hasVertShader || !hasFragShader) {
-            throw std::runtime_error("cannot create a pipeline without vertex and fragment shaders");
+        if (!hasVertShader || !hasFragShader && !hasComputeShader) {
+            throw std::runtime_error("cannot create a pipeline without vertex and fragment, or compute shaders");
+        } else if (hasVertShader && hasComputeShader) {
+            throw std::runtime_error("compute shaders are mutually exclusive with traditional graphics pipeline");
         }
 
         vk::PipelineVertexInputStateCreateInfo vertexInputState{};
