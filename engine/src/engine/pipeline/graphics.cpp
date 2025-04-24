@@ -1,6 +1,5 @@
 #include "muon/engine/pipeline/graphics.hpp"
 
-#include <fstream>
 #include "muon/engine/pipeline.hpp"
 
 namespace muon::engine {
