@@ -232,7 +232,7 @@ int main() {
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage;
-    engine::Image computeImage(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eB8G8R8A8Unorm, usageFlags);
+    engine::Image computeImage(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
 
     std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
@@ -321,12 +321,6 @@ int main() {
 
                 std::vector<char> data(stagingBuffer.getBufferSize());
                 std::memcpy(data.data(), stagingBuffer.getMappedMemory(), stagingBuffer.getBufferSize());
-
-                /* replace with compute shader for swizzling */
-                for (size_t i = 0; i < size; i++) {
-                    char *pixel = data.data() + (i * 4);
-                    std::swap(pixel[0], pixel[2]);
-                }
 
                 imageData.data = data;
 
