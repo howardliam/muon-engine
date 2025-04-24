@@ -1,6 +1,6 @@
 #version 460 core
 
-layout(local_size_x = 256) in;
+layout(local_size_x = 32) in;
 
 layout(binding = 0, rgba8) readonly uniform image2D inputImage;
 layout(binding = 1, rgba8) writeonly uniform image2D outputImage;

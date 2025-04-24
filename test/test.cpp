@@ -1,3 +1,4 @@
+#include "muon/engine/pipeline/compute.hpp"
 #include "muon/engine/pipeline/graphics.hpp"
 #include <memory>
 #include <fstream>
@@ -8,6 +9,7 @@
 
 #include <muon/common/fs.hpp>
 #include <muon/engine/buffer.hpp>
+#include <muon/engine/computesystem.hpp>
 #include <muon/engine/descriptor.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framebuffer.hpp>
@@ -21,7 +23,6 @@
 #include <muon/engine/vertex.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/assets/image.hpp>
-#include <muon/assets/model.hpp>
 #include <muon/misc/logger.hpp>
 
 #include <SDL3/SDL_events.h>
@@ -31,6 +32,7 @@
 #include <spdlog/spdlog.h>
 
 #include <vk_mem_alloc_enums.hpp>
+#include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
 
@@ -93,6 +95,7 @@ public:
         model.draw(commandBuffer);
     }
 
+protected:
     void createPipeline(vk::RenderPass renderPass) override {
         engine::GraphicsPipeline::ConfigInfo configInfo;
         engine::GraphicsPipeline::defaultConfigInfo(configInfo);
@@ -107,26 +110,43 @@ public:
     }
 };
 
-// class ComputeShaderRenderSystem : public engine::RenderSystem {
-// public:
-//     ComputeShaderRenderSystem(
-//         engine::Device &device,
-//         std::vector<vk::DescriptorSetLayout> setLayouts,
-//         vk::RenderPass renderPass
-//     ) : engine::RenderSystem(device, setLayouts)  {
-//         createPipeline(renderPass);
-//     }
+class ComputeShaderRenderSystem : public engine::ComputeSystem {
+public:
+    ComputeShaderRenderSystem(
+        engine::Device &device,
+        std::vector<vk::DescriptorSetLayout> setLayouts
+    ) : engine::ComputeSystem(device, setLayouts)  {
+        createPipeline();
+    }
 
-//     void createPipeline(vk::RenderPass renderPass) override {
-//         engine::pipeline::ConfigInfo configInfo;
-//         engine::pipeline::defaultConfigInfo(configInfo);
-//         configInfo.pipelineLayout = pipelineLayout;
+    void doWork(vk::CommandBuffer commandBuffer, vk::DescriptorSet set) {
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
+        commandBuffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eCompute,
+            pipelineLayout,
+            0,
+            1,
+            &set,
+            0,
+            nullptr
+        );
 
-//         pipeline = engine::Pipeline::Builder(device)
-//             .addShader(vk::ShaderStageFlagBits::eCompute, std::filesystem::path("./test/assets/shaders/shader.comp.spv"))
-//             .buildUniquePointer(configInfo);
-//     }
-// };
+        uint32_t localSize = 32;
+        uint32_t dispatchX = (1600 + localSize - 1) / localSize;
+        uint32_t dispatchY = (900 + localSize - 1) / localSize;
+
+        commandBuffer.dispatch(1, 1, 1);
+    }
+
+protected:
+    void createPipeline() override {
+        pipeline = std::make_unique<engine::ComputePipeline>(
+            device,
+            std::filesystem::path("./test/assets/shaders/shader.comp.spv"),
+            pipelineLayout
+        );
+    }
+};
 
 int main() {
     auto logger = std::make_shared<Logger>();
@@ -219,17 +239,20 @@ int main() {
         .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
         .build();
 
-    // std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
-    // for (size_t i = 0; i < descriptorSets.size(); i++) {
-    //     vk::DescriptorImageInfo imageInfo{};
+    std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
+    for (size_t i = 0; i < descriptorSets.size(); i++) {
+        vk::DescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = computeImage.getImageLayout();
+        imageInfo.imageView = computeImage.getImageView();
+        imageInfo.sampler = nullptr;
 
-    //     engine::DescriptorWriter(*setLayout, *pool)
-    //         .writeImage(0, &imageInfo)
-    //         .writeImage(1, &imageInfo)
-    //         .build(computeDescriptorSets[i]);
-    // }
+        engine::DescriptorWriter(*computeSetLayout, *pool)
+            .writeImage(0, &imageInfo)
+            .writeImage(1, &imageInfo)
+            .build(computeDescriptorSets[i]);
+    }
 
-    // ComputeShaderRenderSystem computeShader(device, {computeSetLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
+    ComputeShaderRenderSystem computeShader(device, {computeSetLayout->getDescriptorSetLayout()});
 
     bool screenshotRequested{false};
 
@@ -316,7 +339,7 @@ int main() {
                 screenshotRequested = false;
             }
 
-
+            computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex]);
 
             frameHandler.copyImageToSwapchain(sceneImage);
 

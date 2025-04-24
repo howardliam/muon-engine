@@ -18,6 +18,10 @@ namespace muon::engine {
         device.getDevice().destroyPipeline(pipeline, nullptr);
     }
 
+    vk::Pipeline ComputePipeline::getPipeline() const {
+        return pipeline;
+    }
+
     void ComputePipeline::createShaderModule(const std::vector<uint8_t> &byteCode, vk::ShaderModule &shaderModule) {
         vk::ShaderModuleCreateInfo createInfo;
         createInfo.codeSize = byteCode.size();

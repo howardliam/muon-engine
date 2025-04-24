@@ -7,10 +7,10 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
     ${INCLUDE_DIR}/muon/assets/image.hpp
-    ${INCLUDE_DIR}/muon/assets/model.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
+    ${INCLUDE_DIR}/muon/engine/computesystem.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framebuffer.hpp
@@ -29,13 +29,13 @@ set(HEADER_FILES
 
 set(SRC_FILES
     ${SRC_DIR}/assets/image.cpp
-    ${SRC_DIR}/assets/model.cpp
     ${SRC_DIR}/engine/descriptor/pool.cpp
     ${SRC_DIR}/engine/descriptor/setlayout.cpp
     ${SRC_DIR}/engine/descriptor/writer.cpp
     ${SRC_DIR}/engine/pipeline/compute.cpp
     ${SRC_DIR}/engine/pipeline/graphics.cpp
     ${SRC_DIR}/engine/buffer.cpp
+    ${SRC_DIR}/engine/computesystem.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/framebuffer.cpp
     ${SRC_DIR}/engine/framehandler.cpp
@@ -80,4 +80,4 @@ add_library(${LIB_NAME} SHARED
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE spng)
-target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm assimp)
+target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)

@@ -14,6 +14,8 @@ namespace muon::engine {
         );
         ~ComputePipeline();
 
+        [[nodiscard]] vk::Pipeline getPipeline() const;
+
     private:
         Device &device;
 
