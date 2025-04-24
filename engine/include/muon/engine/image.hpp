@@ -20,35 +20,42 @@ namespace muon::engine {
          *
          * @return  size of the image.
          */
-        [[nodiscard]] vk::Extent2D getExtent();
+        [[nodiscard]] vk::Extent2D getExtent() const;
 
         /**
          * @brief   get image layout.
          *
          * @return  layout of the image.
          */
-        [[nodiscard]] vk::ImageLayout getImageLayout();
+        [[nodiscard]] vk::ImageLayout getImageLayout() const;
 
         /**
          * @brief   get image format.
          *
          * @return  color format of the image.
          */
-        [[nodiscard]] vk::Format getFormat();
+        [[nodiscard]] vk::Format getFormat() const;
 
         /**
          * @brief   get image handle.
          *
          * @return  image handle.
          */
-        [[nodiscard]] vk::Image getImage();
+        [[nodiscard]] vk::Image getImage() const;
 
         /**
          * @brief   get image view handle.
          *
          * @return  image view handle.
          */
-        [[nodiscard]] vk::ImageView getImageView();
+        [[nodiscard]] vk::ImageView getImageView() const;
+
+        /**
+         * @brief   get image descriptor info.
+         *
+         * @return  descriptor information struct.
+         */
+        [[nodiscard]] vk::DescriptorImageInfo getDescriptorInfo() const;
 
     private:
         Device &device;

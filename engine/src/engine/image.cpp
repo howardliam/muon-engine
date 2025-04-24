@@ -20,24 +20,32 @@ namespace muon::engine {
         device.getAllocator().destroyImage(image, allocation);
     }
 
-    vk::Extent2D Image::getExtent() {
+    vk::Extent2D Image::getExtent() const {
         return extent;
     }
 
-    vk::ImageLayout Image::getImageLayout() {
+    vk::ImageLayout Image::getImageLayout() const {
         return imageLayout;
     }
 
-    vk::Format Image::getFormat() {
+    vk::Format Image::getFormat() const {
         return format;
     }
 
-    vk::Image Image::getImage() {
+    vk::Image Image::getImage() const {
         return image;
     }
 
-    vk::ImageView Image::getImageView() {
+    vk::ImageView Image::getImageView() const {
         return imageView;
+    }
+
+    vk::DescriptorImageInfo Image::getDescriptorInfo() const {
+        return vk::DescriptorImageInfo{
+            nullptr,
+            imageView,
+            imageLayout,
+        };
     }
 
     void Image::createImage() {
