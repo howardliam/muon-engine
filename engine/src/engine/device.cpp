@@ -31,7 +31,7 @@ namespace muon::engine {
         void *userData
     ) {
         misc::ILogger *logger = reinterpret_cast<misc::ILogger *>(userData);
-        logger->info("{}", callbackData->pMessage);
+        logger->warn(callbackData->pMessage);
 
         return false;
     }
@@ -202,7 +202,7 @@ namespace muon::engine {
     void Device::copyImageToBuffer(vk::Image image, vk::Buffer buffer, uint32_t width, uint32_t height, uint32_t layerCount) {
         vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
 
-        vk::BufferImageCopy region;
+        vk::BufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
