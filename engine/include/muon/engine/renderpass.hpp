@@ -22,7 +22,7 @@ namespace muon::engine {
 
         vk::RenderPass renderPass;
 
-        vk::Format imageFormat{vk::Format::eB8G8R8A8Srgb};
+        vk::Format imageFormat{vk::Format::eB8G8R8A8Unorm};
         vk::Format depthImageFormat{vk::Format::eD32Sfloat};
 
         void createRenderPass();
