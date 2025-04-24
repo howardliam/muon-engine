@@ -232,7 +232,8 @@ int main() {
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage;
-    engine::Image computeImage(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
+    engine::Image computeImageA(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
+    engine::Image computeImageB(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
 
     std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
@@ -241,14 +242,12 @@ int main() {
 
     std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
     for (size_t i = 0; i < descriptorSets.size(); i++) {
-        vk::DescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = computeImage.getImageLayout();
-        imageInfo.imageView = computeImage.getImageView();
-        imageInfo.sampler = nullptr;
+        auto infoA = computeImageA.getDescriptorInfo();
+        auto infoB = computeImageB.getDescriptorInfo();
 
         engine::DescriptorWriter(*computeSetLayout, *pool)
-            .writeImage(0, &imageInfo)
-            .writeImage(1, &imageInfo)
+            .writeImage(0, &infoA)
+            .writeImage(1, &infoB)
             .build(computeDescriptorSets[i]);
     }
 
