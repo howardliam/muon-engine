@@ -1,0 +1,127 @@
+#pragma once
+
+#include "muon/engine/device.hpp"
+#include "muon/engine/vertex.hpp"
+#include <map>
+#include <filesystem>
+
+namespace muon::engine {
+
+    class GraphicsPipeline {
+    public:
+        struct ConfigInfo {
+            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+            vk::PipelineViewportStateCreateInfo viewportState;
+            vk::PipelineRasterizationStateCreateInfo rasterizationState;
+            vk::PipelineMultisampleStateCreateInfo multisampleState;
+            vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+            vk::PipelineColorBlendStateCreateInfo colorBlendState;
+            vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+            std::vector<vk::DynamicState> dynamicStateEnables;
+            vk::PipelineDynamicStateCreateInfo dynamicState;
+            vk::PipelineLayout pipelineLayout = nullptr;
+            vk::RenderPass renderPass = nullptr;
+            uint32_t subpass = 0;
+        };
+
+        class Builder {
+        public:
+            Builder(Device &device);
+
+            /**
+             * @brief   adds a shader at the stage.
+             *
+             * @param   stage   the stage to add the shader for.
+             * @param   path    path to the shader SPIR-V file.
+             *
+             * @return  reference to Builder.
+             */
+            Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
+
+            /**
+             * @brief   adds a vertex input attribute, order matters here; must follow shader order.
+             *
+             * @param   format  the format of the vertex attribute.
+             *
+             * @return  reference to Builder.
+             */
+            Builder &addVertexAttribute(vk::Format format);
+
+            /**
+             * @brief   builds the pipeline from the provided info.
+             *
+             * @param   configInfo  config information for the pipeline to be created with.
+             *
+             * @return  new Pipeline object.
+             */
+            GraphicsPipeline build(const ConfigInfo &configInfo) const;
+
+            /**
+             * @brief   builds the pipeline from the provided info.
+             *
+             * @param   configInfo  config information for the pipeline to be created with.
+             *
+             * @return  unique pointer to new Pipeline object.
+             */
+            std::unique_ptr<GraphicsPipeline> buildUniquePointer(const ConfigInfo &configInfo) const;
+
+        private:
+            Device &device;
+
+            std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
+            uint32_t offset{0};
+            uint32_t location{0};
+            VertexLayout vertexLayout{};
+            ConfigInfo configInfo{};
+
+            /**
+             * @brief   updates the binding description for the pipeline.
+             */
+            void updateBindingDescription();
+        };
+
+        GraphicsPipeline(
+            Device &device,
+            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+            const VertexLayout &vertexLayout,
+            const ConfigInfo &configInfo
+        );
+        ~GraphicsPipeline();
+
+        /**
+         * @brief   binds the pipeline into the command buffer to be used by models for rendering.
+         *
+         * @param   commandBuffer   the command buffer to record this command into.
+         */
+        void bind(vk::CommandBuffer commandBuffer);
+
+        static void defaultConfigInfo(ConfigInfo &configInfo);
+
+    private:
+        Device &device;
+
+        vk::Pipeline pipeline;
+        std::vector<vk::ShaderModule> shaders;
+
+        /**
+         * @brief   creates a shader module from the byte code.
+         *
+         * @param   byteCode        SPIR-V byte code to create the shader module with.
+         * @param   shaderModule    shader module handle.
+         */
+        void createShaderModule(const std::vector<uint8_t> &byteCode, vk::ShaderModule &shaderModule);
+
+        /**
+         * @brief   creates a graphics pipeline from the shaders and config info provided.
+         *
+         * @param   shaderPaths ordered map of shaders.
+         * @param   configInfo  config info to create the pipeline with.
+         */
+        void createPipeline(
+            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
+            const VertexLayout &vertexLayout,
+            const ConfigInfo &configInfo
+        );
+    };
+
+}

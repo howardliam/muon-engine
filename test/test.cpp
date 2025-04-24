@@ -1,3 +1,4 @@
+#include "muon/engine/pipeline/graphics.hpp"
 #include <memory>
 #include <fstream>
 
@@ -93,12 +94,12 @@ public:
     }
 
     void createPipeline(vk::RenderPass renderPass) override {
-        engine::pipeline::ConfigInfo configInfo;
-        engine::pipeline::defaultConfigInfo(configInfo);
+        engine::GraphicsPipeline::ConfigInfo configInfo;
+        engine::GraphicsPipeline::defaultConfigInfo(configInfo);
         configInfo.renderPass = renderPass;
         configInfo.pipelineLayout = pipelineLayout;
 
-        pipeline = engine::Pipeline::Builder(device)
+        pipeline = engine::GraphicsPipeline::Builder(device)
             .addShader(vk::ShaderStageFlagBits::eVertex, std::filesystem::path("./test/assets/shaders/shader.vert.spv"))
             .addShader(vk::ShaderStageFlagBits::eFragment, std::filesystem::path("./test/assets/shaders/shader.frag.spv"))
             .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
@@ -213,12 +214,10 @@ int main() {
     auto usageFlags = vk::ImageUsageFlagBits::eStorage;
     engine::Image computeImage(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eB8G8R8A8Unorm, usageFlags);
 
-    // device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, vma::MemoryUsage::eGpuOnly, postProcessingImage, imageAllocation);
-
-    // std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
-    //     .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
-    //     .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
-    //     .build();
+    std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
+        .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
+        .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
+        .build();
 
     // std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
     // for (size_t i = 0; i < descriptorSets.size(); i++) {

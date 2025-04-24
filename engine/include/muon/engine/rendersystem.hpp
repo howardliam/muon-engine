@@ -2,6 +2,7 @@
 
 #include "muon/engine/device.hpp"
 #include "muon/engine/pipeline.hpp"
+#include "muon/engine/pipeline/graphics.hpp"
 #include <memory>
 #include <vulkan/vulkan_handles.hpp>
 
@@ -15,7 +16,7 @@ namespace muon::engine {
     protected:
         Device &device;
 
-        std::unique_ptr<Pipeline> pipeline;
+        std::unique_ptr<GraphicsPipeline> pipeline;
         vk::PipelineLayout pipelineLayout;
 
         /**

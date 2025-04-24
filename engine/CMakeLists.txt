@@ -8,6 +8,8 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HEADER_FILES
     ${INCLUDE_DIR}/muon/assets/image.hpp
     ${INCLUDE_DIR}/muon/assets/model.hpp
+    ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
+    ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
@@ -31,6 +33,8 @@ set(SRC_FILES
     ${SRC_DIR}/engine/descriptor/pool.cpp
     ${SRC_DIR}/engine/descriptor/setlayout.cpp
     ${SRC_DIR}/engine/descriptor/writer.cpp
+    ${SRC_DIR}/engine/pipeline/compute.cpp
+    ${SRC_DIR}/engine/pipeline/graphics.cpp
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/framebuffer.cpp
