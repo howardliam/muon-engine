@@ -1,4 +1,5 @@
 #include "muon/assets/image.hpp"
+#include "muon/assets/image/jpeg.hpp"
 #include "muon/assets/image/png.hpp"
 
 #include <print>
@@ -32,6 +33,8 @@ namespace muon::assets {
             return decodePng(encodedData);
 
         case ImageFormat::Jpeg:
+            return decodeJpeg(encodedData);
+
         default:
             return {};
         }

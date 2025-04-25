@@ -16,8 +16,8 @@ namespace muon::assets {
         size_t imageSize;
         spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &imageSize);
 
-        std::vector<uint8_t> decodedImage(imageSize);
-        spng_decode_image(ctx, decodedImage.data(), decodedImage.size(), SPNG_FMT_RGBA8, 0);
+        std::vector<uint8_t> decodedData(imageSize);
+        spng_decode_image(ctx, decodedData.data(), decodedData.size(), SPNG_FMT_RGBA8, 0);
 
         spng_ctx_free(ctx);
 
@@ -34,7 +34,7 @@ namespace muon::assets {
             {ihdr.width, ihdr.height},
             format,
             ihdr.bit_depth,
-            decodedImage,
+            decodedData,
         };
     }
 

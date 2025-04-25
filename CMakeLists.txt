@@ -36,6 +36,8 @@ add_subdirectory(external/glm)
 option(SPNG_SHARED OFF)
 add_subdirectory(external/libspng)
 
+find_package(libjpeg-turbo REQUIRED)
+
 add_subdirectory(external/json)
 
 pkg_check_modules(LIBMAGIC REQUIRED libmagic)

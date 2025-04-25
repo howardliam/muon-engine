@@ -31,7 +31,7 @@ add_library(${LIB_NAME} SHARED
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 target_include_directories(${LIB_NAME} PRIVATE ${LIBMAGIC_INCLUDE_DIRS})
 
-target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json ${LIBMAGIC_LIBRARIES})
+target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json ${LIBMAGIC_LIBRARIES} turbojpeg)
 target_link_libraries(${LIB_NAME} PUBLIC)
 
 add_library(muon::assets ALIAS ${LIB_NAME})
