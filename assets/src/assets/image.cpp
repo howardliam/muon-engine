@@ -1,10 +1,34 @@
 #include "muon/assets/image.hpp"
+#include "muon/assets/file.hpp"
+#include "muon/assets/image/png.hpp"
 
 #include <print>
-#include <spng.h>
 #include <vector>
+#include <spng.h>
 
 namespace muon::assets {
+
+    std::optional<Image> loadImage(const std::filesystem::path &path) {
+        auto encodedData = readFile(path);
+        if (!encodedData.has_value()) {
+            return {};
+        }
+
+        // todo libmagic
+
+        return loadImage(*encodedData, ImageFormat::Png);
+    }
+
+    std::optional<Image> loadImage(const std::vector<uint8_t> &encodedData, ImageFormat format) {
+        switch (format) {
+        case ImageFormat::Png:
+            return decodePng(encodedData);
+
+        case ImageFormat::Jpeg:
+        default:
+            return {};
+        }
+    }
 
     ImageData loadImagePng(std::vector<char> imageData) {
         spng_ctx *ctx = spng_ctx_new(0);

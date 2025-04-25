@@ -34,6 +34,8 @@ add_subdirectory(external/glm)
 option(SPNG_SHARED OFF)
 add_subdirectory(external/libspng)
 
+add_subdirectory(external/json)
+
 if (MSVC)
     add_compile_options(/W4)
 else()
