@@ -160,7 +160,7 @@ int main() {
 
     engine::Window window(props);
     auto image = assets::loadImage("./muon-logo.png");
-    window.setIcon(image->data);
+    window.setIcon(image->data, image->size.width, image->size.height, 4);
 
     engine::Device device(logger, window);
     engine::FrameHandler frameHandler(window, device);

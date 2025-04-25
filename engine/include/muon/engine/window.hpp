@@ -93,7 +93,7 @@ namespace muon::engine {
          *
          * @param   imageData   vector of bytes corresponding to the image data.
          */
-        void setIcon(std::vector<uint8_t> imageData);
+        void setIcon(std::vector<uint8_t> imageData, uint32_t width, uint32_t height, uint8_t channels);
 
         /**
          * @brief   sets the window's display mode.
