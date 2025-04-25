@@ -6,6 +6,7 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 project(muon)
 
+add_subdirectory(assets)
 add_subdirectory(engine)
 add_subdirectory(common)
 

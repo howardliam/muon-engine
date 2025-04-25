@@ -6,7 +6,6 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
-    ${INCLUDE_DIR}/muon/assets/image.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
@@ -28,7 +27,6 @@ set(HEADER_FILES
 )
 
 set(SRC_FILES
-    ${SRC_DIR}/assets/image.cpp
     ${SRC_DIR}/engine/descriptor/pool.cpp
     ${SRC_DIR}/engine/descriptor/setlayout.cpp
     ${SRC_DIR}/engine/descriptor/writer.cpp
@@ -81,3 +79,5 @@ target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE spng)
 target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
+
+add_library(muon::engine ALIAS ${LIB_NAME})

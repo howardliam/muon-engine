@@ -21,3 +21,5 @@ add_library(${LIB_NAME} SHARED
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE zstd)
+
+add_library(muon::common ALIAS ${LIB_NAME})
