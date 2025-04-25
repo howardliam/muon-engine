@@ -104,8 +104,8 @@ protected:
         configInfo.pipelineLayout = pipelineLayout;
 
         pipeline = engine::GraphicsPipeline::Builder(device)
-            .addShader(vk::ShaderStageFlagBits::eVertex, std::filesystem::path("./test/assets/shaders/shader.vert.spv"))
-            .addShader(vk::ShaderStageFlagBits::eFragment, std::filesystem::path("./test/assets/shaders/shader.frag.spv"))
+            .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
+            .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
             .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
             .buildUniquePointer(configInfo);
     }
@@ -143,7 +143,7 @@ protected:
     void createPipeline() override {
         pipeline = std::make_unique<engine::ComputePipeline>(
             device,
-            std::filesystem::path("./test/assets/shaders/shader.comp.spv"),
+            "./test/assets/shaders/shader.comp.spv",
             pipelineLayout
         );
     }
@@ -159,7 +159,7 @@ int main() {
     props.title = "Testing";
 
     engine::Window window(props);
-    auto image = assets::loadImage(std::filesystem::path("./muon-logo.png"));
+    auto image = assets::loadImage("./muon-logo.png");
     window.setIcon(image->data);
 
     engine::Device device(logger, window);
