@@ -10,6 +10,8 @@ add_subdirectory(assets)
 add_subdirectory(engine)
 add_subdirectory(common)
 
+find_package(PkgConfig REQUIRED)
+
 set(SPDLOG_USE_STD_FORMAT ON FORCE)
 add_subdirectory(external/spdlog)
 set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -35,6 +37,8 @@ option(SPNG_SHARED OFF)
 add_subdirectory(external/libspng)
 
 add_subdirectory(external/json)
+
+pkg_check_modules(LIBMAGIC REQUIRED libmagic)
 
 if (MSVC)
     add_compile_options(/W4)

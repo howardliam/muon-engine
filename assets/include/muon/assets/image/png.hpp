@@ -6,4 +6,6 @@ namespace muon::assets {
 
     std::optional<Image> decodePng(const std::vector<uint8_t> &encodedData);
 
+    std::optional<std::vector<uint8_t>> encodePng(const Image &image);
+
 }

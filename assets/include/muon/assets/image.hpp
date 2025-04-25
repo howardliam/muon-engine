@@ -4,13 +4,9 @@
 #include <filesystem>
 #include <vector>
 #include <optional>
+#include "muon/assets/file.hpp"
 
 namespace muon::assets {
-
-    enum class ImageFormat {
-        Png,
-        Jpeg,
-    };
 
     enum class ColorFormat {
         Rgb,
@@ -29,18 +25,9 @@ namespace muon::assets {
         std::vector<uint8_t> data;
     };
 
-    struct ImageData {
-        uint32_t width;
-        uint32_t height;
-        uint8_t bitDepth;
-        std::vector<char> data;
-    };
-
     std::optional<Image> loadImage(const std::filesystem::path &path);
     std::optional<Image> loadImage(const std::vector<uint8_t> &encodedData, ImageFormat format);
 
-    ImageData loadImagePng(std::vector<char> imageData);
-
-    std::vector<uint8_t> encodeImagePng(const ImageData &imageData);
+    std::optional<std::vector<uint8_t>> encodeImage(const Image &image, ImageFormat format);
 
 }

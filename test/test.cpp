@@ -1,3 +1,4 @@
+#include "muon/assets/file.hpp"
 #include "muon/engine/pipeline/compute.hpp"
 #include "muon/engine/pipeline/graphics.hpp"
 #include <memory>
@@ -265,6 +266,10 @@ int main() {
         vma::MemoryUsage::eGpuToCpu
     );
 
+    auto mediaType = assets::getMediaType("./screenshot.png");
+
+    logger->info("{}", std::get<assets::ImageFormat>(mediaType->format) == assets::ImageFormat::Png ? "png" : "jpeg");
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -465,23 +470,23 @@ int main() {
             frameHandler.endFrame();
 
             if (screenshotRequested) {
-                assets::ImageData imageData{};
-                imageData.width = extent.width;
-                imageData.height = extent.height;
-                imageData.bitDepth = 8;
-
                 if (stagingBuffer.map() != vk::Result::eSuccess) {
                     logger->error("failed to map screenshot buffer");
                 }
 
-                std::vector<char> data(stagingBuffer.getBufferSize());
+                std::vector<uint8_t> data(stagingBuffer.getBufferSize());
                 std::memcpy(data.data(), stagingBuffer.getMappedMemory(), stagingBuffer.getBufferSize());
 
-                imageData.data = data;
+                assets::Image image{};
+                image.size = {extent.width, extent.height};
+                image.format = assets::ColorFormat::Rgba;
+                image.bitDepth = 8;
+                image.data = data;
 
-                std::vector png = assets::encodeImagePng(imageData);
+                auto png = assets::encodeImage(image, assets::ImageFormat::Png);
+
                 std::ofstream outputFile("./screenshot.png");
-                outputFile.write(reinterpret_cast<char *>(png.data()), png.size());
+                outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
 
                 logger->warn("screenshot saved");
 
