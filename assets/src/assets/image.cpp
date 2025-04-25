@@ -2,6 +2,7 @@
 #include "muon/assets/image/png.hpp"
 
 #include <print>
+#include <variant>
 #include <vector>
 #include <spng.h>
 
@@ -13,9 +14,16 @@ namespace muon::assets {
             return {};
         }
 
-        // todo libmagic
+        auto mediaType = getMediaType(*encodedData);
+        if (!mediaType) {
+            return {};
+        }
 
-        return loadImage(*encodedData, ImageFormat::Png);
+        if (!std::holds_alternative<ImageFormat>(mediaType->format)) {
+            return {};
+        }
+
+        return loadImage(*encodedData, std::get<ImageFormat>(mediaType->format));
     }
 
     std::optional<Image> loadImage(const std::vector<uint8_t> &encodedData, ImageFormat format) {

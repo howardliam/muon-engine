@@ -266,10 +266,6 @@ int main() {
         vma::MemoryUsage::eGpuToCpu
     );
 
-    auto mediaType = assets::getMediaType("./screenshot.png");
-
-    logger->info("{}", std::get<assets::ImageFormat>(mediaType->format) == assets::ImageFormat::Png ? "png" : "jpeg");
-
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
