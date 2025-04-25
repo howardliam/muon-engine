@@ -1,6 +1,6 @@
 # Engine Library
 
-set(LIB_NAME ${CMAKE_PROJECT_NAME}-assets)
+set(LIB_NAME ${CMAKE_PROJECT_NAME}-asset)
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -34,4 +34,4 @@ target_include_directories(${LIB_NAME} PRIVATE ${LIBMAGIC_INCLUDE_DIRS})
 target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json ${LIBMAGIC_LIBRARIES} turbojpeg)
 target_link_libraries(${LIB_NAME} PUBLIC)
 
-add_library(muon::assets ALIAS ${LIB_NAME})
+add_library(muon::asset ALIAS ${LIB_NAME})
