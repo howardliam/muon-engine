@@ -158,9 +158,8 @@ int main() {
     props.title = "Testing";
 
     engine::Window window(props);
-    auto fileData = common::fs::readFile(std::filesystem::path("./muon-logo.png"));
-    auto image = assets::loadImagePng(fileData.value());
-    window.setIcon(image.data);
+    auto image = assets::loadImage(std::filesystem::path("./muon-logo.png"));
+    window.setIcon(image->data);
 
     engine::Device device(logger, window);
     engine::FrameHandler frameHandler(window, device);

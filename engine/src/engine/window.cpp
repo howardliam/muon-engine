@@ -47,7 +47,7 @@ namespace muon::engine {
         SDL_SetWindowTitle(window, title.data());
     }
 
-    void Window::setIcon(std::vector<char> imageData) {
+    void Window::setIcon(std::vector<uint8_t> imageData) {
         SDL_Surface *surface = SDL_CreateSurfaceFrom(1000, 1000, SDL_PIXELFORMAT_RGBA32, imageData.data(), 4000);
         bool res = SDL_SetWindowIcon(window, surface);
         if (!res) {
