@@ -12,6 +12,8 @@ namespace muon::engine {
         RenderSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts);
         ~RenderSystem();
 
+        void bake(vk::RenderPass renderPass);
+
     protected:
         Device &device;
 

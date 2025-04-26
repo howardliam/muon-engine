@@ -14,6 +14,10 @@ namespace muon::engine {
         device.getDevice().destroyPipelineLayout(pipelineLayout, nullptr);
     }
 
+    void RenderSystem::bake(vk::RenderPass renderPass) {
+        createPipeline(renderPass);
+    }
+
     void RenderSystem::createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts) {
         vk::PipelineLayoutCreateInfo createInfo{};
         createInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
