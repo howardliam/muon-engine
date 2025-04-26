@@ -63,7 +63,7 @@ namespace muon::engine {
              *
              * @return  unique pointer to new Pipeline object.
              */
-            std::unique_ptr<GraphicsPipeline> buildUniquePointer(const ConfigInfo &configInfo) const;
+            std::unique_ptr<GraphicsPipeline> buildUniquePtr(const ConfigInfo &configInfo) const;
 
         private:
             Device &device;

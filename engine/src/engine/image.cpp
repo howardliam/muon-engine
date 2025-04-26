@@ -1,4 +1,5 @@
 #include "muon/engine/image.hpp"
+#include <memory>
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
 
@@ -29,6 +30,10 @@ namespace muon::engine {
         vk::CommandBuffer commandBuffer,
         const State &newState
     ) {
+        if (transitioned) {
+            return;
+        }
+
         vk::ImageMemoryBarrier barrier{};
         barrier.oldLayout = state.imageLayout;
         barrier.newLayout = newState.imageLayout;
@@ -219,8 +224,12 @@ namespace muon::engine {
         return *this;
     }
 
-    Image Image::Builder::build() {
-        return Image(device, extent, format, imageUsageFlags, {imageLayout, accessFlags, pipelineStageFlags});
+    Image Image::Builder::build() const {
+        return Image(device, extent, format, imageUsageFlags, State{imageLayout, accessFlags, pipelineStageFlags});
+    }
+
+    std::unique_ptr<Image> Image::Builder::buildUniquePtr() const {
+        return std::make_unique<Image>(device, extent, format, imageUsageFlags, State{imageLayout, accessFlags, pipelineStageFlags});
     }
 
 }

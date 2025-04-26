@@ -107,7 +107,7 @@ protected:
             .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
             .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
             .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
-            .buildUniquePointer(configInfo);
+            .buildUniquePtr(configInfo);
     }
 };
 
@@ -236,18 +236,18 @@ int main() {
 
     engine::Image computeImageA = engine::Image::Builder(device)
         .setExtent(window.getExtent())
-        .setImageLayout(vk::ImageLayout::eGeneral)
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(usageFlags)
+        .setImageLayout(vk::ImageLayout::eGeneral)
         .setAccessFlags(accessFlags)
         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
         .build();
 
     engine::Image computeImageB = engine::Image::Builder(device)
         .setExtent(window.getExtent())
-        .setImageLayout(vk::ImageLayout::eGeneral)
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(usageFlags)
+        .setImageLayout(vk::ImageLayout::eGeneral)
         .setAccessFlags(accessFlags)
         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
         .build();

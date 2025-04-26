@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/engine/image.hpp"
 #include <functional>
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -10,6 +11,7 @@ namespace muon::engine {
     public:
         struct Resource {
             std::string name;
+            std::unique_ptr<Image> image;
         };
 
         struct Stage {

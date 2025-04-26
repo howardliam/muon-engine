@@ -107,7 +107,8 @@ namespace muon::engine {
 
         Builder &setPipelineStageFlags(vk::PipelineStageFlags pipelineStageFlags);
 
-        Image build();
+        Image build() const;
+        std::unique_ptr<Image> buildUniquePtr() const;
 
     private:
         Device &device;

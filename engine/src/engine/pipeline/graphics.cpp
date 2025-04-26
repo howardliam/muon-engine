@@ -128,11 +128,10 @@ namespace muon::engine {
     }
 
     GraphicsPipeline GraphicsPipeline::Builder::build(const ConfigInfo &configInfo) const {
-
         return GraphicsPipeline(device, shaderPaths, vertexLayout, configInfo);
     }
 
-    std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePointer(const ConfigInfo &configInfo) const {
+    std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePtr(const ConfigInfo &configInfo) const {
         return std::make_unique<GraphicsPipeline>(device, shaderPaths, vertexLayout, configInfo);
     }
 

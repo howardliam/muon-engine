@@ -3,7 +3,7 @@
 namespace muon::engine {
 
     void FrameGraph::addResource(Resource resource) {
-        resources[resource.name] = resource;
+        resources[resource.name] = std::move(resource);
     }
 
     void FrameGraph::addStage(Stage stage) {
