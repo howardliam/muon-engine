@@ -19,7 +19,7 @@ namespace muon::engine {
         device.getDevice().destroyRenderPass(renderPass, nullptr);
     }
 
-    void RenderPass::beginRenderPass(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent) {
+    void RenderPass::begin(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent) {
         vk::RenderPassBeginInfo renderPassInfo{};
         renderPassInfo.renderPass = renderPass;
         renderPassInfo.framebuffer = framebuffer;
@@ -54,7 +54,7 @@ namespace muon::engine {
         commandBuffer.setScissor(0, 1, &scissor);
     }
 
-    void RenderPass::endRenderPass(vk::CommandBuffer commandBuffer) {
+    void RenderPass::end(vk::CommandBuffer commandBuffer) {
         commandBuffer.endRenderPass();
     }
 

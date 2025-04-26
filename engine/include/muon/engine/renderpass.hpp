@@ -10,8 +10,8 @@ namespace muon::engine {
         RenderPass(Device &device, vk::Format imageFormat, vk::Format depthImageFormat);
         ~RenderPass();
 
-        void beginRenderPass(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent);
-        void endRenderPass(vk::CommandBuffer commandBuffer);
+        void begin(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent);
+        void end(vk::CommandBuffer commandBuffer);
 
         [[nodiscard]] vk::RenderPass getRenderPass() const;
         [[nodiscard]] vk::Format getImageFormat() const;
