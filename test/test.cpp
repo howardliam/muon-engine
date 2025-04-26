@@ -1,7 +1,4 @@
-#include "muon/assets/file.hpp"
-#include "muon/assets/model/gltf.hpp"
-#include "muon/engine/pipeline/compute.hpp"
-#include "muon/engine/pipeline/graphics.hpp"
+
 #include <memory>
 #include <fstream>
 
@@ -9,7 +6,8 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#include <muon/common/fs.hpp>
+#include <muon/engine/pipeline/compute.hpp>
+#include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
 #include <muon/engine/computesystem.hpp>
 #include <muon/engine/descriptor.hpp>
@@ -25,6 +23,7 @@
 #include <muon/engine/vertex.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/assets/image.hpp>
+#include <muon/assets/file.hpp>
 #include <muon/misc/logger.hpp>
 
 #include <SDL3/SDL_events.h>
@@ -33,7 +32,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <variant>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -75,10 +73,9 @@ class RenderSystemTest : public engine::RenderSystem {
 public:
     RenderSystemTest(
         engine::Device &device,
-        std::vector<vk::DescriptorSetLayout> setLayouts,
-        vk::RenderPass renderPass
+        std::vector<vk::DescriptorSetLayout> setLayouts
     ) : engine::RenderSystem(device, setLayouts)  {
-        createPipeline(renderPass);
+
     }
 
     void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, const engine::Model &model) {
@@ -225,13 +222,13 @@ int main() {
 
     engine::Model square(device, vertexData, stride, indices);
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     engine::RenderPass scenePass(device);
     std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
 
-    RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()}, scenePass.getRenderPass());
+    RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()});
+    renderSystem.bake(scenePass.getRenderPass());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     engine::Image computeImageA(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
@@ -268,6 +265,8 @@ int main() {
         vma::MemoryUsage::eGpuToCpu
     );
 
+    bool resizeRequested{false};
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -285,9 +284,8 @@ int main() {
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+                resizeRequested = true;
                 window.resize(event.window.data1, event.window.data2);
-
-                sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
             }
         }
 
@@ -296,7 +294,7 @@ int main() {
 
             Ubo ubo{};
             ubo.view = view;
-            ubo.projection = projection;
+            ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
 
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();
@@ -466,6 +464,12 @@ int main() {
             }
 
             frameHandler.endFrame();
+
+            if (resizeRequested) {
+                sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
+
+                resizeRequested = false;
+            }
 
             if (screenshotRequested) {
                 if (stagingBuffer.map() != vk::Result::eSuccess) {
