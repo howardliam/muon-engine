@@ -13,6 +13,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framebuffer.hpp
+    ${INCLUDE_DIR}/muon/engine/framegraph.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
     ${INCLUDE_DIR}/muon/engine/model.hpp
@@ -36,6 +37,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/computesystem.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/framebuffer.cpp
+    ${SRC_DIR}/engine/framegraph.cpp
     ${SRC_DIR}/engine/framehandler.cpp
     ${SRC_DIR}/engine/image.cpp
     ${SRC_DIR}/engine/model.cpp
