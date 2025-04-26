@@ -1,4 +1,5 @@
 #include "muon/assets/file.hpp"
+#include "muon/assets/model/gltf.hpp"
 #include "muon/engine/pipeline/compute.hpp"
 #include "muon/engine/pipeline/graphics.hpp"
 #include <memory>
@@ -266,14 +267,6 @@ int main() {
         vk::BufferUsageFlagBits::eTransferDst,
         vma::MemoryUsage::eGpuToCpu
     );
-
-    auto mediaType = assets::parseMediaType("./test/assets/models/cube.obj", assets::FileType::Model);
-
-    if (std::holds_alternative<assets::ModelFormat>(mediaType->format)) {
-        if (std::get<assets::ModelFormat>(mediaType->format) == assets::ModelFormat::Obj) {
-            logger->info("obj file found");
-        }
-    }
 
     while (window.isOpen()) {
         SDL_Event event;

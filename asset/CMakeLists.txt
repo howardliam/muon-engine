@@ -12,6 +12,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/assets/model/obj.hpp
     ${INCLUDE_DIR}/muon/assets/file.hpp
     ${INCLUDE_DIR}/muon/assets/image.hpp
+    ${INCLUDE_DIR}/muon/assets/model.hpp
+    ${INCLUDE_DIR}/muon/assets/scene.hpp
 )
 
 set(SRC_FILES
@@ -21,6 +23,7 @@ set(SRC_FILES
     ${SRC_DIR}/assets/model/obj.cpp
     ${SRC_DIR}/assets/file.cpp
     ${SRC_DIR}/assets/image.cpp
+    ${SRC_DIR}/assets/model.cpp
 )
 
 add_library(${LIB_NAME} SHARED
@@ -29,9 +32,9 @@ add_library(${LIB_NAME} SHARED
 )
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
-target_include_directories(${LIB_NAME} PRIVATE ${LIBMAGIC_INCLUDE_DIRS})
+target_include_directories(${LIB_NAME} PRIVATE)
 
-target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json ${LIBMAGIC_LIBRARIES} turbojpeg)
+target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json turbojpeg)
 target_link_libraries(${LIB_NAME} PUBLIC)
 
 add_library(muon::asset ALIAS ${LIB_NAME})
