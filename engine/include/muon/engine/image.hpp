@@ -1,19 +1,31 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
+#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 
     class Image {
     public:
+        class Builder;
+
+        struct State {
+            vk::ImageLayout imageLayout{};
+            vk::AccessFlags accessFlags{};
+            vk::PipelineStageFlags pipelineStageFlags{};
+        };
+
         Image(
             Device &device,
             vk::Extent2D extent,
-            vk::ImageLayout layout,
             vk::Format format,
-            vk::ImageUsageFlags usageFlags
+            vk::ImageUsageFlags usageFlags,
+            const State &state
         );
         ~Image();
+
+        void transition(vk::CommandBuffer commandBuffer, const State &newState);
+        void detransition(vk::CommandBuffer commandBuffer);
 
         /**
          * @brief   get image extent.
@@ -61,23 +73,52 @@ namespace muon::engine {
         Device &device;
 
         vk::Extent2D extent;
-        vk::ImageLayout imageLayout;
         vk::Format format;
         vk::ImageUsageFlags usageFlags;
+
+        State state;
+
+        bool transitioned{false};
+        State oldState{};
 
         vk::Image image;
         vma::Allocation allocation;
         vk::ImageView imageView;
 
         /**
-         * @brief   creates the image.
+         * @brief   creates the image and transitions it to the desired format.
          */
         void createImage();
+    };
 
-        /**
-         * @brief   transitions the image to the desired format.
-         */
-        void transitionImage();
+    class Image::Builder {
+    public:
+        Builder(Device &device);
+
+        Builder &setExtent(vk::Extent2D extent);
+
+        Builder &setFormat(vk::Format format);
+
+        Builder &setImageUsageFlags(vk::ImageUsageFlags imageUsageFlags);
+
+        Builder &setImageLayout(vk::ImageLayout imageLayout);
+
+        Builder &setAccessFlags(vk::AccessFlags accessFlags);
+
+        Builder &setPipelineStageFlags(vk::PipelineStageFlags pipelineStageFlags);
+
+        Image build();
+
+    private:
+        Device &device;
+
+        vk::Extent2D extent;
+        vk::Format format;
+        vk::ImageUsageFlags imageUsageFlags;
+
+        vk::ImageLayout imageLayout;
+        vk::AccessFlags accessFlags;
+        vk::PipelineStageFlags pipelineStageFlags;
     };
 
 }

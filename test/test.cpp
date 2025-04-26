@@ -1,4 +1,5 @@
 
+#include "muon/engine/framegraph.hpp"
 #include <memory>
 #include <fstream>
 
@@ -231,8 +232,25 @@ int main() {
     renderSystem.bake(scenePass.getRenderPass());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
-    engine::Image computeImageA(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
-    engine::Image computeImageB(device, window.getExtent(), vk::ImageLayout::eGeneral, vk::Format::eR8G8B8A8Unorm, usageFlags);
+    auto accessFlags = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+
+    engine::Image computeImageA = engine::Image::Builder(device)
+        .setExtent(window.getExtent())
+        .setImageLayout(vk::ImageLayout::eGeneral)
+        .setFormat(vk::Format::eR8G8B8A8Unorm)
+        .setImageUsageFlags(usageFlags)
+        .setAccessFlags(accessFlags)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        .build();
+
+    engine::Image computeImageB = engine::Image::Builder(device)
+        .setExtent(window.getExtent())
+        .setImageLayout(vk::ImageLayout::eGeneral)
+        .setFormat(vk::Format::eR8G8B8A8Unorm)
+        .setImageUsageFlags(usageFlags)
+        .setAccessFlags(accessFlags)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        .build();
 
     std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
@@ -267,6 +285,24 @@ int main() {
 
     bool resizeRequested{false};
 
+    engine::FrameGraph frameGraph;
+
+    frameGraph.addStage({
+        .name = "SceneStage",
+        .readResources = {},
+        .writeResources = {},
+
+        .compile = [=]() {
+
+        },
+
+        .record = [=](vk::CommandBuffer commandBuffer) {
+
+        }
+    });
+
+    frameGraph.compile();
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -300,11 +336,11 @@ int main() {
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
         uboBuffers[frameIndex]->flush();
 
-        scenePass.beginRenderPass(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
+        scenePass.begin(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
 
         renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
 
-        scenePass.endRenderPass(commandBuffer);
+        scenePass.end(commandBuffer);
 
         auto sceneImage = sceneFramebuffer->getImage();
 

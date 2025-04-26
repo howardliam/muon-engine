@@ -7,12 +7,17 @@ namespace muon::engine {
     Image::Image(
         Device &device,
         vk::Extent2D extent,
-        vk::ImageLayout layout,
         vk::Format format,
-        vk::ImageUsageFlags usageFlags
-    ) : device(device), extent(extent), imageLayout(layout), format(format), usageFlags(usageFlags) {
+        vk::ImageUsageFlags usageFlags,
+        const State &state
+    ) :
+        device(device),
+        extent(extent),
+        format(format),
+        usageFlags(usageFlags),
+        state(state)
+    {
         createImage();
-        transitionImage();
     }
 
     Image::~Image() {
@@ -20,12 +25,78 @@ namespace muon::engine {
         device.getAllocator().destroyImage(image, allocation);
     }
 
+    void Image::transition(
+        vk::CommandBuffer commandBuffer,
+        const State &newState
+    ) {
+        vk::ImageMemoryBarrier barrier{};
+        barrier.oldLayout = state.imageLayout;
+        barrier.newLayout = newState.imageLayout;
+        barrier.srcAccessMask = state.accessFlags;
+        barrier.dstAccessMask = newState.accessFlags;
+        barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+        barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        commandBuffer.pipelineBarrier(
+            state.pipelineStageFlags,
+            newState.pipelineStageFlags,
+            vk::DependencyFlagBits{},
+            0,
+            nullptr,
+            0,
+            nullptr,
+            1,
+            &barrier
+        );
+
+        oldState = state;
+        state = newState;
+        transitioned = true;
+    }
+
+    void Image::detransition(vk::CommandBuffer commandBuffer) {
+        vk::ImageMemoryBarrier barrier{};
+        barrier.oldLayout = state.imageLayout;
+        barrier.newLayout = oldState.imageLayout;
+        barrier.srcAccessMask = state.accessFlags;
+        barrier.dstAccessMask = oldState.accessFlags;
+        barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+        barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        commandBuffer.pipelineBarrier(
+            state.pipelineStageFlags,
+            oldState.pipelineStageFlags,
+            vk::DependencyFlagBits{},
+            0,
+            nullptr,
+            0,
+            nullptr,
+            1,
+            &barrier
+        );
+
+        state = oldState;
+        transitioned = false;
+    }
+
     vk::Extent2D Image::getExtent() const {
         return extent;
     }
 
     vk::ImageLayout Image::getImageLayout() const {
-        return imageLayout;
+        return state.imageLayout;
     }
 
     vk::Format Image::getFormat() const {
@@ -44,7 +115,7 @@ namespace muon::engine {
         return vk::DescriptorImageInfo{
             nullptr,
             imageView,
-            imageLayout,
+            state.imageLayout,
         };
     }
 
@@ -84,41 +155,12 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create image view");
         }
-    }
-
-    void Image::transitionImage() {
-        auto getDstInfo = [](vk::ImageLayout layout) -> std::tuple<vk::AccessFlags, vk::PipelineStageFlags> {
-            switch (layout) {
-                case vk::ImageLayout::eGeneral:
-                    return {
-                        vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite,
-                        vk::PipelineStageFlagBits::eComputeShader
-                    };
-
-                case vk::ImageLayout::eShaderReadOnlyOptimal:
-                    return {
-                        vk::AccessFlagBits::eShaderRead,
-                        vk::PipelineStageFlagBits::eFragmentShader
-                    };
-
-                case vk::ImageLayout::eColorAttachmentOptimal:
-                    return {
-                        vk::AccessFlagBits::eColorAttachmentWrite,
-                        vk::PipelineStageFlagBits::eColorAttachmentOutput
-                    };
-
-                default:
-                    return {{}, {}};
-            }
-        };
-
-        auto [accessFlags, stageFlags] = getDstInfo(imageLayout);
 
         vk::ImageMemoryBarrier barrier{};
         barrier.oldLayout = vk::ImageLayout::eUndefined;
-        barrier.newLayout = imageLayout;
+        barrier.newLayout = state.imageLayout;
         barrier.srcAccessMask = vk::AccessFlagBits{};
-        barrier.dstAccessMask = accessFlags;
+        barrier.dstAccessMask = state.accessFlags;
         barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
         barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
         barrier.image = image;
@@ -132,7 +174,7 @@ namespace muon::engine {
 
         commandBuffer.pipelineBarrier(
             vk::PipelineStageFlagBits::eTopOfPipe,
-            stageFlags,
+            state.pipelineStageFlags,
             vk::DependencyFlagBits{},
             0,
             nullptr,
@@ -143,6 +185,42 @@ namespace muon::engine {
         );
 
         device.endSingleTimeCommands(commandBuffer);
+    }
+
+    Image::Builder::Builder(Device &device) : device(device) { }
+
+    Image::Builder &Image::Builder::setExtent(vk::Extent2D extent) {
+        this->extent = extent;
+        return *this;
+    }
+
+    Image::Builder &Image::Builder::setFormat(vk::Format format) {
+        this->format = format;
+        return *this;
+    }
+
+    Image::Builder &Image::Builder::setImageUsageFlags(vk::ImageUsageFlags imageUsageFlags) {
+        this->imageUsageFlags = imageUsageFlags;
+        return *this;
+    }
+
+    Image::Builder &Image::Builder::setImageLayout(vk::ImageLayout imageLayout) {
+        this->imageLayout = imageLayout;
+        return *this;
+    }
+
+    Image::Builder &Image::Builder::setAccessFlags(vk::AccessFlags accessFlags) {
+        this->accessFlags = accessFlags;
+        return *this;
+    }
+
+    Image::Builder &Image::Builder::setPipelineStageFlags(vk::PipelineStageFlags pipelineStageFlags) {
+        this->pipelineStageFlags = pipelineStageFlags;
+        return *this;
+    }
+
+    Image Image::Builder::build() {
+        return Image(device, extent, format, imageUsageFlags, {imageLayout, accessFlags, pipelineStageFlags});
     }
 
 }
