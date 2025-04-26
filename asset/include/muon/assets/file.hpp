@@ -52,22 +52,24 @@ namespace muon::assets {
     };
 
     /**
-     * @brief   gets the media type from the file data.
+     * @brief   attempts to parse the format type from the extension.
      *
-     * @param   fileData    vector of bytes of file data.
+     * @param   extension   the file extension.
      *
-     * @return  optional media type if parsing was successful.
+     * @return  optional format type if parsing was successful.
      */
-    [[nodiscard]] std::optional<MediaType> getMediaType(const std::vector<uint8_t> &fileData);
+    template<typename T>
+    [[nodiscard]] std::optional<T> parseFormat(const std::string &extension);
 
     /**
-     * @brief   gets the media type from the file data with path.
+     * @brief   attempts to parse the media type from the file with path.
      *
-     * @param   path    the path of the file.
+     * @param   path                the path of the file.
+     * @param   expectedFileType    the expected type of the file.
      *
      * @return  optional media type if parsing was successful.
      */
-    [[nodiscard]] std::optional<MediaType> getMediaType(const std::filesystem::path &path);
+    [[nodiscard]] std::optional<MediaType> parseMediaType(const std::filesystem::path &path, FileType expectedFileType);
 
     /**
      * @brief   reads the bytes of the file at the given path.

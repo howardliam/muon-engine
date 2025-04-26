@@ -1,135 +1,101 @@
 #include "muon/assets/file.hpp"
 
 #include <fstream>
-#include <print>
-#include <regex>
 #include <string>
-#include <magic.h>
 
 namespace muon::assets {
 
-    namespace constants {
-        static const std::regex mimeRegex("(\\w+)/(\\w+)");
-    }
+    template<>
+    std::optional<TextFormat> parseFormat(const std::string &extension) {
 
-    std::optional<std::string> getMimeType(const std::vector<uint8_t> &fileData) {
-        magic_t magicHandle = magic_open(MAGIC_MIME_TYPE);
-        if (magicHandle == nullptr) {
-            return {};
+        if (extension == "txt") {
+            return TextFormat::Plain;
         }
-
-        if (magic_load(magicHandle, nullptr) != 0) {
-            return {};
-        }
-
-        std::string mime = magic_buffer(magicHandle, fileData.data(), fileData.size());
-
-        magic_close(magicHandle);
-
-        return mime;
-    }
-
-    std::optional<std::string> getMimeType(const std::filesystem::path &path) {
-        magic_t magicHandle = magic_open(MAGIC_MIME_TYPE);
-        if (magicHandle == nullptr) {
-            return {};
-        }
-
-        if (magic_load(magicHandle, nullptr) != 0) {
-            return {};
-        }
-
-        std::string mime = magic_file(magicHandle, path.string().c_str());
-
-        magic_close(magicHandle);
-
-        return mime;
-    }
-
-    std::optional<MediaType> mimeToMediaType(const std::string &mime) {
-        std::smatch match;
-
-        if (!std::regex_match(mime, match, constants::mimeRegex)) {
-            return {};
-        }
-
-        std::string type = match[1];
-        std::string format = match[2];
-
-        MediaType mediaType{};
-
-        if (type == "text") {
-            mediaType.type = FileType::Text;
-
-            if (format == "plain") {
-                mediaType.format = TextFormat::Plain;
-            }
-
-        } else if (type == "image") {
-            mediaType.type = FileType::Image;
-
-            if (format == "png") {
-                mediaType.format = ImageFormat::Png;
-            } else if (format == "jpeg") {
-                mediaType.format = ImageFormat::Jpeg;
-            }
-
-        } else if (type == "model") {
-            mediaType.type = FileType::Model;
-
-            if (format == "gltf+json") {
-                mediaType.format = ModelFormat::GltfJson;
-            } else if (format == "gltf-binary") {
-                mediaType.format = ModelFormat::GltfBinary;
-            } else if (format == "obj") {
-                mediaType.format = ModelFormat::Obj;
-            }
-
-        } else if (type == "audio") {
-            mediaType.type = FileType::Audio;
-
-            if (format == "opus") {
-                mediaType.format = AudioFormat::Opus;
-            } else if (format == "wav") {
-                mediaType.format = AudioFormat::Wav;
-            }
-
-        } else if (type == "font") {
-            mediaType.type = FileType::Font;
-
-            if (format == "otf") {
-                mediaType.format = FontFormat::Otf;
-            } else if (format == "ttf") {
-                mediaType.format = FontFormat::Ttf;
-            }
-
-        } else {
-            return {};
-        }
-
-        return mediaType;
-    }
-
-    std::optional<MediaType> getMediaType(const std::vector<uint8_t> &fileData) {
-        auto mime = getMimeType(fileData);
-        if (!mime.has_value()) {
-            return {};
-        }
-
-        return mimeToMediaType(*mime);
 
         return {};
     }
 
-    std::optional<MediaType> getMediaType(const std::filesystem::path &path) {
-        auto mime = getMimeType(path);
-        if (!mime.has_value()) {
+    template<>
+    std::optional<ImageFormat> parseFormat(const std::string &extension) {
+
+        if (extension == ".jpeg" || extension == ".jpg") {
+            return ImageFormat::Jpeg;
+        } else if (extension == ".png") {
+            return ImageFormat::Png;
+        }
+
+        return {};
+    }
+
+    template<>
+    std::optional<ModelFormat> parseFormat(const std::string &extension) {
+
+        if (extension == ".gltf") {
+            return ModelFormat::GltfJson;
+        } else if (extension == ".glb") {
+            return ModelFormat::GltfBinary;
+        } else if (extension == ".obj") {
+            return ModelFormat::Obj;
+        }
+
+        return {};
+    }
+
+    template<>
+    std::optional<AudioFormat> parseFormat(const std::string &extension) {
+
+        if (extension == ".opus") {
+            return AudioFormat::Opus;
+        } else if (extension == ".wav") {
+            return AudioFormat::Wav;
+        }
+
+        return {};
+    }
+
+    template<>
+    std::optional<FontFormat> parseFormat(const std::string &extension) {
+
+        if (extension == ".otf") {
+            return FontFormat::Otf;
+        } else if (extension == ".ttf") {
+            return FontFormat::Ttf;
+        }
+
+        return {};
+    }
+
+    std::optional<MediaType> parseMediaType(const std::filesystem::path &path, FileType expectedFileType) {
+        std::string extension = path.filename().extension().string();
+
+        std::optional<FileFormat> format;
+
+        switch (expectedFileType) {
+        case FileType::Text:
+            format = parseFormat<TextFormat>(extension);
+            break;
+        case FileType::Image:
+            format = parseFormat<ImageFormat>(extension);
+            break;
+        case FileType::Model:
+            format = parseFormat<ModelFormat>(extension);
+            break;
+        case FileType::Audio:
+            format = parseFormat<AudioFormat>(extension);
+            break;
+        case FileType::Font:
+            format = parseFormat<FontFormat>(extension);
+            break;
+        }
+
+        if (!format) {
             return {};
         }
 
-        return mimeToMediaType(*mime);
-
-        return {};
+        return MediaType{
+            expectedFileType,
+            *format,
+        };
     }
 
     std::optional<std::vector<uint8_t>> readFile(const std::filesystem::path &path) {

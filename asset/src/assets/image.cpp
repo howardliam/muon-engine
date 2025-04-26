@@ -1,4 +1,5 @@
 #include "muon/assets/image.hpp"
+#include "muon/assets/file.hpp"
 #include "muon/assets/image/jpeg.hpp"
 #include "muon/assets/image/png.hpp"
 
@@ -10,17 +11,17 @@
 namespace muon::assets {
 
     std::optional<Image> loadImage(const std::filesystem::path &path) {
-        auto encodedData = readFile(path);
-        if (!encodedData.has_value()) {
-            return {};
-        }
-
-        auto mediaType = getMediaType(*encodedData);
+        auto mediaType = parseMediaType(path, FileType::Image);
         if (!mediaType) {
             return {};
         }
 
         if (!std::holds_alternative<ImageFormat>(mediaType->format)) {
+            return {};
+        }
+
+        auto encodedData = readFile(path);
+        if (!encodedData) {
             return {};
         }
 

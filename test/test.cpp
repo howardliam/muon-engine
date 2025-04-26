@@ -32,6 +32,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <variant>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -265,6 +266,14 @@ int main() {
         vk::BufferUsageFlagBits::eTransferDst,
         vma::MemoryUsage::eGpuToCpu
     );
+
+    auto mediaType = assets::parseMediaType("./test/assets/models/cube.obj", assets::FileType::Model);
+
+    if (std::holds_alternative<assets::ModelFormat>(mediaType->format)) {
+        if (std::get<assets::ModelFormat>(mediaType->format) == assets::ModelFormat::Obj) {
+            logger->info("obj file found");
+        }
+    }
 
     while (window.isOpen()) {
         SDL_Event event;
