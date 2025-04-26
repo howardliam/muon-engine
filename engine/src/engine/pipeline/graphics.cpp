@@ -76,16 +76,28 @@ namespace muon::engine {
     GraphicsPipeline::Builder &GraphicsPipeline::Builder::addVertexAttribute(vk::Format format) {
         auto offsetFromFormat = [](vk::Format &format) {
             switch (format) {
-                case vk::Format::eR32G32B32A32Sfloat:
-                    return 16;
-                case vk::Format::eR32G32B32Sfloat:
-                    return 12;
-                case vk::Format::eR32G32Sfloat:
-                    return 8;
-                case vk::Format::eR32Sfloat:
-                    return 4;
-                default:
-                    throw std::runtime_error("unsupported vertex input format");
+            case vk::Format::eR32G32B32A32Sfloat:
+            case vk::Format::eR32G32B32A32Sint:
+            case vk::Format::eR32G32B32A32Uint:
+                return 16;
+
+            case vk::Format::eR32G32B32Sfloat:
+            case vk::Format::eR32G32B32Uint:
+            case vk::Format::eR32G32B32Sint:
+                return 12;
+
+            case vk::Format::eR32G32Sfloat:
+            case vk::Format::eR32G32Uint:
+            case vk::Format::eR32G32Sint:
+                return 8;
+
+            case vk::Format::eR32Sfloat:
+            case vk::Format::eR32Uint:
+            case vk::Format::eR32Sint:
+                return 4;
+
+            default:
+                throw std::runtime_error("unsupported vertex input format");
             }
         };
 
