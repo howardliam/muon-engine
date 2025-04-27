@@ -49,7 +49,7 @@ namespace muon::engine {
     }
 
     void Window::setIcon(std::vector<uint8_t> imageData, uint32_t width, uint32_t height, uint8_t channels) {
-        auto sdlFromVulkan = [](uint8_t channels)  {
+        auto pixelFormatFromChannels = [](uint8_t channels)  {
             switch (channels) {
             case 3:
                 return SDL_PIXELFORMAT_RGB24;
@@ -62,12 +62,12 @@ namespace muon::engine {
             }
         };
 
-        auto sdlImageFormat = sdlFromVulkan(channels);
-        if (sdlImageFormat == SDL_PIXELFORMAT_UNKNOWN) {
+        auto pixelFormat = pixelFormatFromChannels(channels);
+        if (pixelFormat == SDL_PIXELFORMAT_UNKNOWN) {
             return;
         }
 
-        SDL_Surface *surface = SDL_CreateSurfaceFrom(width, height, sdlImageFormat, imageData.data(), width * channels);
+        SDL_Surface *surface = SDL_CreateSurfaceFrom(width, height, pixelFormat, imageData.data(), width * channels);
         bool res = SDL_SetWindowIcon(window, surface);
         if (!res) {
             std::println("{}", SDL_GetError());
