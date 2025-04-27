@@ -72,6 +72,7 @@ namespace muon::engine {
         if (!res) {
             std::println("{}", SDL_GetError());
         }
+        SDL_DestroySurface(surface);
     }
 
     void Window::setDisplayMode(DisplayMode mode) {
