@@ -3,13 +3,14 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_vulkan.h>
+#include <X11/Xlib.h>
 #include <format>
 #include <print>
 #include <stdexcept>
 
 namespace muon::engine {
 
-    Window::Window(window::Properties &properties) : width(properties.width), height(properties.height) {
+    Window::Window(const Properties &properties) : width(properties.width), height(properties.height) {
         try {
             initSdl();
             initWindow(properties.title, properties.mode);
@@ -53,7 +54,7 @@ namespace muon::engine {
             case 3:
                 return SDL_PIXELFORMAT_RGB24;
 
-            case 8:
+            case 4:
                 return SDL_PIXELFORMAT_RGBA32;
 
             default:
@@ -73,25 +74,23 @@ namespace muon::engine {
         }
     }
 
-    void Window::setDisplayMode(window::DisplayMode mode) {
-        bool fullscreen = false;
-        bool bordered = false;
-        switch (mode) {
-            case window::DisplayMode::Windowed:
-            fullscreen = false;
-            bordered = true;
-            break;
+    void Window::setDisplayMode(DisplayMode mode) {
+        auto parseDisplayMode = [](DisplayMode mode) -> std::tuple<bool, bool> {
+            switch (mode) {
+            case DisplayMode::Windowed:
+                return {false, true};
 
-            case window::DisplayMode::Fullscreen:
-            fullscreen = true;
-            bordered = true;
-            break;
+            case DisplayMode::Fullscreen:
+                return {true, true};
 
-            case window::DisplayMode::BorderlessFullscreen:
-            fullscreen = true;
-            bordered = false;
-            break;
-        }
+            case DisplayMode::BorderlessFullscreen:
+                return {true, false};
+            }
+
+            return {false, false};
+        };
+
+        auto [fullscreen, bordered] = parseDisplayMode(mode);
 
         SDL_SetWindowFullscreen(window, fullscreen);
         SDL_SetWindowBordered(window, bordered);
@@ -117,18 +116,18 @@ namespace muon::engine {
         }
     }
 
-    void Window::initWindow(std::string_view title, window::DisplayMode mode) {
+    void Window::initWindow(std::string_view title, DisplayMode mode) {
         SDL_WindowFlags modeFlag = 0;
         switch (mode) {
-            case window::DisplayMode::Windowed:
+        case DisplayMode::Windowed:
             modeFlag |= 0;
             break;
 
-            case window::DisplayMode::Fullscreen:
+        case DisplayMode::Fullscreen:
             modeFlag |= SDL_WINDOW_FULLSCREEN;
             break;
 
-            case window::DisplayMode::BorderlessFullscreen:
+        case DisplayMode::BorderlessFullscreen:
             modeFlag |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS;
             break;
         }
@@ -140,6 +139,26 @@ namespace muon::engine {
         if (window == nullptr) {
             throw std::runtime_error(std::format("failed to create window: {}", SDL_GetError()));
         }
+    }
+
+    Window::Builder &Window::Builder::setDimensions(const uint32_t width, const uint32_t height) {
+        properties.width = width;
+        properties.height = height;
+        return *this;
+    }
+
+    Window::Builder &Window::Builder::setTitle(const std::string &title) {
+        properties.title = title;
+        return *this;
+    }
+
+    Window::Builder &Window::Builder::setInitialDisplayMode(const DisplayMode displayMode) {
+        properties.mode = displayMode;
+        return *this;
+    }
+
+    Window Window::Builder::build() const {
+        return Window(properties);
     }
 
 }

@@ -8,38 +8,32 @@
 
 namespace muon::engine {
 
-    namespace window {
-        /**
-         * @brief   wrapper for SDL window mode flags.
-         */
+    /**
+     * @brief   wrapper around SDL window.
+     */
+    class Window {
+    public:
         enum class DisplayMode {
             Windowed,
             Fullscreen,
             BorderlessFullscreen,
         };
 
-        /**
-         * @brief   properties for the window to be initialised with.
-         */
         struct Properties {
-            uint32_t width;
-            uint32_t height;
-            DisplayMode mode = DisplayMode::Windowed;
-            std::string_view title;
+            uint32_t width{1280};
+            uint32_t height{720};
+            DisplayMode mode{DisplayMode::Windowed};
+            std::string_view title{"Muon"};
         };
-    }
 
-    /**
-     * @brief   wrapper around SDL window.
-     */
-    class Window {
-    public:
+        class Builder;
+
         /**
          * @brief   base initialiser for Window.
          *
          * @throws  program aborts if initialising SDL and window fails.
          */
-        explicit Window(window::Properties &properties);
+        explicit Window(const Properties &properties);
         ~Window();
 
         Window(const Window &) = delete;
@@ -100,7 +94,7 @@ namespace muon::engine {
          *
          * @param   mode    new display mode.
          */
-        void setDisplayMode(window::DisplayMode mode);
+        void setDisplayMode(DisplayMode mode);
 
         /**
          * @brief   resizes the window.
@@ -145,7 +139,21 @@ namespace muon::engine {
          *
          * @throws  if the window failed to initialise.
         */
-        void initWindow(std::string_view title, window::DisplayMode mode);
+        void initWindow(std::string_view title, DisplayMode mode);
+    };
+
+    class Window::Builder {
+    public:
+        Builder &setDimensions(const uint32_t width, const uint32_t height);
+
+        Builder &setTitle(const std::string &title);
+
+        Builder &setInitialDisplayMode(const DisplayMode displayMode);
+
+        Window build() const;
+
+    private:
+        Properties properties{};
     };
 
 }

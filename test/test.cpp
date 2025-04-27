@@ -152,13 +152,12 @@ protected:
 int main() {
     auto logger = std::make_shared<Logger>();
 
-    engine::window::Properties props;
-    props.height = 900;
-    props.width = 1600;
-    props.mode = engine::window::DisplayMode::Windowed;
-    props.title = "Testing";
+    engine::Window window = engine::Window::Builder()
+        .setDimensions(1600, 900)
+        .setInitialDisplayMode(engine::Window::DisplayMode::Windowed)
+        .setTitle("Testing")
+        .build();
 
-    engine::Window window(props);
     auto image = assets::loadImage("./muon-logo.png");
     window.setIcon(image->data, image->size.width, image->size.height, 4);
 
