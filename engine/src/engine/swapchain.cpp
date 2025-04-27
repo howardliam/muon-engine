@@ -274,7 +274,7 @@ namespace muon::engine {
         imageAvailableSemaphores.resize(constants::maxFramesInFlight);
         renderFinishedSemaphores.resize(constants::maxFramesInFlight);
         inFlightFences.resize(constants::maxFramesInFlight);
-        imagesInFlight.resize(imageCount(), nullptr);
+        imagesInFlight.resize(swapchainImages.size(), nullptr);
 
         vk::SemaphoreCreateInfo semaphoreInfo{};
 
