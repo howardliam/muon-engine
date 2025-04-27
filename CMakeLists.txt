@@ -37,10 +37,11 @@ option(SPNG_SHARED OFF)
 add_subdirectory(external/libspng)
 
 find_package(libjpeg-turbo REQUIRED)
+pkg_check_modules(OPUS REQUIRED opus)
+pkg_check_modules(OPUSFILE REQUIRED opusfile)
 
 add_subdirectory(external/json)
 
-pkg_check_modules(LIBMAGIC REQUIRED libmagic)
 
 if (MSVC)
     add_compile_options(/W4)

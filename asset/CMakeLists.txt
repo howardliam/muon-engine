@@ -13,12 +13,15 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/asset/model/gltf.hpp
     ${INCLUDE_DIR}/muon/asset/model/obj.hpp
     ${INCLUDE_DIR}/muon/asset/file.hpp
+    ${INCLUDE_DIR}/muon/asset/audio.hpp
     ${INCLUDE_DIR}/muon/asset/image.hpp
     ${INCLUDE_DIR}/muon/asset/model.hpp
     ${INCLUDE_DIR}/muon/asset/scene.hpp
 )
 
 set(SRC_FILES
+    ${SRC_DIR}/asset/audio/opus.cpp
+    ${SRC_DIR}/asset/audio/wav.cpp
     ${SRC_DIR}/asset/image/jpeg.cpp
     ${SRC_DIR}/asset/image/png.cpp
     ${SRC_DIR}/asset/model/gltf.cpp
@@ -33,10 +36,10 @@ add_library(${LIB_NAME} SHARED
     ${SRC_FILES}
 )
 
+target_include_directories(${LIB_NAME} PRIVATE ${OPUS_INCLUDE_DIRS} ${OPUSFILE_INCLUDE_DIRS})
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
-target_include_directories(${LIB_NAME} PRIVATE)
 
-target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json turbojpeg)
+target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json turbojpeg ${OPUS_LIBRARIES} ${OPUSFILE_LIBRARIES})
 target_link_libraries(${LIB_NAME} PUBLIC)
 
 add_library(muon::asset ALIAS ${LIB_NAME})
