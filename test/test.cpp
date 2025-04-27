@@ -436,6 +436,8 @@ int main() {
             std::vector<uint8_t> data(stagingBuffer.getBufferSize());
             std::memcpy(data.data(), stagingBuffer.getMappedMemory(), stagingBuffer.getBufferSize());
 
+            stagingBuffer.unmap();
+
             assets::Image image{};
             image.size = {extent.width, extent.height};
             image.format = assets::ColorFormat::Rgba;
