@@ -16,7 +16,7 @@ namespace muon::engine {
             switch (layout) {
             case vk::ImageLayout::eColorAttachmentOptimal:
                 return {
-                    vk::ImageUsageFlagBits::eColorAttachment,
+                    vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
                     vk::AccessFlagBits::eColorAttachmentWrite,
                     vk::PipelineStageFlagBits::eColorAttachmentOutput
                 };

@@ -45,11 +45,11 @@ namespace muon::engine {
         Device &device;
 
         std::vector<vk::AttachmentDescription> colorAttachments{};
-        std::vector<vk::AttachmentReference> colorAttachmentReferences{};
+        std::vector<vk::AttachmentReference> colorAttachmentRefs{};
 
-        bool depthPresent{false};
-        vk::AttachmentDescription depthAttachment;
-        vk::AttachmentReference depthAttachmentReference;
+        bool hasDepthStencil{false};
+        vk::AttachmentDescription depthStencilAttachment;
+        vk::AttachmentReference depthStencilAttachmentRef;
     };
 
 }

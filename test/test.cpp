@@ -223,8 +223,6 @@ int main() {
 
     engine::Model square(device, vertexData, stride, indices);
 
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
     engine::RenderPass scenePass = engine::RenderPass::Builder(device)
         .addColorAttachment(vk::Format::eR8G8B8A8Unorm)
         .addDepthStencilAttachment(vk::Format::eD32Sfloat)
@@ -334,7 +332,7 @@ int main() {
         const int32_t frameIndex = frameHandler.getFrameIndex();
 
         Ubo ubo{};
-        ubo.view = view;
+        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
 
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
@@ -348,33 +346,17 @@ int main() {
 
         auto sceneImage = sceneFramebuffer->getImage(0);
 
-        {
-            vk::ImageMemoryBarrier barrier{};
-            barrier.oldLayout = vk::ImageLayout::eGeneral;
-            barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
-            barrier.srcAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
-            barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
-            barrier.image = computeImageA.getImage();
-            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-            barrier.subresourceRange.baseMipLevel = 0;
-            barrier.subresourceRange.levelCount = 1;
-            barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
+        (*sceneImage)->transition(commandBuffer, {
+            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+            .accessFlags = vk::AccessFlagBits::eTransferRead,
+            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        });
 
-            commandBuffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eComputeShader,
-                vk::PipelineStageFlagBits::eTransfer,
-                vk::DependencyFlagBits{},
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-            );
-        }
+        computeImageA.transition(commandBuffer, {
+            .imageLayout = vk::ImageLayout::eTransferDstOptimal,
+            .accessFlags = vk::AccessFlagBits::eTransferWrite,
+            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        });
 
         vk::ImageCopy imageCopy{};
         imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -397,59 +379,17 @@ int main() {
             &imageCopy
         );
 
-        {
-            vk::ImageMemoryBarrier barrier{};
-            barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-            barrier.newLayout = vk::ImageLayout::eGeneral;
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
-            barrier.image = computeImageA.getImage();
-            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-            barrier.subresourceRange.baseMipLevel = 0;
-            barrier.subresourceRange.levelCount = 1;
-            barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
+        computeImageA.detransition(commandBuffer);
 
-            commandBuffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eTransfer,
-                vk::PipelineStageFlagBits::eComputeShader,
-                vk::DependencyFlagBits{},
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-            );
-        }
+        (*sceneImage)->detransition(commandBuffer);
 
         computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex]);
 
-        {
-            vk::ImageMemoryBarrier barrier{};
-            barrier.oldLayout = vk::ImageLayout::eGeneral;
-            barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
-            barrier.srcAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
-            barrier.image = computeImageB.getImage();
-            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-            barrier.subresourceRange.baseMipLevel = 0;
-            barrier.subresourceRange.levelCount = 1;
-            barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
-
-            commandBuffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eComputeShader,
-                vk::PipelineStageFlagBits::eTransfer,
-                vk::DependencyFlagBits{},
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-            );
-        }
+        computeImageB.transition(commandBuffer, {
+            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+            .accessFlags = vk::AccessFlagBits::eTransferRead,
+            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        });
 
         if (screenshotRequested) {
             vk::BufferImageCopy region{};
@@ -478,31 +418,7 @@ int main() {
 
         frameHandler.copyImageToSwapchain(computeImageB.getImage());
 
-        {
-            vk::ImageMemoryBarrier barrier{};
-            barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
-            barrier.newLayout = vk::ImageLayout::eGeneral;
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
-            barrier.image = computeImageB.getImage();
-            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-            barrier.subresourceRange.baseMipLevel = 0;
-            barrier.subresourceRange.levelCount = 1;
-            barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
-
-            commandBuffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eTransfer,
-                vk::PipelineStageFlagBits::eComputeShader,
-                vk::DependencyFlagBits{},
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-            );
-        }
+        computeImageB.detransition(commandBuffer);
 
         frameHandler.endFrame();
 

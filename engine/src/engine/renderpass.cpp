@@ -85,29 +85,29 @@ namespace muon::engine {
         colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
 
         colorAttachments.push_back(colorAttachment);
-        colorAttachmentReferences.push_back(colorAttachmentRef);
+        colorAttachmentRefs.push_back(colorAttachmentRef);
 
         return *this;
     }
 
     RenderPass::Builder &RenderPass::Builder::addDepthStencilAttachment(vk::Format format) {
-        vk::AttachmentDescription depthAttachment{};
-        depthAttachment.format = format;
-        depthAttachment.samples = vk::SampleCountFlagBits::e1;
-        depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
-        depthAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
-        depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eClear;
-        depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-        depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
-        depthAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+        vk::AttachmentDescription depthStencilAttachment{};
+        depthStencilAttachment.format = format;
+        depthStencilAttachment.samples = vk::SampleCountFlagBits::e1;
+        depthStencilAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+        depthStencilAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
+        depthStencilAttachment.stencilLoadOp = vk::AttachmentLoadOp::eClear;
+        depthStencilAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        depthStencilAttachment.initialLayout = vk::ImageLayout::eUndefined;
+        depthStencilAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-        vk::AttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = 1;
-        depthAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+        vk::AttachmentReference depthStencilAttachmentRef{};
+        depthStencilAttachmentRef.attachment = 1;
+        depthStencilAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-        this->depthAttachment = depthAttachment;
-        depthAttachmentReference = depthAttachmentRef;
-        depthPresent = true;
+        this->depthStencilAttachment = depthStencilAttachment;
+        this->depthStencilAttachmentRef = depthStencilAttachmentRef;
+        hasDepthStencil = true;
 
         return *this;
     }
@@ -116,16 +116,16 @@ namespace muon::engine {
         vk::SubpassDescription subpass{};
         subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
 
-        if (colorAttachmentReferences.size() > 0) {
-            subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferences.size());
-            subpass.pColorAttachments = colorAttachmentReferences.data();
+        if (colorAttachmentRefs.size() > 0) {
+            subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+            subpass.pColorAttachments = colorAttachmentRefs.data();
         } else {
             subpass.colorAttachmentCount = 0;
             subpass.pColorAttachments = nullptr;
         }
 
-        if (depthPresent) {
-            subpass.pDepthStencilAttachment = &depthAttachmentReference;
+        if (hasDepthStencil) {
+            subpass.pDepthStencilAttachment = &depthStencilAttachmentRef;
         } else {
             subpass.pDepthStencilAttachment = nullptr;
         }
@@ -150,8 +150,8 @@ namespace muon::engine {
             attachments.insert(attachments.end(), colorAttachments.begin(), colorAttachments.end());
         }
 
-        if (depthPresent) {
-            attachments.push_back(depthAttachment);
+        if (hasDepthStencil) {
+            attachments.push_back(depthStencilAttachment);
         }
 
         vk::RenderPassCreateInfo renderPassCreateInfo{};

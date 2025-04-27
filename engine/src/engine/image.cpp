@@ -142,19 +142,22 @@ namespace muon::engine {
 
         device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, vma::MemoryUsage::eGpuOnly, image, allocation);
 
-        auto aspectMaskFromLayout = [](vk::ImageLayout layout) -> vk::ImageAspectFlags {
+        auto aspectMask = [](vk::ImageLayout layout, vk::Format format) -> vk::ImageAspectFlags {
             switch (layout) {
             case vk::ImageLayout::eGeneral:
             case vk::ImageLayout::eColorAttachmentOptimal:
                 return vk::ImageAspectFlagBits::eColor;
 
             case vk::ImageLayout::eDepthStencilAttachmentOptimal:
+                if (format == vk::Format::eD16Unorm || format == vk::Format::eD32Sfloat) {
+                    return vk::ImageAspectFlagBits::eDepth;
+                }
                 return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
             default:
                 return {};
             }
-        };
+        }(state.imageLayout, format);
 
         vk::ImageViewCreateInfo viewInfo{};
         viewInfo.image = image;
@@ -164,7 +167,7 @@ namespace muon::engine {
         viewInfo.components.g = vk::ComponentSwizzle::eG;
         viewInfo.components.b = vk::ComponentSwizzle::eB;
         viewInfo.components.a = vk::ComponentSwizzle::eA;
-        viewInfo.subresourceRange.aspectMask = aspectMaskFromLayout(state.imageLayout);
+        viewInfo.subresourceRange.aspectMask = aspectMask;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -183,7 +186,7 @@ namespace muon::engine {
         barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
         barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = aspectMaskFromLayout(state.imageLayout);
+        barrier.subresourceRange.aspectMask = aspectMask;
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;
