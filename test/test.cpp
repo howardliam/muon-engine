@@ -1,3 +1,4 @@
+#include "spdlog/common.h"
 #include <memory>
 #include <fstream>
 
@@ -41,7 +42,9 @@ using namespace muon;
 
 class Logger : public log::ILogger {
 public:
-    Logger() : log::ILogger() {}
+    Logger() : log::ILogger() {
+        spdlog::set_level(spdlog::level::debug);
+    }
 
 private:
     void traceImpl(const std::string &message) override {
@@ -318,7 +321,7 @@ int main() {
 
                 if (event.key.scancode == SDL_SCANCODE_F2) {
                     screenshotRequested = true;
-                    logger->warn("screenshot requested");
+                    log::globalLogger->info("screenshot requested");
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
@@ -430,7 +433,8 @@ int main() {
 
         if (screenshotRequested) {
             if (stagingBuffer.map() != vk::Result::eSuccess) {
-                logger->error("failed to map screenshot buffer");
+                log::globalLogger->error("failed to map screenshot buffer");
+                continue;
             }
 
             std::vector<uint8_t> data(stagingBuffer.getBufferSize());
@@ -449,7 +453,7 @@ int main() {
             std::ofstream outputFile("./screenshot.png");
             outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
 
-            logger->warn("screenshot saved");
+            log::globalLogger->info("screenshot saved");
 
             screenshotRequested = false;
         }
