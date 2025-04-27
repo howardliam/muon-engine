@@ -24,8 +24,20 @@ namespace muon::engine {
         );
         ~Image();
 
-        void transition(vk::CommandBuffer commandBuffer, const State &newState);
-        void detransition(vk::CommandBuffer commandBuffer);
+        /**
+         * @brief   transitions the image to the desired layout, can only be used once before transition must be reverted.
+         *
+         * @param   commandBuffer   command buffer to record to.
+         * @param   newState        the new state to transition to image to.
+         */
+        void transitionLayout(vk::CommandBuffer commandBuffer, const State &newState);
+
+        /**
+         * @brief   reverts the transition.
+         *
+         * @param   commandBuffer   command buffer to record to.
+         */
+        void revertTransition(vk::CommandBuffer commandBuffer);
 
         /**
          * @brief   get image extent.

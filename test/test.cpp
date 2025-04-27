@@ -346,13 +346,13 @@ int main() {
 
         auto sceneImage = sceneFramebuffer->getImage(0);
 
-        (*sceneImage)->transition(commandBuffer, {
+        (*sceneImage)->transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits::eTransferRead,
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
         });
 
-        computeImageA.transition(commandBuffer, {
+        computeImageA.transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferDstOptimal,
             .accessFlags = vk::AccessFlagBits::eTransferWrite,
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
@@ -379,13 +379,13 @@ int main() {
             &imageCopy
         );
 
-        computeImageA.detransition(commandBuffer);
+        computeImageA.revertTransition(commandBuffer);
 
-        (*sceneImage)->detransition(commandBuffer);
+        (*sceneImage)->revertTransition(commandBuffer);
 
         computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex]);
 
-        computeImageB.transition(commandBuffer, {
+        computeImageB.transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits::eTransferRead,
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
@@ -418,7 +418,7 @@ int main() {
 
         frameHandler.copyImageToSwapchain(computeImageB.getImage());
 
-        computeImageB.detransition(commandBuffer);
+        computeImageB.revertTransition(commandBuffer);
 
         frameHandler.endFrame();
 

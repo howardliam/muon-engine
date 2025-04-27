@@ -26,7 +26,7 @@ namespace muon::engine {
         device.getAllocator().destroyImage(image, allocation);
     }
 
-    void Image::transition(
+    void Image::transitionLayout(
         vk::CommandBuffer commandBuffer,
         const State &newState
     ) {
@@ -65,7 +65,7 @@ namespace muon::engine {
         transitioned = true;
     }
 
-    void Image::detransition(vk::CommandBuffer commandBuffer) {
+    void Image::revertTransition(vk::CommandBuffer commandBuffer) {
         vk::ImageMemoryBarrier barrier{};
         barrier.oldLayout = state.imageLayout;
         barrier.newLayout = oldState.imageLayout;
