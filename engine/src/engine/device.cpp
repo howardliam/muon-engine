@@ -1,6 +1,6 @@
 #include "muon/engine/device.hpp"
 
-#include "muon/engine/window.hpp"
+#include "muon/log/logger.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
 #include <print>
@@ -30,8 +30,23 @@ namespace muon::engine {
         const vk::DebugUtilsMessengerCallbackDataEXT *callbackData,
         void *userData
     ) {
-        misc::ILogger *logger = reinterpret_cast<misc::ILogger *>(userData);
-        logger->warn(callbackData->pMessage);
+        switch (messageSeverity) {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
+            log::globalLogger->debug("VULKAN - \n{}\n", callbackData->pMessage);
+            break;
+
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
+            log::globalLogger->info("VULKAN - \n{}\n", callbackData->pMessage);
+            break;
+
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
+            log::globalLogger->warn("VULKAN - \n{}\n", callbackData->pMessage);
+            break;
+
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
+            log::globalLogger->error("VULKAN - \n{}\n", callbackData->pMessage);
+            break;
+        }
 
         return false;
     }
@@ -80,7 +95,7 @@ namespace muon::engine {
         return function(instance, debugMessenger, allocator);
     }
 
-    Device::Device(std::shared_ptr<misc::ILogger> logger, Window &window) : window(window), logger(logger) {
+    Device::Device(Window &window) : window(window) {
         createInstance();
         createDebugMessenger();
         createSurface();
@@ -88,26 +103,19 @@ namespace muon::engine {
         createLogicalDevice();
         createAllocator();
         createCommandPool();
+
+        log::globalLogger->debug("created device");
     }
 
     Device::~Device() {
         allocator.destroy();
-        logger->info("destroyed allocator");
-
         device.destroyCommandPool(commandPool, nullptr);
-        logger->info("destroyed command pool");
-
         device.destroy(nullptr);
-        logger->info("destroyed device");
-
         instance.destroySurfaceKHR(surface, nullptr);
-        logger->info("destroyed surface");
-
         destroyDebugUtilsMessenger(instance, debugMessenger, nullptr);
-        logger->info("destroyed debug utils messenger");
-
         instance.destroy(nullptr);
-        logger->info("destroyed instance");
+
+        log::globalLogger->debug("destroyed device");
     }
 
     vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
@@ -378,8 +386,6 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create instance");
         }
-
-        logger->info("created instance");
     }
 
     void Device::createDebugMessenger() {
@@ -397,7 +403,7 @@ namespace muon::engine {
             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
         createInfo.pfnUserCallback = debugCallback;
-        createInfo.pUserData = logger.get();
+        createInfo.pUserData = log::globalLogger;
 
         auto result = createDebugUtilsMessenger(
             instance,
@@ -571,34 +577,34 @@ namespace muon::engine {
 
         auto result = physicalDevice.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
         if (result != vk::Result::eSuccess) {
-            logger->error("failed to get surface capabilities");
+            log::globalLogger->error("failed to get surface capabilities");
         }
 
         uint32_t formatCount;
         result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
         if (result != vk::Result::eSuccess) {
-            logger->error("failed to get surface formats");
+            log::globalLogger->error("failed to get surface formats");
         }
 
         if (formatCount > 0) {
             details.formats.resize(formatCount);
             result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, details.formats.data());
             if (result != vk::Result::eSuccess) {
-                logger->error("failed to get surface formats");
+                log::globalLogger->error("failed to get surface formats");
             }
         }
 
         uint32_t presentModeCount;
         result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
         if (result != vk::Result::eSuccess) {
-            logger->error("failed to get surface present modes");
+            log::globalLogger->error("failed to get surface present modes");
         }
 
         if (presentModeCount > 0) {
             details.presentModes.resize(presentModeCount);
             result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, details.presentModes.data());
             if (result != vk::Result::eSuccess) {
-                logger->error("failed to get surface present modes");
+                log::globalLogger->error("failed to get surface present modes");
             }
         }
 

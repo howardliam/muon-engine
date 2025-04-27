@@ -3,6 +3,7 @@
 #include <optional>
 #include <print>
 #include <tuple>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
@@ -62,10 +63,13 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create framebuffer");
         }
+
+        log::globalLogger->debug("created framebuffer");
     }
 
     Framebuffer::~Framebuffer() {
         device.getDevice().destroyFramebuffer(framebuffer, nullptr);
+        log::globalLogger->debug("destroyed framebuffer");
     }
 
     vk::Framebuffer Framebuffer::getFramebuffer() const {

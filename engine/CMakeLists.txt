@@ -26,7 +26,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/texture.hpp
     ${INCLUDE_DIR}/muon/engine/vertex.hpp
     ${INCLUDE_DIR}/muon/engine/window.hpp
-    ${INCLUDE_DIR}/muon/misc/logger.hpp
+    ${INCLUDE_DIR}/muon/log/logger.hpp
 )
 
 set(SRC_FILES
@@ -49,7 +49,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/texture.cpp
     ${SRC_DIR}/engine/window.cpp
-    ${SRC_DIR}/misc/logger.cpp
+    ${SRC_DIR}/log/logger.cpp
 )
 
 set(IMGUI_DIR ../external/imgui)

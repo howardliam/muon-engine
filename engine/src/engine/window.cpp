@@ -7,6 +7,7 @@
 #include <format>
 #include <print>
 #include <stdexcept>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
@@ -17,11 +18,13 @@ namespace muon::engine {
         } catch (std::exception &e) {
             std::println("{}", e.what());
         }
+        log::globalLogger->debug("created window");
     }
 
     Window::~Window() {
         SDL_DestroyWindow(window);
         SDL_Quit();
+        log::globalLogger->debug("destroyed window");
     }
 
     bool Window::createSurface(VkInstance instance, VkSurfaceKHR *surface) {

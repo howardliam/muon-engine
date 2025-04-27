@@ -5,6 +5,7 @@
 #include <vk_mem_alloc_structs.hpp>
 #include <print>
 #include <vulkan/vulkan_structs.hpp>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
@@ -27,11 +28,14 @@ namespace muon::engine {
         bufferSize = alignmentSize * instanceCount;
 
         device.createBuffer(bufferSize, usageFlags, memoryUsage, buffer, allocation);
+
+        log::globalLogger->debug("created buffer");
     }
 
     Buffer::~Buffer() {
         unmap();
         device.getAllocator().destroyBuffer(buffer, allocation);
+        log::globalLogger->debug("destroyed buffer");
     }
 
     vk::Result Buffer::map() {

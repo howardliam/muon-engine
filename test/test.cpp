@@ -1,5 +1,3 @@
-
-#include "muon/engine/framegraph.hpp"
 #include <memory>
 #include <fstream>
 
@@ -14,6 +12,7 @@
 #include <muon/engine/descriptor.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framebuffer.hpp>
+#include <muon/engine/framegraph.hpp>
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
@@ -23,9 +22,9 @@
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/vertex.hpp>
 #include <muon/engine/window.hpp>
+#include <muon/log/logger.hpp>
 #include <muon/assets/image.hpp>
 #include <muon/assets/file.hpp>
-#include <muon/misc/logger.hpp>
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -40,9 +39,9 @@
 
 using namespace muon;
 
-class Logger : public misc::ILogger {
+class Logger : public log::ILogger {
 public:
-    Logger() : misc::ILogger() {}
+    Logger() : log::ILogger() {}
 
 private:
     void traceImpl(const std::string &message) override {
@@ -151,7 +150,9 @@ protected:
 
 int main() {
     auto logger = std::make_shared<Logger>();
+    log::setLogger(logger.get());
 
+    log::globalLogger->info("hello, world!");
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)
         .setInitialDisplayMode(engine::Window::DisplayMode::Windowed)
@@ -161,7 +162,7 @@ int main() {
     auto image = assets::loadImage("./muon-logo.png");
     window.setIcon(image->data, image->size.width, image->size.height, 4);
 
-    engine::Device device(logger, window);
+    engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
     frameHandler.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 

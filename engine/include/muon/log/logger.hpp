@@ -3,7 +3,13 @@
 #include <format>
 #include <string>
 
-namespace muon::misc {
+namespace muon::log {
+
+    class ILogger;
+
+    extern ILogger *globalLogger;
+
+    void setLogger(ILogger *logger);
 
     class ILogger {
     public:

@@ -3,6 +3,7 @@
 #include "muon/engine/device.hpp"
 #include "muon/engine/image.hpp"
 #include <vulkan/vulkan_handles.hpp>
+#include <memory>
 
 namespace muon::engine {
 

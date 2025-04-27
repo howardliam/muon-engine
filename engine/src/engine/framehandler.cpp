@@ -1,21 +1,23 @@
 #include "muon/engine/framehandler.hpp"
 
 #include "muon/engine/swapchain.hpp"
-#include <print>
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
     FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
         recreateSwapchain();
         createCommandBuffers();
+        log::globalLogger->debug("created frame handler");
     }
 
     FrameHandler::~FrameHandler() {
         freeCommandBuffers();
+        log::globalLogger->debug("destroyed frame handler");
     }
 
     vk::CommandBuffer FrameHandler::beginFrame() {
@@ -251,7 +253,7 @@ namespace muon::engine {
             std::shared_ptr oldSwapChain = std::move(swapchain);
             swapchain = std::make_unique<Swapchain>(device, extent, oldSwapChain);
             if (!swapchain->compareSwapFormats(*oldSwapChain)) {
-                std::println("swapchain does not match swap formats");
+                log::globalLogger->debug("swapchain does not match swap formats");
             }
         }
     }

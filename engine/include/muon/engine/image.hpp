@@ -2,6 +2,7 @@
 
 #include "muon/engine/device.hpp"
 #include <vulkan/vulkan_enums.hpp>
+#include <memory>
 
 namespace muon::engine {
 

@@ -1,7 +1,9 @@
 #include "muon/engine/image.hpp"
+
 #include <memory>
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
@@ -19,11 +21,13 @@ namespace muon::engine {
         state(state)
     {
         createImage();
+        log::globalLogger->debug("created image");
     }
 
     Image::~Image() {
         device.getDevice().destroyImageView(imageView);
         device.getAllocator().destroyImage(image, allocation);
+        log::globalLogger->debug("destroyed image");
     }
 
     void Image::transitionLayout(

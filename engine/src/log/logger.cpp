@@ -1,8 +1,15 @@
-#include "muon/misc/logger.hpp"
+#include "muon/log/logger.hpp"
 
 #include <print>
 
-namespace muon::misc {
+namespace muon::log {
+    static BasicLogger basicLogger;
+    ILogger *globalLogger = &basicLogger;
+
+    void setLogger(ILogger *logger) {
+        globalLogger = logger;
+    }
+
     BasicLogger::BasicLogger() : ILogger() {}
 
     void BasicLogger::traceImpl(const std::string &message) {

@@ -1,5 +1,7 @@
 #include "muon/engine/model.hpp"
 
+#include "muon/log/logger.hpp"
+
 namespace muon::engine {
 
     Model::Model(
@@ -10,6 +12,11 @@ namespace muon::engine {
     ) : device(device) {
         createVertexBuffer(vertices, stride);
         createIndexBuffer(indices);
+        log::globalLogger->debug("created model");
+    }
+
+    Model::~Model() {
+        log::globalLogger->debug("destroyed model");
     }
 
     void Model::bind(vk::CommandBuffer commandBuffer) const {

@@ -10,7 +10,7 @@ namespace muon::engine {
     class Model {
     public:
         Model(Device &device, const std::vector<uint8_t> &vertices, uint32_t stride, const std::vector<uint32_t> &indices);
-        ~Model() = default;
+        ~Model();
 
         /**
          * @brief   binds the model to the command buffer.

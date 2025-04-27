@@ -1,7 +1,9 @@
 #include "muon/engine/renderpass.hpp"
+
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_structs.hpp>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
@@ -14,10 +16,12 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create render pass");
         }
+        log::globalLogger->debug("created render pass");
     }
 
     RenderPass::~RenderPass() {
         device.getDevice().destroyRenderPass(renderPass, nullptr);
+        log::globalLogger->debug("destroyed render pass");
     }
 
     void RenderPass::begin(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent) {

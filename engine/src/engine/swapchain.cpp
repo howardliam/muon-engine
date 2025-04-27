@@ -1,16 +1,18 @@
 #include "muon/engine/swapchain.hpp"
 
-#include <print>
+#include "muon/log/logger.hpp"
 
 namespace muon::engine {
 
     Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent) : device(device), windowExtent(windowExtent) {
         init();
+        log::globalLogger->debug("created swapchain");
     }
 
     Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent, std::shared_ptr<Swapchain> previous) : device(device), windowExtent(windowExtent), oldSwapchain(previous) {
         init();
         oldSwapchain = nullptr;
+        log::globalLogger->debug("created swapchain from old swapchain");
     }
 
     Swapchain::~Swapchain() {
@@ -39,12 +41,14 @@ namespace muon::engine {
         swapchainImageViews.clear();
 
         device.getDevice().destroySwapchainKHR(swapchain, nullptr);
+
+        log::globalLogger->debug("destroyed swapchain");
     }
 
     vk::Result Swapchain::acquireNextImage(uint32_t *imageIndex) {
         auto result = device.getDevice().waitForFences(1, &inFlightFences[currentFrame], true, std::numeric_limits<uint64_t>::max());
         if (result != vk::Result::eSuccess) {
-            std::println("failed to wait for fences");
+            log::globalLogger->error("failed to wait for fences");
         }
 
         result = device.getDevice().acquireNextImageKHR(
@@ -62,7 +66,7 @@ namespace muon::engine {
         if (imagesInFlight[*imageIndex] != nullptr) {
             auto result = device.getDevice().waitForFences(1, &imagesInFlight[*imageIndex], true, UINT64_MAX);
             if (result != vk::Result::eSuccess) {
-                std::println("failed to wait for fences");
+                log::globalLogger->error("failed to wait for fences");
             }
         }
         imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
@@ -84,11 +88,11 @@ namespace muon::engine {
 
         auto result = device.getDevice().resetFences(1, &inFlightFences[currentFrame]);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to reset fences");
+            log::globalLogger->error("failed to reset fences");
         }
         result = device.getGraphicsQueue().submit(1, &submitInfo, inFlightFences[currentFrame]);
         if (result != vk::Result::eSuccess) {
-            std::println("failed to submit draw command buffer");
+            log::globalLogger->error("failed to submit draw command buffer");
         }
 
         vk::PresentInfoKHR presentInfo = {};
