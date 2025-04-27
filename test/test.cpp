@@ -225,8 +225,12 @@ int main() {
 
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    engine::RenderPass scenePass(device);
-    std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
+    engine::RenderPass scenePass = engine::RenderPass::Builder(device)
+        .addColorAttachment(vk::Format::eR8G8B8A8Unorm)
+        .addDepthStencilAttachment(vk::Format::eD32Sfloat)
+        .build();
+
+    std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
 
     RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()});
     renderSystem.bake(scenePass.getRenderPass());
@@ -285,30 +289,23 @@ int main() {
 
     bool resizeRequested{false};
 
-    engine::FrameGraph frameGraph;
+    // engine::FrameGraph frameGraph;
 
-    frameGraph.addStage({
-        .name = "SceneStage",
-        .readResources = {},
-        .writeResources = {},
+    // frameGraph.addStage({
+    //     .name = "SceneStage",
+    //     .readResources = {},
+    //     .writeResources = {},
 
-        .compile = [=]() {
+    //     .compile = [=]() {
 
-        },
+    //     },
 
-        .record = [=](vk::CommandBuffer commandBuffer) {
+    //     .record = [=](vk::CommandBuffer commandBuffer) {
 
-        }
-    });
+    //     }
+    // });
 
-    frameGraph.compile();
-
-    engine::RenderPass2 testPass = engine::RenderPass2::Builder(device)
-        .addColorAttachment(vk::Format::eR8G8B8A8Unorm)
-        .addDepthStencilAttachment(vk::Format::eD16UnormS8Uint)
-        .build();
-
-    engine::Framebuffer2 testFramebuffer(device, testPass.getRenderPass(), testPass.getAttachments(), window.getExtent());
+    // frameGraph.compile();
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -349,7 +346,7 @@ int main() {
 
         scenePass.end(commandBuffer);
 
-        auto sceneImage = sceneFramebuffer->getImage();
+        auto sceneImage = sceneFramebuffer->getImage(0);
 
         {
             vk::ImageMemoryBarrier barrier{};
@@ -392,7 +389,7 @@ int main() {
         imageCopy.extent.depth = 1;
 
         commandBuffer.copyImage(
-            sceneImage,
+            (*sceneImage)->getImage(),
             vk::ImageLayout::eTransferSrcOptimal,
             computeImageA.getImage(),
             vk::ImageLayout::eTransferDstOptimal,
@@ -510,7 +507,7 @@ int main() {
         frameHandler.endFrame();
 
         if (resizeRequested) {
-            sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass, window.getExtent());
+            sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
 
             resizeRequested = false;
         }

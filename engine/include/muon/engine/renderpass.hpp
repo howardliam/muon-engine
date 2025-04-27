@@ -8,38 +8,14 @@ namespace muon::engine {
 
     class RenderPass {
     public:
-        RenderPass(Device &device);
-        RenderPass(Device &device, vk::Format imageFormat, vk::Format depthImageFormat);
-        ~RenderPass();
-
-        void begin(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent);
-        void end(vk::CommandBuffer commandBuffer);
-
-        [[nodiscard]] vk::RenderPass getRenderPass() const;
-        [[nodiscard]] vk::Format getImageFormat() const;
-        [[nodiscard]] vk::Format getDepthImageFormat() const;
-
-    private:
-        Device &device;
-
-        vk::RenderPass renderPass;
-
-        vk::Format imageFormat{vk::Format::eR8G8B8A8Unorm};
-        vk::Format depthImageFormat{vk::Format::eD32Sfloat};
-
-        void createRenderPass();
-    };
-
-    class RenderPass2 {
-    public:
         class Builder;
 
-        RenderPass2(
+        RenderPass(
             Device &device,
             const vk::RenderPassCreateInfo &createInfo,
             const std::vector<vk::AttachmentDescription> &attachments
         );
-        ~RenderPass2();
+        ~RenderPass();
 
         void begin(vk::CommandBuffer commandBuffer, vk::Framebuffer framebuffer, vk::Extent2D extent);
         void end(vk::CommandBuffer commandBuffer);
@@ -55,7 +31,7 @@ namespace muon::engine {
         std::vector<vk::AttachmentDescription> attachments{};
     };
 
-    class RenderPass2::Builder {
+    class RenderPass::Builder {
     public:
         Builder(Device &device);
 
@@ -63,7 +39,7 @@ namespace muon::engine {
 
         Builder &addDepthStencilAttachment(vk::Format format);
 
-        RenderPass2 build() const;
+        RenderPass build() const;
 
     private:
         Device &device;
