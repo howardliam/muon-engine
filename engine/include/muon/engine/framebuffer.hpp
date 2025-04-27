@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
+#include "muon/engine/image.hpp"
 #include "muon/engine/renderpass.hpp"
 #include <vulkan/vulkan_handles.hpp>
 
@@ -32,6 +33,25 @@ namespace muon::engine {
         void createImageView(vk::Format format);
         void createDepthImageView(vk::Format format);
         void createFramebuffer(vk::RenderPass renderPass);
+    };
+
+    class Framebuffer2 {
+    public:
+        Framebuffer2(
+            Device &device,
+            vk::RenderPass renderPass,
+            const std::vector<vk::AttachmentDescription> &attachments,
+            vk::Extent2D extent
+        );
+        ~Framebuffer2();
+
+    private:
+        Device &device;
+
+        vk::Framebuffer framebuffer;
+        vk::Extent2D extent;
+
+        std::vector<std::unique_ptr<Image>> images{};
     };
 
 }

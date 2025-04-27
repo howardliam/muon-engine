@@ -303,6 +303,13 @@ int main() {
 
     frameGraph.compile();
 
+    engine::RenderPass2 testPass = engine::RenderPass2::Builder(device)
+        .addColorAttachment(vk::Format::eR8G8B8A8Unorm)
+        .addDepthStencilAttachment(vk::Format::eD16UnormS8Uint)
+        .build();
+
+    engine::Framebuffer2 testFramebuffer(device, testPass.getRenderPass(), testPass.getAttachments(), window.getExtent());
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {

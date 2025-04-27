@@ -142,6 +142,20 @@ namespace muon::engine {
 
         device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, vma::MemoryUsage::eGpuOnly, image, allocation);
 
+        auto aspectMaskFromLayout = [](vk::ImageLayout layout) -> vk::ImageAspectFlags {
+            switch (layout) {
+            case vk::ImageLayout::eGeneral:
+            case vk::ImageLayout::eColorAttachmentOptimal:
+                return vk::ImageAspectFlagBits::eColor;
+
+            case vk::ImageLayout::eDepthStencilAttachmentOptimal:
+                return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+
+            default:
+                return {};
+            }
+        };
+
         vk::ImageViewCreateInfo viewInfo{};
         viewInfo.image = image;
         viewInfo.viewType = vk::ImageViewType::e2D;
@@ -150,7 +164,7 @@ namespace muon::engine {
         viewInfo.components.g = vk::ComponentSwizzle::eG;
         viewInfo.components.b = vk::ComponentSwizzle::eB;
         viewInfo.components.a = vk::ComponentSwizzle::eA;
-        viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        viewInfo.subresourceRange.aspectMask = aspectMaskFromLayout(state.imageLayout);
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -169,7 +183,7 @@ namespace muon::engine {
         barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
         barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.aspectMask = aspectMaskFromLayout(state.imageLayout);
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;

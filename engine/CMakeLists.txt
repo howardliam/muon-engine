@@ -8,6 +8,8 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
+    ${INCLUDE_DIR}/muon/engine/system/compute.hpp
+    ${INCLUDE_DIR}/muon/engine/system/graphics.hpp
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/computesystem.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor.hpp
