@@ -280,7 +280,7 @@ int main() {
     auto extent = window.getExtent();
     auto size = extent.width * extent.height;
 
-    engine::Buffer stagingBuffer(
+    std::unique_ptr stagingBuffer = std::make_unique<engine::Buffer>(
         device,
         4,
         size,
@@ -395,6 +395,8 @@ int main() {
         });
 
         if (screenshotRequested) {
+            auto extent = window.getExtent();
+
             vk::BufferImageCopy region{};
             region.bufferOffset = 0;
             region.bufferRowLength = 0;
@@ -413,7 +415,7 @@ int main() {
             commandBuffer.copyImageToBuffer(
                 computeImageB.getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
-                stagingBuffer.getBuffer(),
+                stagingBuffer->getBuffer(),
                 1,
                 &region
             );
@@ -428,19 +430,30 @@ int main() {
         if (resizeRequested) {
             sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
 
+            extent = window.getExtent();
+            size = extent.width * extent.height;
+
+            stagingBuffer = std::make_unique<engine::Buffer>(
+                device,
+                4,
+                size,
+                vk::BufferUsageFlagBits::eTransferDst,
+                vma::MemoryUsage::eGpuToCpu
+            );
+
             resizeRequested = false;
         }
 
         if (screenshotRequested) {
-            if (stagingBuffer.map() != vk::Result::eSuccess) {
+            if (stagingBuffer->map() != vk::Result::eSuccess) {
                 log::globalLogger->error("failed to map screenshot buffer");
                 continue;
             }
 
-            std::vector<uint8_t> data(stagingBuffer.getBufferSize());
-            std::memcpy(data.data(), stagingBuffer.getMappedMemory(), stagingBuffer.getBufferSize());
+            std::vector<uint8_t> data(stagingBuffer->getBufferSize());
+            std::memcpy(data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
 
-            stagingBuffer.unmap();
+            stagingBuffer->unmap();
 
             assets::Image image{};
             image.size = {extent.width, extent.height};
