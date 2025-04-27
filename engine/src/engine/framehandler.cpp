@@ -51,7 +51,6 @@ namespace muon::engine {
         commandBuffer.end();
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
-        log::globalLogger->info("submitting command buffers");
 
         if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || window.wasResized()) {
             window.resetResized();

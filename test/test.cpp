@@ -1,3 +1,4 @@
+#include "muon/asset/model/gltf.hpp"
 #include <memory>
 #include <fstream>
 
@@ -306,6 +307,9 @@ int main() {
 
     // frameGraph.compile();
 
+    auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
+    asset::parseGltf(*cubeGltf);
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -328,7 +332,6 @@ int main() {
             }
         }
 
-        log::globalLogger->info("beginning frame");
         const auto commandBuffer = frameHandler.beginFrame();
 
         const int32_t frameIndex = frameHandler.getFrameIndex();
@@ -340,13 +343,11 @@ int main() {
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
         uboBuffers[frameIndex]->flush();
 
-        log::globalLogger->info("beginning scene pass");
         scenePass.begin(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
 
         renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
 
         scenePass.end(commandBuffer);
-        log::globalLogger->info("ending scene pass");
 
         auto sceneImage = sceneFramebuffer->getImage(0);
 
@@ -387,9 +388,7 @@ int main() {
 
         (*sceneImage)->revertTransition(commandBuffer);
 
-        log::globalLogger->info("beginning compute pass");
         computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex]);
-        log::globalLogger->info("ending compute pass");
 
         computeImageB.transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
@@ -424,13 +423,11 @@ int main() {
             );
         }
 
-        log::globalLogger->info("copying image to swapchain");
         frameHandler.copyImageToSwapchain(computeImageB.getImage());
 
         computeImageB.revertTransition(commandBuffer);
 
         frameHandler.endFrame();
-        log::globalLogger->info("ending frame");
 
         if (resizeRequested) {
             sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
@@ -451,7 +448,6 @@ int main() {
 
         if (screenshotRequested) {
             if (stagingBuffer->map() != vk::Result::eSuccess) {
-                log::globalLogger->error("failed to map screenshot buffer");
                 continue;
             }
 
@@ -470,8 +466,6 @@ int main() {
 
             std::ofstream outputFile("./screenshot.png");
             outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
-
-            log::globalLogger->info("screenshot saved");
 
             screenshotRequested = false;
         }

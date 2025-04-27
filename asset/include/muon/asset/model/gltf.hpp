@@ -1,12 +1,12 @@
 #pragma once
 
+#include "muon/asset/scene.hpp"
+#include <optional>
 #include <vector>
 #include <cstdint>
 
-namespace muon::assets {
+namespace muon::asset {
 
-
-
-    void parseGltf(const std::vector<uint8_t> &data);
+    std::optional<Scene> parseGltf(const std::vector<uint8_t> &data);
 
 }
