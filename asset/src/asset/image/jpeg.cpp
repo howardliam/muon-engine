@@ -1,8 +1,8 @@
-#include "muon/assets/image/jpeg.hpp"
+#include "muon/asset/image/jpeg.hpp"
 
 #include <turbojpeg.h>
 
-namespace muon::assets {
+namespace muon::asset {
 
     std::optional<Image> decodeJpeg(const std::vector<uint8_t> &encodedData) {
         tjhandle handle = tjInitDecompress();

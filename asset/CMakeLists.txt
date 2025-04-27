@@ -6,24 +6,26 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
-    ${INCLUDE_DIR}/muon/assets/image/jpeg.hpp
-    ${INCLUDE_DIR}/muon/assets/image/png.hpp
-    ${INCLUDE_DIR}/muon/assets/model/gltf.hpp
-    ${INCLUDE_DIR}/muon/assets/model/obj.hpp
-    ${INCLUDE_DIR}/muon/assets/file.hpp
-    ${INCLUDE_DIR}/muon/assets/image.hpp
-    ${INCLUDE_DIR}/muon/assets/model.hpp
-    ${INCLUDE_DIR}/muon/assets/scene.hpp
+    ${INCLUDE_DIR}/muon/asset/audio/opus.hpp
+    ${INCLUDE_DIR}/muon/asset/audio/wav.hpp
+    ${INCLUDE_DIR}/muon/asset/image/jpeg.hpp
+    ${INCLUDE_DIR}/muon/asset/image/png.hpp
+    ${INCLUDE_DIR}/muon/asset/model/gltf.hpp
+    ${INCLUDE_DIR}/muon/asset/model/obj.hpp
+    ${INCLUDE_DIR}/muon/asset/file.hpp
+    ${INCLUDE_DIR}/muon/asset/image.hpp
+    ${INCLUDE_DIR}/muon/asset/model.hpp
+    ${INCLUDE_DIR}/muon/asset/scene.hpp
 )
 
 set(SRC_FILES
-    ${SRC_DIR}/assets/image/jpeg.cpp
-    ${SRC_DIR}/assets/image/png.cpp
-    ${SRC_DIR}/assets/model/gltf.cpp
-    ${SRC_DIR}/assets/model/obj.cpp
-    ${SRC_DIR}/assets/file.cpp
-    ${SRC_DIR}/assets/image.cpp
-    ${SRC_DIR}/assets/model.cpp
+    ${SRC_DIR}/asset/image/jpeg.cpp
+    ${SRC_DIR}/asset/image/png.cpp
+    ${SRC_DIR}/asset/model/gltf.cpp
+    ${SRC_DIR}/asset/model/obj.cpp
+    ${SRC_DIR}/asset/file.cpp
+    ${SRC_DIR}/asset/image.cpp
+    ${SRC_DIR}/asset/model.cpp
 )
 
 add_library(${LIB_NAME} SHARED

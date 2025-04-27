@@ -1,8 +1,8 @@
 #pragma once
 
-#include "muon/assets/image.hpp"
+#include "muon/asset/image.hpp"
 
-namespace muon::assets {
+namespace muon::asset {
 
     /**
      * @brief   decodes the image from PNG format with the encoded data.

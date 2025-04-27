@@ -1,9 +1,9 @@
-#include "muon/assets/image/png.hpp"
-#include "muon/assets/image.hpp"
+#include "muon/asset/image/png.hpp"
+#include "muon/asset/image.hpp"
 
 #include <spng.h>
 
-namespace muon::assets {
+namespace muon::asset {
 
     std::optional<Image> decodePng(const std::vector<uint8_t> &encodedData) {
         spng_ctx *ctx = spng_ctx_new(0);

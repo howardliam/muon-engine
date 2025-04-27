@@ -23,8 +23,8 @@
 #include <muon/engine/vertex.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/log/logger.hpp>
-#include <muon/assets/image.hpp>
-#include <muon/assets/file.hpp>
+#include <muon/asset/image.hpp>
+#include <muon/asset/file.hpp>
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -161,7 +161,7 @@ int main() {
         .setTitle("Testing")
         .build();
 
-    auto image = assets::loadImage("./muon-logo.png");
+    auto image = asset::loadImage("./muon-logo.png");
     window.setIcon(image->data, image->size.width, image->size.height, 4);
 
     engine::Device device(window);

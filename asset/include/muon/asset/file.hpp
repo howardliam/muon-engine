@@ -5,7 +5,7 @@
 #include <variant>
 #include <vector>
 
-namespace muon::assets {
+namespace muon::asset {
 
     enum class FileType {
         Text,

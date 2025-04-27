@@ -4,9 +4,9 @@
 #include <filesystem>
 #include <vector>
 #include <optional>
-#include "muon/assets/file.hpp"
+#include "muon/asset/file.hpp"
 
-namespace muon::assets {
+namespace muon::asset {
 
     enum class ColorFormat {
         Rgb,

@@ -1,9 +1,9 @@
-#include "muon/assets/file.hpp"
+#include "muon/asset/file.hpp"
 
 #include <fstream>
 #include <string>
 
-namespace muon::assets {
+namespace muon::asset {
 
     template<>
     std::optional<TextFormat> parseFormat(const std::string &extension) {

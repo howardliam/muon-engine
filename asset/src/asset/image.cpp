@@ -1,14 +1,14 @@
-#include "muon/assets/image.hpp"
-#include "muon/assets/file.hpp"
-#include "muon/assets/image/jpeg.hpp"
-#include "muon/assets/image/png.hpp"
+#include "muon/asset/image.hpp"
+#include "muon/asset/file.hpp"
+#include "muon/asset/image/jpeg.hpp"
+#include "muon/asset/image/png.hpp"
 
 #include <print>
 #include <variant>
 #include <vector>
 #include <spng.h>
 
-namespace muon::assets {
+namespace muon::asset {
 
     std::optional<Image> loadImage(const std::filesystem::path &path) {
         auto mediaType = parseMediaType(path, FileType::Image);
