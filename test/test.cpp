@@ -460,13 +460,13 @@ int main() {
 
             stagingBuffer->unmap();
 
-            assets::Image image{};
+            asset::Image image{};
             image.size = {extent.width, extent.height};
-            image.format = assets::ColorFormat::Rgba;
+            image.format = asset::ColorFormat::Rgba;
             image.bitDepth = 8;
             image.data = data;
 
-            auto png = assets::encodeImage(image, assets::ImageFormat::Png);
+            auto png = asset::encodeImage(image, asset::ImageFormat::Png);
 
             std::ofstream outputFile("./screenshot.png");
             outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
