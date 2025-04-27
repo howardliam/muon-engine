@@ -1,4 +1,3 @@
-#include "spdlog/common.h"
 #include <memory>
 #include <fstream>
 
@@ -167,7 +166,6 @@ int main() {
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
-    frameHandler.setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
     std::unique_ptr pool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
@@ -330,6 +328,7 @@ int main() {
             }
         }
 
+        log::globalLogger->info("beginning frame");
         const auto commandBuffer = frameHandler.beginFrame();
 
         const int32_t frameIndex = frameHandler.getFrameIndex();
@@ -341,11 +340,13 @@ int main() {
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
         uboBuffers[frameIndex]->flush();
 
+        log::globalLogger->info("beginning scene pass");
         scenePass.begin(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
 
         renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
 
         scenePass.end(commandBuffer);
+        log::globalLogger->info("ending scene pass");
 
         auto sceneImage = sceneFramebuffer->getImage(0);
 
@@ -386,7 +387,9 @@ int main() {
 
         (*sceneImage)->revertTransition(commandBuffer);
 
+        log::globalLogger->info("beginning compute pass");
         computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex]);
+        log::globalLogger->info("ending compute pass");
 
         computeImageB.transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
@@ -421,11 +424,13 @@ int main() {
             );
         }
 
+        log::globalLogger->info("copying image to swapchain");
         frameHandler.copyImageToSwapchain(computeImageB.getImage());
 
         computeImageB.revertTransition(commandBuffer);
 
         frameHandler.endFrame();
+        log::globalLogger->info("ending frame");
 
         if (resizeRequested) {
             sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());

@@ -32,28 +32,7 @@ namespace muon::engine {
          */
         void endFrame();
 
-        /**
-         * @brief   begins the swapchain render pass.
-         *
-         * @param   commandBuffer   the command buffer currently being recorded into for the frame.
-         */
-        void beginSwapchainRenderPass(vk::CommandBuffer commandBuffer);
-
-        /**
-         * @brief   ends the swapchain render pass.
-         *
-         * @param   commandBuffer   the command buffer currently being recorded into for the frame.
-         */
-        void endSwapchainRenderPass(vk::CommandBuffer commandBuffer);
-
         void copyImageToSwapchain(vk::Image image);
-
-        /**
-         * @brief   gets the render pass from the swapchain.
-         *
-         * @return  rende pass handle.
-         */
-        [[nodiscard]] vk::RenderPass getSwapchainRenderPass() const;
 
         /**
          * @brief   gets the current command buffer.
@@ -61,20 +40,6 @@ namespace muon::engine {
          * @return  command buffer handle.
          */
         [[nodiscard]] vk::CommandBuffer getCurrentCommandBuffer() const;
-
-        /**
-         * @brief   sets the swapchain clear color.
-         *
-         * @param   new color to set the background to.
-         */
-        void setClearColor(vk::ClearColorValue newValue);
-
-        /**
-         * @brief   sets the swapchain clear depth stencil.
-         *
-         * @param   new depth stencil value to set.
-         */
-        void setClearDepthStencil(vk::ClearDepthStencilValue newValue);
 
         /**
          * @brief   gets the current frame index.
@@ -103,9 +68,6 @@ namespace muon::engine {
 
         std::unique_ptr<Swapchain> swapchain;
         std::vector<vk::CommandBuffer> commandBuffers;
-
-        vk::ClearColorValue clearColorValue{0.0f, 0.0f, 0.0f, 1.0f};
-        vk::ClearDepthStencilValue clearDepthStencilValue{1.0f, 0};
 
         uint32_t currentImageIndex{0};
         int32_t currentFrameIndex{0};

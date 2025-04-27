@@ -51,6 +51,7 @@ namespace muon::engine {
         commandBuffer.end();
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+        log::globalLogger->info("submitting command buffers");
 
         if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || window.wasResized()) {
             window.resetResized();
@@ -61,43 +62,6 @@ namespace muon::engine {
 
         frameInProgress = false;
         currentFrameIndex = (currentFrameIndex + 1) % constants::maxFramesInFlight;
-    }
-
-    void FrameHandler::beginSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
-        vk::RenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.renderPass = swapchain->getRenderPass();
-        renderPassInfo.framebuffer = swapchain->getFramebuffer(currentImageIndex);
-
-        renderPassInfo.renderArea.setOffset({0, 0});
-        renderPassInfo.renderArea.extent = swapchain->getExtent();
-
-        std::array<vk::ClearValue, 2> clearValues;
-        clearValues[0].color = clearColorValue;
-        clearValues[1].depthStencil = clearDepthStencilValue;
-
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-
-        commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
-
-        vk::Viewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = static_cast<float>(swapchain->getWidth());
-        viewport.height = static_cast<float>(swapchain->getHeight());
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-
-        vk::Rect2D scissor{};
-        scissor.setOffset({0, 0});
-        scissor.extent = swapchain->getExtent();
-
-        commandBuffer.setViewport(0, 1, &viewport);
-        commandBuffer.setScissor(0, 1, &scissor);
-    }
-
-    void FrameHandler::endSwapchainRenderPass(vk::CommandBuffer commandBuffer) {
-        commandBuffer.endRenderPass();
     }
 
     void FrameHandler::copyImageToSwapchain(vk::Image image) {
@@ -190,20 +154,8 @@ namespace muon::engine {
         }
     }
 
-    vk::RenderPass FrameHandler::getSwapchainRenderPass() const {
-        return swapchain->getRenderPass();
-    }
-
     vk::CommandBuffer FrameHandler::getCurrentCommandBuffer() const {
         return commandBuffers[currentFrameIndex];
-    }
-
-    void FrameHandler::setClearColor(vk::ClearColorValue newValue) {
-        clearColorValue = newValue;
-    }
-
-    void FrameHandler::setClearDepthStencil(vk::ClearDepthStencilValue newValue) {
-        clearDepthStencilValue = newValue;
     }
 
     int32_t FrameHandler::getFrameIndex() const {

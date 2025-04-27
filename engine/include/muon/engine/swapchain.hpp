@@ -67,22 +67,6 @@ namespace muon::engine {
         [[nodiscard]] vk::SwapchainKHR getSwapchain() const;
 
         /**
-         * @brief   returns the render pass.
-         *
-         * @return  render pass handle.
-         */
-        [[nodiscard]] vk::RenderPass getRenderPass() const;
-
-        /**
-         * @brief   returns framebuffer at image index.
-         *
-         * @param   index   the index of the swapchain framebuffer.
-         *
-         * @return  framebuffer at index.
-         */
-        [[nodiscard]] vk::Framebuffer getFramebuffer(int32_t index) const;
-
-        /**
          * @brief   returns image at image index.
          *
          * @param   index   the index of the swapchain image.
@@ -147,15 +131,6 @@ namespace muon::engine {
         std::vector<vk::Image> swapchainImages{};
         std::vector<vk::ImageView> swapchainImageViews{};
 
-        vk::Format depthImageFormat;
-        std::vector<vk::Image> depthImages{};
-        std::vector<vma::Allocation> depthImageAllocations{};
-        std::vector<vk::ImageView> depthImageViews{};
-
-        vk::RenderPass renderPass;
-
-        std::vector<vk::Framebuffer> swapchainFramebuffers{};
-
         std::vector<vk::Semaphore> imageAvailableSemaphores{};
         std::vector<vk::Semaphore> renderFinishedSemaphores{};
         std::vector<vk::Fence> inFlightFences{};
@@ -177,21 +152,6 @@ namespace muon::engine {
          * @brief   creates all the image views.
          */
         void createImageViews();
-
-        /**
-         * @brief   creates the depth buffer resources.
-         */
-        void createDepthResources();
-
-        /**
-         * @brief   creates the render pass.
-         */
-        void createRenderPass();
-
-        /**
-         * @brief   creates all the framebuffers.
-         */
-        void createFramebuffers();
 
         /**
          * @brief   creates the synchronisation objects.
