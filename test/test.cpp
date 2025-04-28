@@ -256,16 +256,20 @@ int main() {
         .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
         .build();
 
-    std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
-    for (size_t i = 0; i < computeDescriptorSets.size(); i++) {
-        auto infoA = computeImageA->getDescriptorInfo();
-        auto infoB = computeImageB->getDescriptorInfo();
+    vk::DescriptorSet computeDescriptorSetA;
+    vk::DescriptorSet computeDescriptorSetB;
+    auto infoA = computeImageA->getDescriptorInfo();
+    auto infoB = computeImageB->getDescriptorInfo();
 
-        engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-            .writeImage(0, &infoA)
-            .writeImage(1, &infoB)
-            .build(computeDescriptorSets[i]);
-    }
+    engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+        .writeImage(0, &infoA)
+        .writeImage(1, &infoB)
+        .build(computeDescriptorSetA);
+
+    engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+        .writeImage(0, &infoB)
+        .writeImage(1, &infoA)
+        .build(computeDescriptorSetB);
 
     ComputeShaderRenderSystem computeShader(device, {computeSetLayout->getDescriptorSetLayout()});
 
@@ -365,15 +369,18 @@ int main() {
 
                 computeImagePool->resetPool();
 
-                for (size_t i = 0; i < computeDescriptorSets.size(); i++) {
-                    auto infoA = computeImageA->getDescriptorInfo();
-                    auto infoB = computeImageB->getDescriptorInfo();
+                auto infoA = computeImageA->getDescriptorInfo();
+                auto infoB = computeImageB->getDescriptorInfo();
 
-                    engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-                        .writeImage(0, &infoA)
-                        .writeImage(1, &infoB)
-                        .build(computeDescriptorSets[i]);
-                }
+                engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+                    .writeImage(0, &infoA)
+                    .writeImage(1, &infoB)
+                    .build(computeDescriptorSetA);
+
+                engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+                    .writeImage(0, &infoB)
+                    .writeImage(1, &infoA)
+                    .build(computeDescriptorSetB);
             }
         }
 
@@ -440,7 +447,7 @@ int main() {
 
         (*sceneImage)->revertTransition(commandBuffer);
 
-        computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex], window.getExtent());
+        computeShader.doWork(commandBuffer, computeDescriptorSetA, window.getExtent());
 
         computeImageB->transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
