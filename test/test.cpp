@@ -308,7 +308,7 @@ int main() {
     // frameGraph.compile();
 
     auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
-    auto scene = asset::parseGltf(*cubeGltf).value();
+    auto scene = asset::parseGltf(*cubeGltf, "./test/assets/models/cube.gltf").value();
 
     log::globalLogger->info("{}", *scene.rootNodes[0]->mesh->name);
 

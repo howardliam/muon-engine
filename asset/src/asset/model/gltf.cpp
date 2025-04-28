@@ -1,7 +1,10 @@
 #include "muon/asset/model/gltf.hpp"
 
-#include <nlohmann/json.hpp>
+#include <fstream>
+#include <memory>
 #include <print>
+#include <utility>
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
@@ -62,11 +65,32 @@ namespace muon::asset {
         return bytes * byteFactor;
     }
 
-    std::optional<Scene> parseGltf(const std::vector<uint8_t> &data) {
+    std::optional<Scene> parseGltf(const std::vector<uint8_t> &data, const std::filesystem::path &path) {
         const json gltf = json::parse(data);
 
-        std::vector<std::unique_ptr<Mesh>> meshes{};
+        std::vector<std::pair<const int32_t, std::unique_ptr<std::ifstream>>> buffers{};
+        auto gltfBuffers = gltf["buffers"];
+        for (auto gltfBuffer : gltfBuffers) {
+            auto bufferPath = path.parent_path().append(std::string(gltfBuffer["uri"]));
 
+            buffers.push_back({
+                gltfBuffer["byteLength"],
+                std::make_unique<std::ifstream>(bufferPath, std::ios::binary)
+            });
+        }
+
+        auto gltfBufferViews = gltf["bufferViews"];
+        for (auto gltfBufferView : gltfBufferViews) {
+
+        }
+
+        auto gltfAccessors = gltf["accessors"];
+        for (auto gltfAccessor : gltfAccessors) {
+            size_t byteOffset = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+            std::println("{}", byteOffset);
+        }
+
+        std::vector<std::unique_ptr<Mesh>> meshes{};
         auto gltfMeshes = gltf["meshes"];
         for (auto gltfMesh : gltfMeshes) {
             std::unique_ptr mesh = std::make_unique<Mesh>();
@@ -76,7 +100,6 @@ namespace muon::asset {
         }
 
         std::vector<std::shared_ptr<Node>> nodes{};
-
         auto gltfNodes = gltf["nodes"];
         for (auto gltfNode : gltfNodes) {
             std::shared_ptr node = std::make_shared<Node>();
@@ -87,10 +110,8 @@ namespace muon::asset {
         }
 
         Scene scene{};
-
         int32_t sceneIndex = gltf["scene"];
         auto gltfScene = gltf["scenes"][sceneIndex];
-
         scene.name = gltfScene["name"];
         std::vector<int32_t> nodeIndices = gltfScene["nodes"];
         for (auto nodeIndex : nodeIndices) {
