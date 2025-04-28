@@ -33,6 +33,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <stdexcept>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -109,6 +110,8 @@ protected:
             .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
             .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
             .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
+            .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
+            .addVertexAttribute(vk::Format::eR32G32Sfloat)
             .buildUniquePtr(configInfo);
     }
 };
@@ -204,26 +207,20 @@ int main() {
             .build(descriptorSets[i]);
     }
 
-    struct TestVertex {
-        glm::vec3 position{};
-    };
-    auto stride = sizeof(TestVertex);
+    auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
+    auto scene = asset::parseGltf(*cubeGltf, "./test/assets/models/cube.gltf");
 
-    std::vector<TestVertex> vertices = {
-        {{0.5f, 0.5f, -5.0f}},
-        {{0.5f, -0.5f, -5.0f}},
-        {{-0.5f, -0.5f, -5.0f}},
-        {{-0.5f, 0.5f, -5.0f}},
-    };
+    if (!scene) {
+        throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
+    }
 
-    std::vector vertexData = engine::Model::getRawVertexData(vertices);
+    log::globalLogger->info("Mesh name: {}", *scene.value().rootNodes[0]->mesh->name);
+    log::globalLogger->info("No. vertices: {}", scene.value().rootNodes[0]->mesh->vertexSize);
+    log::globalLogger->info("No. indices: {}", scene.value().rootNodes[0]->mesh->indices.size());
 
-    std::vector<uint32_t> indices = {
-        0, 1, 2,
-        0, 2, 3,
-    };
+    auto mesh = scene.value().rootNodes[0]->mesh.get();
 
-    engine::Model square(device, vertexData, stride, indices);
+    engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
 
     engine::RenderPass scenePass = engine::RenderPass::Builder(device)
         .addColorAttachment(vk::Format::eR8G8B8A8Unorm)
@@ -307,14 +304,12 @@ int main() {
 
     // frameGraph.compile();
 
-    auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
-    auto scene = asset::parseGltf(*cubeGltf, "./test/assets/models/cube.gltf");
+
 
     if (scene) {
         log::globalLogger->info("Mesh name: {}", *scene.value().rootNodes[0]->mesh->name);
         log::globalLogger->info("No. vertices: {}", scene.value().rootNodes[0]->mesh->vertexSize);
         log::globalLogger->info("No. indices: {}", scene.value().rootNodes[0]->mesh->indices.size());
-
     }
 
 
@@ -345,7 +340,7 @@ int main() {
         const int32_t frameIndex = frameHandler.getFrameIndex();
 
         Ubo ubo{};
-        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
 
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
