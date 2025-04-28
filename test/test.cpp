@@ -5,7 +5,7 @@
 #include <chrono>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
-#include "glm/trigonometric.hpp"
+#include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
@@ -27,7 +27,7 @@
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
 #include <muon/asset/file.hpp>
-#include "muon/asset/model/gltf.hpp"
+#include <muon/asset/model/gltf.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
