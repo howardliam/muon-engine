@@ -1,3 +1,4 @@
+#include "glm/trigonometric.hpp"
 #include "muon/asset/model/gltf.hpp"
 #include <memory>
 #include <fstream>
@@ -34,6 +35,7 @@
 #include <spdlog/spdlog.h>
 
 #include <stdexcept>
+#include <utility>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -179,6 +181,7 @@ int main() {
     struct Ubo {
         glm::mat4 projection;
         glm::mat4 view;
+        glm::mat4 transform;
     };
 
     std::vector<std::unique_ptr<engine::Buffer>> uboBuffers(engine::constants::maxFramesInFlight);
@@ -304,14 +307,9 @@ int main() {
 
     // frameGraph.compile();
 
-
-
-    if (scene) {
-        log::globalLogger->info("Mesh name: {}", *scene.value().rootNodes[0]->mesh->name);
-        log::globalLogger->info("No. vertices: {}", scene.value().rootNodes[0]->mesh->vertexSize);
-        log::globalLogger->info("No. indices: {}", scene.value().rootNodes[0]->mesh->indices.size());
-    }
-
+    glm::mat4 transform = glm::mat4{1.0f};
+    transform = glm::scale(transform, glm::vec3{2.0f});
+    transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3{1.0f, 1.0f, 0.0f});
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -342,6 +340,7 @@ int main() {
         Ubo ubo{};
         ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
+        ubo.transform = transform;
 
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
         uboBuffers[frameIndex]->flush();
@@ -465,11 +464,16 @@ int main() {
             image.bitDepth = 8;
             image.data = data;
 
+            for (size_t i = 0; i  < image.data.size(); i += 4) {
+                std::swap(image.data[i], image.data[i + 2]);
+            }
+
             auto png = asset::encodeImage(image, asset::ImageFormat::Png);
 
             std::ofstream outputFile("./screenshot.png");
             outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
 
+            log::globalLogger->info("screenshot saved");
             screenshotRequested = false;
         }
     }

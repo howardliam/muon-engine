@@ -9,10 +9,11 @@ layout(location = 0) out vec3 color;
 layout(set = 0, binding = 0) uniform Ubo {
     mat4 projection;
     mat4 view;
+    mat4 transform;
 } ubo;
 
 void main() {
-    gl_Position = ubo.projection * ubo.view * vec4(position, 1.0);
+    gl_Position = ubo.projection * ubo.view * ubo.transform * vec4(position, 1.0);
 
-    color = position;
+    color = position * normal;
 }
