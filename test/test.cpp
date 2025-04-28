@@ -308,9 +308,15 @@ int main() {
     // frameGraph.compile();
 
     auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
-    auto scene = asset::parseGltf(*cubeGltf, "./test/assets/models/cube.gltf").value();
+    auto scene = asset::parseGltf(*cubeGltf, "./test/assets/models/cube.gltf");
 
-    log::globalLogger->info("{}", *scene.rootNodes[0]->mesh->name);
+    if (scene) {
+        log::globalLogger->info("Mesh name: {}", *scene.value().rootNodes[0]->mesh->name);
+        log::globalLogger->info("No. vertices: {}", scene.value().rootNodes[0]->mesh->vertexSize);
+        log::globalLogger->info("No. indices: {}", scene.value().rootNodes[0]->mesh->indices.size());
+
+    }
+
 
     while (window.isOpen()) {
         SDL_Event event;

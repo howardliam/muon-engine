@@ -19,8 +19,8 @@ using json = nlohmann::json;
 
 namespace muon::asset {
 
-    size_t getByteOffset(const int32_t componentType, const std::string &type) {
-        auto getNumBytes = [](const int32_t componentType) -> size_t {
+    int32_t getByteOffset(const int32_t componentType, const std::string &type) {
+        auto getNumBytes = [](const int32_t componentType) -> int32_t {
             switch (componentType) {
             case BYTE:
             case UNSIGNED_BYTE:
@@ -39,7 +39,7 @@ namespace muon::asset {
             }
         };
 
-        auto getByteFactor = [](const std::string &type) -> size_t {
+        auto getByteFactor = [](const std::string &type) -> int32_t {
             if (type == "SCALAR") {
                 return 1;
             } else if (type == "VEC2") {
@@ -59,8 +59,8 @@ namespace muon::asset {
             return 0;
         };
 
-        size_t bytes = getNumBytes(componentType);
-        size_t byteFactor = getByteFactor(type);
+        int32_t bytes = getNumBytes(componentType);
+        int32_t byteFactor = getByteFactor(type);
 
         return bytes * byteFactor;
     }
@@ -68,33 +68,96 @@ namespace muon::asset {
     std::optional<Scene> parseGltf(const std::vector<uint8_t> &data, const std::filesystem::path &path) {
         const json gltf = json::parse(data);
 
-        std::vector<std::pair<const int32_t, std::unique_ptr<std::ifstream>>> buffers{};
+        std::vector<std::unique_ptr<std::ifstream>> buffers{};
         auto gltfBuffers = gltf["buffers"];
         for (auto gltfBuffer : gltfBuffers) {
             auto bufferPath = path.parent_path().append(std::string(gltfBuffer["uri"]));
 
-            buffers.push_back({
-                gltfBuffer["byteLength"],
-                std::make_unique<std::ifstream>(bufferPath, std::ios::binary)
-            });
+            buffers.push_back(std::make_unique<std::ifstream>(bufferPath, std::ios::binary));
         }
 
         auto gltfBufferViews = gltf["bufferViews"];
-        for (auto gltfBufferView : gltfBufferViews) {
-
-        }
 
         auto gltfAccessors = gltf["accessors"];
-        for (auto gltfAccessor : gltfAccessors) {
-            size_t byteOffset = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-            std::println("{}", byteOffset);
-        }
 
         std::vector<std::unique_ptr<Mesh>> meshes{};
         auto gltfMeshes = gltf["meshes"];
         for (auto gltfMesh : gltfMeshes) {
+            int32_t vertexSize{0};
+            int32_t vertexStride{0};
+            int32_t vertexDataSize{0};
+            auto gltfAttributes = gltfMesh["primitives"][0]["attributes"];
+            for (int32_t accessorIndex : gltfAttributes) {
+                auto gltfAccessor = gltfAccessors[accessorIndex];
+                int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+                vertexStride += attributeStride;
+                int32_t attributeCount = gltfAccessor["count"];
+
+                vertexDataSize += (vertexStride * attributeCount);
+                vertexSize = gltfAccessor["count"];
+            }
+
             std::unique_ptr mesh = std::make_unique<Mesh>();
             mesh->name = gltfMesh["name"];
+            mesh->vertexData.resize(vertexDataSize);
+            mesh->vertexSize = vertexSize;
+
+            for (int32_t accessorIndex : gltfAttributes) {
+                auto gltfAccessor = gltfAccessors[accessorIndex];
+                size_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+                int32_t bufferViewIndex = gltfAccessor["bufferView"];
+                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
+
+                int32_t byteOffset = gltfBufferView["byteOffset"];
+                int32_t byteLength = gltfBufferView["byteLength"];
+                int32_t bufferIndex = gltfBufferView["buffer"];
+                std::ifstream *buffer = buffers[bufferIndex].get();
+
+                int32_t vertex{0};
+                for (int32_t i = 0; i < byteLength; i += attributeStride) {
+                    int32_t binaryPosition = byteOffset + i;
+                    buffer->seekg(binaryPosition, std::ios::beg);
+
+                    uint8_t attributeData[attributeStride];
+                    buffer->read(reinterpret_cast<char *>(attributeData), attributeStride);
+
+                    std::memcpy(
+                        &mesh->vertexData[(vertex * vertexStride) + (bufferViewIndex * attributeStride)],
+                        attributeData,
+                        attributeStride
+                    );
+
+                    vertex += 1;
+                }
+            }
+
+            if (gltfMesh["primitives"][0].contains("indices")) {
+                int32_t gltfIndex = gltfMesh["primitives"][0]["indices"];
+                auto gltfAccessor = gltfAccessors[gltfIndex];
+                int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+                int32_t numberIndices = gltfAccessor["count"];
+                mesh->indices.resize(numberIndices);
+                int32_t indexComponentType = gltfAccessor["componentType"];
+
+                int32_t bufferViewIndex = gltfAccessor["bufferView"];
+                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
+                int32_t bufferIndex = gltfBufferView["buffer"];
+                std::ifstream *buffer = buffers[bufferIndex].get();
+
+                if (indexComponentType == UNSIGNED_SHORT) {
+                    for (int32_t i = 0; i < numberIndices; i++) {
+                        uint16_t index{0};
+                        buffer->read(reinterpret_cast<char *>(&index), sizeof(uint16_t));
+                        mesh->indices[i] = index;
+                    }
+                } else if (indexComponentType == UNSIGNED_INT) {
+                    for (int32_t i = 0; i < numberIndices; i++) {
+                        uint32_t index{0};
+                        buffer->read(reinterpret_cast<char *>(&index), sizeof(uint32_t));
+                        mesh->indices[i] = index;
+                    }
+                }
+            }
 
             meshes.push_back(std::move(mesh));
         }
