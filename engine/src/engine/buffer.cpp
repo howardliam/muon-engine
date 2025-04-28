@@ -3,7 +3,6 @@
 #include <cstring>
 #include <vk_mem_alloc_enums.hpp>
 #include <vk_mem_alloc_structs.hpp>
-#include <print>
 #include <vulkan/vulkan_structs.hpp>
 #include "muon/log/logger.hpp"
 
@@ -53,11 +52,11 @@ namespace muon::engine {
 
     void Buffer::writeToBuffer(void *data, vk::DeviceSize size, vk::DeviceSize offset) {
         if (size == vk::WholeSize) {
-            memcpy(mapped, data, bufferSize);
+            std::memcpy(mapped, data, bufferSize);
         } else {
             auto memoryOffset = static_cast<char *>(mapped);
             memoryOffset += offset;
-            memcpy(memoryOffset, data, size);
+            std::memcpy(memoryOffset, data, size);
         }
     }
 
