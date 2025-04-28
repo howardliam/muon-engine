@@ -308,7 +308,9 @@ int main() {
     // frameGraph.compile();
 
     auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
-    asset::parseGltf(*cubeGltf);
+    auto scene = asset::parseGltf(*cubeGltf).value();
+
+    log::globalLogger->info("{}", *scene.rootNodes[0]->mesh->name);
 
     while (window.isOpen()) {
         SDL_Event event;
