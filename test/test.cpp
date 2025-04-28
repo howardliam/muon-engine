@@ -1,12 +1,12 @@
-#include "glm/trigonometric.hpp"
-#include "muon/asset/model/gltf.hpp"
 #include <memory>
 #include <fstream>
-
+#include <stdexcept>
+#include <utility>
+#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
+#include "glm/trigonometric.hpp"
 #include <glm/ext/matrix_transform.hpp>
-
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
@@ -27,15 +27,11 @@
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
 #include <muon/asset/file.hpp>
-
+#include "muon/asset/model/gltf.hpp"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
-
 #include <spdlog/spdlog.h>
-
-#include <stdexcept>
-#include <utility>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -69,10 +65,6 @@ private:
     void errorImpl(const std::string &message) override {
         spdlog::error(message);
     }
-};
-
-struct Vertex {
-    glm::vec3 position{};
 };
 
 class RenderSystemTest : public engine::RenderSystem {
@@ -127,7 +119,7 @@ public:
         createPipeline();
     }
 
-    void doWork(vk::CommandBuffer commandBuffer, vk::DescriptorSet set) {
+    void doWork(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, vk::Extent2D windowExtent) {
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
         commandBuffer.bindDescriptorSets(
             vk::PipelineBindPoint::eCompute,
@@ -140,8 +132,8 @@ public:
         );
 
         uint32_t localSize = 32;
-        uint32_t dispatchX = (1600 + localSize - 1) / localSize;
-        uint32_t dispatchY = (900 + localSize - 1) / localSize;
+        uint32_t dispatchX = (windowExtent.width + localSize - 1) / localSize;
+        uint32_t dispatchY = (windowExtent.height + localSize - 1) / localSize;
 
         commandBuffer.dispatch(dispatchX, dispatchY, 1);
     }
@@ -175,7 +167,6 @@ int main() {
 
     std::unique_ptr pool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
-        .addPoolSize(vk::DescriptorType::eStorageImage, engine::constants::maxFramesInFlight * 2)
         .build();
 
     struct Ubo {
@@ -238,22 +229,26 @@ int main() {
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
 
-    engine::Image computeImageA = engine::Image::Builder(device)
+    std::unique_ptr computeImageA = engine::Image::Builder(device)
         .setExtent(window.getExtent())
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(usageFlags)
         .setImageLayout(vk::ImageLayout::eGeneral)
         .setAccessFlags(accessFlags)
         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-        .build();
+        .buildUniquePtr();
 
-    engine::Image computeImageB = engine::Image::Builder(device)
+    std::unique_ptr computeImageB = engine::Image::Builder(device)
         .setExtent(window.getExtent())
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(usageFlags)
         .setImageLayout(vk::ImageLayout::eGeneral)
         .setAccessFlags(accessFlags)
         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        .buildUniquePtr();
+
+    std::unique_ptr computeImagePool = engine::DescriptorPool::Builder(device)
+        .addPoolSize(vk::DescriptorType::eStorageImage, 4)
         .build();
 
     std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
@@ -262,11 +257,11 @@ int main() {
         .build();
 
     std::vector<vk::DescriptorSet> computeDescriptorSets(engine::constants::maxFramesInFlight);
-    for (size_t i = 0; i < descriptorSets.size(); i++) {
-        auto infoA = computeImageA.getDescriptorInfo();
-        auto infoB = computeImageB.getDescriptorInfo();
+    for (size_t i = 0; i < computeDescriptorSets.size(); i++) {
+        auto infoA = computeImageA->getDescriptorInfo();
+        auto infoB = computeImageB->getDescriptorInfo();
 
-        engine::DescriptorWriter(*computeSetLayout, *pool)
+        engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
             .writeImage(0, &infoA)
             .writeImage(1, &infoB)
             .build(computeDescriptorSets[i]);
@@ -311,6 +306,9 @@ int main() {
     transform = glm::scale(transform, glm::vec3{2.0f});
     transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3{1.0f, 1.0f, 0.0f});
 
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float frameTime{0.0f};
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -329,14 +327,66 @@ int main() {
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 resizeRequested = true;
+
                 window.resize(event.window.data1, event.window.data2);
+
+                device.getDevice().waitIdle();
+
+                extent = window.getExtent();
+                size = extent.width * extent.height;
+
+                sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), extent);
+
+                stagingBuffer = std::make_unique<engine::Buffer>(
+                    device,
+                    4,
+                    size,
+                    vk::BufferUsageFlagBits::eTransferDst,
+                    vma::MemoryUsage::eGpuToCpu
+                );
+
+                computeImageA = engine::Image::Builder(device)
+                    .setExtent(extent)
+                    .setFormat(vk::Format::eR8G8B8A8Unorm)
+                    .setImageUsageFlags(usageFlags)
+                    .setImageLayout(vk::ImageLayout::eGeneral)
+                    .setAccessFlags(accessFlags)
+                    .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+                    .buildUniquePtr();
+
+                computeImageB = engine::Image::Builder(device)
+                    .setExtent(extent)
+                    .setFormat(vk::Format::eR8G8B8A8Unorm)
+                    .setImageUsageFlags(usageFlags)
+                    .setImageLayout(vk::ImageLayout::eGeneral)
+                    .setAccessFlags(accessFlags)
+                    .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+                    .buildUniquePtr();
+
+                computeImagePool->resetPool();
+
+                for (size_t i = 0; i < computeDescriptorSets.size(); i++) {
+                    auto infoA = computeImageA->getDescriptorInfo();
+                    auto infoB = computeImageB->getDescriptorInfo();
+
+                    engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+                        .writeImage(0, &infoA)
+                        .writeImage(1, &infoB)
+                        .build(computeDescriptorSets[i]);
+                }
             }
+        }
+
+        if (resizeRequested) {
+            resizeRequested = false;
+            continue;
         }
 
         const auto commandBuffer = frameHandler.beginFrame();
 
         const int32_t frameIndex = frameHandler.getFrameIndex();
 
+        transform = glm::rotate(transform, glm::radians(30.0f) * frameTime, glm::vec3{1.0f, 1.0f, 0.0f});
         Ubo ubo{};
         ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
@@ -359,7 +409,7 @@ int main() {
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
         });
 
-        computeImageA.transitionLayout(commandBuffer, {
+        computeImageA->transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferDstOptimal,
             .accessFlags = vk::AccessFlagBits::eTransferWrite,
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
@@ -380,19 +430,19 @@ int main() {
         commandBuffer.copyImage(
             (*sceneImage)->getImage(),
             vk::ImageLayout::eTransferSrcOptimal,
-            computeImageA.getImage(),
+            computeImageA->getImage(),
             vk::ImageLayout::eTransferDstOptimal,
             1,
             &imageCopy
         );
 
-        computeImageA.revertTransition(commandBuffer);
+        computeImageA->revertTransition(commandBuffer);
 
         (*sceneImage)->revertTransition(commandBuffer);
 
-        computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex]);
+        computeShader.doWork(commandBuffer, computeDescriptorSets[frameIndex], window.getExtent());
 
-        computeImageB.transitionLayout(commandBuffer, {
+        computeImageB->transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits::eTransferRead,
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
@@ -417,7 +467,7 @@ int main() {
             region.imageExtent.depth = 1;
 
             commandBuffer.copyImageToBuffer(
-                computeImageB.getImage(),
+                computeImageB->getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
                 stagingBuffer->getBuffer(),
                 1,
@@ -425,28 +475,11 @@ int main() {
             );
         }
 
-        frameHandler.copyImageToSwapchain(computeImageB.getImage());
+        frameHandler.copyImageToSwapchain(computeImageB->getImage());
 
-        computeImageB.revertTransition(commandBuffer);
+        computeImageB->revertTransition(commandBuffer);
 
         frameHandler.endFrame();
-
-        if (resizeRequested) {
-            sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
-
-            extent = window.getExtent();
-            size = extent.width * extent.height;
-
-            stagingBuffer = std::make_unique<engine::Buffer>(
-                device,
-                4,
-                size,
-                vk::BufferUsageFlagBits::eTransferDst,
-                vma::MemoryUsage::eGpuToCpu
-            );
-
-            resizeRequested = false;
-        }
 
         if (screenshotRequested) {
             if (stagingBuffer->map() != vk::Result::eSuccess) {
@@ -456,6 +489,10 @@ int main() {
             std::vector<uint8_t> data(stagingBuffer->getBufferSize());
             std::memcpy(data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
 
+            for (size_t i = 0; i  < data.size(); i += 4) {
+                std::swap(data[i], data[i + 2]);
+            }
+
             stagingBuffer->unmap();
 
             asset::Image image{};
@@ -463,10 +500,6 @@ int main() {
             image.format = asset::ColorFormat::Rgba;
             image.bitDepth = 8;
             image.data = data;
-
-            for (size_t i = 0; i  < image.data.size(); i += 4) {
-                std::swap(image.data[i], image.data[i + 2]);
-            }
 
             auto png = asset::encodeImage(image, asset::ImageFormat::Png);
 
@@ -476,6 +509,10 @@ int main() {
             log::globalLogger->info("screenshot saved");
             screenshotRequested = false;
         }
+
+        auto newTime = std::chrono::high_resolution_clock::now();
+        frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+        currentTime = newTime;
     }
 
     device.getDevice().waitIdle();
