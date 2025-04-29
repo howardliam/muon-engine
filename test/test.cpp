@@ -432,7 +432,7 @@ int main() {
 
         const int32_t frameIndex = frameHandler.getFrameIndex();
 
-        transform = glm::rotate(transform, glm::radians(30.0f) * frameTime, glm::vec3{1.0f, 1.0f, 0.0f});
+        transform = glm::rotate(transform, glm::radians(15.0f) * frameTime, glm::vec3{1.0f, 1.0f, 1.0f});
         Ubo ubo{};
         ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
@@ -496,6 +496,12 @@ int main() {
         });
 
         if (screenshotRequested) {
+            computeImageB->transitionLayout(commandBuffer, {
+                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+                .accessFlags = vk::AccessFlagBits::eTransferRead,
+                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            });
+
             auto extent = window.getExtent();
 
             vk::BufferImageCopy region{};
@@ -514,12 +520,14 @@ int main() {
             region.imageExtent.depth = 1;
 
             commandBuffer.copyImageToBuffer(
-                computeImageA->getImage(),
+                computeImageB->getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
                 stagingBuffer->getBuffer(),
                 1,
                 &region
             );
+
+            computeImageB->revertTransition(commandBuffer);
         }
 
         frameHandler.copyImageToSwapchain(computeImageA->getImage());
