@@ -1,7 +1,6 @@
 #include <memory>
 #include <fstream>
 #include <stdexcept>
-#include <utility>
 #include <chrono>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -115,7 +114,7 @@ public:
     ToneMap(
         engine::Device &device,
         std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::ComputeSystem(device, setLayouts)  {
+    ) : engine::ComputeSystem(device, setLayouts) {
         createPipeline();
     }
 
