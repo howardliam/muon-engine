@@ -1,0 +1,23 @@
+#version 460 core
+
+layout(local_size_x = 32, local_size_y = 32) in;
+
+layout(binding = 0, rgba8) readonly uniform image2D inputImage;
+layout(binding = 1, rgba8) writeonly uniform image2D outputImage;
+
+vec3 linearToSrgb(vec3 linear) {
+    vec3 cutoff = step(vec3(0.0031308), linear);
+    vec3 lower = linear * 12.92;
+    vec3 higher = 1.055 * pow(linear, vec3(1.0 / 2.4)) - 0.055;
+
+    return mix(lower, higher, cutoff);
+}
+
+void main() {
+    ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
+    vec4 color = imageLoad(inputImage, coords);
+
+    color.rgb = clamp(linearToSrgb(color.rgb), 0.0, 1.0);
+
+    imageStore(outputImage, coords, color);
+}

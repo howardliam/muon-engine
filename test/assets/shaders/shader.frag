@@ -7,5 +7,5 @@ void main() {
     vec3 colorReduced = color / 2.0;
     vec3 realColor = vec3(1.0, 0.45, 0.5);
 
-    outColor = vec4(realColor - colorReduced, 1.0);
+    outColor = vec4(color, 1.0);
 }

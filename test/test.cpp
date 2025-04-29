@@ -110,9 +110,9 @@ protected:
     }
 };
 
-class ComputeShaderRenderSystem : public engine::ComputeSystem {
+class ToneMap : public engine::ComputeSystem {
 public:
-    ComputeShaderRenderSystem(
+    ToneMap(
         engine::Device &device,
         std::vector<vk::DescriptorSetLayout> setLayouts
     ) : engine::ComputeSystem(device, setLayouts)  {
@@ -142,7 +142,45 @@ protected:
     void createPipeline() override {
         pipeline = std::make_unique<engine::ComputePipeline>(
             device,
-            "./test/assets/shaders/shader.comp.spv",
+            "./test/assets/shaders/tonemap.comp.spv",
+            pipelineLayout
+        );
+    }
+};
+
+class Swizzle : public engine::ComputeSystem {
+public:
+    Swizzle(
+        engine::Device &device,
+        std::vector<vk::DescriptorSetLayout> setLayouts
+    ) : engine::ComputeSystem(device, setLayouts)  {
+        createPipeline();
+    }
+
+    void doWork(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, vk::Extent2D windowExtent) {
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
+        commandBuffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eCompute,
+            pipelineLayout,
+            0,
+            1,
+            &set,
+            0,
+            nullptr
+        );
+
+        uint32_t localSize = 32;
+        uint32_t dispatchX = (windowExtent.width + localSize - 1) / localSize;
+        uint32_t dispatchY = (windowExtent.height + localSize - 1) / localSize;
+
+        commandBuffer.dispatch(dispatchX, dispatchY, 1);
+    }
+
+protected:
+    void createPipeline() override {
+        pipeline = std::make_unique<engine::ComputePipeline>(
+            device,
+            "./test/assets/shaders/swizzle.comp.spv",
             pipelineLayout
         );
     }
@@ -256,22 +294,23 @@ int main() {
         .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
         .build();
 
-    vk::DescriptorSet computeDescriptorSetA;
-    vk::DescriptorSet computeDescriptorSetB;
     auto infoA = computeImageA->getDescriptorInfo();
     auto infoB = computeImageB->getDescriptorInfo();
 
+    vk::DescriptorSet computeDescriptorSetA;
     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
         .writeImage(0, &infoA)
         .writeImage(1, &infoB)
         .build(computeDescriptorSetA);
 
+    vk::DescriptorSet computeDescriptorSetB;
     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
         .writeImage(0, &infoB)
         .writeImage(1, &infoA)
         .build(computeDescriptorSetB);
 
-    ComputeShaderRenderSystem computeShader(device, {computeSetLayout->getDescriptorSetLayout()});
+    ToneMap tonemap(device, {computeSetLayout->getDescriptorSetLayout()});
+    Swizzle swizzle(device, {computeSetLayout->getDescriptorSetLayout()});
 
     bool screenshotRequested{false};
 
@@ -447,9 +486,10 @@ int main() {
 
         (*sceneImage)->revertTransition(commandBuffer);
 
-        computeShader.doWork(commandBuffer, computeDescriptorSetA, window.getExtent());
+        tonemap.doWork(commandBuffer, computeDescriptorSetA, window.getExtent());
+        swizzle.doWork(commandBuffer, computeDescriptorSetB, window.getExtent());
 
-        computeImageB->transitionLayout(commandBuffer, {
+        computeImageA->transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits::eTransferRead,
             .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
@@ -474,7 +514,7 @@ int main() {
             region.imageExtent.depth = 1;
 
             commandBuffer.copyImageToBuffer(
-                computeImageB->getImage(),
+                computeImageA->getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
                 stagingBuffer->getBuffer(),
                 1,
@@ -482,9 +522,9 @@ int main() {
             );
         }
 
-        frameHandler.copyImageToSwapchain(computeImageB->getImage());
+        frameHandler.copyImageToSwapchain(computeImageA->getImage());
 
-        computeImageB->revertTransition(commandBuffer);
+        computeImageA->revertTransition(commandBuffer);
 
         frameHandler.endFrame();
 
@@ -495,10 +535,6 @@ int main() {
 
             std::vector<uint8_t> data(stagingBuffer->getBufferSize());
             std::memcpy(data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
-
-            for (size_t i = 0; i  < data.size(); i += 4) {
-                std::swap(data[i], data[i + 2]);
-            }
 
             stagingBuffer->unmap();
 
