@@ -1,8 +1,10 @@
 #include "glm/gtc/constants.hpp"
+#include "muon/asset/model.hpp"
 #include <memory>
 #include <fstream>
 #include <stdexcept>
 #include <chrono>
+#include <print>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/trigonometric.hpp>
@@ -243,16 +245,31 @@ int main() {
     auto cubeGltf = asset::readFile("./test/assets/models/cube.gltf");
     auto scene = asset::parseGltf(*cubeGltf, "./test/assets/models/cube.gltf");
 
+    {
+        auto scene = asset::loadGltf("./test/assets/models/cube.gltf");
+
+        log::globalLogger->info("Scene name (glb): {}", *(*scene).name);
+
+        auto mesh = scene.value().rootNodes[0]->mesh.get();
+        log::globalLogger->info("Mesh name: {}", *mesh->name);
+        log::globalLogger->info("No. vertices: {}", mesh->vertexSize);
+
+        const float *floatData = reinterpret_cast<const float *>(mesh->vertexData.data());
+        size_t numFloats = mesh->vertexData.size() / 4;
+
+        for (size_t i = 0; i < numFloats; i++) {
+            std::print("{} ", floatData[i]);
+            if ((i + 1) % 8 == 0) std::println();
+        }
+
+        log::globalLogger->info("No. indices: {}", mesh->indices.size());
+    }
+
     if (!scene) {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
     }
 
-    log::globalLogger->info("Mesh name: {}", *scene.value().rootNodes[0]->mesh->name);
-    log::globalLogger->info("No. vertices: {}", scene.value().rootNodes[0]->mesh->vertexSize);
-    log::globalLogger->info("No. indices: {}", scene.value().rootNodes[0]->mesh->indices.size());
-
     auto mesh = scene.value().rootNodes[0]->mesh.get();
-
     engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
 
     engine::RenderPass scenePass = engine::RenderPass::Builder(device)
