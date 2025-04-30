@@ -1,3 +1,4 @@
+#include "glm/gtc/constants.hpp"
 #include <memory>
 #include <fstream>
 #include <stdexcept>
@@ -31,6 +32,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <spdlog/spdlog.h>
+#include <thread>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -349,7 +351,10 @@ int main() {
     transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3{1.0f, 1.0f, 0.0f});
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    float frameTime{0.0f};
+    float frameTime{0.0};
+
+    float seconds{0.0};
+    int32_t frames{0};
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -422,6 +427,13 @@ int main() {
             }
         }
 
+        if (seconds >= 1.0) {
+            std::string title = std::format("FPS: {}", frames);
+            window.setTitle(title);
+            seconds = 0;
+            frames = 0;
+        }
+
         if (resizeRequested) {
             resizeRequested = false;
             continue;
@@ -431,7 +443,8 @@ int main() {
 
         const int32_t frameIndex = frameHandler.getFrameIndex();
 
-        transform = glm::rotate(transform, glm::radians(15.0f) * frameTime, glm::vec3{1.0f, 1.0f, 1.0f});
+        transform = glm::rotate(transform, glm::tau<float>() * frameTime, glm::vec3{1.0f, 1.0f, 1.0f});
+
         Ubo ubo{};
         ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
@@ -540,29 +553,34 @@ int main() {
                 continue;
             }
 
-            std::vector<uint8_t> data(stagingBuffer->getBufferSize());
-            std::memcpy(data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
-
-            stagingBuffer->unmap();
-
             asset::Image image{};
             image.size = {extent.width, extent.height};
             image.format = asset::ColorFormat::Rgba;
             image.bitDepth = 8;
-            image.data = data;
+            image.data.resize(stagingBuffer->getBufferSize());
 
-            auto png = asset::encodeImage(image, asset::ImageFormat::Png);
+            std::memcpy(image.data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
 
-            std::ofstream outputFile("./screenshot.png");
-            outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
+            stagingBuffer->unmap();
 
-            log::globalLogger->info("screenshot saved");
+            std::thread([image]() {
+                auto png = asset::encodeImage(image, asset::ImageFormat::Png);
+
+                std::ofstream outputFile("./screenshot.png");
+                outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
+
+                log::globalLogger->info("screenshot saved");
+            }).detach();
+
             screenshotRequested = false;
         }
 
         auto newTime = std::chrono::high_resolution_clock::now();
         frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
         currentTime = newTime;
+
+        seconds += frameTime;
+        frames += 1;
     }
 
     device.getDevice().waitIdle();
