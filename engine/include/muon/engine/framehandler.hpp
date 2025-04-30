@@ -62,6 +62,11 @@ namespace muon::engine {
          */
         [[nodiscard]] float getAspectRatio() const;
 
+        /**
+         * @brief   recreates the swapchain, used for when window size changes, etc.
+         */
+        void recreateSwapchain(vk::Extent2D windowExtent);
+
     private:
         Window &window;
         Device &device;
@@ -83,10 +88,7 @@ namespace muon::engine {
          */
         void freeCommandBuffers();
 
-        /**
-         * @brief   recreates the swapchain, used for when window size changes, etc.
-         */
-        void recreateSwapchain();
+
     };
 
 }

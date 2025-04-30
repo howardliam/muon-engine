@@ -10,7 +10,7 @@
 namespace muon::engine {
 
     FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
-        recreateSwapchain();
+        recreateSwapchain(window.getExtent());
         createCommandBuffers();
         log::globalLogger->debug("created frame handler");
     }
@@ -24,7 +24,7 @@ namespace muon::engine {
         auto result = swapchain->acquireNextImage(&currentImageIndex);
 
         if (result == vk::Result::eErrorOutOfDateKHR) {
-            recreateSwapchain();
+            recreateSwapchain(window.getExtent());
             return nullptr;
         }
 
@@ -52,9 +52,8 @@ namespace muon::engine {
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
 
-        if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || window.wasResized()) {
-            window.resetResized();
-            recreateSwapchain();
+        if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
+            recreateSwapchain(window.getExtent());
         } else if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to present swapchain image");
         }
@@ -188,23 +187,17 @@ namespace muon::engine {
         commandBuffers.clear();
     }
 
-    void FrameHandler::recreateSwapchain() {
-        auto extent = window.getExtent();
-        while (extent.width == 0 || extent.height == 0) {
-            extent = window.getExtent();
-            SDL_Event event;
-            SDL_WaitEvent(&event);
-        }
-
+    void FrameHandler::recreateSwapchain(vk::Extent2D windowExtent) {
         device.getDevice().waitIdle();
 
         if (swapchain == nullptr) {
-            swapchain = std::make_unique<Swapchain>(device, extent);
+            swapchain = std::make_unique<Swapchain>(device, windowExtent);
         } else {
             std::shared_ptr oldSwapChain = std::move(swapchain);
-            swapchain = std::make_unique<Swapchain>(device, extent, oldSwapChain);
+            swapchain = std::make_unique<Swapchain>(device, windowExtent, oldSwapChain);
+
             if (!swapchain->compareSwapFormats(*oldSwapChain)) {
-                log::globalLogger->debug("swapchain does not match swap formats");
+                log::globalLogger->debug("new and old swapchain formats do not match");
             }
         }
     }

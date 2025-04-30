@@ -16,7 +16,7 @@ namespace muon::engine {
             initSdl();
             initWindow(properties.title, properties.mode);
         } catch (std::exception &e) {
-            std::println("{}", e.what());
+            log::globalLogger->error("{}", e.what());
         }
         log::globalLogger->debug("created window");
     }
