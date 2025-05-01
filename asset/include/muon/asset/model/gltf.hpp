@@ -20,6 +20,4 @@ namespace muon::asset {
 
     std::optional<Scene> parseGltf(const GltfIntermediate &intermediate);
 
-    std::optional<Scene> parseGltf(const std::vector<uint8_t> &data, const std::filesystem::path &path);
-
 }

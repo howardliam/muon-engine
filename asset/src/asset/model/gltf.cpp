@@ -70,125 +70,6 @@ namespace muon::asset {
         return bytes * byteFactor;
     }
 
-    std::optional<Scene> parseGltf(const std::vector<uint8_t> &data, const std::filesystem::path &path) {
-        const json gltf = json::parse(data);
-
-        std::vector<std::unique_ptr<std::ifstream>> buffers{};
-        auto gltfBuffers = gltf["buffers"];
-        for (auto gltfBuffer : gltfBuffers) {
-            auto bufferPath = path.parent_path().append(std::string(gltfBuffer["uri"]));
-
-            buffers.push_back(std::make_unique<std::ifstream>(bufferPath, std::ios::binary));
-        }
-
-        auto gltfBufferViews = gltf["bufferViews"];
-
-        auto gltfAccessors = gltf["accessors"];
-
-        std::vector<std::unique_ptr<Mesh>> meshes{};
-        auto gltfMeshes = gltf["meshes"];
-        for (auto gltfMesh : gltfMeshes) {
-            int32_t vertexSize{0};
-            int32_t vertexStride{0};
-            int32_t vertexDataSize{0};
-            auto gltfAttributes = gltfMesh["primitives"][0]["attributes"];
-            for (int32_t accessorIndex : gltfAttributes) {
-                auto gltfAccessor = gltfAccessors[accessorIndex];
-                int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                vertexStride += attributeStride;
-                int32_t attributeCount = gltfAccessor["count"];
-
-                vertexDataSize += (vertexStride * attributeCount);
-                vertexSize = gltfAccessor["count"];
-            }
-
-            std::unique_ptr mesh = std::make_unique<Mesh>();
-            mesh->name = gltfMesh["name"];
-            mesh->vertexData.resize(vertexDataSize);
-            mesh->vertexSize = vertexSize;
-
-            for (int32_t accessorIndex : gltfAttributes) {
-                auto gltfAccessor = gltfAccessors[accessorIndex];
-                size_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                int32_t bufferViewIndex = gltfAccessor["bufferView"];
-                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
-
-                int32_t byteOffset = gltfBufferView["byteOffset"];
-                int32_t byteLength = gltfBufferView["byteLength"];
-                int32_t bufferIndex = gltfBufferView["buffer"];
-                std::ifstream *buffer = buffers[bufferIndex].get();
-
-                int32_t vertex{0};
-                for (int32_t i = 0; i < byteLength; i += attributeStride) {
-                    int32_t binaryPosition = byteOffset + i;
-                    buffer->seekg(binaryPosition, std::ios::beg);
-
-                    uint8_t attributeData[attributeStride];
-                    buffer->read(reinterpret_cast<char *>(attributeData), attributeStride);
-
-                    std::memcpy(
-                        &mesh->vertexData[(vertex * vertexStride) + (bufferViewIndex * attributeStride)],
-                        attributeData,
-                        attributeStride
-                    );
-
-                    vertex += 1;
-                }
-            }
-
-            if (gltfMesh["primitives"][0].contains("indices")) {
-                int32_t gltfIndex = gltfMesh["primitives"][0]["indices"];
-                auto gltfAccessor = gltfAccessors[gltfIndex];
-                int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                int32_t numberIndices = gltfAccessor["count"];
-                mesh->indices.resize(numberIndices);
-                int32_t indexComponentType = gltfAccessor["componentType"];
-
-                int32_t bufferViewIndex = gltfAccessor["bufferView"];
-                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
-                int32_t bufferIndex = gltfBufferView["buffer"];
-                std::ifstream *buffer = buffers[bufferIndex].get();
-
-                if (indexComponentType == UNSIGNED_SHORT) {
-                    for (int32_t i = 0; i < numberIndices; i++) {
-                        uint16_t index{0};
-                        buffer->read(reinterpret_cast<char *>(&index), sizeof(uint16_t));
-                        mesh->indices[i] = index;
-                    }
-                } else if (indexComponentType == UNSIGNED_INT) {
-                    for (int32_t i = 0; i < numberIndices; i++) {
-                        uint32_t index{0};
-                        buffer->read(reinterpret_cast<char *>(&index), sizeof(uint32_t));
-                        mesh->indices[i] = index;
-                    }
-                }
-            }
-
-            meshes.push_back(std::move(mesh));
-        }
-
-        std::vector<std::shared_ptr<Node>> nodes{};
-        auto gltfNodes = gltf["nodes"];
-        for (auto gltfNode : gltfNodes) {
-            std::shared_ptr node = std::make_shared<Node>();
-            node->name = gltfNode["name"];
-            node->mesh = std::move(meshes[gltfNode["mesh"]]);
-
-            nodes.push_back(std::move(node));
-        }
-
-        Scene scene{};
-        int32_t sceneIndex = gltf["scene"];
-        auto gltfScene = gltf["scenes"][sceneIndex];
-        scene.name = gltfScene["name"];
-        std::vector<int32_t> nodeIndices = gltfScene["nodes"];
-        for (auto nodeIndex : nodeIndices) {
-            scene.rootNodes.push_back(std::move(nodes[nodeIndex]));
-        }
-
-        return scene;
-    }
-
     std::optional<GltfIntermediate> intermediateFromGltf(const std::filesystem::path &path) {
         GltfIntermediate intermediate{};
         intermediate.path = path;
@@ -279,24 +160,25 @@ namespace muon::asset {
         std::vector<std::unique_ptr<Mesh>> meshes{};
         auto gltfMeshes = gltf["meshes"];
         for (auto gltfMesh : gltfMeshes) {
+            int32_t vertexCount{0};
             int32_t vertexSize{0};
-            int32_t vertexStride{0};
             int32_t vertexDataSize{0};
             auto gltfAttributes = gltfMesh["primitives"][0]["attributes"];
             for (int32_t accessorIndex : gltfAttributes) {
                 auto gltfAccessor = gltfAccessors[accessorIndex];
                 int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                vertexStride += attributeStride;
+                vertexSize += attributeStride;
                 int32_t attributeCount = gltfAccessor["count"];
 
-                vertexDataSize += (vertexStride * attributeCount);
-                vertexSize = gltfAccessor["count"];
+                vertexDataSize += attributeStride * attributeCount;
+                vertexCount = gltfAccessor["count"];
             }
 
             std::unique_ptr mesh = std::make_unique<Mesh>();
             mesh->name = gltfMesh["name"];
             mesh->vertexData.resize(vertexDataSize);
             mesh->vertexSize = vertexSize;
+            mesh->vertexCount = vertexCount;
 
             for (int32_t accessorIndex : gltfAttributes) {
                 auto gltfAccessor = gltfAccessors[accessorIndex];
@@ -310,19 +192,18 @@ namespace muon::asset {
 
                 const auto &bufferData = intermediate.bufferData[bufferIndex];
 
-                int32_t vertex{0};
-                for (int32_t i = 0; i < byteLength; i += attributeStride) {
-                    int32_t binaryPosition = byteOffset + i;
+                for (int32_t vertex = 0; vertex < mesh->vertexCount; vertex++) {
+                    int32_t readPos = byteOffset + vertex * attributeStride;
 
-                    const uint8_t *attributeData = &bufferData[binaryPosition];
+                    const uint8_t *attributeData = &bufferData[readPos];
 
+                    size_t vertexOffset = vertex * vertexSize;
+                    size_t attributeOffset = bufferViewIndex * attributeStride;
                     std::memcpy(
-                        &mesh->vertexData[(vertex * vertexStride) + (bufferViewIndex * attributeStride)],
+                        &mesh->vertexData[vertexOffset + attributeOffset],
                         attributeData,
                         attributeStride
                     );
-
-                    vertex += 1;
                 }
             }
 
@@ -330,30 +211,21 @@ namespace muon::asset {
                 int32_t gltfIndex = gltfMesh["primitives"][0]["indices"];
                 auto gltfAccessor = gltfAccessors[gltfIndex];
                 int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                int32_t numberIndices = gltfAccessor["count"];
-                mesh->indices.resize(numberIndices);
-                int32_t indexComponentType = gltfAccessor["componentType"];
+                int32_t indexCount = gltfAccessor["count"];
+                mesh->indices.resize(indexCount);
 
                 int32_t bufferViewIndex = gltfAccessor["bufferView"];
                 auto gltfBufferView = gltfBufferViews[bufferViewIndex];
+                int32_t byteOffset = gltfBufferView["byteOffset"];
                 int32_t bufferIndex = gltfBufferView["buffer"];
 
                 const auto &bufferData = intermediate.bufferData[bufferIndex];
 
-                if (indexComponentType == UNSIGNED_SHORT) {
-                    for (int32_t i = 0; i < numberIndices; i++) {
-                        size_t indexOffset = attributeStride + i * sizeof(uint16_t);
+                for (int32_t index = 0; index < indexCount; index++) {
+                    int32_t readPos = byteOffset + index * attributeStride;
+                    const uint8_t *indexData = &bufferData[readPos];
 
-                        uint16_t index = *reinterpret_cast<const uint16_t *>(&bufferData[indexOffset]);
-                        mesh->indices[i] = index;
-                    }
-                } else if (indexComponentType == UNSIGNED_INT) {
-                    for (int32_t i = 0; i < numberIndices; i++) {
-                        size_t indexOffset = attributeStride + i * sizeof(int32_t);
-
-                        int32_t index = *reinterpret_cast<const int32_t *>(&bufferData[indexOffset]);
-                        mesh->indices[i] = index;
-                    }
+                    std::memcpy(&mesh->indices[index], &bufferData[readPos], attributeStride);
                 }
             }
 
