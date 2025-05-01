@@ -11,7 +11,7 @@
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
-#include <muon/engine/computesystem.hpp>
+#include <muon/engine/system/compute.hpp>
 #include <muon/engine/descriptor.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framebuffer.hpp>
@@ -21,7 +21,6 @@
 #include <muon/engine/model.hpp>
 #include <muon/engine/pipeline.hpp>
 #include <muon/engine/renderpass.hpp>
-#include <muon/engine/rendersystem.hpp>
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/vertex.hpp>
 #include <muon/engine/window.hpp>
@@ -29,6 +28,7 @@
 #include <muon/asset/image.hpp>
 #include <muon/asset/file.hpp>
 #include "muon/asset/model.hpp"
+#include "muon/engine/system/graphics.hpp"
 #include <muon/asset/model/gltf.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -39,6 +39,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 using namespace muon;
 
@@ -70,12 +71,13 @@ private:
     }
 };
 
-class RenderSystemTest : public engine::RenderSystem {
+class RenderSystemTest : public engine::GraphicsSystem {
 public:
     RenderSystemTest(
         engine::Device &device,
-        std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::RenderSystem(device, setLayouts)  {
+        const std::vector<vk::DescriptorSetLayout> &setLayouts,
+        const std::vector<vk::PushConstantRange> &pushConstants
+    ) : engine::GraphicsSystem(device, setLayouts, pushConstants)  {
 
     }
 
@@ -258,7 +260,7 @@ int main() {
 
     std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
 
-    RenderSystemTest renderSystem(device, {setLayout->getDescriptorSetLayout()});
+    RenderSystemTest renderSystem(device, { setLayout->getDescriptorSetLayout() }, {});
     renderSystem.bake(scenePass.getRenderPass());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
