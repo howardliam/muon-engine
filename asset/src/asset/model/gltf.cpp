@@ -223,7 +223,6 @@ namespace muon::asset {
 
                 for (int32_t index = 0; index < indexCount; index++) {
                     int32_t readPos = byteOffset + index * attributeStride;
-                    const uint8_t *indexData = &bufferData[readPos];
 
                     std::memcpy(&mesh->indices[index], &bufferData[readPos], attributeStride);
                 }
