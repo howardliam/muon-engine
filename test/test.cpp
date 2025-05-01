@@ -1,5 +1,3 @@
-#include "glm/gtc/constants.hpp"
-#include "muon/asset/model.hpp"
 #include <memory>
 #include <fstream>
 #include <stdexcept>
@@ -9,6 +7,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include "glm/gtc/constants.hpp"
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
@@ -29,6 +28,7 @@
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
 #include <muon/asset/file.hpp>
+#include "muon/asset/model.hpp"
 #include <muon/asset/model/gltf.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -248,7 +248,7 @@ int main() {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
     }
 
-    auto mesh = scene.value().rootNodes[0]->mesh.get();
+    auto mesh = scene->rootNodes[0]->mesh.get();
     engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
 
     engine::RenderPass scenePass = engine::RenderPass::Builder(device)

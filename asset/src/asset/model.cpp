@@ -1,21 +1,22 @@
 #include "muon/asset/model.hpp"
+#include "muon/asset/error.hpp"
 #include "muon/asset/file.hpp"
 #include "muon/asset/model/gltf.hpp"
 
 namespace muon::asset {
 
 
-    std::optional<Scene> loadGltf(const std::filesystem::path &path) {
+    std::expected<Scene, AssetLoadError> loadGltf(const std::filesystem::path &path) {
         auto mediaType = parseMediaType(path, FileType::Model);
         if (!mediaType) {
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         }
 
         if (!std::holds_alternative<ModelFormat>(mediaType->format)) {
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         }
 
-        std::optional<GltfIntermediate> intermediate;
+        std::expected<GltfIntermediate, AssetLoadError> intermediate;
 
         switch (std::get<ModelFormat>(mediaType->format)) {
         case ModelFormat::GltfBinary:
@@ -27,11 +28,11 @@ namespace muon::asset {
             break;
 
         default:
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         }
 
         if (!intermediate) {
-            return {};
+            return std::unexpected(intermediate.error());
         }
 
         return parseGltf(*intermediate);

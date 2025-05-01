@@ -1,11 +1,12 @@
 #pragma once
 
+#include "muon/asset/error.hpp"
 #include "muon/asset/model/scene.hpp"
+#include <expected>
 #include <filesystem>
-#include <optional>
 
 namespace muon::asset {
 
-    std::optional<Scene> loadGltf(const std::filesystem::path &path);
+    std::expected<Scene, AssetLoadError> loadGltf(const std::filesystem::path &path);
 
 }

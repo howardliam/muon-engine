@@ -1,9 +1,11 @@
 #include "muon/asset/model/gltf.hpp"
 
+#include <expected>
 #include <fstream>
 #include <memory>
 #include <print>
 #include <utility>
+#include "muon/asset/error.hpp"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -70,7 +72,15 @@ namespace muon::asset {
         return bytes * byteFactor;
     }
 
-    std::optional<GltfIntermediate> intermediateFromGltf(const std::filesystem::path &path) {
+    std::expected<json, AssetLoadError> parseJson(const std::vector<uint8_t> &json) {
+        try {
+            return json::parse(json);
+        } catch (const std::exception &) {
+            return std::unexpected(AssetLoadError::ParseError);
+        }
+    }
+
+    std::expected<GltfIntermediate, AssetLoadError> intermediateFromGltf(const std::filesystem::path &path) {
         GltfIntermediate intermediate{};
         intermediate.path = path;
 
@@ -82,7 +92,11 @@ namespace muon::asset {
         intermediate.json.resize(jsonSize);
         glb.read(reinterpret_cast<char *>(intermediate.json.data()), jsonSize);
 
-        const json gltf = json::parse(intermediate.json);
+        std::expected jsonResult = parseJson(intermediate.json);
+        if (!jsonResult) {
+            return std::unexpected(jsonResult.error());
+        }
+        const json gltf = jsonResult.value();
 
         auto gltfBuffers = gltf["buffers"];
         intermediate.bufferData.resize(gltfBuffers.size());
@@ -111,7 +125,7 @@ namespace muon::asset {
         uint32_t type;
     };
 
-    std::optional<GltfIntermediate> intermediateFromGlb(const std::filesystem::path &path) {
+    std::expected<GltfIntermediate, AssetLoadError> intermediateFromGlb(const std::filesystem::path &path) {
         GltfIntermediate intermediate{};
         intermediate.path = path;
 
@@ -150,8 +164,12 @@ namespace muon::asset {
         return intermediate;
     }
 
-    std::optional<Scene> parseGltf(const GltfIntermediate &intermediate) {
-        const json gltf = json::parse(intermediate.json);
+    std::expected<Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate) {
+        std::expected jsonResult = parseJson(intermediate.json);
+        if (!jsonResult) {
+            return std::unexpected(jsonResult.error());
+        }
+        const json gltf = jsonResult.value();
 
         auto gltfBufferViews = gltf["bufferViews"];
 
