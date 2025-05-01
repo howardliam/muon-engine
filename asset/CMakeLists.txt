@@ -20,6 +20,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/asset/model.hpp
 
     ${INCLUDE_DIR}/muon/asset/file.hpp
+    ${INCLUDE_DIR}/muon/asset/error.hpp
 )
 
 set(SRC_FILES
