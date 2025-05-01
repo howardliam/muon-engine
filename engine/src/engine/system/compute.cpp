@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
+#include <glm/vec3.hpp>
 
 namespace muon::engine {
 
@@ -12,6 +13,16 @@ namespace muon::engine {
 
     ComputeSystem::~ComputeSystem() {
         device.getDevice().destroyPipelineLayout(pipelineLayout, nullptr);
+    }
+
+    glm::uvec3 ComputeSystem::calculateDispatchSize(vk::Extent2D windowExtent, const glm::uvec3 &workgroupSize) {
+        glm::uvec3 dispatch{0};
+
+        dispatch.x = (windowExtent.width + workgroupSize.x - 1) / workgroupSize.x;
+        dispatch.y = (windowExtent.height + workgroupSize.y - 1) / workgroupSize.y;
+        dispatch.z = workgroupSize.z;
+
+        return dispatch;
     }
 
     void ComputeSystem::createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts) {

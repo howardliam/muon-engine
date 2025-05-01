@@ -4,6 +4,7 @@
 #include "muon/engine/pipeline/compute.hpp"
 #include <memory>
 #include <vulkan/vulkan_handles.hpp>
+#include <glm/vec3.hpp>
 
 namespace muon::engine {
 
@@ -12,11 +13,20 @@ namespace muon::engine {
         ComputeSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts);
         ~ComputeSystem();
 
+        virtual void dispatch(
+            vk::CommandBuffer commandBuffer,
+            vk::DescriptorSet set,
+            vk::Extent2D windowExtent,
+            const glm::uvec3 &workgroupSize
+        ) = 0;
+
     protected:
         Device &device;
 
         std::unique_ptr<ComputePipeline> pipeline;
         vk::PipelineLayout pipelineLayout;
+
+        glm::uvec3 calculateDispatchSize(vk::Extent2D windowExtent, const glm::uvec3 &workgroupSize);
 
         /**
          * @brief   creates a pipeline layout for the compute system.

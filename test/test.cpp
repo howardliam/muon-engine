@@ -124,7 +124,12 @@ public:
         createPipeline();
     }
 
-    void doWork(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, vk::Extent2D windowExtent) {
+    void dispatch(
+        vk::CommandBuffer commandBuffer,
+        vk::DescriptorSet set,
+        vk::Extent2D windowExtent,
+        const glm::uvec3 &workgroupSize
+    ) override {
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
         commandBuffer.bindDescriptorSets(
             vk::PipelineBindPoint::eCompute,
@@ -136,11 +141,8 @@ public:
             nullptr
         );
 
-        uint32_t localSize = 32;
-        uint32_t dispatchX = (windowExtent.width + localSize - 1) / localSize;
-        uint32_t dispatchY = (windowExtent.height + localSize - 1) / localSize;
-
-        commandBuffer.dispatch(dispatchX, dispatchY, 1);
+        auto dispatchSize = calculateDispatchSize(windowExtent, workgroupSize);
+        commandBuffer.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
     }
 
 protected:
@@ -162,7 +164,12 @@ public:
         createPipeline();
     }
 
-    void doWork(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, vk::Extent2D windowExtent) {
+    void dispatch(
+        vk::CommandBuffer commandBuffer,
+        vk::DescriptorSet set,
+        vk::Extent2D windowExtent,
+        const glm::uvec3 &workgroupSize
+    ) override {
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
         commandBuffer.bindDescriptorSets(
             vk::PipelineBindPoint::eCompute,
@@ -174,11 +181,8 @@ public:
             nullptr
         );
 
-        uint32_t localSize = 32;
-        uint32_t dispatchX = (windowExtent.width + localSize - 1) / localSize;
-        uint32_t dispatchY = (windowExtent.height + localSize - 1) / localSize;
-
-        commandBuffer.dispatch(dispatchX, dispatchY, 1);
+        auto dispatchSize = calculateDispatchSize(windowExtent, workgroupSize);
+        commandBuffer.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
     }
 
 protected:
@@ -495,8 +499,8 @@ int main() {
 
         (*sceneImage)->revertTransition(commandBuffer);
 
-        tonemap.doWork(commandBuffer, computeDescriptorSetA, window.getExtent());
-        swizzle.doWork(commandBuffer, computeDescriptorSetB, window.getExtent());
+        tonemap.dispatch(commandBuffer, computeDescriptorSetA, window.getExtent(), {32, 32, 1});
+        swizzle.dispatch(commandBuffer, computeDescriptorSetB, window.getExtent(), {32, 32, 1});
 
         computeImageA->transitionLayout(commandBuffer, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
