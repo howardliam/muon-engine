@@ -8,9 +8,8 @@
 #include <utility>
 #include "muon/asset/error.hpp"
 #include "muon/asset/model/scene/material.hpp"
+#include "muon/asset/model/scene/sampler.hpp"
 #include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
 
 #define GLTF_VERSION 2
 #define GLB_MAGIC 0x46'54'6C'67
@@ -25,6 +24,19 @@ using json = nlohmann::json;
 
 #define UNSIGNED_INT 5125
 #define FLOAT 5126
+
+#define NEAREST 9728
+#define LINEAR 9729
+#define NEAREST_MIPMAP_NEAREST 9984
+#define LINEAR_MIPMAP_NEAREST 9985
+#define NEAREST_MIPMAP_LINEAR 9986
+#define LINEAR_MIPMAP_LINEAR 9987
+
+#define CLAMP_TO_EDGE 33071
+#define MIRRORED_REPEAT 33648
+#define REPEAT 10497
+
+using json = nlohmann::json;
 
 namespace muon::asset {
 
@@ -164,6 +176,104 @@ namespace muon::asset {
         glb.read(reinterpret_cast<char *>(intermediate.bufferData[0].data()), binaryHeader.length);
 
         return intermediate;
+    }
+
+    std::vector<std::shared_ptr<Sampler>> parseSamplers(const json &gltf) {
+        auto gltfSamplers = gltf["samplers"];
+        assert(gltfSamplers.is_array() && "must be a valid samplers array");
+
+        uint32_t samplerCount = gltfSamplers.size();
+        std::vector<std::shared_ptr<Sampler>> samplers(samplerCount);
+
+        uint32_t samplerIndex{0};
+        for (auto gltfSampler : gltfSamplers) {
+            std::shared_ptr sampler = std::make_shared<Sampler>();
+
+            if (gltfSampler.contains("magFilter")) {
+                uint32_t magFilter = gltfSampler["magFilter"];
+                switch (magFilter) {
+                case NEAREST:
+                    sampler->magFilter = Filter::Nearest;
+                    break;
+
+                case LINEAR:
+                    sampler->magFilter = Filter::Linear;
+                    break;
+                }
+            }
+
+            if (gltfSampler.contains("minFilter")) {
+                uint32_t minFilter = gltfSampler["minFilter"];
+                switch (minFilter) {
+                case NEAREST:
+                    sampler->minFilter = Filter::Nearest;
+                    break;
+
+                case LINEAR:
+                    sampler->minFilter = Filter::Linear;
+                    break;
+
+                case NEAREST_MIPMAP_NEAREST:
+                    sampler->minFilter = Filter::NearestMipmapNearest;
+                    break;
+
+                case LINEAR_MIPMAP_NEAREST:
+                    sampler->minFilter = Filter::LinearMipmapNearest;
+                    break;
+
+                case NEAREST_MIPMAP_LINEAR:
+                    sampler->minFilter = Filter::NearestMipmapLinear;
+                    break;
+
+                case LINEAR_MIPMAP_LINEAR:
+                    sampler->minFilter = Filter::LinearMipmapLinear;
+                    break;
+                }
+            }
+
+            if (gltfSampler.contains("wrapS")) {
+                uint32_t wrapS = gltfSampler["wrapS"];
+                switch (wrapS) {
+                case CLAMP_TO_EDGE:
+                    sampler->wrapS = WrappingMode::ClampToEdge;
+                    break;
+
+                case MIRRORED_REPEAT:
+                    sampler->wrapS = WrappingMode::MirroredRepeat;
+                    break;
+
+                case REPEAT:
+                    sampler->wrapS = WrappingMode::Repeat;
+                    break;
+                }
+            }
+
+            if (gltfSampler.contains("wrapT")) {
+                uint32_t wrapT = gltfSampler["wrapT"];
+                switch (wrapT) {
+                case CLAMP_TO_EDGE:
+                    sampler->wrapT = WrappingMode::ClampToEdge;
+                    break;
+
+                case MIRRORED_REPEAT:
+                    sampler->wrapT = WrappingMode::MirroredRepeat;
+                    break;
+
+                case REPEAT:
+                    sampler->wrapT = WrappingMode::Repeat;
+                    break;
+                }
+            }
+
+            if (gltfSampler.contains("name")) {
+                sampler->name = gltfSampler["name"];
+            }
+
+            samplers[samplerIndex] = std::move(sampler);
+            samplerIndex += 1;
+        }
+
+        return samplers;
     }
 
     std::vector<std::shared_ptr<Material>> parseMaterials(const json &gltf) {
