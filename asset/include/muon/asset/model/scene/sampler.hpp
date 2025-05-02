@@ -4,7 +4,7 @@
 #include <optional>
 #include <string>
 
-namespace muon::asset {
+namespace muon::asset::scene {
 
     enum class Filter : int32_t {
         Nearest,

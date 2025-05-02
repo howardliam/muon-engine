@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-namespace muon::asset {
+namespace muon::asset::scene {
 
     struct PbrMetallicRoughness {
         std::optional<std::array<float, 4>> baseColorFactor;

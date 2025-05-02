@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace muon::asset {
+namespace muon::asset::scene {
 
     struct Scene {
         std::vector<std::shared_ptr<Node>> nodes{};

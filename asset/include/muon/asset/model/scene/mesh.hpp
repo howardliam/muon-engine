@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace muon::asset {
+namespace muon::asset::scene {
 
     struct Mesh {
         std::vector<uint8_t> vertexData{};

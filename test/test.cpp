@@ -249,6 +249,7 @@ int main() {
     }
 
     auto scene = asset::loadGltf("./test/assets/models/cube.gltf");
+    auto _ = asset::loadGltf("./test/assets/models/cube.glb");
 
     if (!scene) {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");

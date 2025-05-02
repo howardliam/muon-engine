@@ -4,7 +4,7 @@
 #include <variant>
 #include <string>
 
-namespace muon::asset {
+namespace muon::asset::scene {
 
     struct OrthographicCamera {
         float xmag{0.0};

@@ -1,14 +1,18 @@
 #include "muon/asset/model/gltf.hpp"
 
+#include <cstring>
 #include <expected>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <print>
+#include <stdexcept>
 #include <utility>
 #include "muon/asset/error.hpp"
+#include "muon/asset/image.hpp"
 #include "muon/asset/model/scene/material.hpp"
 #include "muon/asset/model/scene/sampler.hpp"
+#include "muon/asset/model/scene/image.hpp"
 #include <nlohmann/json.hpp>
 
 #define GLTF_VERSION 2
@@ -125,25 +129,6 @@ namespace muon::asset {
             buffer.read(reinterpret_cast<char *>(intermediate.bufferData[i].data()), gltfBuffer["byteLength"]);
         }
 
-        if (gltf.contains("images")) {
-            auto gltfImages = gltf["images"];
-            intermediate.imageData.resize(gltfImages.size());
-
-            for (uint32_t i = 0; i < gltfImages.size(); i++) {
-                auto gltfImage = gltfImages[0];
-
-                auto imagePath = path.parent_path().append(std::string(gltfImage["uri"]));
-                std::ifstream image{imagePath, std::ios::binary};
-                image.seekg(0, std::ios::end);
-                size_t imageSize = image.tellg();
-                image.seekg(0, std::ios::beg);
-
-                intermediate.imageData[i].resize(imageSize);
-
-                image.read(reinterpret_cast<char *>(intermediate.imageData[i].data()), imageSize);
-            }
-        }
-
         return intermediate;
     }
 
@@ -186,26 +171,25 @@ namespace muon::asset {
         return intermediate;
     }
 
-    std::vector<std::shared_ptr<Sampler>> parseSamplers(const json &gltf) {
+    std::vector<std::shared_ptr<scene::Sampler>> parseSamplers(const json &gltf) {
         auto gltfSamplers = gltf["samplers"];
-        assert(gltfSamplers.is_array() && "must be a valid samplers array");
 
         uint32_t samplerCount = gltfSamplers.size();
-        std::vector<std::shared_ptr<Sampler>> samplers(samplerCount);
+        std::vector<std::shared_ptr<scene::Sampler>> samplers(samplerCount);
 
         uint32_t samplerIndex{0};
         for (auto gltfSampler : gltfSamplers) {
-            std::shared_ptr sampler = std::make_shared<Sampler>();
+            std::shared_ptr sampler = std::make_shared<scene::Sampler>();
 
             if (gltfSampler.contains("magFilter")) {
                 uint32_t magFilter = gltfSampler["magFilter"];
                 switch (magFilter) {
                 case NEAREST:
-                    sampler->magFilter = Filter::Nearest;
+                    sampler->magFilter = scene::Filter::Nearest;
                     break;
 
                 case LINEAR:
-                    sampler->magFilter = Filter::Linear;
+                    sampler->magFilter = scene::Filter::Linear;
                     break;
                 }
             }
@@ -214,27 +198,27 @@ namespace muon::asset {
                 uint32_t minFilter = gltfSampler["minFilter"];
                 switch (minFilter) {
                 case NEAREST:
-                    sampler->minFilter = Filter::Nearest;
+                    sampler->minFilter = scene::Filter::Nearest;
                     break;
 
                 case LINEAR:
-                    sampler->minFilter = Filter::Linear;
+                    sampler->minFilter = scene::Filter::Linear;
                     break;
 
                 case NEAREST_MIPMAP_NEAREST:
-                    sampler->minFilter = Filter::NearestMipmapNearest;
+                    sampler->minFilter = scene::Filter::NearestMipmapNearest;
                     break;
 
                 case LINEAR_MIPMAP_NEAREST:
-                    sampler->minFilter = Filter::LinearMipmapNearest;
+                    sampler->minFilter = scene::Filter::LinearMipmapNearest;
                     break;
 
                 case NEAREST_MIPMAP_LINEAR:
-                    sampler->minFilter = Filter::NearestMipmapLinear;
+                    sampler->minFilter = scene::Filter::NearestMipmapLinear;
                     break;
 
                 case LINEAR_MIPMAP_LINEAR:
-                    sampler->minFilter = Filter::LinearMipmapLinear;
+                    sampler->minFilter = scene::Filter::LinearMipmapLinear;
                     break;
                 }
             }
@@ -243,15 +227,15 @@ namespace muon::asset {
                 uint32_t wrapS = gltfSampler["wrapS"];
                 switch (wrapS) {
                 case CLAMP_TO_EDGE:
-                    sampler->wrapS = WrappingMode::ClampToEdge;
+                    sampler->wrapS = scene::WrappingMode::ClampToEdge;
                     break;
 
                 case MIRRORED_REPEAT:
-                    sampler->wrapS = WrappingMode::MirroredRepeat;
+                    sampler->wrapS = scene::WrappingMode::MirroredRepeat;
                     break;
 
                 case REPEAT:
-                    sampler->wrapS = WrappingMode::Repeat;
+                    sampler->wrapS = scene::WrappingMode::Repeat;
                     break;
                 }
             }
@@ -260,15 +244,15 @@ namespace muon::asset {
                 uint32_t wrapT = gltfSampler["wrapT"];
                 switch (wrapT) {
                 case CLAMP_TO_EDGE:
-                    sampler->wrapT = WrappingMode::ClampToEdge;
+                    sampler->wrapT = scene::WrappingMode::ClampToEdge;
                     break;
 
                 case MIRRORED_REPEAT:
-                    sampler->wrapT = WrappingMode::MirroredRepeat;
+                    sampler->wrapT = scene::WrappingMode::MirroredRepeat;
                     break;
 
                 case REPEAT:
-                    sampler->wrapT = WrappingMode::Repeat;
+                    sampler->wrapT = scene::WrappingMode::Repeat;
                     break;
                 }
             }
@@ -284,16 +268,119 @@ namespace muon::asset {
         return samplers;
     }
 
-    std::vector<std::shared_ptr<Material>> parseMaterials(const json &gltf) {
+    std::vector<std::shared_ptr<scene::Image>> parseImages(const json &gltf, const GltfIntermediate &intermediate) {
+        auto gltfImages = gltf["images"];
+
+        uint32_t imageCount = gltfImages.size();
+        std::vector<std::shared_ptr<scene::Image>> images(imageCount);
+
+        uint32_t imageIndex{0};
+        for (auto gltfImage : gltfImages) {
+            std::shared_ptr image = std::make_shared<scene::Image>();
+
+            if (gltfImage.contains("name")) {
+                image->name = gltfImage["name"];
+            }
+
+            // .gltf
+            if (gltfImage.contains("uri")) {
+                auto imagePath = intermediate.path.parent_path().append(std::string(gltfImage["uri"]));
+
+                auto maybeImage = loadImage(imagePath);
+                if (!maybeImage) {
+                    throw std::runtime_error("failed to load image file");
+                }
+
+                image->image = *maybeImage;
+            }
+
+            // .glb
+            else if (gltfImage.contains("bufferView")) {
+                uint32_t bufferViewIndex = gltfImage["bufferView"];
+                auto gltfBufferView = gltf["bufferViews"][bufferViewIndex];
+
+                uint32_t byteLength = gltfBufferView["byteLength"];
+                uint32_t byteOffset = gltfBufferView["byteOffset"];
+
+                std::vector<uint8_t> imageData(byteLength);
+
+                std::memcpy(
+                    imageData.data(),
+                    &intermediate.bufferData[0][byteOffset],
+                    byteLength
+                );
+
+                std::optional<Image> maybeImage;
+                std::string mimeType = gltfImage["mimeType"];
+                if (mimeType == "image/jpeg") {
+                    maybeImage = loadImage(imageData, ImageFormat::Jpeg);
+                } else if (mimeType == "image/png") {
+                    maybeImage = loadImage(imageData, ImageFormat::Png);
+                }
+                if (!maybeImage) {
+                    throw std::runtime_error("failed to load image file");
+                }
+
+                image->image = *maybeImage;
+            }
+
+            images[imageIndex] = std::move(image);
+            imageIndex += 1;
+        }
+
+        return images;
+    }
+
+    std::vector<std::shared_ptr<scene::Texture>> parseTextures(
+        const json &gltf,
+        const std::vector<std::shared_ptr<scene::Sampler>> &samplers,
+        const std::vector<std::shared_ptr<scene::Image>> &images
+    ) {
+        auto gltfTextures = gltf["textures"];
+
+        uint32_t textureCount = gltfTextures.size();
+        std::vector<std::shared_ptr<scene::Texture>> textures(textureCount);
+
+        uint32_t textureIndex{0};
+        for (auto gltfTexture : gltfTextures) {
+            std::shared_ptr texture = std::make_shared<scene::Texture>();
+
+            if (gltfTexture.contains("sampler")) {
+                uint32_t samplerIndex = gltfTexture["sampler"];
+
+                texture->sampler = samplers[samplerIndex];
+            }
+
+            if (gltfTexture.contains("source")) {
+                uint32_t sourceIndex = gltfTexture["source"];
+
+                texture->image = images[sourceIndex];
+            }
+
+            if (gltfTexture.contains("name")) {
+                texture->name = gltfTexture["name"];
+            }
+
+            textures[textureIndex] = std::move(texture);
+            textureIndex += 1;
+        }
+
+        return textures;
+    }
+
+    std::vector<std::shared_ptr<scene::Material>> parseMaterials(
+        const json &gltf,
+        const std::vector<std::shared_ptr<scene::Texture>> &textures
+    ) {
         auto gltfMaterials = gltf["materials"];
         assert(gltfMaterials.is_array() && "must be a valid materials array");
 
         size_t materialCount = gltfMaterials.size();
-        std::vector<std::shared_ptr<Material>> materials(materialCount);
+        std::vector<std::shared_ptr<scene::Material>> materials(materialCount);
 
         size_t materialIndex{0};
         for (auto &gltfMaterial : gltfMaterials) {
-            std::shared_ptr material = std::make_unique<Material>();
+            std::shared_ptr material = std::make_unique<scene::Material>();
 
             if (gltfMaterial.contains("name")) {
                 material->name = gltfMaterial["name"];
@@ -313,7 +400,8 @@ namespace muon::asset {
 
                     auto gltfBaseColorTexture = gltfPbrMetallicRoughness["baseColorTexture"];
 
-                    material->pbrMetallicRoughness->baseColorTexture->index = gltfBaseColorTexture["index"];
+                    uint32_t textureIndex = gltfBaseColorTexture["index"];
+                    material->pbrMetallicRoughness->baseColorTexture->texture = textures[textureIndex];
 
                     if (gltfBaseColorTexture.contains("texCoord")) {
                         material->pbrMetallicRoughness->baseColorTexture->texCoord = gltfBaseColorTexture["texCoord"];
@@ -333,7 +421,8 @@ namespace muon::asset {
 
                     auto gltfMetallicRoughnessTexture = gltfPbrMetallicRoughness["metallicRoughnessTexture"];
 
-                    material->pbrMetallicRoughness->metallicRoughnessTexture->index = gltfMetallicRoughnessTexture["index"];
+                    uint32_t textureIndex = gltfMetallicRoughnessTexture["index"];
+                    material->pbrMetallicRoughness->metallicRoughnessTexture->texture = textures[textureIndex];
 
                     if (gltfMetallicRoughnessTexture.contains("texCoord")) {
                         material->pbrMetallicRoughness->metallicRoughnessTexture->texCoord = gltfMetallicRoughnessTexture["texCoord"];
@@ -346,7 +435,8 @@ namespace muon::asset {
 
                 auto gltfNormalTexture = gltfMaterial["normalTexture"];
 
-                material->normalTexture->index = gltfNormalTexture["index"];
+                uint32_t textureIndex = gltfNormalTexture["index"];
+                material->normalTexture->texture = textures[textureIndex];
 
                 if (gltfNormalTexture.contains("texCoord")) {
                     material->normalTexture->texCoord = gltfNormalTexture["texCoord"];
@@ -362,7 +452,8 @@ namespace muon::asset {
 
                 auto gltfOcclusionTexture = gltfMaterial["occlusionTexture"];
 
-                material->occlusionTexture->index = gltfOcclusionTexture["index"];
+                uint32_t textureIndex = gltfOcclusionTexture["index"];
+                material->occlusionTexture->texture = textures[textureIndex];
 
                 if (gltfOcclusionTexture.contains("texCoord")) {
                     material->occlusionTexture->texCoord = gltfOcclusionTexture["texCoord"];
@@ -378,7 +469,8 @@ namespace muon::asset {
 
                 auto gltfEmissiveTexture = gltfMaterial["emissiveTexture"];
 
-                material->emissiveTexture->index = gltfEmissiveTexture["index"];
+                uint32_t textureIndex = gltfEmissiveTexture["index"];
+                material->emissiveTexture->texture = textures[textureIndex];
 
                 if (gltfEmissiveTexture.contains("texCoord")) {
                     material->emissiveTexture->texCoord = gltfEmissiveTexture["texCoord"];
@@ -392,11 +484,11 @@ namespace muon::asset {
             if (gltfMaterial.contains("alphaMode")) {
                 std::string alphaMode = gltfMaterial["alphaMode"];
                 if (alphaMode == "OPAQUE") {
-                    material->alphaMode = AlphaMode::Opaque;
+                    material->alphaMode = scene::AlphaMode::Opaque;
                 } else if (alphaMode == "MASK") {
-                    material->alphaMode = AlphaMode::Mask;
+                    material->alphaMode = scene::AlphaMode::Mask;
                 } else if (alphaMode == "BLEND") {
-                    material->alphaMode = AlphaMode::Blend;
+                    material->alphaMode = scene::AlphaMode::Blend;
                 }
             }
 
@@ -415,16 +507,16 @@ namespace muon::asset {
         return materials;
     };
 
-    std::vector<std::unique_ptr<Mesh>> parseMeshes(
+    std::vector<std::unique_ptr<scene::Mesh>> parseMeshes(
         const json &gltf,
-        const std::vector<std::shared_ptr<Material>> &materials,
+        const std::vector<std::shared_ptr<scene::Material>> &materials,
         const GltfIntermediate &intermediate
     ) {
         auto gltfMeshes = gltf["meshes"];
         assert(gltfMeshes.is_array() && "must be a valid meshes array");
 
         size_t meshCount = gltfMeshes.size();
-        std::vector<std::unique_ptr<Mesh>> meshes(meshCount);
+        std::vector<std::unique_ptr<scene::Mesh>> meshes(meshCount);
 
         auto gltfAccessors = gltf["accessors"];
         auto gltfBufferViews = gltf["bufferViews"];
@@ -433,7 +525,7 @@ namespace muon::asset {
         for (auto &gltfMesh : gltfMeshes) {
             auto gltfPrimitives = gltfMesh["primitives"][0];
 
-            std::unique_ptr mesh = std::make_unique<Mesh>();
+            std::unique_ptr mesh = std::make_unique<scene::Mesh>();
 
             if (gltfMesh.contains("name")) {
                 mesh->name = gltfMesh["name"];
@@ -519,16 +611,19 @@ namespace muon::asset {
         return meshes;
     }
 
-    std::vector<std::shared_ptr<Node>> parseNodes(const json &gltf, std::vector<std::unique_ptr<Mesh>> &meshes) {
+    std::vector<std::shared_ptr<scene::Node>> parseNodes(
+        const json &gltf,
+        std::vector<std::unique_ptr<scene::Mesh>> &meshes
+    ) {
         auto gltfNodes = gltf["nodes"];
         assert(gltfNodes.is_array() && "must be a valid nodes array");
 
         uint32_t nodeCount = gltfNodes.size();
-        std::vector<std::shared_ptr<Node>> nodes(nodeCount);
+        std::vector<std::shared_ptr<scene::Node>> nodes(nodeCount);
 
         uint32_t nodeIndex{0};
         for (auto gltfNode : gltfNodes) {
-            std::shared_ptr node = std::make_shared<Node>();
+            std::shared_ptr node = std::make_shared<scene::Node>();
             node->name = gltfNode["name"];
             node->mesh = std::move(meshes[gltfNode["mesh"]]);
 
@@ -539,7 +634,7 @@ namespace muon::asset {
         return nodes;
     }
 
-    std::expected<Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate) {
+    std::expected<scene::Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate) {
         std::expected jsonResult = parseJson(intermediate.json);
         if (!jsonResult) {
             return std::unexpected(jsonResult.error());
@@ -547,11 +642,14 @@ namespace muon::asset {
         const json gltf = jsonResult.value();
 
         std::vector samplers = parseSamplers(gltf);
-        std::vector materials = parseMaterials(gltf);
+        std::vector images = parseImages(gltf, intermediate);
+        std::vector textures = parseTextures(gltf, samplers, images);
+
+        std::vector materials = parseMaterials(gltf, textures);
         std::vector meshes = parseMeshes(gltf, materials, intermediate);
         std::vector nodes = parseNodes(gltf, meshes);
 
-        Scene scene{};
+        scene::Scene scene{};
         int32_t sceneIndex = gltf["scene"];
         auto gltfScene = gltf["scenes"][sceneIndex];
         scene.name = gltfScene["name"];

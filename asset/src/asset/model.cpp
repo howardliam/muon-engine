@@ -6,7 +6,7 @@
 namespace muon::asset {
 
 
-    std::expected<Scene, AssetLoadError> loadGltf(const std::filesystem::path &path) {
+    std::expected<scene::Scene, AssetLoadError> loadGltf(const std::filesystem::path &path) {
         auto mediaType = parseMediaType(path, FileType::Model);
         if (!mediaType) {
             return std::unexpected(AssetLoadError::InvalidFormat);

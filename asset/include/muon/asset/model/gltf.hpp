@@ -13,9 +13,6 @@ namespace muon::asset {
         std::filesystem::path path;
         std::vector<uint8_t> json{};
         std::vector<std::vector<uint8_t>> bufferData{};
-
-        // only used for glTF JSON format.
-        std::vector<std::vector<uint8_t>> imageData{};
     };
 
     struct GlbHeader {
@@ -33,6 +30,6 @@ namespace muon::asset {
 
     std::expected<GltfIntermediate, AssetLoadError> intermediateFromGlb(const std::filesystem::path &path);
 
-    std::expected<Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate);
+    std::expected<scene::Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate);
 
 }

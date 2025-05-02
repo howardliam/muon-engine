@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace muon::asset {
+namespace muon::asset::scene {
 
     struct Node {
         std::unique_ptr<Camera> camera{nullptr};
