@@ -6,6 +6,7 @@
 #include <print>
 #include <utility>
 #include "muon/asset/error.hpp"
+#include "muon/asset/model/scene/material.hpp"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -163,6 +164,108 @@ namespace muon::asset {
 
         return intermediate;
     }
+
+    std::vector<Material> parseMaterials(const json &gltfMaterials) {
+        assert(gltfMaterials.is_array() && "must be a valid materials array");
+
+        size_t materialCount = gltfMaterials.size();
+        std::vector<Material> materials(materialCount);
+
+        size_t materialIndex{0};
+        for (auto &gltfMaterial : gltfMaterials) {
+            Material material{};
+
+            if (gltfMaterial.contains("name")) {
+                material.name = gltfMaterial["name"];
+            }
+
+            if (gltfMaterial.contains("pbrMetallicRoughness")) {
+                material.pbrMetallicRoughness.emplace();
+                auto gltfPbrMetallicRoughness = gltfMaterial["pbrMetallicRoughness"];
+                if (gltfPbrMetallicRoughness.contains("baseColorFactor")) {
+                    material.pbrMetallicRoughness->baseColorFactor = gltfPbrMetallicRoughness["baseColorFactor"];
+                }
+
+                if (gltfPbrMetallicRoughness.contains("baseColorTexture")) {
+                    material.pbrMetallicRoughness->baseColorTexture.emplace();
+                }
+
+                if (gltfPbrMetallicRoughness.contains("metallicFactor")) {
+                    material.pbrMetallicRoughness->metallicFactor = gltfPbrMetallicRoughness["metallicFactor"];
+                }
+
+                if (gltfPbrMetallicRoughness.contains("roughnessFactor")) {
+                    material.pbrMetallicRoughness->roughnessFactor = gltfPbrMetallicRoughness["roughnessFactor"];
+                }
+
+                if (gltfPbrMetallicRoughness.contains("metallicRoughnessTexture")) {
+                    material.pbrMetallicRoughness->metallicRoughnessTexture.emplace();
+
+                }
+            }
+
+            if (gltfMaterial.contains("normalTexture")) {
+                material.normalTexture.emplace();
+
+                auto gltfNormalTexture = gltfMaterial["normalTexture"];
+
+                material.normalTexture->index = gltfNormalTexture["index"];
+
+                if (gltfNormalTexture.contains("texCoord")) {
+                    material.normalTexture->texCoord = gltfNormalTexture["texCoord"];
+                }
+
+                if (gltfNormalTexture.contains("scale")) {
+
+                }
+            }
+
+            if (gltfMaterial.contains("occlusionTexture")) {
+                material.occlusionTexture.emplace();
+
+                auto gltfOcclusionTexture = gltfMaterial["occlusionTexture"];
+
+                material.occlusionTexture->index = gltfOcclusionTexture["index"];
+            }
+
+            if (gltfMaterial.contains("emissiveTexture")) {
+                material.emissiveTexture.emplace();
+
+                auto gltfEmissiveTexture = gltfMaterial["occlusionTexture"];
+
+                material.emissiveTexture->index = gltfEmissiveTexture["index"];
+            }
+
+            if (gltfMaterial.contains("emissiveFactor")) {
+                material.emissiveFactor = gltfMaterial["emissiveFactor"];
+            }
+
+            if (gltfMaterial.contains("alphaMode")) {
+                std::string alphaMode = gltfMaterial["alphaMode"];
+                if (alphaMode == "OPAQUE") {
+                    material.alphaMode = AlphaMode::Opaque;
+                } else if (alphaMode == "MASK") {
+                    material.alphaMode = AlphaMode::Mask;
+                } else if (alphaMode == "BLEND") {
+                    material.alphaMode = AlphaMode::Blend;
+                }
+            }
+
+            if (gltfMaterial.contains("alphaCutoff")) {
+                material.alphaCutoff = gltfMaterial["alphaCutoff"];
+            }
+
+            if (gltfMaterial.contains("doubleSided")) {
+                material.doubleSided = gltfMaterial["doubleSided"];
+            }
+
+            materials[materialIndex] = material;
+            materialIndex += 1;
+        }
+
+
+        return materials;
+    };
 
     std::expected<Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate) {
         std::expected jsonResult = parseJson(intermediate.json);
