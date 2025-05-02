@@ -181,13 +181,23 @@ namespace muon::asset {
 
             if (gltfMaterial.contains("pbrMetallicRoughness")) {
                 material.pbrMetallicRoughness.emplace();
+
                 auto gltfPbrMetallicRoughness = gltfMaterial["pbrMetallicRoughness"];
+
                 if (gltfPbrMetallicRoughness.contains("baseColorFactor")) {
                     material.pbrMetallicRoughness->baseColorFactor = gltfPbrMetallicRoughness["baseColorFactor"];
                 }
 
                 if (gltfPbrMetallicRoughness.contains("baseColorTexture")) {
                     material.pbrMetallicRoughness->baseColorTexture.emplace();
+
+                    auto gltfBaseColorTexture = gltfPbrMetallicRoughness["baseColorTexture"];
+
+                    material.pbrMetallicRoughness->baseColorTexture->index = gltfBaseColorTexture["index"];
+
+                    if (gltfBaseColorTexture.contains("texCoord")) {
+                        material.pbrMetallicRoughness->baseColorTexture->texCoord = gltfBaseColorTexture["texCoord"];
+                    }
                 }
 
                 if (gltfPbrMetallicRoughness.contains("metallicFactor")) {
@@ -201,6 +211,13 @@ namespace muon::asset {
                 if (gltfPbrMetallicRoughness.contains("metallicRoughnessTexture")) {
                     material.pbrMetallicRoughness->metallicRoughnessTexture.emplace();
 
+                    auto gltfMetallicRoughnessTexture = gltfPbrMetallicRoughness["metallicRoughnessTexture"];
+
+                    material.pbrMetallicRoughness->metallicRoughnessTexture->index = gltfMetallicRoughnessTexture["index"];
+
+                    if (gltfMetallicRoughnessTexture.contains("texCoord")) {
+                        material.pbrMetallicRoughness->metallicRoughnessTexture->texCoord = gltfMetallicRoughnessTexture["texCoord"];
+                    }
                 }
             }
 
@@ -216,7 +233,7 @@ namespace muon::asset {
                 }
 
                 if (gltfNormalTexture.contains("scale")) {
-
+                    material.normalTexture->scale = gltfNormalTexture["scale"];
                 }
             }
 
@@ -226,14 +243,26 @@ namespace muon::asset {
                 auto gltfOcclusionTexture = gltfMaterial["occlusionTexture"];
 
                 material.occlusionTexture->index = gltfOcclusionTexture["index"];
+
+                if (gltfOcclusionTexture.contains("texCoord")) {
+                    material.occlusionTexture->texCoord = gltfOcclusionTexture["texCoord"];
+                }
+
+                if (gltfOcclusionTexture.contains("strength")) {
+                    material.occlusionTexture->strength = gltfOcclusionTexture["strength"];
+                }
             }
 
             if (gltfMaterial.contains("emissiveTexture")) {
                 material.emissiveTexture.emplace();
 
-                auto gltfEmissiveTexture = gltfMaterial["occlusionTexture"];
+                auto gltfEmissiveTexture = gltfMaterial["emissiveTexture"];
 
                 material.emissiveTexture->index = gltfEmissiveTexture["index"];
+
+                if (gltfEmissiveTexture.contains("texCoord")) {
+                    material.emissiveTexture->texCoord = gltfEmissiveTexture["texCoord"];
+                }
             }
 
             if (gltfMaterial.contains("emissiveFactor")) {
@@ -262,7 +291,6 @@ namespace muon::asset {
             materials[materialIndex] = material;
             materialIndex += 1;
         }
-
 
         return materials;
     };
