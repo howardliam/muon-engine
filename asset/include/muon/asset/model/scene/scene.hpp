@@ -10,7 +10,7 @@ namespace muon::asset {
 
     struct Scene {
         std::vector<std::shared_ptr<Node>> nodes{};
-        std::optional<std::string> name{};
+        std::optional<std::string> name;
     };
 
 }

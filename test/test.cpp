@@ -248,7 +248,7 @@ int main() {
             .build(descriptorSets[i]);
     }
 
-    auto scene = asset::loadGltf("./test/assets/models/cube.glb");
+    auto scene = asset::loadGltf("./test/assets/models/cube.gltf");
 
     if (!scene) {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");

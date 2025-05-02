@@ -17,7 +17,7 @@ namespace muon::asset {
         // quat rotation
         // vec3 scale
         // vec3 translation
-        std::optional<std::string> name{};
+        std::optional<std::string> name;
     };
 
 }

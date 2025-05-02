@@ -29,4 +29,5 @@ namespace muon::asset {
         std::optional<int32_t> texCoord{};
         std::optional<float> strength{};
     };
+
 }

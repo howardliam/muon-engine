@@ -6,12 +6,27 @@
 
 namespace muon::asset {
 
+    enum class Filter : int32_t {
+        Nearest,
+        Linear,
+        NearestMipmapNearest,
+        LinearMipmapNearest,
+        NearestMipmapLinear,
+        LinearMipmapLinear,
+    };
+
+    enum class WrappingMode : int32_t {
+        ClampToEdge,
+        MirroredRepeat,
+        Repeat,
+    };
+
     struct Sampler {
-        std::optional<int32_t> magFilter{};
-        std::optional<int32_t> minFilter{};
-        std::optional<int32_t> wrapS{};
-        std::optional<int32_t> wrapT{};
-        std::optional<std::string> name{};
+        std::optional<Filter> magFilter;
+        std::optional<Filter> minFilter;
+        std::optional<WrappingMode> wrapS;
+        std::optional<WrappingMode> wrapT;
+        std::optional<std::string> name;
     };
 
 }

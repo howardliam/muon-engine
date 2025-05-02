@@ -14,7 +14,7 @@ namespace muon::asset {
     };
 
     struct PerspectiveCamera {
-        std::optional<float> aspectRatio{};
+        std::optional<float> aspectRatio;
         float yfov{0.0};
         std::optional<float> zfar{0.0};
         float znear{0.0};
@@ -22,7 +22,7 @@ namespace muon::asset {
 
     struct Camera {
         std::variant<OrthographicCamera, PerspectiveCamera> camera;
-        std::optional<std::string> name{};
+        std::optional<std::string> name;
     };
 
 }

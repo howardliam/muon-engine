@@ -2,6 +2,7 @@
 
 #include <expected>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <print>
 #include <utility>
@@ -165,135 +166,260 @@ namespace muon::asset {
         return intermediate;
     }
 
-    std::vector<Material> parseMaterials(const json &gltfMaterials) {
+    std::vector<std::shared_ptr<Material>> parseMaterials(const json &gltf) {
+        auto gltfMaterials = gltf["materials"];
         assert(gltfMaterials.is_array() && "must be a valid materials array");
 
         size_t materialCount = gltfMaterials.size();
-        std::vector<Material> materials(materialCount);
+        std::vector<std::shared_ptr<Material>> materials(materialCount);
 
         size_t materialIndex{0};
         for (auto &gltfMaterial : gltfMaterials) {
-            Material material{};
+            std::shared_ptr material = std::make_unique<Material>();
 
             if (gltfMaterial.contains("name")) {
-                material.name = gltfMaterial["name"];
+                material->name = gltfMaterial["name"];
             }
 
             if (gltfMaterial.contains("pbrMetallicRoughness")) {
-                material.pbrMetallicRoughness.emplace();
+                material->pbrMetallicRoughness.emplace();
 
                 auto gltfPbrMetallicRoughness = gltfMaterial["pbrMetallicRoughness"];
 
                 if (gltfPbrMetallicRoughness.contains("baseColorFactor")) {
-                    material.pbrMetallicRoughness->baseColorFactor = gltfPbrMetallicRoughness["baseColorFactor"];
+                    material->pbrMetallicRoughness->baseColorFactor = gltfPbrMetallicRoughness["baseColorFactor"];
                 }
 
                 if (gltfPbrMetallicRoughness.contains("baseColorTexture")) {
-                    material.pbrMetallicRoughness->baseColorTexture.emplace();
+                    material->pbrMetallicRoughness->baseColorTexture.emplace();
 
                     auto gltfBaseColorTexture = gltfPbrMetallicRoughness["baseColorTexture"];
 
-                    material.pbrMetallicRoughness->baseColorTexture->index = gltfBaseColorTexture["index"];
+                    material->pbrMetallicRoughness->baseColorTexture->index = gltfBaseColorTexture["index"];
 
                     if (gltfBaseColorTexture.contains("texCoord")) {
-                        material.pbrMetallicRoughness->baseColorTexture->texCoord = gltfBaseColorTexture["texCoord"];
+                        material->pbrMetallicRoughness->baseColorTexture->texCoord = gltfBaseColorTexture["texCoord"];
                     }
                 }
 
                 if (gltfPbrMetallicRoughness.contains("metallicFactor")) {
-                    material.pbrMetallicRoughness->metallicFactor = gltfPbrMetallicRoughness["metallicFactor"];
+                    material->pbrMetallicRoughness->metallicFactor = gltfPbrMetallicRoughness["metallicFactor"];
                 }
 
                 if (gltfPbrMetallicRoughness.contains("roughnessFactor")) {
-                    material.pbrMetallicRoughness->roughnessFactor = gltfPbrMetallicRoughness["roughnessFactor"];
+                    material->pbrMetallicRoughness->roughnessFactor = gltfPbrMetallicRoughness["roughnessFactor"];
                 }
 
                 if (gltfPbrMetallicRoughness.contains("metallicRoughnessTexture")) {
-                    material.pbrMetallicRoughness->metallicRoughnessTexture.emplace();
+                    material->pbrMetallicRoughness->metallicRoughnessTexture.emplace();
 
                     auto gltfMetallicRoughnessTexture = gltfPbrMetallicRoughness["metallicRoughnessTexture"];
 
-                    material.pbrMetallicRoughness->metallicRoughnessTexture->index = gltfMetallicRoughnessTexture["index"];
+                    material->pbrMetallicRoughness->metallicRoughnessTexture->index = gltfMetallicRoughnessTexture["index"];
 
                     if (gltfMetallicRoughnessTexture.contains("texCoord")) {
-                        material.pbrMetallicRoughness->metallicRoughnessTexture->texCoord = gltfMetallicRoughnessTexture["texCoord"];
+                        material->pbrMetallicRoughness->metallicRoughnessTexture->texCoord = gltfMetallicRoughnessTexture["texCoord"];
                     }
                 }
             }
 
             if (gltfMaterial.contains("normalTexture")) {
-                material.normalTexture.emplace();
+                material->normalTexture.emplace();
 
                 auto gltfNormalTexture = gltfMaterial["normalTexture"];
 
-                material.normalTexture->index = gltfNormalTexture["index"];
+                material->normalTexture->index = gltfNormalTexture["index"];
 
                 if (gltfNormalTexture.contains("texCoord")) {
-                    material.normalTexture->texCoord = gltfNormalTexture["texCoord"];
+                    material->normalTexture->texCoord = gltfNormalTexture["texCoord"];
                 }
 
                 if (gltfNormalTexture.contains("scale")) {
-                    material.normalTexture->scale = gltfNormalTexture["scale"];
+                    material->normalTexture->scale = gltfNormalTexture["scale"];
                 }
             }
 
             if (gltfMaterial.contains("occlusionTexture")) {
-                material.occlusionTexture.emplace();
+                material->occlusionTexture.emplace();
 
                 auto gltfOcclusionTexture = gltfMaterial["occlusionTexture"];
 
-                material.occlusionTexture->index = gltfOcclusionTexture["index"];
+                material->occlusionTexture->index = gltfOcclusionTexture["index"];
 
                 if (gltfOcclusionTexture.contains("texCoord")) {
-                    material.occlusionTexture->texCoord = gltfOcclusionTexture["texCoord"];
+                    material->occlusionTexture->texCoord = gltfOcclusionTexture["texCoord"];
                 }
 
                 if (gltfOcclusionTexture.contains("strength")) {
-                    material.occlusionTexture->strength = gltfOcclusionTexture["strength"];
+                    material->occlusionTexture->strength = gltfOcclusionTexture["strength"];
                 }
             }
 
             if (gltfMaterial.contains("emissiveTexture")) {
-                material.emissiveTexture.emplace();
+                material->emissiveTexture.emplace();
 
                 auto gltfEmissiveTexture = gltfMaterial["emissiveTexture"];
 
-                material.emissiveTexture->index = gltfEmissiveTexture["index"];
+                material->emissiveTexture->index = gltfEmissiveTexture["index"];
 
                 if (gltfEmissiveTexture.contains("texCoord")) {
-                    material.emissiveTexture->texCoord = gltfEmissiveTexture["texCoord"];
+                    material->emissiveTexture->texCoord = gltfEmissiveTexture["texCoord"];
                 }
             }
 
             if (gltfMaterial.contains("emissiveFactor")) {
-                material.emissiveFactor = gltfMaterial["emissiveFactor"];
+                material->emissiveFactor = gltfMaterial["emissiveFactor"];
             }
 
             if (gltfMaterial.contains("alphaMode")) {
                 std::string alphaMode = gltfMaterial["alphaMode"];
                 if (alphaMode == "OPAQUE") {
-                    material.alphaMode = AlphaMode::Opaque;
+                    material->alphaMode = AlphaMode::Opaque;
                 } else if (alphaMode == "MASK") {
-                    material.alphaMode = AlphaMode::Mask;
+                    material->alphaMode = AlphaMode::Mask;
                 } else if (alphaMode == "BLEND") {
-                    material.alphaMode = AlphaMode::Blend;
+                    material->alphaMode = AlphaMode::Blend;
                 }
             }
 
             if (gltfMaterial.contains("alphaCutoff")) {
-                material.alphaCutoff = gltfMaterial["alphaCutoff"];
+                material->alphaCutoff = gltfMaterial["alphaCutoff"];
             }
 
             if (gltfMaterial.contains("doubleSided")) {
-                material.doubleSided = gltfMaterial["doubleSided"];
+                material->doubleSided = gltfMaterial["doubleSided"];
             }
 
-            materials[materialIndex] = material;
+            materials[materialIndex] = std::move(material);
             materialIndex += 1;
         }
 
         return materials;
     };
+
+    std::vector<std::unique_ptr<Mesh>> parseMeshes(
+        const json &gltf,
+        const std::vector<std::shared_ptr<Material>> &materials,
+        const GltfIntermediate &intermediate
+    ) {
+        auto gltfMeshes = gltf["meshes"];
+        assert(gltfMeshes.is_array() && "must be a valid meshes array");
+
+        size_t meshCount = gltfMeshes.size();
+        std::vector<std::unique_ptr<Mesh>> meshes(meshCount);
+
+        auto gltfAccessors = gltf["accessors"];
+        auto gltfBufferViews = gltf["bufferViews"];
+
+        size_t meshIndex{0};
+        for (auto &gltfMesh : gltfMeshes) {
+            auto gltfPrimitives = gltfMesh["primitives"][0];
+
+            std::unique_ptr mesh = std::make_unique<Mesh>();
+
+            if (gltfMesh.contains("name")) {
+                mesh->name = gltfMesh["name"];
+            }
+
+            uint32_t vertexDataSize{0};
+
+            auto gltfAttributes = gltfPrimitives["attributes"];
+            for (uint32_t accessorIndex : gltfAttributes) {
+                auto gltfAccessor = gltfAccessors[accessorIndex];
+
+                uint32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+                uint32_t attributeCount = gltfAccessor["count"];
+
+                vertexDataSize += attributeStride * attributeCount;
+                mesh->vertexSize += attributeStride;
+                mesh->vertexCount = gltfAccessor["count"];
+            }
+
+            mesh->vertexData.resize(vertexDataSize);
+
+            for (int32_t accessorIndex : gltfAttributes) {
+                auto gltfAccessor = gltfAccessors[accessorIndex];
+
+                uint32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+
+                uint32_t bufferViewIndex = gltfAccessor["bufferView"];
+                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
+
+                uint32_t byteOffset = gltfBufferView["byteOffset"];
+                uint32_t byteLength = gltfBufferView["byteLength"];
+                uint32_t bufferIndex = gltfBufferView["buffer"];
+
+                const auto &bufferData = intermediate.bufferData[bufferIndex];
+
+                for (uint32_t vertex = 0; vertex < mesh->vertexCount; vertex++) {
+                    uint32_t readPos = byteOffset + vertex * attributeStride;
+
+                    uint32_t vertexOffset = vertex * mesh->vertexSize;
+                    uint32_t attributeOffset = bufferViewIndex * attributeStride;
+
+                    std::memcpy(
+                        &mesh->vertexData[vertexOffset + attributeOffset],
+                        &bufferData[readPos],
+                        attributeStride
+                    );
+                }
+            }
+
+            if (gltfPrimitives.contains("indices")) {
+                uint32_t gltfIndicesIndex = gltfPrimitives["indices"];
+                auto gltfAccessor = gltfAccessors[gltfIndicesIndex];
+
+                uint32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+                uint32_t indexCount = gltfAccessor["count"];
+                mesh->indices.resize(indexCount);
+
+                uint32_t bufferViewIndex = gltfAccessor["bufferView"];
+                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
+                uint32_t byteOffset = gltfBufferView["byteOffset"];
+                uint32_t bufferIndex = gltfBufferView["buffer"];
+
+                const auto &bufferData = intermediate.bufferData[bufferIndex];
+
+                for (uint32_t index = 0; index < indexCount; index++) {
+                    uint32_t readPos = byteOffset + index * attributeStride;
+
+                    std::memcpy(&mesh->indices[index], &bufferData[readPos], attributeStride);
+                }
+            }
+
+            if (gltfPrimitives.contains("material")) {
+                uint32_t gltfMaterialIndex = gltfPrimitives["indices"];
+                auto gltfAccessor = gltfAccessors[gltfMaterialIndex];
+
+                mesh->material = materials[gltfMaterialIndex];
+            }
+
+            meshes[meshIndex] = std::move(mesh);
+            meshIndex += 1;
+        }
+
+        return meshes;
+    }
+
+    std::vector<std::shared_ptr<Node>> parseNodes(const json &gltf, std::vector<std::unique_ptr<Mesh>> &meshes) {
+        auto gltfNodes = gltf["nodes"];
+        assert(gltfNodes.is_array() && "must be a valid nodes array");
+
+        uint32_t nodeCount = gltfNodes.size();
+        std::vector<std::shared_ptr<Node>> nodes(nodeCount);
+
+        uint32_t nodeIndex{0};
+        for (auto gltfNode : gltfNodes) {
+            std::shared_ptr node = std::make_shared<Node>();
+            node->name = gltfNode["name"];
+            node->mesh = std::move(meshes[gltfNode["mesh"]]);
+
+            nodes[nodeIndex] = std::move(node);
+            nodeIndex += 1;
+        }
+
+        return nodes;
+    }
 
     std::expected<Scene, AssetLoadError> parseGltf(const GltfIntermediate &intermediate) {
         std::expected jsonResult = parseJson(intermediate.json);
@@ -303,92 +429,11 @@ namespace muon::asset {
         const json gltf = jsonResult.value();
 
         auto gltfBufferViews = gltf["bufferViews"];
-
         auto gltfAccessors = gltf["accessors"];
 
-        std::vector<std::unique_ptr<Mesh>> meshes{};
-        auto gltfMeshes = gltf["meshes"];
-        for (auto gltfMesh : gltfMeshes) {
-            int32_t vertexCount{0};
-            int32_t vertexSize{0};
-            int32_t vertexDataSize{0};
-            auto gltfAttributes = gltfMesh["primitives"][0]["attributes"];
-            for (int32_t accessorIndex : gltfAttributes) {
-                auto gltfAccessor = gltfAccessors[accessorIndex];
-                int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                vertexSize += attributeStride;
-                int32_t attributeCount = gltfAccessor["count"];
-
-                vertexDataSize += attributeStride * attributeCount;
-                vertexCount = gltfAccessor["count"];
-            }
-
-            std::unique_ptr mesh = std::make_unique<Mesh>();
-            mesh->name = gltfMesh["name"];
-            mesh->vertexData.resize(vertexDataSize);
-            mesh->vertexSize = vertexSize;
-            mesh->vertexCount = vertexCount;
-
-            for (int32_t accessorIndex : gltfAttributes) {
-                auto gltfAccessor = gltfAccessors[accessorIndex];
-                size_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                int32_t bufferViewIndex = gltfAccessor["bufferView"];
-                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
-
-                int32_t byteOffset = gltfBufferView["byteOffset"];
-                int32_t byteLength = gltfBufferView["byteLength"];
-                int32_t bufferIndex = gltfBufferView["buffer"];
-
-                const auto &bufferData = intermediate.bufferData[bufferIndex];
-
-                for (int32_t vertex = 0; vertex < mesh->vertexCount; vertex++) {
-                    int32_t readPos = byteOffset + vertex * attributeStride;
-
-                    const uint8_t *attributeData = &bufferData[readPos];
-
-                    size_t vertexOffset = vertex * vertexSize;
-                    size_t attributeOffset = bufferViewIndex * attributeStride;
-                    std::memcpy(
-                        &mesh->vertexData[vertexOffset + attributeOffset],
-                        attributeData,
-                        attributeStride
-                    );
-                }
-            }
-
-            if (gltfMesh["primitives"][0].contains("indices")) {
-                int32_t gltfIndex = gltfMesh["primitives"][0]["indices"];
-                auto gltfAccessor = gltfAccessors[gltfIndex];
-                int32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
-                int32_t indexCount = gltfAccessor["count"];
-                mesh->indices.resize(indexCount);
-
-                int32_t bufferViewIndex = gltfAccessor["bufferView"];
-                auto gltfBufferView = gltfBufferViews[bufferViewIndex];
-                int32_t byteOffset = gltfBufferView["byteOffset"];
-                int32_t bufferIndex = gltfBufferView["buffer"];
-
-                const auto &bufferData = intermediate.bufferData[bufferIndex];
-
-                for (int32_t index = 0; index < indexCount; index++) {
-                    int32_t readPos = byteOffset + index * attributeStride;
-
-                    std::memcpy(&mesh->indices[index], &bufferData[readPos], attributeStride);
-                }
-            }
-
-            meshes.push_back(std::move(mesh));
-        }
-
-        std::vector<std::shared_ptr<Node>> nodes{};
-        auto gltfNodes = gltf["nodes"];
-        for (auto gltfNode : gltfNodes) {
-            std::shared_ptr node = std::make_shared<Node>();
-            node->name = gltfNode["name"];
-            node->mesh = std::move(meshes[gltfNode["mesh"]]);
-
-            nodes.push_back(std::move(node));
-        }
+        std::vector materials = parseMaterials(gltf);
+        std::vector meshes = parseMeshes(gltf, materials, intermediate);
+        std::vector nodes = parseNodes(gltf, meshes);
 
         Scene scene{};
         int32_t sceneIndex = gltf["scene"];
