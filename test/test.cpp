@@ -254,7 +254,7 @@ int main() {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
     }
 
-    auto mesh = scene->rootNodes[0]->mesh.get();
+    auto mesh = scene->nodes[0]->mesh.get();
     engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
 
     engine::RenderPass scenePass = engine::RenderPass::Builder(device)

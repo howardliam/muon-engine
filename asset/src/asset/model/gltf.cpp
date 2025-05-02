@@ -265,7 +265,7 @@ namespace muon::asset {
         scene.name = gltfScene["name"];
         std::vector<int32_t> nodeIndices = gltfScene["nodes"];
         for (auto nodeIndex : nodeIndices) {
-            scene.rootNodes.push_back(std::move(nodes[nodeIndex]));
+            scene.nodes.push_back(std::move(nodes[nodeIndex]));
         }
 
         return scene;

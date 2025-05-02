@@ -14,9 +14,13 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/asset/image/png.hpp
     ${INCLUDE_DIR}/muon/asset/image.hpp
 
+    ${INCLUDE_DIR}/muon/asset/model/scene/camera.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene/material.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene/mesh.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene/node.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene/scene.hpp
     ${INCLUDE_DIR}/muon/asset/model/gltf.hpp
     ${INCLUDE_DIR}/muon/asset/model/obj.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene.hpp
     ${INCLUDE_DIR}/muon/asset/model.hpp
 
     ${INCLUDE_DIR}/muon/asset/file.hpp

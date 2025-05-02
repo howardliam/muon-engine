@@ -1,7 +1,7 @@
 #pragma once
 
 #include "muon/asset/error.hpp"
-#include "muon/asset/model/scene.hpp"
+#include "muon/asset/model/scene/scene.hpp"
 #include <cstdint>
 #include <expected>
 #include <filesystem>
