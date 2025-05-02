@@ -13,26 +13,40 @@ namespace muon::asset {
         spng_ihdr ihdr;
         spng_get_ihdr(ctx, &ihdr);
 
+        spng_format format;
+        switch (ihdr.color_type) {
+        case SPNG_COLOR_TYPE_TRUECOLOR:
+            format = SPNG_FMT_RGB8;
+            break;
+
+        case SPNG_COLOR_TYPE_TRUECOLOR_ALPHA:
+            format = SPNG_FMT_RGBA8;
+            break;
+
+        default:
+            return {};
+        }
+
         size_t imageSize;
-        spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &imageSize);
+        spng_decoded_image_size(ctx, format, &imageSize);
 
         std::vector<uint8_t> decodedData(imageSize);
-        spng_decode_image(ctx, decodedData.data(), decodedData.size(), SPNG_FMT_RGBA8, 0);
+        spng_decode_image(ctx, decodedData.data(), decodedData.size(), format, 0);
 
         spng_ctx_free(ctx);
 
-        ColorFormat format;
+        ColorFormat colorFormat;
         if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
-            format = ColorFormat::Rgb;
+            colorFormat = ColorFormat::Rgb;
         } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
-            format = ColorFormat::Rgba;
+            colorFormat = ColorFormat::Rgba;
         } else {
             return {};
         }
 
         return Image{
             {ihdr.width, ihdr.height},
-            format,
+            colorFormat,
             ihdr.bit_depth,
             decodedData,
         };
