@@ -115,7 +115,7 @@ namespace muon::asset {
         auto gltfBuffers = gltf["buffers"];
         intermediate.bufferData.resize(gltfBuffers.size());
 
-        for (int32_t i = 0; i < gltfBuffers.size(); i++) {
+        for (uint32_t i = 0; i < gltfBuffers.size(); i++) {
             auto gltfBuffer = gltfBuffers[i];
             intermediate.bufferData[i].resize(gltfBuffer["byteLength"]);
 
@@ -125,19 +125,27 @@ namespace muon::asset {
             buffer.read(reinterpret_cast<char *>(intermediate.bufferData[i].data()), gltfBuffer["byteLength"]);
         }
 
+        if (gltf.contains("images")) {
+            auto gltfImages = gltf["images"];
+            intermediate.imageData.resize(gltfImages.size());
+
+            for (uint32_t i = 0; i < gltfImages.size(); i++) {
+                auto gltfImage = gltfImages[0];
+
+                auto imagePath = path.parent_path().append(std::string(gltfImage["uri"]));
+                std::ifstream image{imagePath, std::ios::binary};
+                image.seekg(0, std::ios::end);
+                size_t imageSize = image.tellg();
+                image.seekg(0, std::ios::beg);
+
+                intermediate.imageData[i].resize(imageSize);
+
+                image.read(reinterpret_cast<char *>(intermediate.imageData[i].data()), imageSize);
+            }
+        }
+
         return intermediate;
     }
-
-    struct GlbHeader {
-        uint32_t magic;
-        uint32_t version;
-        uint32_t length;
-    };
-
-    struct GlbChunkHeader {
-        uint32_t length;
-        uint32_t type;
-    };
 
     std::expected<GltfIntermediate, AssetLoadError> intermediateFromGlb(const std::filesystem::path &path) {
         GltfIntermediate intermediate{};
@@ -149,16 +157,16 @@ namespace muon::asset {
         glb.read(reinterpret_cast<char *>(&header), sizeof(GlbHeader));
 
         if (header.magic != GLB_MAGIC) {
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         } else if (header.version != GLTF_VERSION) {
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         }
 
         GlbChunkHeader jsonHeader;
         glb.read(reinterpret_cast<char *>(&jsonHeader), sizeof(GlbChunkHeader));
 
         if (jsonHeader.type != JSON_MAGIC) {
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         }
 
         intermediate.json.resize(jsonHeader.length);
@@ -168,7 +176,7 @@ namespace muon::asset {
         glb.read(reinterpret_cast<char *>(&binaryHeader), sizeof(GlbChunkHeader));
 
         if (binaryHeader.type != BINARY_MAGIC) {
-            return {};
+            return std::unexpected(AssetLoadError::InvalidFormat);
         }
 
         intermediate.bufferData.resize(1);
@@ -498,7 +506,7 @@ namespace muon::asset {
             }
 
             if (gltfPrimitives.contains("material")) {
-                uint32_t gltfMaterialIndex = gltfPrimitives["indices"];
+                uint32_t gltfMaterialIndex = gltfPrimitives["material"];
                 auto gltfAccessor = gltfAccessors[gltfMaterialIndex];
 
                 mesh->material = materials[gltfMaterialIndex];
@@ -547,7 +555,7 @@ namespace muon::asset {
         int32_t sceneIndex = gltf["scene"];
         auto gltfScene = gltf["scenes"][sceneIndex];
         scene.name = gltfScene["name"];
-        for (auto nodeIndex : gltfScene["nodes"]) {
+        for (uint32_t nodeIndex : gltfScene["nodes"]) {
             scene.nodes.push_back(std::move(nodes[nodeIndex]));
         }
 

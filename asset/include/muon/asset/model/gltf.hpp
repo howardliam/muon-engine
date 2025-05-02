@@ -13,6 +13,20 @@ namespace muon::asset {
         std::filesystem::path path;
         std::vector<uint8_t> json{};
         std::vector<std::vector<uint8_t>> bufferData{};
+
+        // only used for glTF JSON format.
+        std::vector<std::vector<uint8_t>> imageData{};
+    };
+
+    struct GlbHeader {
+        uint32_t magic;
+        uint32_t version;
+        uint32_t length;
+    };
+
+    struct GlbChunkHeader {
+        uint32_t length;
+        uint32_t type;
     };
 
     std::expected<GltfIntermediate, AssetLoadError> intermediateFromGltf(const std::filesystem::path &path);
