@@ -538,9 +538,7 @@ namespace muon::asset {
         }
         const json gltf = jsonResult.value();
 
-        auto gltfBufferViews = gltf["bufferViews"];
-        auto gltfAccessors = gltf["accessors"];
-
+        std::vector samplers = parseSamplers(gltf);
         std::vector materials = parseMaterials(gltf);
         std::vector meshes = parseMeshes(gltf, materials, intermediate);
         std::vector nodes = parseNodes(gltf, meshes);
@@ -549,8 +547,7 @@ namespace muon::asset {
         int32_t sceneIndex = gltf["scene"];
         auto gltfScene = gltf["scenes"][sceneIndex];
         scene.name = gltfScene["name"];
-        std::vector<int32_t> nodeIndices = gltfScene["nodes"];
-        for (auto nodeIndex : nodeIndices) {
+        for (auto nodeIndex : gltfScene["nodes"]) {
             scene.nodes.push_back(std::move(nodes[nodeIndex]));
         }
 
