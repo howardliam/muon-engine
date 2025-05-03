@@ -531,24 +531,35 @@ namespace muon::asset {
                 mesh->name = gltfMesh["name"];
             }
 
-            uint32_t vertexDataSize{0};
-
             auto gltfAttributes = gltfPrimitives["attributes"];
+            std::vector<uint32_t> attributeStrides(gltfAttributes.size());
             for (uint32_t accessorIndex : gltfAttributes) {
                 auto gltfAccessor = gltfAccessors[accessorIndex];
 
                 uint32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
+                attributeStrides[accessorIndex] = attributeStride;
+
                 uint32_t attributeCount = gltfAccessor["count"];
 
-                vertexDataSize += attributeStride * attributeCount;
                 mesh->vertexSize += attributeStride;
                 mesh->vertexCount = gltfAccessor["count"];
             }
 
-            mesh->vertexData.resize(vertexDataSize);
+            std::vector<uint32_t> attributeOffsets(gltfAttributes.size());
+            for (uint32_t i = 0; i < attributeOffsets.size(); i++) {
+                if (i == 0) {
+                    attributeOffsets[i] = 0;
+                    continue;
+                }
+                attributeOffsets[i] = attributeOffsets[i - 1] + attributeStrides[i - 1];
+            }
 
-            for (int32_t accessorIndex : gltfAttributes) {
+            mesh->vertexData.resize(mesh->vertexSize * mesh->vertexCount);
+
+            for (uint32_t accessorIndex : gltfAttributes) {
                 auto gltfAccessor = gltfAccessors[accessorIndex];
+
+                std::println("attribute offset: {}", attributeOffsets[accessorIndex]);
 
                 uint32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
 
@@ -565,13 +576,24 @@ namespace muon::asset {
                     uint32_t readPos = byteOffset + vertex * attributeStride;
 
                     uint32_t vertexOffset = vertex * mesh->vertexSize;
-                    uint32_t attributeOffset = bufferViewIndex * attributeStride;
+                    uint32_t attributeOffset = attributeOffsets[accessorIndex];
 
                     std::memcpy(
                         &mesh->vertexData[vertexOffset + attributeOffset],
                         &bufferData[readPos],
                         attributeStride
                     );
+
+                    if (accessorIndex == 2) {
+                        float test[2];
+                        std::memcpy(
+                            &test,
+                            &bufferData[readPos],
+                            attributeStride
+                        );
+
+                        std::println("u: {}, v: {}", test[0], test[1]);
+                    }
                 }
             }
 
