@@ -4,7 +4,7 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 tex;
 
-layout(location = 0) out vec3 color;
+layout(location = 0) out vec2 outTex;
 
 layout(set = 0, binding = 0) uniform Ubo {
     mat4 projection;
@@ -15,5 +15,5 @@ layout(set = 0, binding = 0) uniform Ubo {
 void main() {
     gl_Position = ubo.projection * ubo.view * ubo.transform * vec4(position, 1.0);
 
-    color = normal;
+    outTex = tex;
 }

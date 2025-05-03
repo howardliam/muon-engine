@@ -29,6 +29,7 @@
 #include <muon/asset/file.hpp>
 #include "muon/asset/model.hpp"
 #include "muon/engine/system/graphics.hpp"
+#include "muon/engine/texture.hpp"
 #include <muon/asset/model/gltf.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -206,14 +207,15 @@ int main() {
         .setTitle("Testing")
         .build();
 
-    auto image = asset::loadImage("./muon-logo.png");
-    window.setIcon(image->data, image->size.width, image->size.height, 4);
+    auto windowIcon = asset::loadImage("./muon-logo.png");
+    window.setIcon(windowIcon->data, windowIcon->size.width, windowIcon->size.height, 4);
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
 
     std::unique_ptr pool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
+        .addPoolSize(vk::DescriptorType::eCombinedImageSampler, engine::constants::maxFramesInFlight)
         .build();
 
     struct Ubo {
@@ -235,21 +237,7 @@ int main() {
         auto _ = uboBuffers[i]->map();
     }
 
-    std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
-        .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
-        .build();
-
-    std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
-    for (size_t i = 0; i < descriptorSets.size(); i++) {
-        auto bufferInfo = uboBuffers[i]->descriptorInfo();
-
-        engine::DescriptorWriter(*setLayout, *pool)
-            .writeBuffer(0, &bufferInfo)
-            .build(descriptorSets[i]);
-    }
-
     auto scene = asset::loadGltf("./test/assets/models/cube.gltf");
-    auto _ = asset::loadGltf("./test/assets/models/cube.glb");
 
     if (!scene) {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
@@ -257,6 +245,43 @@ int main() {
 
     auto mesh = scene->nodes[0]->mesh.get();
     engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
+
+    auto maybeTexture = mesh->material->pbrMetallicRoughness->baseColorTexture;
+    if (!maybeTexture) {
+        throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
+    }
+
+    auto &image = (*maybeTexture).texture->image->image;
+
+    uint32_t channels{0};
+    if (image.format == asset::ColorFormat::Rgb) {
+        channels = 3;
+    } else if (image.format == asset::ColorFormat::Rgba) {
+        channels = 4;
+    }
+
+    engine::Texture texture = engine::Texture::Builder(device)
+        .setExtent({
+            image.size.width,
+            image.size.height
+        })
+        .build(image.data, channels);
+
+    std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
+        .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics)
+        .addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics)
+        .build();
+
+    std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
+    for (size_t i = 0; i < descriptorSets.size(); i++) {
+        auto bufferInfo = uboBuffers[i]->descriptorInfo();
+        auto textureInfo = texture.getDescriptorInfo();
+
+        engine::DescriptorWriter(*setLayout, *pool)
+            .writeBuffer(0, &bufferInfo)
+            .writeImage(1, &textureInfo)
+            .build(descriptorSets[i]);
+    }
 
     engine::RenderPass scenePass = engine::RenderPass::Builder(device)
         .addColorAttachment(vk::Format::eR8G8B8A8Unorm)

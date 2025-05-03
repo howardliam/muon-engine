@@ -1,9 +1,19 @@
 #version 460 core
 
-layout(location = 0) in vec3 color;
+layout(location = 0) in vec2 tex;
+
 layout(location = 0) out vec4 outColor;
 
+layout(set = 0, binding = 0) uniform Ubo {
+    mat4 projection;
+    mat4 view;
+    mat4 transform;
+} ubo;
+
+layout(set = 0, binding = 1) uniform sampler2D image;
+
 void main() {
-    outColor = vec4(color, 1.0);
-    // outColor = vec4(1.0, 1.0, 1.0, 1.0);
+    vec3 textureColor = texture(image, tex).rgb;
+    outColor = vec4(textureColor, 1.0);
+    // outColor = vec4(tex, 1.0, 1.0);
 }

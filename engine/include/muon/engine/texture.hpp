@@ -1,27 +1,60 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
-#include "muon/engine/image.hpp"
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
+#include <memory>
 
 namespace muon::engine {
 
     class Texture {
     public:
-        Texture(Device &device);
+        class Builder;
+
+        Texture(
+            Device &device,
+            const std::vector<uint8_t> &textureData,
+            uint32_t channels,
+            vk::Extent2D extent
+        );
         ~Texture();
 
-        Texture(const Texture &) = delete;
-        Texture &operator=(const Texture &) = delete;
-
+        /**
+         * @brief   get image descriptor info.
+         *
+         * @return  descriptor information struct.
+         */
+        [[nodiscard]] vk::DescriptorImageInfo getDescriptorInfo() const;
 
     private:
         Device &device;
 
-        Image image;
+        vk::Extent2D extent;
+
+        vk::Image image;
+        vma::Allocation allocation;
+        vk::ImageView imageView;
         vk::Sampler sampler;
 
+        void createTexture(uint32_t channels);
+        void prepareForCopying();
+        void copyToTexture(const std::vector<uint8_t> &textureData, uint32_t channels);
+        void prepareForShader();
+    };
+
+    class Texture::Builder {
+    public:
+        Builder(Device &device);
+
+        Builder &setExtent(vk::Extent2D extent);
+
+        Texture build(const std::vector<uint8_t> &textureData, uint32_t channels) const;
+        std::unique_ptr<Texture> buildUniquePtr(const std::vector<uint8_t> &textureData, uint32_t channels) const;
+
+    private:
+        Device &device;
+
+        vk::Extent2D extent;
     };
 
 }
