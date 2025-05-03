@@ -1,8 +1,8 @@
 #include "muon/asset/model/gltf.hpp"
 
-
 int main() {
+    using namespace muon;
 
-    muon::asset::testing();
-
+    asset::parseGltf("./test/assets/models/trex.glb", asset::GltfFileType::Binary);
+    asset::parseGltf("./test/assets/models/test.gltf", asset::GltfFileType::Json);
 }
