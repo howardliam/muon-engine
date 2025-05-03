@@ -42,11 +42,10 @@ pkg_check_modules(OPUSFILE REQUIRED opusfile)
 
 add_subdirectory(external/json)
 
-
 if (MSVC)
     add_compile_options(/W4)
 else()
     add_compile_options(-Wall -Wextra -pedantic -fdiagnostics-color=always)
 endif()
 
-add_subdirectory(test)
+# add_subdirectory(test)

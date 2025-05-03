@@ -14,16 +14,15 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/asset/image/png.hpp
     ${INCLUDE_DIR}/muon/asset/image.hpp
 
-    ${INCLUDE_DIR}/muon/asset/model/scene/camera.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/image.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/material.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/mesh.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/node.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/sampler.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/scene.hpp
-    ${INCLUDE_DIR}/muon/asset/model/scene/texture.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/camera.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/image.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/material.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/mesh.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/node.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/sampler.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/scene.hpp
+    ${INCLUDE_DIR}/muon/asset/model/scene-graph/texture.hpp
     ${INCLUDE_DIR}/muon/asset/model/gltf.hpp
-    ${INCLUDE_DIR}/muon/asset/model/obj.hpp
     ${INCLUDE_DIR}/muon/asset/model.hpp
 
     ${INCLUDE_DIR}/muon/asset/file.hpp
@@ -39,13 +38,12 @@ set(SRC_FILES
     ${SRC_DIR}/asset/image.cpp
 
     ${SRC_DIR}/asset/model/gltf.cpp
-    ${SRC_DIR}/asset/model/obj.cpp
     ${SRC_DIR}/asset/model.cpp
 
     ${SRC_DIR}/asset/file.cpp
 )
 
-add_library(${LIB_NAME} SHARED
+add_library(${LIB_NAME} STATIC
     ${HEADER_FILES}
     ${SRC_FILES}
 )
@@ -57,3 +55,11 @@ target_link_libraries(${LIB_NAME} PRIVATE spng nlohmann_json turbojpeg ${OPUS_LI
 target_link_libraries(${LIB_NAME} PUBLIC)
 
 add_library(muon::asset ALIAS ${LIB_NAME})
+
+set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+add_executable(asset-test
+    ${TEST_DIR}/test.cpp
+)
+
+target_link_libraries(asset-test PRIVATE muon::asset)
