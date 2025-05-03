@@ -559,8 +559,6 @@ namespace muon::asset {
             for (uint32_t accessorIndex : gltfAttributes) {
                 auto gltfAccessor = gltfAccessors[accessorIndex];
 
-                std::println("attribute offset: {}", attributeOffsets[accessorIndex]);
-
                 uint32_t attributeStride = getByteOffset(gltfAccessor["componentType"], gltfAccessor["type"]);
 
                 uint32_t bufferViewIndex = gltfAccessor["bufferView"];
@@ -583,17 +581,6 @@ namespace muon::asset {
                         &bufferData[readPos],
                         attributeStride
                     );
-
-                    if (accessorIndex == 2) {
-                        float test[2];
-                        std::memcpy(
-                            &test,
-                            &bufferData[readPos],
-                            attributeStride
-                        );
-
-                        std::println("u: {}, v: {}", test[0], test[1]);
-                    }
                 }
             }
 

@@ -237,7 +237,7 @@ int main() {
         auto _ = uboBuffers[i]->map();
     }
 
-    auto scene = asset::loadGltf("./test/assets/models/cube.gltf");
+    auto scene = asset::loadGltf("./test/assets/models/cube.glb");
 
     if (!scene) {
         throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
