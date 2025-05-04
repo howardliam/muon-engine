@@ -23,10 +23,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/asset/model/scene-graph/scene.hpp
     ${INCLUDE_DIR}/muon/asset/model/scene-graph/texture.hpp
     ${INCLUDE_DIR}/muon/asset/model/gltf.hpp
-    ${INCLUDE_DIR}/muon/asset/model.hpp
 
-    ${INCLUDE_DIR}/muon/asset/file.hpp
-    ${INCLUDE_DIR}/muon/asset/error.hpp
+    ${INCLUDE_DIR}/muon/asset/assetloader.hpp
 )
 
 set(SRC_FILES
@@ -35,12 +33,10 @@ set(SRC_FILES
 
     ${SRC_DIR}/asset/image/jpeg.cpp
     ${SRC_DIR}/asset/image/png.cpp
-    ${SRC_DIR}/asset/image.cpp
 
     ${SRC_DIR}/asset/model/gltf.cpp
-    ${SRC_DIR}/asset/model.cpp
 
-    ${SRC_DIR}/asset/file.cpp
+    ${SRC_DIR}/asset/assetloader.cpp
 )
 
 add_library(${LIB_NAME} STATIC

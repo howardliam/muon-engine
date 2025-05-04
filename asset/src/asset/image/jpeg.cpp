@@ -1,10 +1,21 @@
 #include "muon/asset/image/jpeg.hpp"
+#include "muon/asset/image.hpp"
 
 #include <turbojpeg.h>
+#include <fstream>
 
 namespace muon::asset {
 
-    std::optional<Image> decodeJpeg(const std::vector<uint8_t> &encodedData) {
+    bool JpegHandler::supports(const std::string &extension) const {
+        return extension == "jpeg" || extension == "jpg";
+    }
+
+    std::shared_ptr<Asset> JpegHandler::load(const std::filesystem::path &path) {
+        std::ifstream file{path, std::ios::binary | std::ios::ate};
+        std::vector<uint8_t> encodedData(file.tellg());
+        file.seekg(0, std::ios::beg);
+        file.read(reinterpret_cast<char *>(encodedData.data()), encodedData.size());
+
         tjhandle handle = tjInitDecompress();
 
         int32_t width;
@@ -26,12 +37,14 @@ namespace muon::asset {
             return {};
         }
 
-        return Image{
-            {static_cast<uint32_t>(width), static_cast<uint32_t>(height)},
-            ColorFormat::Rgb,
-            8,
-            decodedData,
-        };
+        std::shared_ptr asset = std::make_shared<ImageAsset>();
+        asset->width = static_cast<uint32_t>(width);
+        asset->height = static_cast<uint32_t>(height);
+        asset->channels = 3;
+        asset->bitDepth = 8;
+        asset->data = decodedData;
+
+        return asset;
     }
 
 }

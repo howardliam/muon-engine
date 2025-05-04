@@ -1,25 +1,15 @@
 #pragma once
 
-#include "muon/asset/image.hpp"
+#include "muon/asset/assetloader.hpp"
 
 namespace muon::asset {
 
-    /**
-     * @brief   decodes the image from PNG format with the encoded data.
-     *
-     * @param   encodedData encoded data of the image.
-     *
-     * @return  optional image info if decoding was successful.
-     */
-    [[nodiscard]] std::optional<Image> decodePng(const std::vector<uint8_t> &encodedData);
+    struct PngHandler : public IAssetHandler {
 
-    /**
-     * @brief   encodes the raw image data to PNG format.
-     *
-     * @param   image   image data.
-     *
-     * @return  optional vector of bytes if encoding was successful.
-     */
-    [[nodiscard]] std::optional<std::vector<uint8_t>> encodePng(const Image &image);
+        virtual bool supports(const std::string &extension) const override;
+
+        virtual std::shared_ptr<Asset> load(const std::filesystem::path &path) override;
+
+    };
 
 }

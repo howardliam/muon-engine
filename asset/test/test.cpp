@@ -1,8 +1,19 @@
-#include "muon/asset/model/gltf.hpp"
+#include "muon/asset/assetloader.hpp"
+#include "muon/asset/image.hpp"
+#include <print>
+
+using namespace muon;
 
 int main() {
-    using namespace muon;
 
-    asset::parseGltf("./test/assets/models/trex.glb", asset::GltfFileType::Binary);
-    asset::parseGltf("./test/assets/models/test.gltf", asset::GltfFileType::Json);
+    asset::AssetLoader loader;
+
+    std::shared_ptr asset = loader.loadAsset("./muon-logo.jpg");
+    auto image = asset->get<asset::ImageAsset>(asset::AssetType::Image);
+    if (image == nullptr) {
+        return 1;
+    }
+    std::println("Loaded an image");
+    std::println("Dimensions: {}x{}", image->width, image->height);
+    std::println("Channels: {}", image->channels);
 }
