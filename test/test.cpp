@@ -7,7 +7,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include "glm/gtc/constants.hpp"
+#include <glm/gtc/constants.hpp>
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
@@ -26,11 +26,8 @@
 #include <muon/engine/window.hpp>
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
-#include <muon/asset/file.hpp>
-#include "muon/asset/model.hpp"
-#include "muon/engine/system/graphics.hpp"
-#include "muon/engine/texture.hpp"
-#include <muon/asset/model/gltf.hpp>
+#include <muon/engine/system/graphics.hpp>
+#include <muon/engine/texture.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
@@ -207,8 +204,8 @@ int main() {
         .setTitle("Testing")
         .build();
 
-    auto windowIcon = asset::loadImage("./muon-logo.png");
-    window.setIcon(windowIcon->data, windowIcon->size.width, windowIcon->size.height, 4);
+    auto windowIcon = asset::decodePng("./muon-logo.png");
+    window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
@@ -237,35 +234,35 @@ int main() {
         auto _ = uboBuffers[i]->map();
     }
 
-    auto scene = asset::loadGltf("./test/assets/models/cube.glb");
+    // auto scene = asset::loadGltf("./test/assets/models/cube.glb");
 
-    if (!scene) {
-        throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
-    }
+    // if (!scene) {
+    //     throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
+    // }
 
-    auto mesh = scene->nodes[0]->mesh.get();
-    engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
+    // auto mesh = scene->nodes[0]->mesh.get();
+    // engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
 
-    auto maybeTexture = mesh->material->pbrMetallicRoughness->baseColorTexture;
-    if (!maybeTexture) {
-        throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
-    }
+    // auto maybeTexture = mesh->material->pbrMetallicRoughness->baseColorTexture;
+    // if (!maybeTexture) {
+    //     throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
+    // }
 
-    auto &image = (*maybeTexture).texture->image->image;
+    // auto &image = (*maybeTexture).texture->image->image;
 
-    uint32_t channels{0};
-    if (image.format == asset::ColorFormat::Rgb) {
-        channels = 3;
-    } else if (image.format == asset::ColorFormat::Rgba) {
-        channels = 4;
-    }
+    // uint32_t channels{0};
+    // if (image.format == asset::ColorFormat::Rgb) {
+    //     channels = 3;
+    // } else if (image.format == asset::ColorFormat::Rgba) {
+    //     channels = 4;
+    // }
 
-    engine::Texture texture = engine::Texture::Builder(device)
-        .setExtent({
-            image.size.width,
-            image.size.height
-        })
-        .build(image.data, channels);
+    // engine::Texture texture = engine::Texture::Builder(device)
+    //     .setExtent({
+    //         image.size.width,
+    //         image.size.height
+    //     })
+    //     .build(image.data, channels);
 
     std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics)
@@ -275,11 +272,11 @@ int main() {
     std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
     for (size_t i = 0; i < descriptorSets.size(); i++) {
         auto bufferInfo = uboBuffers[i]->descriptorInfo();
-        auto textureInfo = texture.getDescriptorInfo();
+        // auto textureInfo = texture.getDescriptorInfo();
 
         engine::DescriptorWriter(*setLayout, *pool)
             .writeBuffer(0, &bufferInfo)
-            .writeImage(1, &textureInfo)
+            // .writeImage(1, &textureInfo)
             .build(descriptorSets[i]);
     }
 
@@ -482,7 +479,7 @@ int main() {
 
         scenePass.begin(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
 
-        renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
+        // renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
 
         scenePass.end(commandBuffer);
 
@@ -581,8 +578,9 @@ int main() {
             }
 
             asset::Image image{};
-            image.size = {extent.width, extent.height};
-            image.format = asset::ColorFormat::Rgba;
+            image.width = extent.width;
+            image.height = extent.height;
+            image.channels = 4;
             image.bitDepth = 8;
             image.data.resize(stagingBuffer->getBufferSize());
 
@@ -591,7 +589,7 @@ int main() {
             stagingBuffer->unmap();
 
             std::thread([image]() {
-                auto png = asset::encodeImage(image, asset::ImageFormat::Png);
+                auto png = asset::encodePng(image);
 
                 std::ofstream outputFile("./screenshot.png");
                 outputFile.write(reinterpret_cast<char *>(png->data()), png->size());

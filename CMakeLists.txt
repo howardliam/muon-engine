@@ -48,4 +48,4 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -fdiagnostics-color=always)
 endif()
 
-# add_subdirectory(test)
+add_subdirectory(test)
