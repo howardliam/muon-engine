@@ -234,36 +234,6 @@ int main() {
         auto _ = uboBuffers[i]->map();
     }
 
-    // auto scene = asset::loadGltf("./test/assets/models/cube.glb");
-
-    // if (!scene) {
-    //     throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
-    // }
-
-    // auto mesh = scene->nodes[0]->mesh.get();
-    // engine::Model square(device, mesh->vertexData, mesh->vertexSize, mesh->indices);
-
-    // auto maybeTexture = mesh->material->pbrMetallicRoughness->baseColorTexture;
-    // if (!maybeTexture) {
-    //     throw std::runtime_error("ERROR CANNOT CONTINUE!!!");
-    // }
-
-    // auto &image = (*maybeTexture).texture->image->image;
-
-    // uint32_t channels{0};
-    // if (image.format == asset::ColorFormat::Rgb) {
-    //     channels = 3;
-    // } else if (image.format == asset::ColorFormat::Rgba) {
-    //     channels = 4;
-    // }
-
-    // engine::Texture texture = engine::Texture::Builder(device)
-    //     .setExtent({
-    //         image.size.width,
-    //         image.size.height
-    //     })
-    //     .build(image.data, channels);
-
     std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics)
         .addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics)
@@ -272,11 +242,9 @@ int main() {
     std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
     for (size_t i = 0; i < descriptorSets.size(); i++) {
         auto bufferInfo = uboBuffers[i]->descriptorInfo();
-        // auto textureInfo = texture.getDescriptorInfo();
 
         engine::DescriptorWriter(*setLayout, *pool)
             .writeBuffer(0, &bufferInfo)
-            // .writeImage(1, &textureInfo)
             .build(descriptorSets[i]);
     }
 
@@ -350,24 +318,6 @@ int main() {
         vk::BufferUsageFlagBits::eTransferDst,
         vma::MemoryUsage::eGpuToCpu
     );
-
-    // engine::FrameGraph frameGraph;
-
-    // frameGraph.addStage({
-    //     .name = "SceneStage",
-    //     .readResources = {},
-    //     .writeResources = {},
-
-    //     .compile = [=]() {
-
-    //     },
-
-    //     .record = [=](vk::CommandBuffer commandBuffer) {
-
-    //     }
-    // });
-
-    // frameGraph.compile();
 
     glm::mat4 transform = glm::mat4{1.0f};
     transform = glm::scale(transform, glm::vec3{2.0f});
