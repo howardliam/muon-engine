@@ -20,7 +20,6 @@ namespace muon::engine {
             dependencies[stage->name];
 
             auto &reads = stage->readResources;
-
             for (auto &depStage : stages) {
                 for (auto &read : reads) {
 
@@ -37,10 +36,6 @@ namespace muon::engine {
                     }
                 }
             }
-        }
-
-        for (auto &[dependent, dependency] : dependencies) {
-            log::globalLogger->info("Stage {} depends on stages: {}", dependent, dependency);
         }
     }
 
