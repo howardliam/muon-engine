@@ -1,6 +1,6 @@
+#include "muon/engine/rendergraph.hpp"
 #include <memory>
 #include <fstream>
-#include <stdexcept>
 #include <chrono>
 #include <print>
 #include <glm/glm.hpp>
@@ -15,7 +15,6 @@
 #include <muon/engine/descriptor.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framebuffer.hpp>
-#include <muon/engine/framegraph.hpp>
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
@@ -328,6 +327,83 @@ int main() {
 
     float seconds{0.0};
     int32_t frames{0};
+
+    engine::RenderGraph renderGraph;
+
+    renderGraph.addStage({
+        .name = "SceneRender",
+        .stageType = engine::StageType::Graphics,
+
+        .readResources = {},
+        .writeResources = {
+            { "SceneColor", vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits::eColorAttachmentWrite, vk::PipelineStageFlagBits::eColorAttachmentOutput },
+            { "SceneDepth", vk::ImageLayout::eDepthAttachmentOptimal, vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits::eEarlyFragmentTests },
+        },
+
+        .compile = []() {
+            // ... do work ...
+        },
+        .execute = [](vk::CommandBuffer commandBuffer) {
+            // ... do work ...
+        }
+    });
+
+    renderGraph.addStage({
+        .name = "ToneMap",
+        .stageType = engine::StageType::Compute,
+
+        .readResources = {
+            { "SceneColor", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
+        },
+        .writeResources = {
+            { "ComputeImageA", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
+        },
+
+        .compile = []() {
+            // ... do work ...
+        },
+        .execute = [](vk::CommandBuffer commandBuffer) {
+            // ... do work ...
+        }
+    });
+
+    renderGraph.addStage({
+        .name = "Swizzle",
+        .stageType = engine::StageType::Compute,
+
+        .readResources = {
+            { "ComputeImageA", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
+        },
+        .writeResources = {
+            { "ComputeImageB", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
+        },
+
+        .compile = []() {
+            // ... do work ...
+        },
+        .execute = [](vk::CommandBuffer commandBuffer) {
+            // ... do work ...
+        }
+    });
+
+    renderGraph.addStage({
+        .name = "FinalPresentation",
+        .stageType = engine::StageType::Transfer,
+
+        .readResources = {
+            { "ComputeImageB", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
+        },
+
+        .writeResources = { },
+        .compile = []() {
+            // ... do work ...
+        },
+        .execute = [](vk::CommandBuffer commandBuffer) {
+            // ... do work ...
+        }
+    });
+
+    renderGraph.compile();
 
     while (window.isOpen()) {
         SDL_Event event;
