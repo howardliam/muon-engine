@@ -1,4 +1,3 @@
-#include "muon/engine/rendergraph.hpp"
 #include <memory>
 #include <fstream>
 #include <chrono>
@@ -19,6 +18,7 @@
 #include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
 #include <muon/engine/pipeline.hpp>
+#include <muon/engine/rendergraph.hpp>
 #include <muon/engine/renderpass.hpp>
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/vertex.hpp>
@@ -332,7 +332,7 @@ int main() {
 
     renderGraph.addStage({
         .name = "SceneRender",
-        .stageType = engine::StageType::Graphics,
+        .stageType = engine::RenderGraph::StageType::Graphics,
 
         .readResources = {},
         .writeResources = {
@@ -343,62 +343,64 @@ int main() {
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer commandBuffer) {
+        .execute = [](vk::CommandBuffer cmd) {
             // ... do work ...
         }
     });
 
     renderGraph.addStage({
         .name = "ToneMap",
-        .stageType = engine::StageType::Compute,
+        .stageType = engine::RenderGraph::StageType::Compute,
 
         .readResources = {
             { "SceneColor", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
         },
         .writeResources = {
-            { "ComputeImageA", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
+            { "ToneMapOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
         },
 
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer commandBuffer) {
+        .execute = [](vk::CommandBuffer cmd) {
             // ... do work ...
         }
     });
 
     renderGraph.addStage({
         .name = "Swizzle",
-        .stageType = engine::StageType::Compute,
+        .stageType = engine::RenderGraph::StageType::Compute,
 
         .readResources = {
-            { "ComputeImageA", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
+            { "ToneMapOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
         },
         .writeResources = {
-            { "ComputeImageB", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
+            { "SwizzleOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
         },
 
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer commandBuffer) {
+        .execute = [](vk::CommandBuffer cmd) {
             // ... do work ...
         }
     });
 
     renderGraph.addStage({
         .name = "FinalPresentation",
-        .stageType = engine::StageType::Transfer,
+        .stageType = engine::RenderGraph::StageType::Transfer,
 
         .readResources = {
-            { "ComputeImageB", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
+            { "SwizzleOutput", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
+        },
+        .writeResources = {
+            { "SwapchainImage", vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer },
         },
 
-        .writeResources = { },
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer commandBuffer) {
+        .execute = [](vk::CommandBuffer cmd) {
             // ... do work ...
         }
     });

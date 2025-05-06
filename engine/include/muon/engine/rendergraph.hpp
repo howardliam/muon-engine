@@ -1,23 +1,38 @@
 #pragma once
 
 #include <unordered_map>
-#include <vulkan/vulkan.hpp>
 #include <functional>
-#include <vulkan/vulkan_enums.hpp>
+#include <string>
+#include <memory>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
 
-    struct RenderResource {
+    class RenderGraph {
+    public:
+        struct Resource;
+        struct ResourceUsage;
+        enum class StageType;
+        struct Stage;
+
+        void addResource(Resource resource);
+        void addStage(Stage stage);
+
+        void compile();
+        void execute(vk::CommandBuffer commandBuffer);
+
+    private:
+        std::unordered_map<std::string, Resource> resources{};
+
+        std::vector<std::shared_ptr<Stage>> stages;
+        std::unordered_map<std::string, std::vector<std::string>> dependencies;
+    };
+
+    struct RenderGraph::Resource {
         /* to be filled out */
     };
 
-    enum class StageType {
-        Graphics,
-        Compute,
-        Transfer,
-    };
-
-    struct RenderResourceUsage {
+    struct RenderGraph::ResourceUsage {
         std::string name;
 
         vk::ImageLayout layout;
@@ -25,28 +40,21 @@ namespace muon::engine {
         vk::PipelineStageFlags stageFlags;
     };
 
-    struct RenderStage {
+    enum class RenderGraph::StageType {
+        Graphics,
+        Compute,
+        Transfer,
+    };
+
+    struct RenderGraph::Stage {
         std::string name;
         StageType stageType;
 
-        std::vector<RenderResourceUsage> readResources{};
-        std::vector<RenderResourceUsage> writeResources{};
+        std::vector<ResourceUsage> readResources{};
+        std::vector<ResourceUsage> writeResources{};
 
         std::function<void()> compile;
         std::function<void(vk::CommandBuffer)> execute;
-    };
-
-    class RenderGraph {
-    public:
-        void addResource(RenderResource resource);
-        void addStage(RenderStage stage);
-
-        void compile();
-        void execute(vk::CommandBuffer commandBuffer);
-
-    private:
-        std::unordered_map<std::string, RenderResource> resources{};
-        std::vector<RenderStage> stages{};
     };
 
 }
