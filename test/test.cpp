@@ -361,7 +361,7 @@ int main() {
         },
 
         .compile = []() {
-            // ... do work ...
+
         },
         .execute = [&](vk::CommandBuffer cmd) {
             scenePass.begin(cmd, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
@@ -384,7 +384,7 @@ int main() {
         },
 
         .compile = []() {
-            // ... do work ...
+
         },
         .execute = [&](vk::CommandBuffer cmd) {
             auto sceneImage = sceneFramebuffer->getImage(0);
@@ -442,7 +442,7 @@ int main() {
         },
 
         .compile = []() {
-            // ... do work ...
+
         },
         .execute = [&](vk::CommandBuffer cmd) {
             swizzle.dispatch(cmd, computeDescriptorSetB, window.getExtent(), {32, 32, 1});
@@ -461,7 +461,7 @@ int main() {
         },
 
         .compile = []() {
-            // ... do work ...
+
         },
         .execute = [&](vk::CommandBuffer cmd) {
             computeImageA->transitionLayout(cmd, {
@@ -473,8 +473,6 @@ int main() {
             frameHandler.copyImageToSwapchain(computeImageA->getImage());
 
             computeImageA->revertTransition(cmd);
-
-            frameHandler.endFrame();
         }
     });
 
@@ -579,6 +577,8 @@ int main() {
         uboBuffers[frameIndex]->flush();
 
         renderGraph.execute(commandBuffer);
+
+        frameHandler.endFrame();
 
         // if (screenshotRequested) {
         //     computeImageB->transitionLayout(commandBuffer, {
