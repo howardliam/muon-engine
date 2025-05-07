@@ -5,6 +5,7 @@ layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 tex;
 
 layout(location = 0) out vec2 outTex;
+layout(location = 1) out vec3 outPosition;
 
 layout(set = 0, binding = 0) uniform Ubo {
     mat4 projection;
@@ -16,4 +17,5 @@ void main() {
     gl_Position = ubo.projection * ubo.view * ubo.transform * vec4(position, 1.0);
 
     outTex = tex;
+    outPosition = position;
 }

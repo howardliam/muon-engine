@@ -1,6 +1,7 @@
 #version 460 core
 
 layout(location = 0) in vec2 tex;
+layout(location = 1) in vec3 position;
 
 layout(location = 0) out vec4 outColor;
 
@@ -15,5 +16,5 @@ layout(set = 0, binding = 0) uniform Ubo {
 void main() {
     // vec3 textureColor = texture(image, tex).rgb;
     // outColor = vec4(textureColor, 1.0);
-    outColor = vec4(1.0, 1.0, 1.0, 1.0);
+    outColor = vec4(position, 1.0);
 }
