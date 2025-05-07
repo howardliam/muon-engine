@@ -235,7 +235,7 @@ int main() {
 
     std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics)
-        .addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics)
+        // .addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics)
         .build();
 
     std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
@@ -328,6 +328,26 @@ int main() {
     float seconds{0.0};
     int32_t frames{0};
 
+    struct Vertex {
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec2 texCoords;
+    };
+
+    std::vector<Vertex> vertices = {
+        {{-0.5, -0.5, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0}},
+        {{0.5, -0.5, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0}},
+        {{0.5, 0.5, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0}},
+        {{-0.5, 0.5, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0}},
+    };
+
+    std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
+    auto vertexData = engine::Model::getRawVertexData(vertices);
+
+    engine::Model square(device, vertexData, 32, indices);
+
+    int32_t frameIndex{0};
+
     engine::RenderGraph renderGraph;
 
     renderGraph.addStage({
@@ -343,8 +363,12 @@ int main() {
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer cmd) {
-            // ... do work ...
+        .execute = [&](vk::CommandBuffer cmd) {
+            scenePass.begin(cmd, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
+
+            renderSystem.renderModel(cmd, descriptorSets[frameIndex], square);
+
+            scenePass.end(cmd);
         }
     });
 
@@ -362,8 +386,47 @@ int main() {
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer cmd) {
-            // ... do work ...
+        .execute = [&](vk::CommandBuffer cmd) {
+            auto sceneImage = sceneFramebuffer->getImage(0);
+
+            (*sceneImage)->transitionLayout(cmd, {
+                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+                .accessFlags = vk::AccessFlagBits::eTransferRead,
+                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            });
+
+            computeImageA->transitionLayout(cmd, {
+                .imageLayout = vk::ImageLayout::eTransferDstOptimal,
+                .accessFlags = vk::AccessFlagBits::eTransferWrite,
+                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            });
+
+            vk::ImageCopy imageCopy{};
+            imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+            imageCopy.srcSubresource.mipLevel = 0;
+            imageCopy.srcSubresource.baseArrayLayer = 0;
+            imageCopy.srcSubresource.layerCount = 1;
+            imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
+            imageCopy.dstSubresource = imageCopy.srcSubresource;
+            imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
+            imageCopy.extent.width = window.getExtent().width;
+            imageCopy.extent.height = window.getExtent().height;
+            imageCopy.extent.depth = 1;
+
+            cmd.copyImage(
+                (*sceneImage)->getImage(),
+                vk::ImageLayout::eTransferSrcOptimal,
+                computeImageA->getImage(),
+                vk::ImageLayout::eTransferDstOptimal,
+                1,
+                &imageCopy
+            );
+
+            computeImageA->revertTransition(cmd);
+
+            (*sceneImage)->revertTransition(cmd);
+
+            tonemap.dispatch(cmd, computeDescriptorSetA, window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -381,8 +444,8 @@ int main() {
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer cmd) {
-            // ... do work ...
+        .execute = [&](vk::CommandBuffer cmd) {
+            swizzle.dispatch(cmd, computeDescriptorSetB, window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -400,8 +463,18 @@ int main() {
         .compile = []() {
             // ... do work ...
         },
-        .execute = [](vk::CommandBuffer cmd) {
-            // ... do work ...
+        .execute = [&](vk::CommandBuffer cmd) {
+            computeImageA->transitionLayout(cmd, {
+                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+                .accessFlags = vk::AccessFlagBits::eTransferRead,
+                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            });
+
+            frameHandler.copyImageToSwapchain(computeImageA->getImage());
+
+            computeImageA->revertTransition(cmd);
+
+            frameHandler.endFrame();
         }
     });
 
@@ -419,8 +492,8 @@ int main() {
                 }
 
                 if (event.key.scancode == SDL_SCANCODE_F2) {
-                    screenshotRequested = true;
-                    log::globalLogger->info("screenshot requested");
+                    // screenshotRequested = true;
+                    log::globalLogger->info("screenshots disabled");
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
@@ -493,7 +566,7 @@ int main() {
 
         const auto commandBuffer = frameHandler.beginFrame();
 
-        const int32_t frameIndex = frameHandler.getFrameIndex();
+        frameIndex = frameHandler.getFrameIndex();
 
         transform = glm::rotate(transform, glm::tau<float>() * frameTime, glm::vec3{1.0f, 1.0f, 1.0f});
 
@@ -505,128 +578,70 @@ int main() {
         uboBuffers[frameIndex]->writeToBuffer(&ubo);
         uboBuffers[frameIndex]->flush();
 
-        scenePass.begin(commandBuffer, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
+        renderGraph.execute(commandBuffer);
 
-        // renderSystem.renderModel(commandBuffer, descriptorSets[frameIndex], square);
+        // if (screenshotRequested) {
+        //     computeImageB->transitionLayout(commandBuffer, {
+        //         .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+        //         .accessFlags = vk::AccessFlagBits::eTransferRead,
+        //         .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        //     });
 
-        scenePass.end(commandBuffer);
+        //     auto extent = window.getExtent();
 
-        auto sceneImage = sceneFramebuffer->getImage(0);
+        //     vk::BufferImageCopy region{};
+        //     region.bufferOffset = 0;
+        //     region.bufferRowLength = 0;
+        //     region.bufferImageHeight = 0;
+        //     region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        //     region.imageSubresource.mipLevel = 0;
+        //     region.imageSubresource.baseArrayLayer = 0;
+        //     region.imageSubresource.layerCount = 1;
+        //     region.imageOffset.x = 0;
+        //     region.imageOffset.y = 0;
+        //     region.imageOffset.z = 0;
+        //     region.imageExtent.width = extent.width;
+        //     region.imageExtent.height = extent.height;
+        //     region.imageExtent.depth = 1;
 
-        (*sceneImage)->transitionLayout(commandBuffer, {
-            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits::eTransferRead,
-            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-        });
+        //     commandBuffer.copyImageToBuffer(
+        //         computeImageB->getImage(),
+        //         vk::ImageLayout::eTransferSrcOptimal,
+        //         stagingBuffer->getBuffer(),
+        //         1,
+        //         &region
+        //     );
 
-        computeImageA->transitionLayout(commandBuffer, {
-            .imageLayout = vk::ImageLayout::eTransferDstOptimal,
-            .accessFlags = vk::AccessFlagBits::eTransferWrite,
-            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-        });
+        //     computeImageB->revertTransition(commandBuffer);
+        // }
 
-        vk::ImageCopy imageCopy{};
-        imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-        imageCopy.srcSubresource.mipLevel = 0;
-        imageCopy.srcSubresource.baseArrayLayer = 0;
-        imageCopy.srcSubresource.layerCount = 1;
-        imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
-        imageCopy.dstSubresource = imageCopy.srcSubresource;
-        imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
-        imageCopy.extent.width = window.getExtent().width;
-        imageCopy.extent.height = window.getExtent().height;
-        imageCopy.extent.depth = 1;
+        // if (screenshotRequested) {
+        //     if (stagingBuffer->map() != vk::Result::eSuccess) {
+        //         continue;
+        //     }
 
-        commandBuffer.copyImage(
-            (*sceneImage)->getImage(),
-            vk::ImageLayout::eTransferSrcOptimal,
-            computeImageA->getImage(),
-            vk::ImageLayout::eTransferDstOptimal,
-            1,
-            &imageCopy
-        );
+        //     asset::Image image{};
+        //     image.width = extent.width;
+        //     image.height = extent.height;
+        //     image.channels = 4;
+        //     image.bitDepth = 8;
+        //     image.data.resize(stagingBuffer->getBufferSize());
 
-        computeImageA->revertTransition(commandBuffer);
+        //     std::memcpy(image.data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
 
-        (*sceneImage)->revertTransition(commandBuffer);
+        //     stagingBuffer->unmap();
 
-        tonemap.dispatch(commandBuffer, computeDescriptorSetA, window.getExtent(), {32, 32, 1});
-        swizzle.dispatch(commandBuffer, computeDescriptorSetB, window.getExtent(), {32, 32, 1});
+        //     std::thread([image]() {
+        //         auto png = asset::encodePng(image);
 
-        computeImageA->transitionLayout(commandBuffer, {
-            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits::eTransferRead,
-            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-        });
+        //         std::ofstream outputFile("./screenshot.png");
+        //         outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
 
-        if (screenshotRequested) {
-            computeImageB->transitionLayout(commandBuffer, {
-                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-                .accessFlags = vk::AccessFlagBits::eTransferRead,
-                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-            });
+        //         log::globalLogger->info("screenshot saved");
+        //     }).detach();
 
-            auto extent = window.getExtent();
-
-            vk::BufferImageCopy region{};
-            region.bufferOffset = 0;
-            region.bufferRowLength = 0;
-            region.bufferImageHeight = 0;
-            region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-            region.imageSubresource.mipLevel = 0;
-            region.imageSubresource.baseArrayLayer = 0;
-            region.imageSubresource.layerCount = 1;
-            region.imageOffset.x = 0;
-            region.imageOffset.y = 0;
-            region.imageOffset.z = 0;
-            region.imageExtent.width = extent.width;
-            region.imageExtent.height = extent.height;
-            region.imageExtent.depth = 1;
-
-            commandBuffer.copyImageToBuffer(
-                computeImageB->getImage(),
-                vk::ImageLayout::eTransferSrcOptimal,
-                stagingBuffer->getBuffer(),
-                1,
-                &region
-            );
-
-            computeImageB->revertTransition(commandBuffer);
-        }
-
-        frameHandler.copyImageToSwapchain(computeImageA->getImage());
-
-        computeImageA->revertTransition(commandBuffer);
-
-        frameHandler.endFrame();
-
-        if (screenshotRequested) {
-            if (stagingBuffer->map() != vk::Result::eSuccess) {
-                continue;
-            }
-
-            asset::Image image{};
-            image.width = extent.width;
-            image.height = extent.height;
-            image.channels = 4;
-            image.bitDepth = 8;
-            image.data.resize(stagingBuffer->getBufferSize());
-
-            std::memcpy(image.data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
-
-            stagingBuffer->unmap();
-
-            std::thread([image]() {
-                auto png = asset::encodePng(image);
-
-                std::ofstream outputFile("./screenshot.png");
-                outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
-
-                log::globalLogger->info("screenshot saved");
-            }).detach();
-
-            screenshotRequested = false;
-        }
+        //     screenshotRequested = false;
+        // }
 
         auto newTime = std::chrono::high_resolution_clock::now();
         frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();

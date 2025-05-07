@@ -10,10 +10,10 @@ layout(set = 0, binding = 0) uniform Ubo {
     mat4 transform;
 } ubo;
 
-layout(set = 0, binding = 1) uniform sampler2D image;
+// layout(set = 0, binding = 1) uniform sampler2D image;
 
 void main() {
-    vec3 textureColor = texture(image, tex).rgb;
-    outColor = vec4(textureColor, 1.0);
-    // outColor = vec4(tex, 1.0, 1.0);
+    // vec3 textureColor = texture(image, tex).rgb;
+    // outColor = vec4(textureColor, 1.0);
+    outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

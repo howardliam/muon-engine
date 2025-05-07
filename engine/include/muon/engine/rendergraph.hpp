@@ -26,6 +26,8 @@ namespace muon::engine {
 
         std::vector<std::shared_ptr<Stage>> stages;
         std::unordered_map<std::string, std::vector<std::string>> dependencies;
+
+        std::vector<std::shared_ptr<Stage>> executionOrder();
     };
 
     struct RenderGraph::Resource {
