@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/engine/device.hpp"
+#include <memory>
 #include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
@@ -40,6 +41,7 @@ namespace muon::engine {
         Builder &addDepthStencilAttachment(vk::Format format);
 
         RenderPass build() const;
+        std::unique_ptr<RenderPass> buildUniquePtr() const;
 
     private:
         Device &device;

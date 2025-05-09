@@ -18,8 +18,8 @@ namespace muon::engine {
         device.getDevice().destroyPipelineLayout(pipelineLayout, nullptr);
     }
 
-    void GraphicsSystem::bake(vk::RenderPass renderPass) {
-        createPipeline(renderPass);
+    void GraphicsSystem::bake(const vk::PipelineRenderingCreateInfo &renderingInfo) {
+        createPipeline(renderingInfo);
     }
 
     void GraphicsSystem::createPipelineLayout(

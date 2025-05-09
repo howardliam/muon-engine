@@ -34,7 +34,7 @@ namespace muon::engine {
         renderPassInfo.renderArea.extent = extent;
 
         std::array<vk::ClearValue, 2> clearValues;
-        clearValues[0].color = vk::ClearColorValue{0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[0].color = vk::ClearColorValue{0.5f, 0.5f, 0.5f, 1.0f};
         clearValues[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
 
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -168,4 +168,58 @@ namespace muon::engine {
 
         return RenderPass(device, renderPassCreateInfo, attachments);
     }
+
+    std::unique_ptr<RenderPass> RenderPass::Builder::buildUniquePtr() const {
+        vk::SubpassDescription subpass{};
+        subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+
+        if (colorAttachmentRefs.size() > 0) {
+            subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+            subpass.pColorAttachments = colorAttachmentRefs.data();
+        } else {
+            subpass.colorAttachmentCount = 0;
+            subpass.pColorAttachments = nullptr;
+        }
+
+        if (hasDepthStencil) {
+            subpass.pDepthStencilAttachment = &depthStencilAttachmentRef;
+        } else {
+            subpass.pDepthStencilAttachment = nullptr;
+        }
+
+        vk::SubpassDependency subpassDependency{};
+        subpassDependency.srcSubpass = vk::SubpassExternal;
+        subpassDependency.dstSubpass = 0;
+        subpassDependency.srcAccessMask = vk::AccessFlagBits{};
+        subpassDependency.dstAccessMask =
+            vk::AccessFlagBits::eColorAttachmentWrite |
+            vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+        subpassDependency.srcStageMask =
+            vk::PipelineStageFlagBits::eColorAttachmentOutput |
+            vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        subpassDependency.dstStageMask =
+            vk::PipelineStageFlagBits::eColorAttachmentOutput |
+            vk::PipelineStageFlagBits::eEarlyFragmentTests;
+
+        std::vector<vk::AttachmentDescription> attachments{};
+
+        if (colorAttachments.size() > 0) {
+            attachments.insert(attachments.end(), colorAttachments.begin(), colorAttachments.end());
+        }
+
+        if (hasDepthStencil) {
+            attachments.push_back(depthStencilAttachment);
+        }
+
+        vk::RenderPassCreateInfo renderPassCreateInfo{};
+        renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassCreateInfo.pAttachments = attachments.data();
+        renderPassCreateInfo.subpassCount = 1;
+        renderPassCreateInfo.pSubpasses = &subpass;
+        renderPassCreateInfo.dependencyCount = 1;
+        renderPassCreateInfo.pDependencies = &subpassDependency;
+
+        return std::make_unique<RenderPass>(device, renderPassCreateInfo, attachments);
+    }
+
 }

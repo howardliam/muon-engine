@@ -235,7 +235,8 @@ namespace muon::engine {
         pipelineCreateInfo.pDynamicState = &configInfo.dynamicState;
 
         pipelineCreateInfo.layout = configInfo.pipelineLayout;
-        pipelineCreateInfo.renderPass = configInfo.renderPass;
+        // pipelineCreateInfo.renderPass = configInfo.renderPass;
+        pipelineCreateInfo.pNext = &configInfo.renderingInfo;
         pipelineCreateInfo.subpass = configInfo.subpass;
 
         pipelineCreateInfo.basePipelineIndex = -1;

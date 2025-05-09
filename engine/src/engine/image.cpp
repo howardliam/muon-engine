@@ -152,6 +152,7 @@ namespace muon::engine {
             case vk::ImageLayout::eColorAttachmentOptimal:
                 return vk::ImageAspectFlagBits::eColor;
 
+            case vk::ImageLayout::eDepthAttachmentOptimal:
             case vk::ImageLayout::eDepthStencilAttachmentOptimal:
                 if (format == vk::Format::eD16Unorm || format == vk::Format::eD32Sfloat) {
                     return vk::ImageAspectFlagBits::eDepth;

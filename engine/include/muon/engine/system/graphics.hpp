@@ -21,7 +21,7 @@ namespace muon::engine {
          *
          * @param   renderPass  the render pass to use.
          */
-        void bake(vk::RenderPass renderPass);
+        void bake(const vk::PipelineRenderingCreateInfo &renderingInfo);
 
     protected:
         Device &device;
@@ -43,7 +43,7 @@ namespace muon::engine {
          *
          * @param   renderPass  the render pass to use.
          */
-        virtual void createPipeline(vk::RenderPass renderPass) = 0;
+        virtual void createPipeline(const vk::PipelineRenderingCreateInfo &renderingInfo) = 0;
     };
 
 }

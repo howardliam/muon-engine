@@ -96,10 +96,11 @@ public:
     }
 
 protected:
-    void createPipeline(vk::RenderPass renderPass) override {
+    void createPipeline(const vk::PipelineRenderingCreateInfo &renderingInfo) override {
         engine::GraphicsPipeline::ConfigInfo configInfo;
         engine::GraphicsPipeline::defaultConfigInfo(configInfo);
-        configInfo.renderPass = renderPass;
+
+        configInfo.renderingInfo = renderingInfo;
         configInfo.pipelineLayout = pipelineLayout;
 
         pipeline = engine::GraphicsPipeline::Builder(device)
@@ -247,15 +248,58 @@ int main() {
             .build(descriptorSets[i]);
     }
 
-    engine::RenderPass scenePass = engine::RenderPass::Builder(device)
-        .addColorAttachment(vk::Format::eR8G8B8A8Unorm)
-        .addDepthStencilAttachment(vk::Format::eD32Sfloat)
-        .build();
+    std::unique_ptr sceneColor = engine::Image::Builder(device)
+        .setExtent(window.getExtent())
+        .setFormat(vk::Format::eR8G8B8A8Unorm)
+        .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+        .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+        .setAccessFlags(vk::AccessFlagBits::eColorAttachmentWrite)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+        .buildUniquePtr();
 
-    std::unique_ptr sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), window.getExtent());
+    vk::RenderingAttachmentInfo colorAttachment{};
+    colorAttachment.imageView = sceneColor->getImageView();
+    colorAttachment.imageLayout = sceneColor->getImageLayout();
+    colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+    colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+    colorAttachment.clearValue.color = vk::ClearColorValue{0.0f, 0.0f, 0.0f, 1.0f};
+
+    std::unique_ptr sceneDepth = engine::Image::Builder(device)
+        .setExtent(window.getExtent())
+        .setFormat(vk::Format::eD32Sfloat)
+        .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+        .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
+        .setAccessFlags(vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits::eEarlyFragmentTests)
+        .buildUniquePtr();
+
+    vk::RenderingAttachmentInfo depthAttachment{};
+    depthAttachment.imageView = sceneDepth->getImageView();
+    depthAttachment.imageLayout = sceneDepth->getImageLayout();
+    depthAttachment.loadOp = vk::AttachmentLoadOp::eDontCare;
+    depthAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
+    depthAttachment.clearValue.depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
+
+    vk::RenderingInfo renderingInfo{};
+    renderingInfo.renderArea = vk::Rect2D{vk::Offset2D{}, window.getExtent()};
+    renderingInfo.layerCount = 1;
+    renderingInfo.viewMask = 0;
+    renderingInfo.colorAttachmentCount = 1;
+    renderingInfo.pColorAttachments = &colorAttachment;
+    renderingInfo.pDepthAttachment = &depthAttachment;
+    renderingInfo.pStencilAttachment = nullptr;
+
+    auto sceneColorFormat = sceneColor->getFormat();
+
+    vk::PipelineRenderingCreateInfo renderingCreateInfo{};
+    renderingCreateInfo.viewMask = renderingInfo.viewMask;
+    renderingCreateInfo.colorAttachmentCount = renderingInfo.colorAttachmentCount;
+    renderingCreateInfo.pColorAttachmentFormats = &sceneColorFormat;
+    renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
+    renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
     RenderSystemTest renderSystem(device, { setLayout->getDescriptorSetLayout() }, {});
-    renderSystem.bake(scenePass.getRenderPass());
+    renderSystem.bake(renderingCreateInfo);
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
@@ -290,17 +334,17 @@ int main() {
     auto infoA = computeImageA->getDescriptorInfo();
     auto infoB = computeImageB->getDescriptorInfo();
 
-    vk::DescriptorSet computeDescriptorSetA;
+    std::array<vk::DescriptorSet, 2> computeDescriptorSets;
+
     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
         .writeImage(0, &infoA)
         .writeImage(1, &infoB)
-        .build(computeDescriptorSetA);
+        .build(computeDescriptorSets[0]);
 
-    vk::DescriptorSet computeDescriptorSetB;
     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
         .writeImage(0, &infoB)
         .writeImage(1, &infoA)
-        .build(computeDescriptorSetB);
+        .build(computeDescriptorSets[1]);
 
     ToneMap tonemap(device, {computeSetLayout->getDescriptorSetLayout()});
     Swizzle swizzle(device, {computeSetLayout->getDescriptorSetLayout()});
@@ -363,12 +407,28 @@ int main() {
         .compile = []() {
 
         },
-        .execute = [&](vk::CommandBuffer cmd) {
-            scenePass.begin(cmd, sceneFramebuffer->getFramebuffer(), sceneFramebuffer->getExtent());
+        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+            cmd.beginRendering(renderingInfo);
+
+            vk::Viewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = static_cast<float>(extent.width);
+            viewport.height = static_cast<float>(extent.height);
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+
+            vk::Rect2D scissor{};
+            scissor.offset.x = 0;
+            scissor.offset.y = 0;
+            scissor.extent = extent;
+
+            cmd.setViewport(0, 1, &viewport);
+            cmd.setScissor(0, 1, &scissor);
 
             renderSystem.renderModel(cmd, descriptorSets[frameIndex], square);
 
-            scenePass.end(cmd);
+            cmd.endRendering();
         }
     });
 
@@ -386,10 +446,8 @@ int main() {
         .compile = []() {
 
         },
-        .execute = [&](vk::CommandBuffer cmd) {
-            auto sceneImage = sceneFramebuffer->getImage(0);
-
-            (*sceneImage)->transitionLayout(cmd, {
+        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+            sceneColor->transitionLayout(cmd, {
                 .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
                 .accessFlags = vk::AccessFlagBits::eTransferRead,
                 .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
@@ -414,7 +472,7 @@ int main() {
             imageCopy.extent.depth = 1;
 
             cmd.copyImage(
-                (*sceneImage)->getImage(),
+                sceneColor->getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
                 computeImageA->getImage(),
                 vk::ImageLayout::eTransferDstOptimal,
@@ -424,9 +482,9 @@ int main() {
 
             computeImageA->revertTransition(cmd);
 
-            (*sceneImage)->revertTransition(cmd);
+            sceneColor->revertTransition(cmd);
 
-            tonemap.dispatch(cmd, computeDescriptorSetA, window.getExtent(), {32, 32, 1});
+            tonemap.dispatch(cmd, computeDescriptorSets[frameInfo.pingPongIndex], window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -444,8 +502,8 @@ int main() {
         .compile = []() {
 
         },
-        .execute = [&](vk::CommandBuffer cmd) {
-            swizzle.dispatch(cmd, computeDescriptorSetB, window.getExtent(), {32, 32, 1});
+        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+            swizzle.dispatch(cmd, computeDescriptorSets[frameInfo.pingPongIndex], window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -463,7 +521,7 @@ int main() {
         .compile = []() {
 
         },
-        .execute = [&](vk::CommandBuffer cmd) {
+        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
             computeImageA->transitionLayout(cmd, {
                 .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
                 .accessFlags = vk::AccessFlagBits::eTransferRead,
@@ -511,8 +569,6 @@ int main() {
 
             extent = window.getExtent();
 
-            sceneFramebuffer = std::make_unique<engine::Framebuffer>(device, scenePass.getRenderPass(), scenePass.getAttachments(), extent);
-
             computeImageA = engine::Image::Builder(device)
                 .setExtent(extent)
                 .setFormat(vk::Format::eR8G8B8A8Unorm)
@@ -539,12 +595,12 @@ int main() {
             engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
                 .writeImage(0, &infoA)
                 .writeImage(1, &infoB)
-                .build(computeDescriptorSetA);
+                .build(computeDescriptorSets[0]);
 
             engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
                 .writeImage(0, &infoB)
                 .writeImage(1, &infoA)
-                .build(computeDescriptorSetB);
+                .build(computeDescriptorSets[1]);
 
             size = extent.width * extent.height;
             stagingBuffer = std::make_unique<engine::Buffer>(

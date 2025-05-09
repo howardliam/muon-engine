@@ -20,7 +20,7 @@ namespace muon::engine {
             std::vector<vk::DynamicState> dynamicStateEnables;
             vk::PipelineDynamicStateCreateInfo dynamicState;
             vk::PipelineLayout pipelineLayout = nullptr;
-            vk::RenderPass renderPass = nullptr;
+            vk::PipelineRenderingCreateInfo renderingInfo;
             uint32_t subpass = 0;
         };
 

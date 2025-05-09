@@ -12,6 +12,7 @@ namespace muon::engine {
 
     void RenderGraph::addStage(Stage stage) {
         stages.push_back(std::make_shared<Stage>(std::move(stage)));
+        stagesUpdated = true;
     }
 
     void RenderGraph::compile() {
@@ -44,14 +45,24 @@ namespace muon::engine {
     }
 
     void RenderGraph::execute(vk::CommandBuffer commandBuffer) {
-        auto order = executionOrder();
+        if (stagesUpdated) {
+            executionOrder = determineExecutionOrder();
+            stagesUpdated = false;
+        }
 
-        for (auto &stage : order) {
-            stage->execute(commandBuffer);
+        FrameInfo frameInfo;
+        frameInfo.pingPongIndex = 0;
+
+        for (auto &stage : executionOrder) {
+            stage->execute(commandBuffer, frameInfo);
+
+            if (stage->stageType == StageType::Compute) {
+                frameInfo.pingPongIndex ^= 1;
+            }
         }
     }
 
-    std::vector<std::shared_ptr<RenderGraph::Stage>> RenderGraph::executionOrder() {
+    std::vector<std::shared_ptr<RenderGraph::Stage>> RenderGraph::determineExecutionOrder() {
         std::unordered_map<std::string, std::shared_ptr<Stage>> nameToStage;
         for (auto &stage : stages) {
             nameToStage[stage->name] = stage;

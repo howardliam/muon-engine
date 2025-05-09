@@ -14,6 +14,7 @@ namespace muon::engine {
         struct ResourceUsage;
         enum class StageType;
         struct Stage;
+        struct FrameInfo;
 
         void addResource(Resource resource);
         void addStage(Stage stage);
@@ -25,9 +26,11 @@ namespace muon::engine {
         std::unordered_map<std::string, Resource> resources{};
 
         std::vector<std::shared_ptr<Stage>> stages;
+        bool stagesUpdated{false};
         std::unordered_map<std::string, std::vector<std::string>> dependencies;
 
-        std::vector<std::shared_ptr<Stage>> executionOrder();
+        std::vector<std::shared_ptr<Stage>> executionOrder;
+        std::vector<std::shared_ptr<Stage>> determineExecutionOrder();
     };
 
     struct RenderGraph::Resource {
@@ -56,7 +59,12 @@ namespace muon::engine {
         std::vector<ResourceUsage> writeResources{};
 
         std::function<void()> compile;
-        std::function<void(vk::CommandBuffer)> execute;
+        std::function<void(vk::CommandBuffer, FrameInfo)> execute;
+    };
+
+    struct RenderGraph::FrameInfo {
+        uint32_t frameIndex;
+        uint32_t pingPongIndex{0};
     };
 
 }
