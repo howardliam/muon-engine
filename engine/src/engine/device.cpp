@@ -478,7 +478,11 @@ namespace muon::engine {
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+        std::set<uint32_t> uniqueQueueFamilies = {
+            indices.graphicsFamily.value(),
+            indices.computeFamily.value(),
+            indices.presentFamily.value()
+        };
 
         float queuePriority = 1.0;
 
@@ -517,6 +521,7 @@ namespace muon::engine {
         }
 
         device.getQueue(indices.graphicsFamily.value(), 0, &graphicsQueue);
+        device.getQueue(indices.computeFamily.value(), 0, &computeQueue);
         device.getQueue(indices.presentFamily.value(), 0, &presentQueue);
     }
 
