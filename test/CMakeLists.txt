@@ -2,7 +2,7 @@ add_executable(test
     test.cpp
 )
 
-target_link_libraries(test PRIVATE spdlog muon-engine muon-common muon-asset)
+target_link_libraries(test PRIVATE spdlog::spdlog_header_only muon-engine muon-common muon-asset)
 
 set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders)
 

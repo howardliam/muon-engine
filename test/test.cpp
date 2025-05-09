@@ -197,15 +197,14 @@ int main() {
     auto logger = std::make_shared<Logger>();
     log::setLogger(logger.get());
 
-    log::globalLogger->info("hello, world!");
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)
         .setInitialDisplayMode(engine::Window::DisplayMode::Windowed)
         .setTitle("Testing")
         .build();
 
-    auto windowIcon = asset::decodePng("./muon-logo.png");
-    window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
+    // auto windowIcon = asset::decodePng("./muon-logo.png");
+    // window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
@@ -276,8 +275,8 @@ int main() {
     vk::RenderingAttachmentInfo depthAttachment{};
     depthAttachment.imageView = sceneDepth->getImageView();
     depthAttachment.imageLayout = sceneDepth->getImageLayout();
-    depthAttachment.loadOp = vk::AttachmentLoadOp::eDontCare;
-    depthAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
+    depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+    depthAttachment.storeOp = vk::AttachmentStoreOp::eStore;
     depthAttachment.clearValue.depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
 
     vk::RenderingInfo renderingInfo{};
