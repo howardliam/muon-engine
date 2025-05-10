@@ -1,11 +1,12 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_structs.hpp>
+#include <vulkan/vulkan.hpp>
+#include <vk_mem_alloc.hpp>
 #include <memory>
 
 namespace muon::engine {
+
+    class Device;
 
     class Texture {
     public:

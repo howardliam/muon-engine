@@ -3,6 +3,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
+#include "muon/engine/device.hpp"
 #include "muon/log/logger.hpp"
 
 namespace muon::engine {

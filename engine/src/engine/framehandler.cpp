@@ -1,6 +1,8 @@
 #include "muon/engine/framehandler.hpp"
 
+#include "muon/engine/device.hpp"
 #include "muon/engine/swapchain.hpp"
+#include "muon/engine/window.hpp"
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>

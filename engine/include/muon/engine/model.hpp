@@ -1,11 +1,12 @@
 #pragma once
 
-#include "muon/engine/buffer.hpp"
-#include "muon/engine/device.hpp"
 #include <memory>
-#include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
+
+    class Device;
+    class Buffer;
 
     class Model {
     public:

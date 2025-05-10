@@ -1,15 +1,14 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include <cstddef>
 #include <memory>
 #include <vector>
-#include <vk_mem_alloc_handles.hpp>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
+#include <vk_mem_alloc.hpp>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
+
+    class Device;
 
     namespace constants {
         constexpr uint32_t maxFramesInFlight = 2;

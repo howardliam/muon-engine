@@ -1,5 +1,7 @@
 #include "muon/engine/model.hpp"
 
+#include "muon/engine/buffer.hpp"
+#include "muon/engine/device.hpp"
 #include "muon/log/logger.hpp"
 
 namespace muon::engine {

@@ -1,5 +1,6 @@
 #include "muon/engine/swapchain.hpp"
 
+#include "muon/engine/device.hpp"
 #include "muon/log/logger.hpp"
 #include <limits>
 

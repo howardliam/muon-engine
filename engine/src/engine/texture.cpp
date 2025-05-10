@@ -1,6 +1,7 @@
 #include "muon/engine/texture.hpp"
+
+#include "muon/engine/device.hpp"
 #include "muon/engine/buffer.hpp"
-#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 

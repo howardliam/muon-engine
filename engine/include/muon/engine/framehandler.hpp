@@ -1,13 +1,14 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
-#include "muon/engine/swapchain.hpp"
-#include "muon/engine/window.hpp"
 #include <memory>
 #include <vector>
-#include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
+
+    class Window;
+    class Device;
+    class Swapchain;
 
     /**
      * @brief   handles the swapchain, recording commands, and presenting frames.
