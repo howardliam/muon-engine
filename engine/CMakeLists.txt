@@ -31,6 +31,7 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/log/logger.hpp
 
+    ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
 )
@@ -56,7 +57,10 @@ set(SRC_FILES
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/texture.cpp
     ${SRC_DIR}/engine/window.cpp
+
     ${SRC_DIR}/log/logger.cpp
+
+    ${SRC_DIR}/utils/color.cpp
 )
 
 set(IMGUI_DIR ../external/imgui)

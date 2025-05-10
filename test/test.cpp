@@ -1,4 +1,5 @@
 #include "muon/engine/descriptor/writer.hpp"
+#include "muon/utils/color.hpp"
 #include <limits>
 #include <memory>
 #include <fstream>
@@ -285,7 +286,7 @@ int main() {
     colorAttachment.imageLayout = sceneColor->getImageLayout();
     colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
     colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
-    colorAttachment.clearValue.color = vk::ClearColorValue{0.0f, 0.0f, 0.0f, 1.0f};
+    colorAttachment.clearValue.color = color::rgbaFromHex<std::array<float, 4>>(0x87ceebff);
 
     std::unique_ptr sceneDepth = engine::Image::Builder(device)
         .setExtent(window.getExtent())
