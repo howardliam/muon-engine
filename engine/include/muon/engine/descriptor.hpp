@@ -124,6 +124,10 @@ namespace muon::engine {
              */
             Builder &addBinding(uint32_t binding, vk::DescriptorType descriptorType, vk::ShaderStageFlags stageFlags, uint32_t count = 1);
 
+            Builder &setFlags(vk::DescriptorSetLayoutCreateFlags flags);
+
+            Builder &setBindless(bool bindless);
+
             /**
              * @brief   builds the descriptor set layout from the provided information.
              *
@@ -135,9 +139,16 @@ namespace muon::engine {
             Device &device;
 
             std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
+            vk::DescriptorSetLayoutCreateFlags flags{};
+            bool bindless{false};
         };
 
-        DescriptorSetLayout(Device &device, const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings);
+        DescriptorSetLayout(
+            Device &device,
+            const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings,
+            vk::DescriptorSetLayoutCreateFlags flags,
+            bool bindless
+        );
         ~DescriptorSetLayout();
 
         DescriptorSetLayout(const DescriptorSetLayout &) = delete;

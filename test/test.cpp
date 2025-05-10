@@ -1,3 +1,4 @@
+#include <limits>
 #include <memory>
 #include <fstream>
 #include <chrono>
@@ -212,6 +213,17 @@ int main() {
     std::unique_ptr pool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, engine::constants::maxFramesInFlight)
+        .build();
+
+    std::unique_ptr globalPool = engine::DescriptorPool::Builder(device)
+        .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
+        .setPoolFlags(vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind)
+        .build();
+
+    auto globalSetLayout = engine::DescriptorSetLayout::Builder(device)
+        .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
+        .setFlags(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool)
+        .setBindless(true)
         .build();
 
     struct Ubo {
