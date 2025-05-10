@@ -13,6 +13,8 @@
 #include <muon/engine/buffer.hpp>
 #include <muon/engine/system/compute.hpp>
 #include <muon/engine/descriptor.hpp>
+#include <muon/engine/descriptor/pool.hpp>
+#include <muon/engine/descriptor/setlayout.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
@@ -196,6 +198,12 @@ int main() {
     auto logger = std::make_shared<Logger>();
     log::setLogger(logger.get());
 
+#ifdef NDEBUG
+    logger->info("running in release");
+#else
+    logger->info("running in debug");
+#endif
+
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)
         .setInitialDisplayMode(engine::Window::DisplayMode::Windowed)
@@ -213,16 +221,15 @@ int main() {
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, engine::constants::maxFramesInFlight)
         .build();
 
-    std::unique_ptr globalPool = engine::DescriptorPool::Builder(device)
+    auto globalPool = engine::DescriptorPool2::Builder(device)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
-        .setPoolFlags(vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind)
-        .build();
+        .buildUniquePtr();
 
-    auto globalSetLayout = engine::DescriptorSetLayout::Builder(device)
+    auto globalSetLayout = engine::DescriptorSetLayout2::Builder(device)
         .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
-        .setFlags(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool)
-        .setBindless(true)
-        .build();
+        .buildUniquePtr();
+
+    auto globalSet = globalSetLayout->createSet(*globalPool);
 
     struct Ubo {
         glm::mat4 projection;

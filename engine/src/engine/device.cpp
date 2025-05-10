@@ -99,7 +99,11 @@ namespace muon::engine {
 
     Device::Device(Window &window) : window(window) {
         createInstance();
+
+        #ifndef NDEBUG
         createDebugMessenger();
+        #endif
+
         createSurface();
         selectPhysicalDevice();
         createLogicalDevice();
@@ -114,7 +118,11 @@ namespace muon::engine {
         device.destroyCommandPool(commandPool, nullptr);
         device.destroy(nullptr);
         instance.destroySurfaceKHR(surface, nullptr);
+
+        #ifndef NDEBUG
         destroyDebugUtilsMessenger(instance, debugMessenger, nullptr);
+        #endif
+
         instance.destroy(nullptr);
 
         log::globalLogger->debug("destroyed device");
@@ -320,7 +328,8 @@ namespace muon::engine {
     }
 
     void Device::createInstance() {
-        auto checkValidationLayerSupport = [&]() -> bool {
+        #ifndef NDEBUG
+        auto checkValidationLayerSupport = [this]() -> bool {
             std::vector<vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
             for (const auto layerName : validationLayers) {
@@ -340,9 +349,10 @@ namespace muon::engine {
             return true;
         };
 
-        if (enableValidationLayers && !checkValidationLayerSupport()) {
+        if (!checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers were requested but are not available");
         }
+        #endif
 
         vk::ApplicationInfo appInfo;
         appInfo.pApplicationName = "Muon";
@@ -355,7 +365,7 @@ namespace muon::engine {
         createInfo.pApplicationInfo = &appInfo;
         createInfo.pNext = nullptr;
 
-        auto getRequiredExtensions = [](bool enableValidationLayers) -> std::vector<const char *> {
+        auto getRequiredExtensions = []() -> std::vector<const char *> {
             uint32_t sdlExtensionCount = 0;
             const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
 
@@ -365,24 +375,21 @@ namespace muon::engine {
 
             std::vector<const char *> extensions(sdlExtensions, sdlExtensions + sdlExtensionCount);
 
-            if (enableValidationLayers) {
-                extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            }
+            #ifndef NDEBUG
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            #endif
 
             return extensions;
         };
 
-        auto extensions = getRequiredExtensions(enableValidationLayers);
+        auto extensions = getRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
-        if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
-        } else {
-            createInfo.enabledLayerCount = 0;
-            createInfo.ppEnabledLayerNames = nullptr;
-        }
+        #ifndef NDEBUG
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+        #endif
 
         auto result = vk::createInstance(&createInfo, nullptr, &instance);
         if (result != vk::Result::eSuccess) {
@@ -391,10 +398,6 @@ namespace muon::engine {
     }
 
     void Device::createDebugMessenger() {
-        if (!enableValidationLayers) {
-            return;
-        }
-
         vk::DebugUtilsMessengerCreateInfoEXT createInfo{};
         createInfo.messageSeverity =
             vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
@@ -404,8 +407,6 @@ namespace muon::engine {
             vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-        // createInfo.pfnUserCallback = debugCallback;
-        createInfo.pUserData = log::globalLogger;
         createInfo.pfnUserCallback = [](
             vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
             vk::DebugUtilsMessageTypeFlagsEXT messageType,
@@ -506,11 +507,14 @@ namespace muon::engine {
 
     void Device::createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+        if (!indices.isComplete()) {
+            throw std::runtime_error("queue family indices are not complete");
+        }
 
         std::set<uint32_t> uniqueQueueFamilies = {
-            indices.graphicsFamily.value(),
-            indices.computeFamily.value(),
-            indices.presentFamily.value()
+            *indices.graphicsFamily,
+            *indices.computeFamily,
+            *indices.presentFamily
         };
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
 
@@ -544,21 +548,19 @@ namespace muon::engine {
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
         createInfo.pNext = &deviceFeatures;
 
-        if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
-        } else {
-            createInfo.enabledLayerCount = 0;
-        }
+        #ifndef NDEBUG
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+        #endif
 
         auto result = physicalDevice.createDevice(&createInfo, nullptr, &device);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create a logical device");
         }
 
-        device.getQueue(indices.graphicsFamily.value(), 0, &graphicsQueue);
-        device.getQueue(indices.computeFamily.value(), 0, &computeQueue);
-        device.getQueue(indices.presentFamily.value(), 0, &presentQueue);
+        device.getQueue(*indices.graphicsFamily, 0, &graphicsQueue);
+        device.getQueue(*indices.computeFamily, 0, &computeQueue);
+        device.getQueue(*indices.presentFamily, 0, &presentQueue);
     }
 
     void Device::createAllocator() {
@@ -576,8 +578,8 @@ namespace muon::engine {
     void Device::createCommandPool() {
         QueueFamilyIndices queueFamilyIndices = getQueueFamilyIndices();
 
-        vk::CommandPoolCreateInfo poolInfo;
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        vk::CommandPoolCreateInfo poolInfo{};
+        poolInfo.queueFamilyIndex = *queueFamilyIndices.graphicsFamily;
         poolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
         auto result = device.createCommandPool(&poolInfo, nullptr, &commandPool);
