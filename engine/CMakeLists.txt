@@ -30,6 +30,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/window.hpp
 
     ${INCLUDE_DIR}/muon/log/logger.hpp
+
+    ${INCLUDE_DIR}/muon/utils.hpp
 )
 
 set(SRC_FILES
