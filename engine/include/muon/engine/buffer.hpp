@@ -1,6 +1,6 @@
 #pragma once
 
-#include "muon/utils.hpp"
+#include "muon/utils/nocopy.hpp"
 #include <vk_mem_alloc.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -13,13 +14,10 @@ namespace muon::engine {
     /**
      * @brief   handles the swapchain, recording commands, and presenting frames.
      */
-    class FrameHandler {
+    class FrameHandler : NoCopy {
     public:
         FrameHandler(Window &window, Device &device);
         ~FrameHandler();
-
-        FrameHandler(const FrameHandler &) = delete;
-        FrameHandler &operator=(const FrameHandler &) = delete;
 
         /**
          * @brief   provides a command buffer to begin recording commands.

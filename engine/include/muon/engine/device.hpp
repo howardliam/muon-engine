@@ -1,6 +1,7 @@
 #pragma once
 
-#include "muon/utils.hpp"
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <optional>
 #include <cstdint>
 #include <vector>

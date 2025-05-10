@@ -31,7 +31,8 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/log/logger.hpp
 
-    ${INCLUDE_DIR}/muon/utils.hpp
+    ${INCLUDE_DIR}/muon/utils/nocopy.hpp
+    ${INCLUDE_DIR}/muon/utils/nomove.hpp
 )
 
 set(SRC_FILES

@@ -29,7 +29,7 @@ namespace muon::engine {
 
         device.createBuffer(bufferSize, usageFlags, memoryUsage, buffer, allocation);
 
-        log::globalLogger->debug("created buffer");
+        log::globalLogger->debug("created buffer {}", bufferSize);
     }
 
     Buffer::~Buffer() {
