@@ -43,7 +43,6 @@ namespace muon::engine {
         std::unique_ptr<Buffer> vertexBuffer{nullptr};
         uint32_t vertexCount{0};
 
-        bool hasIndexBuffer{false};
         std::unique_ptr<Buffer> indexBuffer{nullptr};
         uint32_t indexCount{0};
 

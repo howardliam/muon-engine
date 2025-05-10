@@ -14,15 +14,9 @@ namespace muon::engine {
         vk::Format format,
         vk::ImageUsageFlags usageFlags,
         const State &state
-    ) :
-        device(device),
-        extent(extent),
-        format(format),
-        usageFlags(usageFlags),
-        state(state)
-    {
+    ) : device(device), extent(extent), format(format), usageFlags(usageFlags), state(state) {
         createImage();
-        log::globalLogger->debug("created image");
+        log::globalLogger->debug("created image with dimensions: {}x{}", extent.width, extent.height);
     }
 
     Image::~Image() {

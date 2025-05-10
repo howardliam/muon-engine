@@ -14,7 +14,7 @@ namespace muon::engine {
     ) : device(device) {
         createVertexBuffer(vertices, stride);
         createIndexBuffer(indices);
-        log::globalLogger->debug("created model");
+        log::globalLogger->debug("created model with: {} vertices, {} faces", vertexCount, indices.size() / 3);
     }
 
     Model::~Model() {
@@ -26,18 +26,11 @@ namespace muon::engine {
         const vk::DeviceSize offset = 0;
 
         commandBuffer.bindVertexBuffers(0, 1, &buffer, &offset);
-
-        if (hasIndexBuffer) {
-            commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
-        }
+        commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
     }
 
     void Model::draw(vk::CommandBuffer commandBuffer) const {
-        if (hasIndexBuffer) {
-            commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
-        } else {
-            commandBuffer.draw(vertexCount, 1, 0, 0);
-        }
+        commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 
     void Model::createVertexBuffer(const std::vector<uint8_t> &vertices, uint32_t stride) {
@@ -72,11 +65,6 @@ namespace muon::engine {
 
     void Model::createIndexBuffer(const std::vector<uint32_t> &indices) {
         indexCount = static_cast<uint32_t>(indices.size());
-        hasIndexBuffer = indexCount > 0;
-
-        if (!hasIndexBuffer) {
-            return;
-        }
 
         size_t indexSize = sizeof(uint32_t);
         vk::DeviceSize bufferSize = indexSize * indexCount;
