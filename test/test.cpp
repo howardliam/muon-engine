@@ -1,3 +1,4 @@
+#include "muon/engine/descriptor/writer.hpp"
 #include <limits>
 #include <memory>
 #include <fstream>
@@ -198,11 +199,11 @@ int main() {
     auto logger = std::make_shared<Logger>();
     log::setLogger(logger.get());
 
-#ifdef NDEBUG
-    logger->info("running in release");
-#else
+    #ifndef NDEBUG
     logger->info("running in debug");
-#endif
+    #else
+    logger->info("running in release");
+    #endif
 
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)
@@ -223,10 +224,12 @@ int main() {
 
     auto globalPool = engine::DescriptorPool2::Builder(device)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
+        .addPoolSize(vk::DescriptorType::eUniformBuffer, std::numeric_limits<int16_t>().max())
         .buildUniquePtr();
 
     auto globalSetLayout = engine::DescriptorSetLayout2::Builder(device)
         .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
+        .addBinding(1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
         .buildUniquePtr();
 
     auto globalSet = globalSetLayout->createSet(*globalPool);
@@ -262,6 +265,10 @@ int main() {
         engine::DescriptorWriter(*setLayout, *pool)
             .writeBuffer(0, &bufferInfo)
             .build(descriptorSets[i]);
+
+        engine::DescriptorWriter2(*globalPool, *globalSetLayout)
+            .addBufferWrite(1, 0, &bufferInfo)
+            .writeAll(globalSet);
     }
 
     std::unique_ptr sceneColor = engine::Image::Builder(device)

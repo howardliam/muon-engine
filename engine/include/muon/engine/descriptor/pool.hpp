@@ -24,6 +24,8 @@ namespace muon::engine {
         Device &device;
 
         vk::DescriptorPool pool;
+
+        friend class DescriptorWriter2;
     };
 
     class DescriptorPool2::Builder {

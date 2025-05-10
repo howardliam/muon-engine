@@ -29,6 +29,8 @@ namespace muon::engine {
 
         vk::DescriptorSetLayout setLayout;
         std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
+
+        friend class DescriptorWriter2;
     };
 
     class DescriptorSetLayout2::Builder {

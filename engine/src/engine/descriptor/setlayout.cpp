@@ -85,7 +85,7 @@ namespace muon::engine {
     DescriptorSetLayout2::DescriptorSetLayout2(
         Device &device,
         const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings
-    ) : device(device) {
+    ) : device(device), bindings(bindings) {
         std::vector<vk::DescriptorSetLayoutBinding> setLayoutBindings(bindings.size());
 
         size_t index = 0;
@@ -94,14 +94,16 @@ namespace muon::engine {
             index += 1;
         }
 
-        vk::DescriptorBindingFlags bindingFlags =
-            vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
+        std::vector<vk::DescriptorBindingFlags> bindingFlags(
+            bindings.size(),
+            // vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
             vk::DescriptorBindingFlagBits::ePartiallyBound |
-            vk::DescriptorBindingFlagBits::eUpdateAfterBind;
+            vk::DescriptorBindingFlagBits::eUpdateAfterBind
+        );
 
         vk::DescriptorSetLayoutBindingFlagsCreateInfo bindingInfo{};
-        bindingInfo.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-        bindingInfo.pBindingFlags = &bindingFlags;
+        bindingInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+        bindingInfo.pBindingFlags = bindingFlags.data();
 
         vk::DescriptorSetLayoutCreateInfo createInfo{};
         createInfo.pNext = &bindingInfo;
