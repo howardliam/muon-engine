@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/utils.hpp"
 #include <vk_mem_alloc.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
@@ -11,7 +12,7 @@ namespace muon::engine {
     /**
      * @brief wrapper around vulkan buffer.
      */
-    class Buffer {
+    class Buffer : NoCopy {
     public:
         Buffer(
             Device &device,
@@ -22,9 +23,6 @@ namespace muon::engine {
             vk::DeviceSize minOffsetAlignment = 1
         );
         ~Buffer();
-
-        Buffer(const Buffer &) = delete;
-        Buffer &operator=(const Buffer &) = delete;
 
         /**
          * @brief   maps the buffer memory.
