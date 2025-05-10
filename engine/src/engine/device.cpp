@@ -516,7 +516,7 @@ namespace muon::engine {
 
         float queuePriority = 1.0;
 
-        for (auto [index, queueFamily] : uniqueQueueFamilies | std::views::enumerate) {
+        for (auto [index, queueFamily] : std::views::enumerate(uniqueQueueFamilies)) {
             vk::DeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.queueFamilyIndex = queueFamily;
             queueCreateInfo.queueCount = 1;
