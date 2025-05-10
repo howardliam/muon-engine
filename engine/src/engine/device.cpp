@@ -6,7 +6,6 @@
 #include <format>
 #include <set>
 #include <stdexcept>
-#include <ranges>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
@@ -498,15 +497,16 @@ namespace muon::engine {
 
         float queuePriority = 1.0;
 
-        for (auto [index, queueFamily] : std::views::enumerate(uniqueQueueFamilies)) {
+        size_t index{0};
+        for (auto queueFamily : uniqueQueueFamilies) {
             vk::DeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.queueFamilyIndex = queueFamily;
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
 
             queueCreateInfos[index] = queueCreateInfo;
+            index += 1;
         }
-
 
         vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
         dynamicRenderingFeatures.pNext = nullptr;
