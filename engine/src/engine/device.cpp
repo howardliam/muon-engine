@@ -3,9 +3,9 @@
 #include "muon/log/logger.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
-#include <print>
 #include <set>
 #include <stdexcept>
+#include <ranges>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
@@ -507,22 +507,22 @@ namespace muon::engine {
     void Device::createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
-        std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = {
             indices.graphicsFamily.value(),
             indices.computeFamily.value(),
             indices.presentFamily.value()
         };
+        std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
 
         float queuePriority = 1.0;
 
-        for (uint32_t queueFamily : uniqueQueueFamilies) {
+        for (auto [index, queueFamily] : uniqueQueueFamilies | std::views::enumerate) {
             vk::DeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.queueFamilyIndex = queueFamily;
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
 
-            queueCreateInfos.push_back(queueCreateInfo);
+            queueCreateInfos[index] = queueCreateInfo;
         }
 
         vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
