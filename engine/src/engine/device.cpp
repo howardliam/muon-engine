@@ -525,17 +525,17 @@ namespace muon::engine {
             queueCreateInfos[index] = queueCreateInfo;
         }
 
+
         vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
         dynamicRenderingFeatures.pNext = nullptr;
         dynamicRenderingFeatures.dynamicRendering = true;
 
         vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
         indexingFeatures.pNext = &dynamicRenderingFeatures;
-        indexingFeatures.descriptorBindingPartiallyBound = true;
-        indexingFeatures.runtimeDescriptorArray = true;
 
-        vk::PhysicalDeviceFeatures2 deviceFeatures = physicalDevice.getFeatures2();
+        vk::PhysicalDeviceFeatures2 deviceFeatures{};
         deviceFeatures.pNext = &indexingFeatures;
+        physicalDevice.getFeatures2(&deviceFeatures);
 
         vk::DeviceCreateInfo createInfo{};
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
