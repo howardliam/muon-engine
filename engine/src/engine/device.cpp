@@ -6,6 +6,7 @@
 #include <print>
 #include <set>
 #include <stdexcept>
+#include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_structs.hpp>
@@ -403,8 +404,34 @@ namespace muon::engine {
             vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-        createInfo.pfnUserCallback = debugCallback;
+        // createInfo.pfnUserCallback = debugCallback;
         createInfo.pUserData = log::globalLogger;
+        createInfo.pfnUserCallback = [](
+            vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            vk::DebugUtilsMessageTypeFlagsEXT messageType,
+            const vk::DebugUtilsMessengerCallbackDataEXT *callbackData,
+            void *userData
+        ) -> vk::Bool32 {
+            switch (messageSeverity) {
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
+                log::globalLogger->debug("VULKAN - \n{}\n", callbackData->pMessage);
+                break;
+
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
+                log::globalLogger->info("VULKAN - \n{}\n", callbackData->pMessage);
+                break;
+
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
+                log::globalLogger->warn("VULKAN - \n{}\n", callbackData->pMessage);
+                break;
+
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
+                log::globalLogger->error("VULKAN - \n{}\n", callbackData->pMessage);
+                break;
+            }
+
+            return false;
+        };
 
         auto result = createDebugUtilsMessenger(
             instance,
@@ -444,20 +471,25 @@ namespace muon::engine {
         };
 
         auto isDeviceSuitable = [&](vk::PhysicalDevice device) -> bool {
-            vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
-            vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
+            vk::PhysicalDeviceProperties2 deviceProperties = device.getProperties2();
+            vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
+            vk::PhysicalDeviceFeatures2 deviceFeatures{};
+            deviceFeatures.pNext = &indexingFeatures;
+            device.getFeatures2(&deviceFeatures);
 
-            bool isDiscrete = deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
+            bool isDiscrete = deviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
             bool hasCompleteIndices = findQueueFamilies(device).isComplete();
-            bool supportsGeometryShader = deviceFeatures.geometryShader;
+            bool supportsGeometryShader = deviceFeatures.features.geometryShader;
             bool extensionsSupported = checkDeviceExtensionSupport(device);
             bool swapchainAdequate = false;
             if (extensionsSupported) {
                 SwapchainSupportDetails supportDetails = querySwapchainSupport(device);
                 swapchainAdequate = !supportDetails.formats.empty() && !supportDetails.presentModes.empty();
             }
+            bool supportsBindless = indexingFeatures.descriptorBindingPartiallyBound && indexingFeatures.runtimeDescriptorArray;
 
-            return isDiscrete && hasCompleteIndices && supportsGeometryShader && extensionsSupported && swapchainAdequate;
+
+            return isDiscrete && hasCompleteIndices && supportsGeometryShader && extensionsSupported && swapchainAdequate && supportsBindless;
         };
 
         for (const auto &pd : physicalDevices) {
@@ -470,8 +502,6 @@ namespace muon::engine {
         if (physicalDevice == nullptr) {
             throw std::runtime_error("unable to select a suitable GPU");
         }
-
-        vk::PhysicalDeviceProperties deviceProperties = physicalDevice.getProperties();
     }
 
     void Device::createLogicalDevice() {
@@ -495,18 +525,24 @@ namespace muon::engine {
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
-        vk::PhysicalDeviceFeatures deviceFeatures{};
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
+        dynamicRenderingFeatures.pNext = nullptr;
+        dynamicRenderingFeatures.dynamicRendering = true;
 
-        vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{};
-        dynamicRenderingFeature.dynamicRendering = true;
+        vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
+        indexingFeatures.pNext = &dynamicRenderingFeatures;
+        indexingFeatures.descriptorBindingPartiallyBound = true;
+        indexingFeatures.runtimeDescriptorArray = true;
+
+        vk::PhysicalDeviceFeatures2 deviceFeatures = physicalDevice.getFeatures2();
+        deviceFeatures.pNext = &indexingFeatures;
 
         vk::DeviceCreateInfo createInfo{};
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-        createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.pNext = &dynamicRenderingFeature;
+        createInfo.pNext = &deviceFeatures;
 
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
