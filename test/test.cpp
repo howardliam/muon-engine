@@ -393,9 +393,21 @@ int main() {
 
     engine::RenderGraph renderGraph;
 
-    renderGraph.addStage({
+    renderGraph.addImage(
+        "SceneColor",
+        engine::Image::Builder(device)
+            .setExtent(window.getExtent())
+            .setFormat(vk::Format::eR8G8B8A8Unorm)
+            .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+            .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+            .setAccessFlags(vk::AccessFlagBits::eColorAttachmentWrite)
+            .setPipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+            .buildUniquePtr()
+    );
+
+    renderGraph.addNode({
         .name = "SceneRender",
-        .stageType = engine::RenderGraph::StageType::Graphics,
+        .nodeType = engine::RenderGraph::NodeType::Graphics,
 
         .readResources = {},
         .writeResources = {
@@ -431,9 +443,9 @@ int main() {
         }
     });
 
-    renderGraph.addStage({
+    renderGraph.addNode({
         .name = "ToneMap",
-        .stageType = engine::RenderGraph::StageType::Compute,
+        .nodeType = engine::RenderGraph::NodeType::Compute,
 
         .readResources = {
             { "SceneColor", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
@@ -487,9 +499,9 @@ int main() {
         }
     });
 
-    renderGraph.addStage({
+    renderGraph.addNode({
         .name = "Swizzle",
-        .stageType = engine::RenderGraph::StageType::Compute,
+        .nodeType = engine::RenderGraph::NodeType::Compute,
 
         .readResources = {
             { "ToneMapOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
@@ -506,9 +518,9 @@ int main() {
         }
     });
 
-    renderGraph.addStage({
+    renderGraph.addNode({
         .name = "FinalPresentation",
-        .stageType = engine::RenderGraph::StageType::Transfer,
+        .nodeType = engine::RenderGraph::NodeType::Transfer,
 
         .readResources = {
             { "SwizzleOutput", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },

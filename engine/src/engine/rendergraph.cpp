@@ -1,42 +1,41 @@
 #include "muon/engine/rendergraph.hpp"
 
-#include "muon/log/logger.hpp"
 #include <algorithm>
 #include <queue>
 
 namespace muon::engine {
 
-    void RenderGraph::addResource(Resource resource) {
-
+    void RenderGraph::addImage(const std::string &name, std::unique_ptr<Image> image) {
+        resources[name] = std::move(image);
     }
 
-    void RenderGraph::addStage(Stage stage) {
-        stages.push_back(std::make_shared<Stage>(std::move(stage)));
-        stagesUpdated = true;
+    void RenderGraph::addNode(Node node) {
+        nodes.push_back(std::make_shared<Node>(std::move(node)));
+        nodesUpdated = true;
     }
 
     void RenderGraph::compile() {
-        for (const auto &stage : stages) {
-            auto &deps = dependencies[stage->name];
+        for (const auto &node : nodes) {
+            auto &deps = dependencies[node->name];
 
-            auto &reads = stage->readResources;
+            auto &reads = node->readResources;
             for (const auto &read : reads) {
-                for (const auto &otherStage : stages) {
-                    if (otherStage->name == stage->name) {
+                for (const auto &otherNode : nodes) {
+                    if (otherNode->name == node->name) {
                         continue;
                     }
 
                     auto it = std::find_if(
-                        otherStage->writeResources.begin(),
-                        otherStage->writeResources.end(),
+                        otherNode->writeResources.begin(),
+                        otherNode->writeResources.end(),
                         [&read](const ResourceUsage &usage) -> bool {
                             return usage.name == read.name;
                         }
                     );
 
-                    if (it != otherStage->writeResources.end()) {
-                        if (std::find(deps.begin(), deps.end(), otherStage->name) == deps.end()) {
-                            deps.push_back(otherStage->name);
+                    if (it != otherNode->writeResources.end()) {
+                        if (std::find(deps.begin(), deps.end(), otherNode->name) == deps.end()) {
+                            deps.push_back(otherNode->name);
                         }
                     }
                 }
@@ -45,27 +44,27 @@ namespace muon::engine {
     }
 
     void RenderGraph::execute(vk::CommandBuffer commandBuffer) {
-        if (stagesUpdated) {
+        if (nodesUpdated) {
             executionOrder = determineExecutionOrder();
-            stagesUpdated = false;
+            nodesUpdated = false;
         }
 
         FrameInfo frameInfo;
         frameInfo.pingPongIndex = 0;
 
-        for (auto &stage : executionOrder) {
-            stage->execute(commandBuffer, frameInfo);
+        for (auto &node : executionOrder) {
+            node->execute(commandBuffer, frameInfo);
 
-            if (stage->stageType == StageType::Compute) {
+            if (node->nodeType == NodeType::Compute) {
                 frameInfo.pingPongIndex ^= 1;
             }
         }
     }
 
-    std::vector<std::shared_ptr<RenderGraph::Stage>> RenderGraph::determineExecutionOrder() {
-        std::unordered_map<std::string, std::shared_ptr<Stage>> nameToStage;
-        for (auto &stage : stages) {
-            nameToStage[stage->name] = stage;
+    std::vector<std::shared_ptr<RenderGraph::Node>> RenderGraph::determineExecutionOrder() {
+        std::unordered_map<std::string, std::shared_ptr<Node>> nameToNode;
+        for (auto &node : nodes) {
+            nameToNode[node->name] = node;
         }
 
         std::unordered_map<std::string, int32_t> inDegree;
@@ -80,12 +79,12 @@ namespace muon::engine {
             }
         }
 
-        std::vector<std::shared_ptr<Stage>> executionOrder;
+        std::vector<std::shared_ptr<Node>> executionOrder;
 
         while (!queue.empty()) {
             std::string current = queue.front();
             queue.pop();
-            executionOrder.push_back(nameToStage[current]);
+            executionOrder.push_back(nameToNode[current]);
 
             for (auto &[dependent, deps] : dependencies) {
                 auto it = std::find(deps.begin(), deps.end(), current);

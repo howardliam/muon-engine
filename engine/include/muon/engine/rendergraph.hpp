@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/engine/image.hpp"
 #include <unordered_map>
 #include <functional>
 #include <string>
@@ -10,31 +11,26 @@ namespace muon::engine {
 
     class RenderGraph {
     public:
-        struct Resource;
         struct ResourceUsage;
-        enum class StageType;
-        struct Stage;
+        enum class NodeType;
+        struct Node;
         struct FrameInfo;
 
-        void addResource(Resource resource);
-        void addStage(Stage stage);
+        void addImage(const std::string &name, std::unique_ptr<Image> image);
+        void addNode(Node node);
 
         void compile();
         void execute(vk::CommandBuffer commandBuffer);
 
     private:
-        std::unordered_map<std::string, Resource> resources{};
+        std::unordered_map<std::string, std::unique_ptr<Image>> resources{};
 
-        std::vector<std::shared_ptr<Stage>> stages;
-        bool stagesUpdated{false};
+        std::vector<std::shared_ptr<Node>> nodes;
+        bool nodesUpdated{false};
         std::unordered_map<std::string, std::vector<std::string>> dependencies;
 
-        std::vector<std::shared_ptr<Stage>> executionOrder;
-        std::vector<std::shared_ptr<Stage>> determineExecutionOrder();
-    };
-
-    struct RenderGraph::Resource {
-        /* to be filled out */
+        std::vector<std::shared_ptr<Node>> executionOrder;
+        std::vector<std::shared_ptr<Node>> determineExecutionOrder();
     };
 
     struct RenderGraph::ResourceUsage {
@@ -45,15 +41,15 @@ namespace muon::engine {
         vk::PipelineStageFlags stageFlags;
     };
 
-    enum class RenderGraph::StageType {
+    enum class RenderGraph::NodeType {
         Graphics,
         Compute,
         Transfer,
     };
 
-    struct RenderGraph::Stage {
+    struct RenderGraph::Node {
         std::string name;
-        StageType stageType;
+        NodeType nodeType;
 
         std::vector<ResourceUsage> readResources{};
         std::vector<ResourceUsage> writeResources{};
