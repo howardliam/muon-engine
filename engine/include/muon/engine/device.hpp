@@ -3,12 +3,13 @@
 #include <optional>
 #include <cstdint>
 #include <vector>
-#include "muon/engine/window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::engine {
+
+    class Window;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;

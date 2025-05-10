@@ -1,11 +1,12 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
-#include <vk_mem_alloc_handles.hpp>
+#include <vk_mem_alloc.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
+
+    class Device;
 
     /**
      * @brief wrapper around vulkan buffer.

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include <cstdint>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include <memory>
 
 namespace muon::engine {
+
+    class Device;
 
     class DescriptorPool2 {
     public:

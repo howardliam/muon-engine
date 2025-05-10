@@ -5,6 +5,7 @@
 #include <vk_mem_alloc_structs.hpp>
 #include <vulkan/vulkan_structs.hpp>
 #include "muon/log/logger.hpp"
+#include "muon/engine/device.hpp"
 
 namespace muon::engine {
 

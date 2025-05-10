@@ -267,7 +267,7 @@ int main() {
             .build(descriptorSets[i]);
 
         engine::DescriptorWriter2(*globalPool, *globalSetLayout)
-            .addBufferWrite(1, 0, &bufferInfo)
+            .addBufferWrite(1, i, &bufferInfo)
             .writeAll(globalSet);
     }
 

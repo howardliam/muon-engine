@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include <cstdint>
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
@@ -8,6 +7,7 @@
 
 namespace muon::engine {
 
+    class Device;
     class DescriptorPool2;
 
     class DescriptorSetLayout2 {
