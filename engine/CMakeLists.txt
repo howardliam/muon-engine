@@ -6,6 +6,9 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
+    ${INCLUDE_DIR}/muon/engine/descriptor/pool.hpp
+    ${INCLUDE_DIR}/muon/engine/descriptor/setlayout.hpp
+
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
 
@@ -15,13 +18,11 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
-    ${INCLUDE_DIR}/muon/engine/framebuffer.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
     ${INCLUDE_DIR}/muon/engine/model.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/rendergraph.hpp
-    ${INCLUDE_DIR}/muon/engine/renderpass.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/texture.hpp
     ${INCLUDE_DIR}/muon/engine/vertex.hpp
@@ -43,13 +44,11 @@ set(SRC_FILES
 
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/device.cpp
-    ${SRC_DIR}/engine/framebuffer.cpp
     ${SRC_DIR}/engine/framehandler.cpp
     ${SRC_DIR}/engine/image.cpp
     ${SRC_DIR}/engine/model.cpp
     ${SRC_DIR}/engine/pipeline.cpp
     ${SRC_DIR}/engine/rendergraph.cpp
-    ${SRC_DIR}/engine/renderpass.cpp
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/texture.cpp
     ${SRC_DIR}/engine/window.cpp

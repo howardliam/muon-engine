@@ -1,4 +1,5 @@
 #include "muon/engine/descriptor.hpp"
+#include "muon/engine/descriptor/pool.hpp"
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
@@ -71,6 +72,54 @@ namespace muon::engine {
 
     vk::DescriptorPool DescriptorPool::getDescriptorPool() const {
         return descriptorPool;
+    }
+
+    /* NEW API */
+
+    DescriptorPool2::DescriptorPool2(
+        Device &device,
+        uint32_t maxSets,
+        vk::DescriptorPoolCreateFlags poolFlags,
+        const std::vector<vk::DescriptorPoolSize> &poolSizes
+    ) : device(device) {
+        vk::DescriptorPoolCreateInfo createInfo{};
+        createInfo.maxSets = maxSets;
+        createInfo.flags = poolFlags;
+        createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+        createInfo.pPoolSizes = poolSizes.data();
+
+        auto result = device.getDevice().createDescriptorPool(&createInfo, nullptr, &pool);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create descriptor pool");
+        }
+    }
+
+    DescriptorPool2::~DescriptorPool2() {
+        device.getDevice().destroyDescriptorPool(pool);
+    }
+
+    vk::DescriptorPool DescriptorPool2::getPool() const {
+        return pool;
+    }
+
+    DescriptorPool2::Builder::Builder(Device &device) : device(device) {}
+
+    DescriptorPool2::Builder &DescriptorPool2::Builder::addPoolSize(vk::DescriptorType descriptorType, uint32_t size) {
+        poolSizes.push_back(vk::DescriptorPoolSize{ descriptorType, size });
+        return *this;
+    }
+
+    DescriptorPool2::Builder &DescriptorPool2::Builder::setMaxSets(uint32_t count) {
+        maxSets = count;
+        return *this;
+    }
+
+    DescriptorPool2 DescriptorPool2::Builder::build() const {
+        return DescriptorPool2(device, maxSets, vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, poolSizes);
+    }
+
+    std::unique_ptr<DescriptorPool2> DescriptorPool2::Builder::buildUniquePtr() const {
+        return std::make_unique<DescriptorPool2>(device, maxSets, vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, poolSizes);
     }
 
 }
