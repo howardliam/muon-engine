@@ -17,6 +17,7 @@
 
 namespace muon::engine {
 
+    #ifndef NDEBUG
     /**
      * @brief   callback function for Vulkan validation layers.
      *
@@ -97,6 +98,7 @@ namespace muon::engine {
 
         return function(instance, debugMessenger, allocator);
     }
+    #endif
 
     Device::Device(Window &window) : window(window) {
         createInstance();
@@ -408,32 +410,7 @@ namespace muon::engine {
             vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-        createInfo.pfnUserCallback = [](
-            vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-            vk::DebugUtilsMessageTypeFlagsEXT messageType,
-            const vk::DebugUtilsMessengerCallbackDataEXT *callbackData,
-            void *userData
-        ) -> vk::Bool32 {
-            switch (messageSeverity) {
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-                log::globalLogger->debug("VULKAN - \n{}\n", callbackData->pMessage);
-                break;
-
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-                log::globalLogger->info("VULKAN - \n{}\n", callbackData->pMessage);
-                break;
-
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-                log::globalLogger->warn("VULKAN - \n{}\n", callbackData->pMessage);
-                break;
-
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-                log::globalLogger->error("VULKAN - \n{}\n", callbackData->pMessage);
-                break;
-            }
-
-            return false;
-        };
+        createInfo.pfnUserCallback = debugCallback;
 
         auto result = createDebugUtilsMessenger(
             instance,
