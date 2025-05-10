@@ -6,6 +6,7 @@
 #include <vulkan/vulkan_structs.hpp>
 #include "muon/log/logger.hpp"
 #include "muon/engine/device.hpp"
+#include "muon/utils/prettyprint.hpp"
 
 namespace muon::engine {
 
@@ -29,7 +30,7 @@ namespace muon::engine {
 
         device.createBuffer(bufferSize, usageFlags, memoryUsage, buffer, allocation);
 
-        log::globalLogger->debug("created buffer {}", bufferSize);
+        log::globalLogger->debug("created buffer with size: {}", pp::parseBytes(bufferSize));
     }
 
     Buffer::~Buffer() {

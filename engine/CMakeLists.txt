@@ -34,6 +34,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
+    ${INCLUDE_DIR}/muon/utils/prettyprint.hpp
 )
 
 set(SRC_FILES
@@ -61,6 +62,7 @@ set(SRC_FILES
     ${SRC_DIR}/log/logger.cpp
 
     ${SRC_DIR}/utils/color.cpp
+    ${SRC_DIR}/utils/prettyprint.cpp
 )
 
 set(IMGUI_DIR ../external/imgui)
