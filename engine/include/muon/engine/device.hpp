@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/utils.hpp"
 #include <optional>
 #include <cstdint>
 #include <vector>
@@ -30,15 +31,10 @@ namespace muon::engine {
         std::vector<vk::PresentModeKHR> presentModes;
     };
 
-    class Device {
+    class Device : NoCopy, NoMove {
     public:
         Device(Window &window);
         ~Device();
-
-        Device(const Device &) = delete;
-        Device &operator=(const Device& ) = delete;
-        Device(const Device &&) = delete;
-        Device &operator=(const Device &&) = delete;
 
         /**
          * @brief   finds supported image format.
