@@ -79,12 +79,11 @@ namespace muon::engine {
     DescriptorPool2::DescriptorPool2(
         Device &device,
         uint32_t maxSets,
-        vk::DescriptorPoolCreateFlags poolFlags,
         const std::vector<vk::DescriptorPoolSize> &poolSizes
     ) : device(device) {
         vk::DescriptorPoolCreateInfo createInfo{};
         createInfo.maxSets = maxSets;
-        createInfo.flags = poolFlags;
+        createInfo.flags = vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
         createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
         createInfo.pPoolSizes = poolSizes.data();
 
@@ -115,11 +114,11 @@ namespace muon::engine {
     }
 
     DescriptorPool2 DescriptorPool2::Builder::build() const {
-        return DescriptorPool2(device, maxSets, vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, poolSizes);
+        return DescriptorPool2(device, maxSets, poolSizes);
     }
 
     std::unique_ptr<DescriptorPool2> DescriptorPool2::Builder::buildUniquePtr() const {
-        return std::make_unique<DescriptorPool2>(device, maxSets, vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, poolSizes);
+        return std::make_unique<DescriptorPool2>(device, maxSets, poolSizes);
     }
 
 }

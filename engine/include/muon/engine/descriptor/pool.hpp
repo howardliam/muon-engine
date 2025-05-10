@@ -15,7 +15,6 @@ namespace muon::engine {
         DescriptorPool2(
             Device &device,
             uint32_t maxSets,
-            vk::DescriptorPoolCreateFlags poolFlags,
             const std::vector<vk::DescriptorPoolSize> &poolSizes
         );
         ~DescriptorPool2();

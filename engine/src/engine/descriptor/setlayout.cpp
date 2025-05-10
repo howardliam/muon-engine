@@ -1,5 +1,6 @@
 #include "muon/engine/descriptor.hpp"
 #include "muon/engine/descriptor/setlayout.hpp"
+#include "muon/engine/descriptor/pool.hpp"
 #include <vulkan/vulkan_enums.hpp>
 #include <ranges>
 
@@ -116,6 +117,17 @@ namespace muon::engine {
 
     DescriptorSetLayout2::~DescriptorSetLayout2() {
         device.getDevice().destroyDescriptorSetLayout(setLayout, nullptr);
+    }
+
+    vk::DescriptorSet DescriptorSetLayout2::createSet(const DescriptorPool2 &pool) {
+        vk::DescriptorSetAllocateInfo allocInfo{};
+        allocInfo.descriptorPool = pool.getPool();
+        allocInfo.pSetLayouts = &setLayout;
+        allocInfo.descriptorSetCount = 1;
+
+        vk::DescriptorSet set;
+        auto _ = device.getDevice().allocateDescriptorSets(&allocInfo, &set);
+        return set;
     }
 
     vk::DescriptorSetLayout DescriptorSetLayout2::getSetLayout() const {

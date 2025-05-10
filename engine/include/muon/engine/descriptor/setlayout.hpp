@@ -8,6 +8,8 @@
 
 namespace muon::engine {
 
+    class DescriptorPool2;
+
     class DescriptorSetLayout2 {
     public:
         class Builder;
@@ -17,6 +19,8 @@ namespace muon::engine {
             const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings
         );
         ~DescriptorSetLayout2();
+
+        vk::DescriptorSet createSet(const DescriptorPool2 &pool);
 
         vk::DescriptorSetLayout getSetLayout() const;
 
