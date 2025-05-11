@@ -1,6 +1,5 @@
 # Muon Engine
-Muon Engine, or simply, Muon, is an amateur game engine being developed as a
-personal project.
+Muon is an experimental game engine built for curiosity and learning graphics programming.
 
 ## Features
 - Bindless textures
