@@ -120,7 +120,7 @@ public:
     ToneMap(
         engine::Device &device,
         std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::ComputeSystem(device, setLayouts) {
+    ) : engine::ComputeSystem(device, setLayouts, {}) {
         createPipeline();
     }
 
@@ -160,7 +160,7 @@ public:
     Swizzle(
         engine::Device &device,
         std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::ComputeSystem(device, setLayouts)  {
+    ) : engine::ComputeSystem(device, setLayouts, {})  {
         createPipeline();
     }
 

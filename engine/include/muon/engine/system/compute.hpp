@@ -11,7 +11,11 @@ namespace muon::engine {
 
     class ComputeSystem {
     public:
-        ComputeSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts);
+        ComputeSystem(
+            Device &device,
+            std::vector<vk::DescriptorSetLayout> setLayouts,
+            std::vector<vk::PushConstantRange> pushConstants
+        );
         ~ComputeSystem();
 
         virtual void dispatch(
@@ -34,7 +38,10 @@ namespace muon::engine {
          *
          * @param   setLayouts  the descriptor set layouts to use.
          */
-        void createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts);
+        void createPipelineLayout(
+            std::vector<vk::DescriptorSetLayout> setLayouts,
+            std::vector<vk::PushConstantRange> pushConstants
+        );
 
         /**
          * @brief   creates a pipeline for the compute system.

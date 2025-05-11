@@ -6,7 +6,11 @@
 
 namespace muon::engine {
 
-    ComputeSystem::ComputeSystem(Device &device, std::vector<vk::DescriptorSetLayout> setLayouts) : device(device) {
+    ComputeSystem::ComputeSystem(
+        Device &device,
+        std::vector<vk::DescriptorSetLayout> setLayouts,
+        std::vector<vk::PushConstantRange> pushConstants
+    ) : device(device) {
         createPipelineLayout(setLayouts);
     }
 
@@ -24,12 +28,15 @@ namespace muon::engine {
         return dispatch;
     }
 
-    void ComputeSystem::createPipelineLayout(std::vector<vk::DescriptorSetLayout> setLayouts) {
+    void ComputeSystem::createPipelineLayout(
+        std::vector<vk::DescriptorSetLayout> setLayouts,
+        std::vector<vk::PushConstantRange> pushConstants
+    ) {
         vk::PipelineLayoutCreateInfo createInfo{};
         createInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
         createInfo.pSetLayouts = setLayouts.data();
-        createInfo.pushConstantRangeCount = 0;
-        createInfo.pPushConstantRanges = nullptr;
+        createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
+        createInfo.pPushConstantRanges = pushConstants.data();
 
         auto result = device.getDevice().createPipelineLayout(&createInfo, nullptr, &pipelineLayout);
         if (result != vk::Result::eSuccess) {
