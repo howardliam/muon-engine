@@ -2,6 +2,7 @@
 
 #include "muon/log/logger.hpp"
 #include <cassert>
+#include <filesystem>
 #include <stdexcept>
 #include <vector>
 #include <fstream>
@@ -20,43 +21,52 @@ namespace muon::engine {
         glslang::FinalizeProcess();
     }
 
+    void ShaderCompiler::addShader(const std::filesystem::path &file) {
+        if (!std::filesystem::is_regular_file(file)) {
+            return;
+        }
+
+        const auto filename = file.filename().string();
+
+        ShaderMetadata metadata;
+
+        if (filename.ends_with(".vert") || filename.ends_with(".vs.hlsl")) {
+            metadata.stage = ShaderStage::Vertex;
+        } else if (filename.ends_with(".tesc") || filename.ends_with(".hs.hlsl")) {
+            metadata.stage = ShaderStage::TessellationControl;
+        } else if (filename.ends_with(".tese") || filename.ends_with(".ds.hlsl")) {
+            metadata.stage = ShaderStage::TessellationEvaluation;
+        } else if (filename.ends_with(".geom") || filename.ends_with(".gs.hlsl")) {
+            metadata.stage = ShaderStage::Geometry;
+        } else if (filename.ends_with(".frag") || filename.ends_with(".ps.hlsl")) {
+            metadata.stage = ShaderStage::Fragment;
+        } else if (filename.ends_with(".comp") || filename.ends_with(".cs.hlsl")) {
+            metadata.stage = ShaderStage::Compute;
+        } else {
+            if (filename.ends_with(".spv")) {
+                return;
+            }
+            log::globalLogger->warn("skipping unknown file: {}", filename);
+            return;
+        }
+
+        if (filename.ends_with("hlsl")) {
+            metadata.language = ShaderLanguage::Hlsl;
+        } else {
+            metadata.language = ShaderLanguage::Glsl;
+        }
+
+        shaders[file] = metadata;
+        log::globalLogger->debug("added {} to compilation queue", filename);
+    }
+
     void ShaderCompiler::addShaders(const std::filesystem::path &directory) {
-        assert(std::filesystem::is_directory(directory) && "must be a directory");
+        if (!std::filesystem::is_directory(directory)) {
+            return;
+        }
 
         for (const auto& file : std::filesystem::directory_iterator(directory)) {
-            const auto path = file.path();
-            const auto filename = path.filename().string();
-
-            ShaderMetadata metadata;
-
-            if (filename.ends_with(".vert") || filename.ends_with(".vs.hlsl")) {
-                metadata.stage = ShaderStage::Vertex;
-            } else if (filename.ends_with(".tesc") || filename.ends_with(".hs.hlsl")) {
-                metadata.stage = ShaderStage::TessellationControl;
-            } else if (filename.ends_with(".tese") || filename.ends_with(".ds.hlsl")) {
-                metadata.stage = ShaderStage::TessellationEvaluation;
-            } else if (filename.ends_with(".geom") || filename.ends_with(".gs.hlsl")) {
-                metadata.stage = ShaderStage::Geometry;
-            } else if (filename.ends_with(".frag") || filename.ends_with(".ps.hlsl")) {
-                metadata.stage = ShaderStage::Fragment;
-            } else if (filename.ends_with(".comp") || filename.ends_with(".cs.hlsl")) {
-                metadata.stage = ShaderStage::Compute;
-            } else {
-                if (filename.ends_with(".spv")) {
-                    continue;
-                }
-                log::globalLogger->warn("skipping unknown file: {}", filename);
-                continue;
-            }
-
-            if (filename.ends_with("hlsl")) {
-                metadata.language = ShaderLanguage::Hlsl;
-            } else {
-                metadata.language = ShaderLanguage::Glsl;
-            }
-
-            shaders[path] = metadata;
-            log::globalLogger->debug("added {} to compilation queue", filename);
+            addShader(file.path());
         }
     }
 

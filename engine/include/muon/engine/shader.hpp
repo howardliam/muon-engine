@@ -15,6 +15,7 @@ namespace muon::engine {
         ShaderCompiler();
         ~ShaderCompiler();
 
+        void addShader(const std::filesystem::path &file);
         void addShaders(const std::filesystem::path &directory);
 
         void compile();
