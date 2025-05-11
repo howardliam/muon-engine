@@ -8,19 +8,19 @@
 namespace muon::engine {
 
     class Device;
-    class DescriptorPool2;
+    class DescriptorPool;
 
-    class DescriptorSetLayout2 {
+    class DescriptorSetLayout {
     public:
         class Builder;
 
-        DescriptorSetLayout2(
+        DescriptorSetLayout(
             Device &device,
             const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings
         );
-        ~DescriptorSetLayout2();
+        ~DescriptorSetLayout();
 
-        vk::DescriptorSet createSet(const DescriptorPool2 &pool);
+        vk::DescriptorSet createSet(const DescriptorPool &pool);
 
         vk::DescriptorSetLayout getSetLayout() const;
 
@@ -30,18 +30,18 @@ namespace muon::engine {
         vk::DescriptorSetLayout setLayout;
         std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
 
-        friend class DescriptorWriter2;
+        friend class DescriptorWriter;
     };
 
-    class DescriptorSetLayout2::Builder {
+    class DescriptorSetLayout::Builder {
     public:
         Builder(Device &device);
 
         Builder &addBinding(uint32_t binding, vk::DescriptorType descriptorType, vk::ShaderStageFlags stageFlags, uint32_t count = 1);
 
-        DescriptorSetLayout2 build() const;
+        DescriptorSetLayout build() const;
 
-        std::unique_ptr<DescriptorSetLayout2> buildUniquePtr() const;
+        std::unique_ptr<DescriptorSetLayout> buildUniquePtr() const;
 
     private:
         Device &device;

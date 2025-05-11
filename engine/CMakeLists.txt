@@ -17,7 +17,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/system/graphics.hpp
 
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
-    ${INCLUDE_DIR}/muon/engine/descriptor.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp

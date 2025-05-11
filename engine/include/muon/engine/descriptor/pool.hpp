@@ -9,16 +9,16 @@ namespace muon::engine {
 
     class Device;
 
-    class DescriptorPool2 {
+    class DescriptorPool {
     public:
         class Builder;
 
-        DescriptorPool2(
+        DescriptorPool(
             Device &device,
             uint32_t maxSets,
             const std::vector<vk::DescriptorPoolSize> &poolSizes
         );
-        ~DescriptorPool2();
+        ~DescriptorPool();
 
         vk::DescriptorPool getPool() const;
     private:
@@ -26,10 +26,10 @@ namespace muon::engine {
 
         vk::DescriptorPool pool;
 
-        friend class DescriptorWriter2;
+        friend class DescriptorWriter;
     };
 
-    class DescriptorPool2::Builder {
+    class DescriptorPool::Builder {
     public:
         Builder(Device &device);
 
@@ -37,9 +37,9 @@ namespace muon::engine {
 
         Builder &setMaxSets(uint32_t count);
 
-        DescriptorPool2 build() const;
+        DescriptorPool build() const;
 
-        std::unique_ptr<DescriptorPool2> buildUniquePtr() const;
+        std::unique_ptr<DescriptorPool> buildUniquePtr() const;
 
     private:
         Device &device;

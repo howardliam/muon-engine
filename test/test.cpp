@@ -14,7 +14,6 @@
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
 #include <muon/engine/system/compute.hpp>
-#include <muon/engine/descriptor.hpp>
 #include <muon/engine/descriptor/pool.hpp>
 #include <muon/engine/descriptor/setlayout.hpp>
 #include <muon/engine/device.hpp>
@@ -218,12 +217,12 @@ int main() {
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
 
-    auto globalPool = engine::DescriptorPool2::Builder(device)
+    auto globalPool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
         .addPoolSize(vk::DescriptorType::eUniformBuffer, std::numeric_limits<int16_t>().max())
         .buildUniquePtr();
 
-    auto globalSetLayout = engine::DescriptorSetLayout2::Builder(device)
+    auto globalSetLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
         .addBinding(1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics, 1)
         .buildUniquePtr();
@@ -246,7 +245,7 @@ int main() {
 
     auto bufferInfo = uboBuffer->getDescriptorInfo();
 
-    engine::DescriptorWriter2(*globalPool, *globalSetLayout)
+    engine::DescriptorWriter(*globalPool, *globalSetLayout)
         .addBufferWrite(1, 0, &bufferInfo)
         .writeAll(globalSet);
 
@@ -326,30 +325,24 @@ int main() {
 
     std::unique_ptr computeImagePool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eStorageImage, 4)
-        .build();
+        .buildUniquePtr();
 
     std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
-        .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
-        .addBinding(1, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute)
-        .build();
+        .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute, 2)
+        .buildUniquePtr();
+
+    auto computeSet = computeSetLayout->createSet(*computeImagePool);
 
     auto infoA = computeImageA->getDescriptorInfo();
     auto infoB = computeImageB->getDescriptorInfo();
 
-    std::array<vk::DescriptorSet, 2> computeDescriptorSets;
+    engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
+        .addImageWrite(0, 0, &infoA)
+        .addImageWrite(0, 1, &infoB)
+        .writeAll(computeSet);
 
-    engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-        .writeImage(0, &infoA)
-        .writeImage(1, &infoB)
-        .build(computeDescriptorSets[0]);
-
-    engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-        .writeImage(0, &infoB)
-        .writeImage(1, &infoA)
-        .build(computeDescriptorSets[1]);
-
-    ToneMap tonemap(device, {computeSetLayout->getDescriptorSetLayout()});
-    Swizzle swizzle(device, {computeSetLayout->getDescriptorSetLayout()});
+    ToneMap tonemap(device, { computeSetLayout->getSetLayout() });
+    Swizzle swizzle(device, { computeSetLayout->getSetLayout() });
 
     bool screenshotRequested{false};
 
@@ -498,7 +491,7 @@ int main() {
 
             sceneColor->revertTransition(cmd);
 
-            tonemap.dispatch(cmd, computeDescriptorSets[frameInfo.pingPongIndex], window.getExtent(), {32, 32, 1});
+            tonemap.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -517,7 +510,7 @@ int main() {
 
         },
         .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
-            swizzle.dispatch(cmd, computeDescriptorSets[frameInfo.pingPongIndex], window.getExtent(), {32, 32, 1});
+            swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -579,59 +572,59 @@ int main() {
             frames = 0;
         }
 
-        if (window.wasResized()) {
-            device.getDevice().waitIdle();
+        // if (window.wasResized()) {
+        //     device.getDevice().waitIdle();
 
-            extent = window.getExtent();
+        //     extent = window.getExtent();
 
-            computeImageA = engine::Image::Builder(device)
-                .setExtent(extent)
-                .setFormat(vk::Format::eR8G8B8A8Unorm)
-                .setImageUsageFlags(usageFlags)
-                .setImageLayout(vk::ImageLayout::eGeneral)
-                .setAccessFlags(accessFlags)
-                .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-                .buildUniquePtr();
+        //     computeImageA = engine::Image::Builder(device)
+        //         .setExtent(extent)
+        //         .setFormat(vk::Format::eR8G8B8A8Unorm)
+        //         .setImageUsageFlags(usageFlags)
+        //         .setImageLayout(vk::ImageLayout::eGeneral)
+        //         .setAccessFlags(accessFlags)
+        //         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        //         .buildUniquePtr();
 
-            computeImageB = engine::Image::Builder(device)
-                .setExtent(extent)
-                .setFormat(vk::Format::eR8G8B8A8Unorm)
-                .setImageUsageFlags(usageFlags)
-                .setImageLayout(vk::ImageLayout::eGeneral)
-                .setAccessFlags(accessFlags)
-                .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-                .buildUniquePtr();
+        //     computeImageB = engine::Image::Builder(device)
+        //         .setExtent(extent)
+        //         .setFormat(vk::Format::eR8G8B8A8Unorm)
+        //         .setImageUsageFlags(usageFlags)
+        //         .setImageLayout(vk::ImageLayout::eGeneral)
+        //         .setAccessFlags(accessFlags)
+        //         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        //         .buildUniquePtr();
 
-            computeImagePool->resetPool();
+        //     computeImagePool->resetPool();
 
-            auto infoA = computeImageA->getDescriptorInfo();
-            auto infoB = computeImageB->getDescriptorInfo();
+        //     auto infoA = computeImageA->getDescriptorInfo();
+        //     auto infoB = computeImageB->getDescriptorInfo();
 
-            engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-                .writeImage(0, &infoA)
-                .writeImage(1, &infoB)
-                .build(computeDescriptorSets[0]);
+        //     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+        //         .writeImage(0, &infoA)
+        //         .writeImage(1, &infoB)
+        //         .build(computeDescriptorSets[0]);
 
-            engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-                .writeImage(0, &infoB)
-                .writeImage(1, &infoA)
-                .build(computeDescriptorSets[1]);
+        //     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
+        //         .writeImage(0, &infoB)
+        //         .writeImage(1, &infoA)
+        //         .build(computeDescriptorSets[1]);
 
-            size = extent.width * extent.height;
-            stagingBuffer = std::make_unique<engine::Buffer>(
-                device,
-                4,
-                size,
-                vk::BufferUsageFlagBits::eTransferDst,
-                vma::MemoryUsage::eGpuToCpu
-            );
+        //     size = extent.width * extent.height;
+        //     stagingBuffer = std::make_unique<engine::Buffer>(
+        //         device,
+        //         4,
+        //         size,
+        //         vk::BufferUsageFlagBits::eTransferDst,
+        //         vma::MemoryUsage::eGpuToCpu
+        //     );
 
-            frameHandler.recreateSwapchain(extent);
+        //     frameHandler.recreateSwapchain(extent);
 
-            window.resetResized();
+        //     window.resetResized();
 
-            continue;
-        }
+        //     continue;
+        // }
 
         const auto commandBuffer = frameHandler.beginFrame();
 
