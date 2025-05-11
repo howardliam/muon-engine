@@ -11,7 +11,7 @@ namespace muon::engine {
         std::vector<vk::DescriptorSetLayout> setLayouts,
         std::vector<vk::PushConstantRange> pushConstants
     ) : device(device) {
-        createPipelineLayout(setLayouts);
+        createPipelineLayout(setLayouts, pushConstants);
     }
 
     ComputeSystem::~ComputeSystem() {

@@ -2,6 +2,7 @@
 
 #include "muon/engine/pipeline.hpp"
 #include "muon/engine/device.hpp"
+#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 
@@ -46,17 +47,8 @@ namespace muon::engine {
         shaders.resize(shaderPaths.size());
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages(shaderPaths.size());
 
-        bool hasVertShader = false;
-        bool hasFragShader = false;
-
         size_t idx = 0;
-        for (auto [stage, path] : shaderPaths) {
-            if (stage == vk::ShaderStageFlagBits::eVertex) {
-                hasVertShader = true;
-            } else if (stage == vk::ShaderStageFlagBits::eFragment) {
-                hasFragShader = true;
-            }
-
+        for (auto &[stage, path] : shaderPaths) {
             std::vector byteCode = readShaderFile(path);
             vk::ShaderModule shaderModule;
             createShaderModule(byteCode, shaderModule);
@@ -73,10 +65,6 @@ namespace muon::engine {
             shaderStages[idx] = stageCreateInfo;
 
             idx += 1;
-        }
-
-        if ((!hasVertShader && !hasFragShader)) {
-            throw std::runtime_error("cannot create a pipeline without vertex and fragment shaders");
         }
 
         vk::PipelineVertexInputStateCreateInfo vertexInputState{};
@@ -182,6 +170,7 @@ namespace muon::engine {
     GraphicsPipeline::Builder::Builder(Device &device) : device(device) {}
 
     GraphicsPipeline::Builder &GraphicsPipeline::Builder::addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path) {
+        assert(stage < vk::ShaderStageFlagBits::eCompute);
         shaderPaths[stage] = path;
         return *this;
     }
