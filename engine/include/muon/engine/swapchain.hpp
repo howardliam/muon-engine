@@ -11,7 +11,7 @@ namespace muon::engine {
     class Device;
 
     namespace constants {
-        constexpr uint32_t maxFramesInFlight = 2;
+        constexpr uint32_t maxFramesInFlight = 5;
     }
 
     class Swapchain {
