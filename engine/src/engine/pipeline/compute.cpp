@@ -1,7 +1,7 @@
 #include "muon/engine/pipeline/compute.hpp"
 
 #include "muon/engine/device.hpp"
-#include "muon/engine/pipeline.hpp"
+#include "muon/engine/shader.hpp"
 
 namespace muon::engine {
 

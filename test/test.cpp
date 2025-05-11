@@ -20,7 +20,6 @@
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
-#include <muon/engine/pipeline.hpp>
 #include <muon/engine/rendergraph.hpp>
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/window.hpp>
@@ -105,8 +104,8 @@ protected:
         configInfo.pipelineLayout = pipelineLayout;
 
         pipeline = engine::GraphicsPipeline::Builder(device)
-            .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
-            .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
+            .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.2.spv")
+            .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.2.spv")
             .buildUniquePtr(configInfo);
     }
 };

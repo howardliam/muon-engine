@@ -26,16 +26,19 @@ set(SDL_INSTALL_TESTS OFF FORCE)
 add_subdirectory(external/sdl)
 
 find_package(Vulkan REQUIRED)
+find_package(SPIRV-Tools REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
 add_subdirectory(external/vulkan-memory-allocator-hpp)
+set(ALLOW_EXTERNAL_SPIRV_TOOLS ON FORCE)
+add_subdirectory(external/glslang)
 
+set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
+set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
 add_subdirectory(external/spirv-reflect)
-option(SPIRV_REFLECT_EXECUTABLE OFF)
-option(SPIRV_REFLECT_STATIC_LIB ON)
 
+set(GLM_ENABLE_CXX_20 ON FORCE)
+set(GLM_ENABLE_SIMD_AVX2 ON FORCE)
 add_subdirectory(external/glm)
-option(GLM_ENABLE_CXX_20 ON)
-option(GLM_ENABLE_SIMD_AVX2 ON)
 
 pkg_check_modules(SPNG REQUIRED spng)
 find_package(libjpeg-turbo REQUIRED)

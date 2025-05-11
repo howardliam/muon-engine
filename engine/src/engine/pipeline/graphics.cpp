@@ -1,12 +1,10 @@
 #include "muon/engine/pipeline/graphics.hpp"
 
-#include "muon/engine/pipeline.hpp"
+#include "muon/engine/shader.hpp"
 #include "muon/engine/device.hpp"
 #include "muon/log/logger.hpp"
 #include <algorithm>
 #include <spirv_reflect.h>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 

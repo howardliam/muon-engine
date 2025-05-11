@@ -21,7 +21,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
     ${INCLUDE_DIR}/muon/engine/model.hpp
-    ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/rendergraph.hpp
     ${INCLUDE_DIR}/muon/engine/shader.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
@@ -52,7 +51,6 @@ set(SRC_FILES
     ${SRC_DIR}/engine/framehandler.cpp
     ${SRC_DIR}/engine/image.cpp
     ${SRC_DIR}/engine/model.cpp
-    ${SRC_DIR}/engine/pipeline.cpp
     ${SRC_DIR}/engine/rendergraph.cpp
     ${SRC_DIR}/engine/shader.cpp
     ${SRC_DIR}/engine/swapchain.cpp
@@ -92,7 +90,7 @@ add_library(${LIB_NAME} SHARED
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
-target_link_libraries(${LIB_NAME} PRIVATE spng spirv-reflect-static)
+target_link_libraries(${LIB_NAME} PRIVATE spng spirv-reflect-static glslang SPIRV)
 target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
 
 add_library(muon::engine ALIAS ${LIB_NAME})
