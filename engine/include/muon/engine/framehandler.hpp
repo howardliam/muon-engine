@@ -3,6 +3,7 @@
 #include "muon/utils/nocopy.hpp"
 #include <memory>
 #include <vector>
+#include <chrono>
 #include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
@@ -30,6 +31,10 @@ namespace muon::engine {
          * @brief   ends the current frame being recorded.
          */
         void endFrame();
+
+        void beginFrameTiming();
+
+        void updateFrameTiming();
 
         void copyImageToSwapchain(vk::Image image);
 
@@ -61,6 +66,8 @@ namespace muon::engine {
          */
         [[nodiscard]] float getAspectRatio() const;
 
+        [[nodiscard]] float getFrameTime() const;
+
         /**
          * @brief   recreates the swapchain, used for when window size changes, etc.
          */
@@ -76,6 +83,9 @@ namespace muon::engine {
         uint32_t currentImageIndex{0};
         int32_t currentFrameIndex{0};
         bool frameInProgress{false};
+
+        std::chrono::time_point<std::chrono::high_resolution_clock> currentTime;
+        float frameTime{0.0};
 
         /**
          * @brief   creates command buffers for each image in the swapchain.

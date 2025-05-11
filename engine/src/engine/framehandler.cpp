@@ -64,6 +64,17 @@ namespace muon::engine {
         currentFrameIndex = (currentFrameIndex + 1) % constants::maxFramesInFlight;
     }
 
+    void FrameHandler::beginFrameTiming() {
+        currentTime = std::chrono::high_resolution_clock::now();
+        frameTime = 0.0;
+    }
+
+    void FrameHandler::updateFrameTiming() {
+        auto newTime = std::chrono::high_resolution_clock::now();
+        frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+        currentTime = newTime;
+    }
+
     void FrameHandler::copyImageToSwapchain(vk::Image image) {
         auto swapchainImage = swapchain->getImage(currentImageIndex);
 
@@ -168,6 +179,10 @@ namespace muon::engine {
 
     float FrameHandler::getAspectRatio() const {
         return swapchain->getExtentAspectRatio();
+    }
+
+    float FrameHandler::getFrameTime() const {
+        return frameTime;
     }
 
     void FrameHandler::createCommandBuffers() {

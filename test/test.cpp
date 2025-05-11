@@ -3,7 +3,6 @@
 #include <limits>
 #include <memory>
 #include <fstream>
-#include <chrono>
 #include <print>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -357,9 +356,6 @@ int main() {
     transform = glm::scale(transform, glm::vec3{2.0f});
     transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3{1.0f, 1.0f, 0.0f});
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float frameTime{0.0};
-
     float seconds{0.0};
     int32_t frames{0};
 
@@ -540,6 +536,8 @@ int main() {
 
     renderGraph.compile();
 
+    frameHandler.beginFrameTiming();
+
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -626,7 +624,7 @@ int main() {
 
         frameIndex = frameHandler.getFrameIndex();
 
-        transform = glm::rotate(transform, glm::tau<float>() * frameTime, glm::vec3{1.0f, 1.0f, 1.0f});
+        transform = glm::rotate(transform, glm::tau<float>() * frameHandler.getFrameTime(), glm::vec3{1.0f, 1.0f, 1.0f});
 
         Ubo ubo{};
         ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -705,11 +703,9 @@ int main() {
         //     screenshotRequested = false;
         // }
 
-        auto newTime = std::chrono::high_resolution_clock::now();
-        frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-        currentTime = newTime;
+        frameHandler.updateFrameTiming();
 
-        seconds += frameTime;
+        seconds += frameHandler.getFrameTime();
         frames += 1;
     }
 
