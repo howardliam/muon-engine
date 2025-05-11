@@ -200,7 +200,9 @@ int main() {
     logger->info("running in release");
     #endif
 
-    engine::compileShaders("./test/assets/shaders");
+    engine::ShaderCompiler shaderCompiler;
+    shaderCompiler.addShaders("./test/assets/shaders");
+    shaderCompiler.compile();
 
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)

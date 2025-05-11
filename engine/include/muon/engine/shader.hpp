@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <vector>
+#include <unordered_map>
 
 namespace muon::engine {
 
@@ -11,6 +12,10 @@ namespace muon::engine {
 
     class ShaderCompiler {
     public:
+        enum class ShaderLanguage;
+        enum class ShaderStage;
+        struct ShaderMetadata;
+
         ShaderCompiler();
         ~ShaderCompiler();
 
@@ -20,13 +25,32 @@ namespace muon::engine {
 
         void clearMemory();
 
-        static std::vector<uint8_t> readShaderFile(const std::filesystem::path &path);
+        static std::vector<uint8_t> readFile(const std::filesystem::path &path);
 
     private:
-        std::vector<std::filesystem::path> shaderPaths{};
+        std::unordered_map<std::filesystem::path, ShaderMetadata> shaders;
 
         void compileGlslToSpv();
         void compileHlslToSpv();
+    };
+
+    enum class ShaderCompiler::ShaderLanguage {
+        Glsl,
+        Hlsl,
+    };
+
+    enum class ShaderCompiler::ShaderStage {
+        Vertex,
+        TessellationControl,
+        TessellationEvaluation,
+        Geometry,
+        Fragment,
+        Compute,
+    };
+
+    struct ShaderCompiler::ShaderMetadata {
+        ShaderLanguage language;
+        ShaderStage stage;
     };
 
 }
