@@ -218,11 +218,6 @@ int main() {
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
 
-    std::unique_ptr pool = engine::DescriptorPool::Builder(device)
-        .addPoolSize(vk::DescriptorType::eUniformBuffer, engine::constants::maxFramesInFlight)
-        .addPoolSize(vk::DescriptorType::eCombinedImageSampler, engine::constants::maxFramesInFlight)
-        .build();
-
     auto globalPool = engine::DescriptorPool2::Builder(device)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
         .addPoolSize(vk::DescriptorType::eUniformBuffer, std::numeric_limits<int16_t>().max())
@@ -230,7 +225,7 @@ int main() {
 
     auto globalSetLayout = engine::DescriptorSetLayout2::Builder(device)
         .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
-        .addBinding(1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
+        .addBinding(1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics, 1)
         .buildUniquePtr();
 
     auto globalSet = globalSetLayout->createSet(*globalPool);
@@ -241,36 +236,19 @@ int main() {
         glm::mat4 transform;
     };
 
-    std::vector<std::unique_ptr<engine::Buffer>> uboBuffers(engine::constants::maxFramesInFlight);
-    for (size_t i = 0; i < uboBuffers.size(); i++) {
-        uboBuffers[i] = std::make_unique<engine::Buffer>(
-            device,
-            sizeof(Ubo),
-            1,
-            vk::BufferUsageFlagBits::eUniformBuffer,
-            vma::MemoryUsage::eCpuOnly
-        );
+    auto uboBuffer = std::make_unique<engine::Buffer>(
+        device,
+        sizeof(Ubo),
+        1,
+        vk::BufferUsageFlagBits::eUniformBuffer,
+        vma::MemoryUsage::eCpuCopy
+    );
 
-        auto _ = uboBuffers[i]->map();
-    }
+    auto bufferInfo = uboBuffer->getDescriptorInfo();
 
-    std::unique_ptr setLayout = engine::DescriptorSetLayout::Builder(device)
-        .addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics)
-        // .addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics)
-        .build();
-
-    std::vector<vk::DescriptorSet> descriptorSets(engine::constants::maxFramesInFlight);
-    for (size_t i = 0; i < descriptorSets.size(); i++) {
-        auto bufferInfo = uboBuffers[i]->descriptorInfo();
-
-        engine::DescriptorWriter(*setLayout, *pool)
-            .writeBuffer(0, &bufferInfo)
-            .build(descriptorSets[i]);
-
-        engine::DescriptorWriter2(*globalPool, *globalSetLayout)
-            .addBufferWrite(1, i, &bufferInfo)
-            .writeAll(globalSet);
-    }
+    engine::DescriptorWriter2(*globalPool, *globalSetLayout)
+        .addBufferWrite(1, 0, &bufferInfo)
+        .writeAll(globalSet);
 
     std::unique_ptr sceneColor = engine::Image::Builder(device)
         .setExtent(window.getExtent())
@@ -322,7 +300,7 @@ int main() {
     renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
     renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-    RenderSystemTest renderSystem(device, { setLayout->getDescriptorSetLayout() }, {});
+    RenderSystemTest renderSystem(device, { globalSetLayout->getSetLayout() }, {});
     renderSystem.bake(renderingCreateInfo);
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
@@ -462,7 +440,7 @@ int main() {
             cmd.setViewport(0, 1, &viewport);
             cmd.setScissor(0, 1, &scissor);
 
-            renderSystem.renderModel(cmd, descriptorSets[frameIndex], square);
+            renderSystem.renderModel(cmd, globalSet, square);
 
             cmd.endRendering();
         }
@@ -568,6 +546,7 @@ int main() {
 
             computeImageA->revertTransition(cmd);
         }
+
     });
 
     renderGraph.compile();
@@ -665,8 +644,10 @@ int main() {
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
         ubo.transform = transform;
 
-        uboBuffers[frameIndex]->writeToBuffer(&ubo);
-        uboBuffers[frameIndex]->flush();
+        auto _ = uboBuffer->map();
+        uboBuffer->writeToBuffer(&ubo);
+        uboBuffer->flush();
+        uboBuffer->unmap();
 
         renderGraph.execute(commandBuffer);
 

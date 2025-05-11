@@ -1,5 +1,7 @@
 #version 460 core
 
+#extension GL_EXT_nonuniform_qualifier : enable
+
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 tex;
@@ -7,7 +9,8 @@ layout(location = 2) in vec2 tex;
 layout(location = 0) out vec2 outTex;
 layout(location = 1) out vec3 outPosition;
 
-layout(set = 0, binding = 0) uniform Ubo {
+layout(set = 0, binding = 0, rgba8) uniform readonly image2D images[];
+layout(set = 0, binding = 1) uniform Ubo {
     mat4 projection;
     mat4 view;
     mat4 transform;
