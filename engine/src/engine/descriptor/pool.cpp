@@ -1,6 +1,7 @@
 #include "muon/engine/descriptor.hpp"
 #include "muon/engine/descriptor/pool.hpp"
 #include "muon/engine/device.hpp"
+#include "muon/log/logger.hpp"
 
 #include <stdexcept>
 #include <vulkan/vulkan_enums.hpp>
@@ -93,10 +94,13 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create descriptor pool");
         }
+
+        log::globalLogger->debug("created descriptor pool");
     }
 
     DescriptorPool2::~DescriptorPool2() {
         device.getDevice().destroyDescriptorPool(pool);
+        log::globalLogger->debug("destroyed descriptor pool");
     }
 
     vk::DescriptorPool DescriptorPool2::getPool() const {
