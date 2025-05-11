@@ -108,9 +108,6 @@ protected:
         pipeline = engine::GraphicsPipeline::Builder(device)
             .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
             .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
-            .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
-            .addVertexAttribute(vk::Format::eR32G32B32Sfloat)
-            .addVertexAttribute(vk::Format::eR32G32Sfloat)
             .buildUniquePtr(configInfo);
     }
 };

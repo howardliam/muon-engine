@@ -17,7 +17,6 @@ namespace muon::engine {
         GraphicsPipeline(
             Device &device,
             const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-            const VertexLayout &vertexLayout,
             const ConfigInfo &configInfo
         );
         ~GraphicsPipeline();
@@ -53,7 +52,6 @@ namespace muon::engine {
          */
         void createPipeline(
             const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-            const VertexLayout &vertexLayout,
             const ConfigInfo &configInfo
         );
     };
@@ -88,15 +86,6 @@ namespace muon::engine {
         Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
 
         /**
-         * @brief   adds a vertex input attribute, order matters here; must follow shader order.
-         *
-         * @param   format  the format of the vertex attribute.
-         *
-         * @return  reference to Builder.
-         */
-        Builder &addVertexAttribute(vk::Format format);
-
-        /**
          * @brief   builds the pipeline from the provided info.
          *
          * @param   configInfo  config information for the pipeline to be created with.
@@ -122,11 +111,6 @@ namespace muon::engine {
         uint32_t location{0};
         VertexLayout vertexLayout{};
         ConfigInfo configInfo{};
-
-        /**
-         * @brief   updates the binding description for the pipeline.
-         */
-        void updateBindingDescription();
     };
 
 }

@@ -2,17 +2,129 @@
 
 #include "muon/engine/pipeline.hpp"
 #include "muon/engine/device.hpp"
+#include "muon/log/logger.hpp"
+#include <algorithm>
+#include <spirv_reflect.h>
 #include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
+
+    uint32_t offsetFromSpirvFormat(SpvReflectFormat format) {
+        switch (format) {
+        case SPV_REFLECT_FORMAT_UNDEFINED:
+            return 0;
+
+        case SPV_REFLECT_FORMAT_R16_UINT:
+        case SPV_REFLECT_FORMAT_R16_SINT:
+        case SPV_REFLECT_FORMAT_R16_SFLOAT:
+            return 2;
+
+        case SPV_REFLECT_FORMAT_R16G16_UINT:
+        case SPV_REFLECT_FORMAT_R16G16_SINT:
+        case SPV_REFLECT_FORMAT_R16G16_SFLOAT:
+            return 2 * 2;
+
+        case SPV_REFLECT_FORMAT_R16G16B16_UINT:
+        case SPV_REFLECT_FORMAT_R16G16B16_SINT:
+        case SPV_REFLECT_FORMAT_R16G16B16_SFLOAT:
+            return 3 * 2;
+
+        case SPV_REFLECT_FORMAT_R16G16B16A16_UINT:
+        case SPV_REFLECT_FORMAT_R16G16B16A16_SINT:
+        case SPV_REFLECT_FORMAT_R16G16B16A16_SFLOAT:
+            return 4 * 2;
+
+        case SPV_REFLECT_FORMAT_R32_UINT:
+        case SPV_REFLECT_FORMAT_R32_SINT:
+        case SPV_REFLECT_FORMAT_R32_SFLOAT:
+            return 4;
+
+        case SPV_REFLECT_FORMAT_R32G32_UINT:
+        case SPV_REFLECT_FORMAT_R32G32_SINT:
+        case SPV_REFLECT_FORMAT_R32G32_SFLOAT:
+            return 2 * 4;
+
+        case SPV_REFLECT_FORMAT_R32G32B32_UINT:
+        case SPV_REFLECT_FORMAT_R32G32B32_SINT:
+        case SPV_REFLECT_FORMAT_R32G32B32_SFLOAT:
+            return 3 * 4;
+
+        case SPV_REFLECT_FORMAT_R32G32B32A32_UINT:
+        case SPV_REFLECT_FORMAT_R32G32B32A32_SINT:
+        case SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT:
+            return 4 * 4;
+
+        case SPV_REFLECT_FORMAT_R64_UINT:
+        case SPV_REFLECT_FORMAT_R64_SINT:
+        case SPV_REFLECT_FORMAT_R64_SFLOAT:
+            return 8;
+
+        case SPV_REFLECT_FORMAT_R64G64_UINT:
+        case SPV_REFLECT_FORMAT_R64G64_SINT:
+        case SPV_REFLECT_FORMAT_R64G64_SFLOAT:
+            return 2 * 8;
+
+        case SPV_REFLECT_FORMAT_R64G64B64_UINT:
+        case SPV_REFLECT_FORMAT_R64G64B64_SINT:
+        case SPV_REFLECT_FORMAT_R64G64B64_SFLOAT:
+            return 3 * 8;
+
+        case SPV_REFLECT_FORMAT_R64G64B64A64_UINT:
+        case SPV_REFLECT_FORMAT_R64G64B64A64_SINT:
+        case SPV_REFLECT_FORMAT_R64G64B64A64_SFLOAT:
+            return 4 * 8;
+
+        default:
+            return 0;
+        }
+    }
+
+    using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
+    VertexInputState vertexInputStateFromSpirv(const std::vector<uint8_t> &byteCode) {
+        spv_reflect::ShaderModule module(byteCode);
+        if (module.GetResult() != SPV_REFLECT_RESULT_SUCCESS) {
+            log::globalLogger->warn("failed to load SPIR-V for reflection");
+            return {};
+        }
+
+        uint32_t inputVarCount{0};
+        module.EnumerateInputVariables(&inputVarCount, nullptr);
+        std::vector<SpvReflectInterfaceVariable *> inputVars(inputVarCount);
+        module.EnumerateInputVariables(&inputVarCount, inputVars.data());
+
+        auto sorter = [](SpvReflectInterfaceVariable *a, SpvReflectInterfaceVariable *b) -> bool {
+            return a->location < b->location;
+        };
+        std::sort(inputVars.begin(), inputVars.end(), sorter);
+
+        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions(inputVarCount);
+
+        size_t offset{0};
+        for (const auto &inputVar : inputVars) {
+            size_t index = inputVar->location;
+            attributeDescriptions[index].location = inputVar->location;
+            attributeDescriptions[index].binding = 0;
+            attributeDescriptions[index].format = static_cast<vk::Format>(inputVar->format);
+            attributeDescriptions[index].offset = offset;
+
+            offset += offsetFromSpirvFormat(inputVar->format);
+        }
+
+        vk::VertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.inputRate = vk::VertexInputRate::eVertex;
+        bindingDescription.stride = offset;
+
+        return {std::move(attributeDescriptions), bindingDescription};
+    }
 
     GraphicsPipeline::GraphicsPipeline(
         Device &device,
         const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-        const VertexLayout &vertexLayout,
         const ConfigInfo &configInfo
     ) : device(device) {
-        createPipeline(shaderPaths, vertexLayout, configInfo);
+        createPipeline(shaderPaths, configInfo);
     }
 
     GraphicsPipeline::~GraphicsPipeline() {
@@ -41,18 +153,27 @@ namespace muon::engine {
 
     void GraphicsPipeline::createPipeline(
         const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-        const VertexLayout &vertexLayout,
         const ConfigInfo &configInfo
     ) {
+        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
+        std::optional<vk::VertexInputBindingDescription> bindingDescription;
+
         shaders.resize(shaderPaths.size());
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages(shaderPaths.size());
 
-        size_t idx = 0;
+        size_t index = 0;
         for (auto &[stage, path] : shaderPaths) {
             std::vector byteCode = readShaderFile(path);
             vk::ShaderModule shaderModule;
             createShaderModule(byteCode, shaderModule);
-            shaders[idx] = shaderModule;
+            shaders[index] = shaderModule;
+
+            if (stage == vk::ShaderStageFlagBits::eVertex) {
+                auto [attr, bind] = vertexInputStateFromSpirv(byteCode);
+
+                attributeDescriptions = attr;
+                bindingDescription = bind;
+            }
 
             vk::PipelineShaderStageCreateInfo stageCreateInfo{};
             stageCreateInfo.stage = stage;
@@ -62,17 +183,17 @@ namespace muon::engine {
             stageCreateInfo.pNext = nullptr;
             stageCreateInfo.pSpecializationInfo = nullptr;
 
-            shaderStages[idx] = stageCreateInfo;
+            shaderStages[index] = stageCreateInfo;
 
-            idx += 1;
+            index += 1;
         }
 
         vk::PipelineVertexInputStateCreateInfo vertexInputState{};
-        if (vertexLayout.bindingDescription.has_value()) {
+        if (bindingDescription.has_value()) {
             vertexInputState.vertexBindingDescriptionCount = 1;
-            vertexInputState.pVertexBindingDescriptions = &vertexLayout.bindingDescription.value();
-            vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexLayout.attributeDescriptions.size());
-            vertexInputState.pVertexAttributeDescriptions = vertexLayout.attributeDescriptions.data();
+            vertexInputState.pVertexBindingDescriptions = &bindingDescription.value();
+            vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+            vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
         } else {
             vertexInputState.vertexBindingDescriptionCount = 0;
             vertexInputState.pVertexBindingDescriptions = nullptr;
@@ -175,66 +296,12 @@ namespace muon::engine {
         return *this;
     }
 
-    GraphicsPipeline::Builder &GraphicsPipeline::Builder::addVertexAttribute(vk::Format format) {
-        auto offsetFromFormat = [](vk::Format &format) {
-            switch (format) {
-            case vk::Format::eR32G32B32A32Sfloat:
-            case vk::Format::eR32G32B32A32Sint:
-            case vk::Format::eR32G32B32A32Uint:
-                return 16;
-
-            case vk::Format::eR32G32B32Sfloat:
-            case vk::Format::eR32G32B32Uint:
-            case vk::Format::eR32G32B32Sint:
-                return 12;
-
-            case vk::Format::eR32G32Sfloat:
-            case vk::Format::eR32G32Uint:
-            case vk::Format::eR32G32Sint:
-                return 8;
-
-            case vk::Format::eR32Sfloat:
-            case vk::Format::eR32Uint:
-            case vk::Format::eR32Sint:
-                return 4;
-
-            default:
-                throw std::runtime_error("unsupported vertex input format");
-            }
-        };
-
-        vertexLayout.attributeDescriptions.push_back({
-            location,
-            0,
-            format,
-            offset,
-        });
-
-        location += 1;
-        offset += offsetFromFormat(format);
-
-        updateBindingDescription();
-
-        return *this;
-    }
-
-    void GraphicsPipeline::Builder::updateBindingDescription() {
-        if (!vertexLayout.bindingDescription.has_value()) {
-            vertexLayout.bindingDescription = vk::VertexInputBindingDescription{};
-
-            vertexLayout.bindingDescription->binding = 0;
-            vertexLayout.bindingDescription->inputRate = vk::VertexInputRate::eVertex;
-        }
-
-        vertexLayout.bindingDescription->stride = offset;
-    }
-
     GraphicsPipeline GraphicsPipeline::Builder::build(const ConfigInfo &configInfo) const {
-        return GraphicsPipeline(device, shaderPaths, vertexLayout, configInfo);
+        return GraphicsPipeline(device, shaderPaths, configInfo);
     }
 
     std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePtr(const ConfigInfo &configInfo) const {
-        return std::make_unique<GraphicsPipeline>(device, shaderPaths, vertexLayout, configInfo);
+        return std::make_unique<GraphicsPipeline>(device, shaderPaths, configInfo);
     }
 
 }
