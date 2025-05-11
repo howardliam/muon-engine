@@ -93,6 +93,8 @@ namespace muon::engine {
         std::vector<SpvReflectInterfaceVariable *> inputVars(inputVarCount);
         module.EnumerateInputVariables(&inputVarCount, inputVars.data());
 
+        log::globalLogger->info("input var count: {}", inputVarCount);
+
         auto sorter = [](SpvReflectInterfaceVariable *a, SpvReflectInterfaceVariable *b) -> bool {
             return a->location < b->location;
         };
@@ -103,9 +105,13 @@ namespace muon::engine {
         size_t offset{0};
         for (const auto &inputVar : inputVars) {
             size_t index = inputVar->location;
+            log::globalLogger->info("setting location: {}", inputVar->location);
             attributeDescriptions[index].location = inputVar->location;
+            log::globalLogger->info("setting binding");
             attributeDescriptions[index].binding = 0;
+            log::globalLogger->info("setting format");
             attributeDescriptions[index].format = static_cast<vk::Format>(inputVar->format);
+            log::globalLogger->info("setting offset: {}", offset);
             attributeDescriptions[index].offset = offset;
 
             offset += offsetFromSpirvFormat(inputVar->format);
