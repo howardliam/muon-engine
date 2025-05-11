@@ -29,17 +29,15 @@ find_package(Vulkan REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
 add_subdirectory(external/vulkan-memory-allocator-hpp)
 
+add_subdirectory(external/spirv-reflect)
 option(SPIRV_REFLECT_EXECUTABLE OFF)
 option(SPIRV_REFLECT_STATIC_LIB ON)
-add_subdirectory(external/spirv-reflect)
 
+add_subdirectory(external/glm)
 option(GLM_ENABLE_CXX_20 ON)
 option(GLM_ENABLE_SIMD_AVX2 ON)
-add_subdirectory(external/glm)
 
-option(SPNG_SHARED OFF)
-add_subdirectory(external/libspng)
-
+pkg_check_modules(SPNG REQUIRED spng)
 find_package(libjpeg-turbo REQUIRED)
 pkg_check_modules(OPUS REQUIRED opus)
 pkg_check_modules(OPUSFILE REQUIRED opusfile)
