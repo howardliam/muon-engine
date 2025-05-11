@@ -107,9 +107,6 @@ namespace muon::engine {
         Device &device;
 
         std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
-        uint32_t offset{0};
-        uint32_t location{0};
-        VertexLayout vertexLayout{};
         ConfigInfo configInfo{};
     };
 
