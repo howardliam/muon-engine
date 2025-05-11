@@ -1,84 +1,18 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include "muon/engine/vertex.hpp"
 #include <map>
 #include <filesystem>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
 
+    class Device;
+
     class GraphicsPipeline {
     public:
-        struct ConfigInfo {
-            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
-            vk::PipelineViewportStateCreateInfo viewportState;
-            vk::PipelineRasterizationStateCreateInfo rasterizationState;
-            vk::PipelineMultisampleStateCreateInfo multisampleState;
-            vk::PipelineColorBlendAttachmentState colorBlendAttachment;
-            vk::PipelineColorBlendStateCreateInfo colorBlendState;
-            vk::PipelineDepthStencilStateCreateInfo depthStencilState;
-            std::vector<vk::DynamicState> dynamicStateEnables;
-            vk::PipelineDynamicStateCreateInfo dynamicState;
-            vk::PipelineLayout pipelineLayout = nullptr;
-            vk::PipelineRenderingCreateInfo renderingInfo;
-            uint32_t subpass = 0;
-        };
-
-        class Builder {
-        public:
-            Builder(Device &device);
-
-            /**
-             * @brief   adds a shader at the stage.
-             *
-             * @param   stage   the stage to add the shader for.
-             * @param   path    path to the shader SPIR-V file.
-             *
-             * @return  reference to Builder.
-             */
-            Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
-
-            /**
-             * @brief   adds a vertex input attribute, order matters here; must follow shader order.
-             *
-             * @param   format  the format of the vertex attribute.
-             *
-             * @return  reference to Builder.
-             */
-            Builder &addVertexAttribute(vk::Format format);
-
-            /**
-             * @brief   builds the pipeline from the provided info.
-             *
-             * @param   configInfo  config information for the pipeline to be created with.
-             *
-             * @return  new Pipeline object.
-             */
-            GraphicsPipeline build(const ConfigInfo &configInfo) const;
-
-            /**
-             * @brief   builds the pipeline from the provided info.
-             *
-             * @param   configInfo  config information for the pipeline to be created with.
-             *
-             * @return  unique pointer to new Pipeline object.
-             */
-            std::unique_ptr<GraphicsPipeline> buildUniquePtr(const ConfigInfo &configInfo) const;
-
-        private:
-            Device &device;
-
-            std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
-            uint32_t offset{0};
-            uint32_t location{0};
-            VertexLayout vertexLayout{};
-            ConfigInfo configInfo{};
-
-            /**
-             * @brief   updates the binding description for the pipeline.
-             */
-            void updateBindingDescription();
-        };
+        struct ConfigInfo;
+        class Builder;
 
         GraphicsPipeline(
             Device &device,
@@ -122,6 +56,77 @@ namespace muon::engine {
             const VertexLayout &vertexLayout,
             const ConfigInfo &configInfo
         );
+    };
+
+    struct GraphicsPipeline::ConfigInfo {
+        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+        vk::PipelineViewportStateCreateInfo viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizationState;
+        vk::PipelineMultisampleStateCreateInfo multisampleState;
+        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+        vk::PipelineColorBlendStateCreateInfo colorBlendState;
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+        std::vector<vk::DynamicState> dynamicStateEnables;
+        vk::PipelineDynamicStateCreateInfo dynamicState;
+        vk::PipelineLayout pipelineLayout = nullptr;
+        vk::PipelineRenderingCreateInfo renderingInfo;
+        uint32_t subpass = 0;
+    };
+
+    class GraphicsPipeline::Builder {
+    public:
+        Builder(Device &device);
+
+        /**
+         * @brief   adds a shader at the stage.
+         *
+         * @param   stage   the stage to add the shader for.
+         * @param   path    path to the shader SPIR-V file.
+         *
+         * @return  reference to Builder.
+         */
+        Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
+
+        /**
+         * @brief   adds a vertex input attribute, order matters here; must follow shader order.
+         *
+         * @param   format  the format of the vertex attribute.
+         *
+         * @return  reference to Builder.
+         */
+        Builder &addVertexAttribute(vk::Format format);
+
+        /**
+         * @brief   builds the pipeline from the provided info.
+         *
+         * @param   configInfo  config information for the pipeline to be created with.
+         *
+         * @return  new Pipeline object.
+         */
+        GraphicsPipeline build(const ConfigInfo &configInfo) const;
+
+        /**
+         * @brief   builds the pipeline from the provided info.
+         *
+         * @param   configInfo  config information for the pipeline to be created with.
+         *
+         * @return  unique pointer to new Pipeline object.
+         */
+        std::unique_ptr<GraphicsPipeline> buildUniquePtr(const ConfigInfo &configInfo) const;
+
+    private:
+        Device &device;
+
+        std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
+        uint32_t offset{0};
+        uint32_t location{0};
+        VertexLayout vertexLayout{};
+        ConfigInfo configInfo{};
+
+        /**
+         * @brief   updates the binding description for the pipeline.
+         */
+        void updateBindingDescription();
     };
 
 }

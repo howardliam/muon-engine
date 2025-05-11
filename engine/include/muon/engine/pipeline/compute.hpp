@@ -1,9 +1,12 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include <filesystem>
+#include <vector>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
+
+    class Device;
 
     class ComputePipeline {
     public:
