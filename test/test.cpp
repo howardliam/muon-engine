@@ -23,7 +23,6 @@
 #include <muon/engine/pipeline.hpp>
 #include <muon/engine/rendergraph.hpp>
 #include <muon/engine/swapchain.hpp>
-#include <muon/engine/vertex.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
