@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/engine/vertex.hpp"
 #include <map>
 #include <filesystem>
 #include <vulkan/vulkan.hpp>

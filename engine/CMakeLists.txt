@@ -25,7 +25,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/rendergraph.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/texture.hpp
-    ${INCLUDE_DIR}/muon/engine/vertex.hpp
     ${INCLUDE_DIR}/muon/engine/window.hpp
 
     ${INCLUDE_DIR}/muon/log/logger.hpp
