@@ -8,7 +8,7 @@ namespace muon {
         ~NoMove() = default;
 
         NoMove(NoMove &&other) = delete;
-        NoMove &&operator=(NoMove &&other) = delete;
+        NoMove &operator=(NoMove &&other) = delete;
     };
 
 }
