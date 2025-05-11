@@ -66,7 +66,7 @@ namespace muon::engine {
         device.getAllocator().flushAllocation(allocation, offset, size);
     }
 
-    vk::DescriptorBufferInfo Buffer::descriptorInfo(vk::DeviceSize size, vk::DeviceSize offset) {
+    vk::DescriptorBufferInfo Buffer::getDescriptorInfo(vk::DeviceSize size, vk::DeviceSize offset) {
         return vk::DescriptorBufferInfo{ buffer, offset, size };
     }
 

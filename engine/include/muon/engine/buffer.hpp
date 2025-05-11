@@ -76,7 +76,7 @@ namespace muon::engine {
          *
          * @return  struct for use with descriptors.
          */
-        [[nodiscard]] vk::DescriptorBufferInfo descriptorInfo(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
+        [[nodiscard]] vk::DescriptorBufferInfo getDescriptorInfo(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
 
         /**
          * @brief   creates information for descriptors at index.
@@ -85,7 +85,7 @@ namespace muon::engine {
          *
          * @return  struct for use with descriptors.
          */
-        [[nodiscard]] vk::DescriptorBufferInfo descriptorInfoForIndex(int32_t index);
+        [[nodiscard]] vk::DescriptorBufferInfo getDescriptorInfoForIndex(int32_t index);
 
         /**
          * @brief   invalidates the allocated buffer.
