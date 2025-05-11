@@ -1,4 +1,5 @@
 #include "muon/engine/descriptor/writer.hpp"
+#include "muon/engine/shader.hpp"
 #include "muon/utils/color.hpp"
 #include <limits>
 #include <memory>
@@ -199,6 +200,8 @@ int main() {
     #else
     logger->info("running in release");
     #endif
+
+    engine::compileShaders("./test/assets/shaders");
 
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)

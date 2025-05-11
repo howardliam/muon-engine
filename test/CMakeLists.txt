@@ -10,6 +10,7 @@ file(GLOB SHADERS
     "${SHADER_DIR}/*.vert"
     "${SHADER_DIR}/*.frag"
     "${SHADER_DIR}/*.comp"
+    "${SHADER_DIR}/*.hlsl"
 )
 
 foreach(SHADER ${SHADERS})
@@ -18,7 +19,7 @@ foreach(SHADER ${SHADERS})
 
     add_custom_command(
         OUTPUT ${SPIRV_OUTPUT_FILE}
-        COMMAND ${Vulkan_GLSLC_EXECUTABLE} -o ${SPIRV_OUTPUT_FILE} ${SHADER}
+        COMMAND ${Vulkan_GLSLC_EXECUTABLE} -O0 -o ${SPIRV_OUTPUT_FILE} ${SHADER}
         DEPENDS ${SHADER}
         COMMENT "Compiling shader ${SHADER} to SPIR-V"
     )

@@ -23,6 +23,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/model.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline.hpp
     ${INCLUDE_DIR}/muon/engine/rendergraph.hpp
+    ${INCLUDE_DIR}/muon/engine/shader.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/texture.hpp
     ${INCLUDE_DIR}/muon/engine/window.hpp
@@ -53,6 +54,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/model.cpp
     ${SRC_DIR}/engine/pipeline.cpp
     ${SRC_DIR}/engine/rendergraph.cpp
+    ${SRC_DIR}/engine/shader.cpp
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/texture.cpp
     ${SRC_DIR}/engine/window.cpp
