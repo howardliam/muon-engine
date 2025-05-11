@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
@@ -8,7 +10,7 @@ namespace muon::engine {
     class Device;
     class Buffer;
 
-    class Model {
+    class Model : NoCopy, NoMove {
     public:
         Model(Device &device, const std::vector<uint8_t> &vertices, uint32_t stride, const std::vector<uint32_t> &indices);
         ~Model();

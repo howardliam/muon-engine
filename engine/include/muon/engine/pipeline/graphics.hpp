@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <map>
 #include <filesystem>
 #include <vulkan/vulkan.hpp>
@@ -8,7 +10,7 @@ namespace muon::engine {
 
     class Device;
 
-    class GraphicsPipeline {
+    class GraphicsPipeline : NoCopy, NoMove {
     public:
         struct ConfigInfo;
         class Builder;

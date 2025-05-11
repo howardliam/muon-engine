@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
 #include <memory>
@@ -8,7 +10,7 @@ namespace muon::engine {
 
     class Device;
 
-    class Image {
+    class Image : NoCopy, NoMove {
     public:
         class Builder;
 

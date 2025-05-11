@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -14,7 +16,7 @@ namespace muon::engine {
         constexpr uint32_t maxFramesInFlight = 2;
     }
 
-    class Swapchain {
+    class Swapchain : NoCopy, NoMove {
     public:
         Swapchain(Device &device, vk::Extent2D windowExtent);
         Swapchain(Device &device, vk::Extent2D windowExtent, std::shared_ptr<Swapchain> previous);

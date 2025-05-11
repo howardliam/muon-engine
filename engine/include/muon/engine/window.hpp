@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <SDL3/SDL.h>
 #include <string_view>
 #include <vector>
@@ -11,7 +13,7 @@ namespace muon::engine {
     /**
      * @brief   wrapper around SDL window.
      */
-    class Window {
+    class Window : NoCopy, NoMove {
     public:
         enum class DisplayMode {
             Windowed,

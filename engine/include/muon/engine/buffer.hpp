@@ -1,9 +1,9 @@
 #pragma once
 
 #include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <vk_mem_alloc.hpp>
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 
@@ -12,7 +12,7 @@ namespace muon::engine {
     /**
      * @brief wrapper around vulkan buffer.
      */
-    class Buffer : NoCopy {
+    class Buffer : NoCopy, NoMove {
     public:
         Buffer(
             Device &device,
