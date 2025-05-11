@@ -13,13 +13,13 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 Add as a git submodule and link to the required libraries.
 
 ## Project Conventions
-- use cstdint integer types: `int32_t`, `int64_t`, etc
-- where possible, forward declare if includes are massive
-- classes, structs are named in PascalCase
-- functions, methods, variables, members are named in camelCase
-- abbreviations and initialisations count as a single word; `initSdl`, `loadGltfModel`, `encodePng`
-- American English throughout code
-- Comments and logs may use whatever dialect of English
+- use cstdint integer types: `int32_t`, `int64_t`, etc.,
+- where possible, forward declare if includes are massive,
+- classes, structs are named in PascalCase,
+- functions, methods, variables, members are named in camelCase,
+- abbreviations and initialisations count as a single word; `initSdl`, `loadGltfModel`, `encodePng`,
+- American English throughout code,
+- Comments and logs may use whatever dialect of English.
 
 ## Attributions
 ### Engine
