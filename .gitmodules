@@ -28,6 +28,3 @@
 [submodule "external/glslang"]
 	path = external/glslang
 	url = https://github.com/KhronosGroup/glslang
-[submodule "external/directxshadercompiler"]
-	path = external/directxshadercompiler
-	url = https://github.com/microsoft/DirectXShaderCompiler

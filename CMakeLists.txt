@@ -29,12 +29,13 @@ find_package(Vulkan REQUIRED)
 find_package(SPIRV-Tools REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
 add_subdirectory(external/vulkan-memory-allocator-hpp)
-set(ALLOW_EXTERNAL_SPIRV_TOOLS ON FORCE)
-add_subdirectory(external/glslang)
 
 set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
 set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
 add_subdirectory(external/spirv-reflect)
+
+set(ALLOW_EXTERNAL_SPIRV_TOOLS ON FORCE)
+add_subdirectory(external/glslang)
 
 set(GLM_ENABLE_CXX_20 ON FORCE)
 set(GLM_ENABLE_SIMD_AVX2 ON FORCE)

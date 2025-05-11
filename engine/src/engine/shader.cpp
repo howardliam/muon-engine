@@ -3,7 +3,6 @@
 #include "muon/log/logger.hpp"
 #include <cassert>
 #include <stdexcept>
-#include <thread>
 #include <vector>
 #include <fstream>
 
