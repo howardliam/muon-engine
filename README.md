@@ -2,6 +2,9 @@
 Muon Engine, or simply, Muon, is an amateur game engine being developed as a
 personal project.
 
+> [!WARNING]
+> This is very early in development and probably impractical to use in its current state.
+
 ## Usage
 Add as a git submodule and link to the required libraries.
 
