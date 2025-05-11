@@ -29,6 +29,10 @@ find_package(Vulkan REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
 add_subdirectory(external/vulkan-memory-allocator-hpp)
 
+option(SPIRV_REFLECT_EXECUTABLE OFF)
+option(SPIRV_REFLECT_STATIC_LIB ON)
+add_subdirectory(external/spirv-reflect)
+
 option(GLM_ENABLE_CXX_20 ON)
 option(GLM_ENABLE_SIMD_AVX2 ON)
 add_subdirectory(external/glm)
