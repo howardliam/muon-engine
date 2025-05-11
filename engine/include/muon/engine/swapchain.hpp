@@ -11,7 +11,7 @@ namespace muon::engine {
     class Device;
 
     namespace constants {
-        constexpr uint32_t maxFramesInFlight = 5;
+        constexpr uint32_t maxFramesInFlight = 2;
     }
 
     class Swapchain {
@@ -131,8 +131,9 @@ namespace muon::engine {
         std::vector<vk::ImageView> swapchainImageViews{};
 
         std::vector<vk::Semaphore> imageAvailableSemaphores{};
-        std::vector<vk::Semaphore> renderFinishedSemaphores{};
         std::vector<vk::Fence> inFlightFences{};
+
+        std::vector<vk::Semaphore> renderFinishedSemaphores{};
         std::vector<vk::Fence> imagesInFlight{};
 
         int32_t currentFrame{0};

@@ -20,8 +20,11 @@ namespace muon::engine {
     Swapchain::~Swapchain() {
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
             device.getDevice().destroySemaphore(imageAvailableSemaphores[i], nullptr);
-            device.getDevice().destroySemaphore(renderFinishedSemaphores[i], nullptr);
             device.getDevice().destroyFence(inFlightFences[i], nullptr);
+        }
+
+        for (uint32_t i = 0; i < swapchainImages.size(); i++) {
+            device.getDevice().destroySemaphore(renderFinishedSemaphores[i], nullptr);
         }
 
         for (auto imageView : swapchainImageViews) {
@@ -61,17 +64,17 @@ namespace muon::engine {
         imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
 
         vk::SubmitInfo submitInfo{};
-
-        vk::Semaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-        vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = buffers;
 
-        vk::Semaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+        vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+        submitInfo.pWaitDstStageMask = waitStages;
+
+        vk::Semaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+
+        vk::Semaphore signalSemaphores[] = { renderFinishedSemaphores[*imageIndex] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -84,11 +87,11 @@ namespace muon::engine {
             log::globalLogger->error("failed to submit draw command buffer");
         }
 
-        vk::PresentInfoKHR presentInfo = {};
+        vk::PresentInfoKHR presentInfo{};
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
-        vk::SwapchainKHR swapchains[] = {swapchain};
+        vk::SwapchainKHR swapchains[] = { swapchain };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapchains;
 
@@ -272,25 +275,36 @@ namespace muon::engine {
     }
 
     void Swapchain::createSyncObjects() {
-        imageAvailableSemaphores.resize(constants::maxFramesInFlight);
-        renderFinishedSemaphores.resize(constants::maxFramesInFlight);
-        inFlightFences.resize(constants::maxFramesInFlight);
-        imagesInFlight.resize(swapchainImages.size(), nullptr);
-
         vk::SemaphoreCreateInfo semaphoreInfo{};
+
+        imageAvailableSemaphores.resize(constants::maxFramesInFlight);
+        inFlightFences.resize(constants::maxFramesInFlight);
 
         vk::FenceCreateInfo fenceInfo{};
         fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
 
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
-            auto semaphoreRes1 = device.getDevice().createSemaphore(&semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
-            auto semaphoreRes2 = device.getDevice().createSemaphore(&semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
+            auto semaphoreRes = device.getDevice().createSemaphore(&semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
             auto fenceRes = device.getDevice().createFence(&fenceInfo, nullptr, &inFlightFences[i]);
 
-            if (semaphoreRes1 != vk::Result::eSuccess || semaphoreRes2 != vk::Result::eSuccess || fenceRes != vk::Result::eSuccess) {
-                throw std::runtime_error("failed to create synchronisation objects");
+            if (semaphoreRes != vk::Result::eSuccess) {
+                throw std::runtime_error("failed to create image available semaphores");
+            } else if (fenceRes != vk::Result::eSuccess) {
+                throw std::runtime_error("failed to create in flight fences");
             }
         }
+
+        renderFinishedSemaphores.resize(swapchainImages.size());
+
+        for (uint32_t i = 0; i < swapchainImages.size(); i++) {
+            auto semaphoreRes = device.getDevice().createSemaphore(&semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
+
+            if (semaphoreRes != vk::Result::eSuccess) {
+                throw std::runtime_error("failed to create render finished semaphores");
+            }
+        }
+
+        imagesInFlight.resize(swapchainImages.size(), nullptr);
     }
 
 }
