@@ -1,8 +1,7 @@
 #include "muon/engine/system/graphics.hpp"
 
 #include <stdexcept>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_structs.hpp>
+#include "muon/engine/device.hpp"
 
 namespace muon::engine {
 

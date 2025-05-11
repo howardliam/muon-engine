@@ -1,12 +1,13 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include "muon/engine/pipeline/compute.hpp"
 #include <memory>
-#include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan.hpp>
 #include <glm/vec3.hpp>
 
 namespace muon::engine {
+
+    class Device;
 
     class ComputeSystem {
     public:

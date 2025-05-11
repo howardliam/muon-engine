@@ -1,11 +1,12 @@
 #pragma once
 
-#include "muon/engine/device.hpp"
 #include "muon/engine/pipeline/graphics.hpp"
 #include <memory>
-#include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
+
+    class Device;
 
     class GraphicsSystem {
     public:

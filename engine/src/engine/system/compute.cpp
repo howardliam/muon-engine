@@ -1,8 +1,7 @@
 #include "muon/engine/system/compute.hpp"
 
+#include "muon/engine/device.hpp"
 #include <stdexcept>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_structs.hpp>
 #include <glm/vec3.hpp>
 
 namespace muon::engine {
