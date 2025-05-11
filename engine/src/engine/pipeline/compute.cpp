@@ -37,7 +37,7 @@ namespace muon::engine {
         const std::filesystem::path &shaderPath,
         const vk::PipelineLayout pipelineLayout
     ) {
-        std::vector byteCode = readShaderFile(shaderPath);
+        std::vector byteCode = ShaderCompiler::readFile(shaderPath);
         createShaderModule(byteCode, shader);
 
         vk::PipelineShaderStageCreateInfo stageCreateInfo{};

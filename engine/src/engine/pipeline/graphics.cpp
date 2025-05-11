@@ -167,7 +167,7 @@ namespace muon::engine {
 
         size_t index = 0;
         for (auto &[stage, path] : shaderPaths) {
-            std::vector byteCode = readShaderFile(path);
+            std::vector byteCode = ShaderCompiler::readFile(path);
             vk::ShaderModule shaderModule;
             createShaderModule(byteCode, shaderModule);
             shaders[index] = shaderModule;
