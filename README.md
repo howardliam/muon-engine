@@ -1,3 +1,6 @@
+> [!WARNING]
+> This is very early in development and probably impractical to use in its current state.
+
 # Muon Engine
 Muon is an experimental game engine built for curiosity and learning graphics programming.
 
@@ -5,9 +8,6 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 - Bindless textures
 - Dynamic rendering
 - Custom render graph
-
-> [!WARNING]
-> This is very early in development and probably impractical to use in its current state.
 
 ## Usage
 Add as a git submodule and link to the required libraries.
