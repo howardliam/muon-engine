@@ -43,7 +43,7 @@ using namespace muon;
 class Logger : public log::ILogger {
 public:
     Logger() : log::ILogger() {
-        spdlog::set_level(spdlog::level::debug);
+        spdlog::set_level(spdlog::level::trace);
     }
 
 private:
@@ -196,6 +196,7 @@ int main() {
 
     #ifndef NDEBUG
     logger->info("running in debug");
+    logger->info("vulkan header version: {}.{}.{}", VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE), VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE), VK_API_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE));
     #else
     logger->info("running in release");
     #endif
