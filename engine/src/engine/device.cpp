@@ -508,8 +508,11 @@ namespace muon::engine {
             index += 1;
         }
 
+        vk::PhysicalDeviceSynchronization2Features syncFeatures{};
+        syncFeatures.synchronization2 = true;
+
         vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
-        dynamicRenderingFeatures.pNext = nullptr;
+        dynamicRenderingFeatures.pNext = &syncFeatures;
         dynamicRenderingFeatures.dynamicRendering = true;
 
         vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
