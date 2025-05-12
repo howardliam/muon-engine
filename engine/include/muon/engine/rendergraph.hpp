@@ -17,13 +17,20 @@ namespace muon::engine {
         struct FrameInfo;
 
         void addImage(const std::string &name, std::unique_ptr<Image> image);
+
+        void addAlias(const std::string &alias, const std::string &name);
+
         void addNode(Node node);
 
         void compile();
+
         void execute(vk::CommandBuffer commandBuffer);
+
+        Image *getImage(const std::string &name) const;
 
     private:
         std::unordered_map<std::string, std::unique_ptr<Image>> resources{};
+        std::unordered_map<std::string, std::string> resourceAliases{};
 
         std::vector<std::shared_ptr<Node>> nodes;
         bool nodesUpdated{false};
@@ -55,7 +62,7 @@ namespace muon::engine {
         std::vector<ResourceUsage> writeResources{};
 
         std::function<void()> compile;
-        std::function<void(vk::CommandBuffer, FrameInfo)> execute;
+        std::function<void(vk::CommandBuffer)> execute;
     };
 
     struct RenderGraph::FrameInfo {

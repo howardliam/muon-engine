@@ -7,6 +7,15 @@ namespace muon::engine {
 
     void RenderGraph::addImage(const std::string &name, std::unique_ptr<Image> image) {
         resources[name] = std::move(image);
+        resourceAliases[name] = name;
+    }
+
+    void RenderGraph::addAlias(const std::string &alias, const std::string &name) {
+        if (!resources.contains(name)) {
+            return;
+        }
+
+        resourceAliases[alias] = name;
     }
 
     void RenderGraph::addNode(Node node) {
@@ -49,16 +58,22 @@ namespace muon::engine {
             nodesUpdated = false;
         }
 
-        FrameInfo frameInfo;
-        frameInfo.pingPongIndex = 0;
-
         for (auto &node : executionOrder) {
-            node->execute(commandBuffer, frameInfo);
-
-            if (node->nodeType == NodeType::Compute) {
-                frameInfo.pingPongIndex ^= 1;
-            }
+            node->execute(commandBuffer);
         }
+    }
+
+    Image *RenderGraph::getImage(const std::string &name) const {
+        auto aliasesIt = resourceAliases.find(name);
+        if (aliasesIt == resourceAliases.end()) {
+            return nullptr;
+        }
+
+        auto resourcesIt = resources.find(aliasesIt->second);
+        if (resourcesIt == resources.end()) {
+            return nullptr;
+        }
+        return resourcesIt->second.get();
     }
 
     std::vector<std::shared_ptr<RenderGraph::Node>> RenderGraph::determineExecutionOrder() {

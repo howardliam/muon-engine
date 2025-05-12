@@ -211,8 +211,8 @@ int main() {
         .setTitle("Testing")
         .build();
 
-    // auto windowIcon = asset::decodePng("./muon-logo.png");
-    // window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
+    auto windowIcon = asset::decodePng("./muon-logo.png");
+    window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
@@ -387,7 +387,7 @@ int main() {
     engine::RenderGraph renderGraph;
 
     renderGraph.addImage(
-        "SceneColor",
+        "scene_color",
         engine::Image::Builder(device)
             .setExtent(window.getExtent())
             .setFormat(vk::Format::eR8G8B8A8Unorm)
@@ -398,20 +398,56 @@ int main() {
             .buildUniquePtr()
     );
 
+    renderGraph.addImage(
+        "scene_depth",
+        engine::Image::Builder(device)
+            .setExtent(window.getExtent())
+            .setFormat(vk::Format::eD32Sfloat)
+            .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+            .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
+            .setAccessFlags(vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+            .setPipelineStageFlags(vk::PipelineStageFlagBits::eEarlyFragmentTests)
+            .buildUniquePtr()
+    );
+
+    renderGraph.addImage(
+        "post_processing_0",
+        engine::Image::Builder(device)
+            .setExtent(window.getExtent())
+            .setFormat(vk::Format::eR8G8B8A8Unorm)
+            .setImageUsageFlags(usageFlags)
+            .setImageLayout(vk::ImageLayout::eGeneral)
+            .setAccessFlags(accessFlags)
+            .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+            .buildUniquePtr()
+    );
+
+    renderGraph.addImage(
+        "post_processing_1",
+        engine::Image::Builder(device)
+            .setExtent(window.getExtent())
+            .setFormat(vk::Format::eR8G8B8A8Unorm)
+            .setImageUsageFlags(usageFlags)
+            .setImageLayout(vk::ImageLayout::eGeneral)
+            .setAccessFlags(accessFlags)
+            .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+            .buildUniquePtr()
+    );
+
     renderGraph.addNode({
         .name = "SceneRender",
         .nodeType = engine::RenderGraph::NodeType::Graphics,
 
         .readResources = {},
         .writeResources = {
-            { "SceneColor", vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits::eColorAttachmentWrite, vk::PipelineStageFlagBits::eColorAttachmentOutput },
-            { "SceneDepth", vk::ImageLayout::eDepthAttachmentOptimal, vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits::eEarlyFragmentTests },
+            { "scene_color", vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits::eColorAttachmentWrite, vk::PipelineStageFlagBits::eColorAttachmentOutput },
+            { "scene_depth", vk::ImageLayout::eDepthAttachmentOptimal, vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits::eEarlyFragmentTests },
         },
 
         .compile = []() {
 
         },
-        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+        .execute = [&](vk::CommandBuffer cmd) {
             cmd.beginRendering(renderingInfo);
 
             vk::Viewport viewport{};
@@ -441,16 +477,16 @@ int main() {
         .nodeType = engine::RenderGraph::NodeType::Compute,
 
         .readResources = {
-            { "SceneColor", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
+            { "scene_color", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
         },
         .writeResources = {
-            { "ToneMapOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
+            { "tone_map_0", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
         },
 
-        .compile = []() {
-
+        .compile = [&renderGraph]() {
+            renderGraph.addAlias("tone_map_0", "post_processing_0");
         },
-        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+        .execute = [&](vk::CommandBuffer cmd) {
             sceneColor->transitionLayout(cmd, {
                 .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
                 .accessFlags = vk::AccessFlagBits::eTransferRead,
@@ -497,16 +533,16 @@ int main() {
         .nodeType = engine::RenderGraph::NodeType::Compute,
 
         .readResources = {
-            { "ToneMapOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
+            { "tone_map_0", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
         },
         .writeResources = {
-            { "SwizzleOutput", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
+            { "swizzle_0", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
         },
 
-        .compile = []() {
-
+        .compile = [&renderGraph]() {
+            renderGraph.addAlias("swizzle_0", "post_processing_1");
         },
-        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+        .execute = [&](vk::CommandBuffer cmd) {
             swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
         }
     });
@@ -516,16 +552,16 @@ int main() {
         .nodeType = engine::RenderGraph::NodeType::Transfer,
 
         .readResources = {
-            { "SwizzleOutput", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
+            { "swizzle_0", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
         },
         .writeResources = {
-            { "SwapchainImage", vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer },
+            { "swapchain_image", vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer },
         },
 
         .compile = []() {
 
         },
-        .execute = [&](vk::CommandBuffer cmd, engine::RenderGraph::FrameInfo frameInfo) {
+        .execute = [&](vk::CommandBuffer cmd) {
             computeImageA->transitionLayout(cmd, {
                 .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
                 .accessFlags = vk::AccessFlagBits::eTransferRead,
