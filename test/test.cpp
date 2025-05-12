@@ -3,7 +3,6 @@
 #include "muon/utils/color.hpp"
 #include <limits>
 #include <memory>
-#include <fstream>
 #include <print>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -20,7 +19,6 @@
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
-#include <muon/engine/rendergraph.hpp>
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/log/logger.hpp>
@@ -31,7 +29,6 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <spdlog/spdlog.h>
-#include <thread>
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -382,137 +379,9 @@ int main() {
 
     engine::Model square(device, vertexData, 32, indices);
 
-    int32_t frameIndex{0};
-
-    engine::RenderGraph renderGraph;
-
-    renderGraph.addImage(
-        "scene_color",
-        engine::Image::Builder(device)
-            .setExtent(window.getExtent())
-            .setFormat(vk::Format::eR8G8B8A8Unorm)
-            .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
-            .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-            .setAccessFlags(vk::AccessFlagBits::eColorAttachmentWrite)
-            .setPipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-            .buildUniquePtr()
-    );
-
-    renderGraph.addImage(
-        "scene_depth",
-        engine::Image::Builder(device)
-            .setExtent(window.getExtent())
-            .setFormat(vk::Format::eD32Sfloat)
-            .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
-            .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
-            .setAccessFlags(vk::AccessFlagBits::eDepthStencilAttachmentWrite)
-            .setPipelineStageFlags(vk::PipelineStageFlagBits::eEarlyFragmentTests)
-            .buildUniquePtr()
-    );
-
-    renderGraph.addImage(
-        "post_processing_0",
-        engine::Image::Builder(device)
-            .setExtent(window.getExtent())
-            .setFormat(vk::Format::eR8G8B8A8Unorm)
-            .setImageUsageFlags(usageFlags)
-            .setImageLayout(vk::ImageLayout::eGeneral)
-            .setAccessFlags(accessFlags)
-            .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-            .buildUniquePtr()
-    );
-
-    renderGraph.addImage(
-        "post_processing_1",
-        engine::Image::Builder(device)
-            .setExtent(window.getExtent())
-            .setFormat(vk::Format::eR8G8B8A8Unorm)
-            .setImageUsageFlags(usageFlags)
-            .setImageLayout(vk::ImageLayout::eGeneral)
-            .setAccessFlags(accessFlags)
-            .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-            .buildUniquePtr()
-    );
-
-    renderGraph.addNode({
-        .name = "SceneRender",
-        .nodeType = engine::RenderGraph::NodeType::Graphics,
-
-        .readResources = {},
-        .writeResources = {
-            { "scene_color", vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits::eColorAttachmentWrite, vk::PipelineStageFlagBits::eColorAttachmentOutput },
-            { "scene_depth", vk::ImageLayout::eDepthAttachmentOptimal, vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits::eEarlyFragmentTests },
-        },
-
-        .compile = []() {
-
-        },
-        .execute = [&](vk::CommandBuffer cmd) {
-
-        }
-    });
-
-    renderGraph.addNode({
-        .name = "ToneMap",
-        .nodeType = engine::RenderGraph::NodeType::Compute,
-
-        .readResources = {
-            { "scene_color", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
-        },
-        .writeResources = {
-            { "tone_map_0", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
-        },
-
-        .compile = [&renderGraph]() {
-            renderGraph.addAlias("tone_map_0", "post_processing_0");
-        },
-        .execute = [&](vk::CommandBuffer cmd) {
-
-        }
-    });
-
-    renderGraph.addNode({
-        .name = "Swizzle",
-        .nodeType = engine::RenderGraph::NodeType::Compute,
-
-        .readResources = {
-            { "tone_map_0", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eComputeShader },
-        },
-        .writeResources = {
-            { "swizzle_0", vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader },
-        },
-
-        .compile = [&renderGraph]() {
-            renderGraph.addAlias("swizzle_0", "post_processing_1");
-        },
-        .execute = [&](vk::CommandBuffer cmd) {
-
-        }
-    });
-
-    renderGraph.addNode({
-        .name = "FinalPresentation",
-        .nodeType = engine::RenderGraph::NodeType::Transfer,
-
-        .readResources = {
-            { "swizzle_0", vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer },
-        },
-        .writeResources = {
-            { "swapchain_image", vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer },
-        },
-
-        .compile = []() {
-
-        },
-        .execute = [&](vk::CommandBuffer cmd) {
-
-        }
-
-    });
-
-    renderGraph.compile();
-
     frameHandler.beginFrameTiming();
+
+    uint32_t frameIndex{0};
 
     while (window.isOpen()) {
         SDL_Event event;
