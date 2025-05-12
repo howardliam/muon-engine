@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 
@@ -35,6 +36,8 @@ namespace muon::engine {
         std::vector<std::shared_ptr<Node>> nodes;
         bool nodesUpdated{false};
         std::unordered_map<std::string, std::vector<std::string>> dependencies;
+
+        std::unordered_map<std::string, vk::DependencyInfo> preNodeTransitions{};
 
         std::vector<std::shared_ptr<Node>> executionOrder;
         std::vector<std::shared_ptr<Node>> determineExecutionOrder();

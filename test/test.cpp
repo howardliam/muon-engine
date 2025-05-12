@@ -448,27 +448,7 @@ int main() {
 
         },
         .execute = [&](vk::CommandBuffer cmd) {
-            cmd.beginRendering(renderingInfo);
 
-            vk::Viewport viewport{};
-            viewport.x = 0.0f;
-            viewport.y = 0.0f;
-            viewport.width = static_cast<float>(extent.width);
-            viewport.height = static_cast<float>(extent.height);
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
-
-            vk::Rect2D scissor{};
-            scissor.offset.x = 0;
-            scissor.offset.y = 0;
-            scissor.extent = extent;
-
-            cmd.setViewport(0, 1, &viewport);
-            cmd.setScissor(0, 1, &scissor);
-
-            renderSystem.renderModel(cmd, globalSet, square);
-
-            cmd.endRendering();
         }
     });
 
@@ -487,44 +467,7 @@ int main() {
             renderGraph.addAlias("tone_map_0", "post_processing_0");
         },
         .execute = [&](vk::CommandBuffer cmd) {
-            sceneColor->transitionLayout(cmd, {
-                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-                .accessFlags = vk::AccessFlagBits::eTransferRead,
-                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-            });
 
-            computeImageA->transitionLayout(cmd, {
-                .imageLayout = vk::ImageLayout::eTransferDstOptimal,
-                .accessFlags = vk::AccessFlagBits::eTransferWrite,
-                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-            });
-
-            vk::ImageCopy imageCopy{};
-            imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-            imageCopy.srcSubresource.mipLevel = 0;
-            imageCopy.srcSubresource.baseArrayLayer = 0;
-            imageCopy.srcSubresource.layerCount = 1;
-            imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
-            imageCopy.dstSubresource = imageCopy.srcSubresource;
-            imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
-            imageCopy.extent.width = window.getExtent().width;
-            imageCopy.extent.height = window.getExtent().height;
-            imageCopy.extent.depth = 1;
-
-            cmd.copyImage(
-                sceneColor->getImage(),
-                vk::ImageLayout::eTransferSrcOptimal,
-                computeImageA->getImage(),
-                vk::ImageLayout::eTransferDstOptimal,
-                1,
-                &imageCopy
-            );
-
-            computeImageA->revertTransition(cmd);
-
-            sceneColor->revertTransition(cmd);
-
-            tonemap.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
         }
     });
 
@@ -543,7 +486,7 @@ int main() {
             renderGraph.addAlias("swizzle_0", "post_processing_1");
         },
         .execute = [&](vk::CommandBuffer cmd) {
-            swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
+
         }
     });
 
@@ -562,15 +505,7 @@ int main() {
 
         },
         .execute = [&](vk::CommandBuffer cmd) {
-            computeImageA->transitionLayout(cmd, {
-                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-                .accessFlags = vk::AccessFlagBits::eTransferRead,
-                .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-            });
 
-            frameHandler.copyImageToSwapchain(computeImageA->getImage());
-
-            computeImageA->revertTransition(cmd);
         }
 
     });
@@ -661,7 +596,7 @@ int main() {
         //     continue;
         // }
 
-        const auto commandBuffer = frameHandler.beginFrame();
+        const auto cmd = frameHandler.beginFrame();
 
         frameIndex = frameHandler.getFrameIndex();
 
@@ -677,7 +612,77 @@ int main() {
         uboBuffer->flush();
         uboBuffer->unmap();
 
-        renderGraph.execute(commandBuffer);
+        cmd.beginRendering(renderingInfo);
+
+        vk::Viewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(extent.width);
+        viewport.height = static_cast<float>(extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        vk::Rect2D scissor{};
+        scissor.offset.x = 0;
+        scissor.offset.y = 0;
+        scissor.extent = extent;
+
+        cmd.setViewport(0, 1, &viewport);
+        cmd.setScissor(0, 1, &scissor);
+
+        renderSystem.renderModel(cmd, globalSet, square);
+
+        cmd.endRendering();
+
+        sceneColor->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+            .accessFlags = vk::AccessFlagBits::eTransferRead,
+            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        });
+
+        computeImageA->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eTransferDstOptimal,
+            .accessFlags = vk::AccessFlagBits::eTransferWrite,
+            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        });
+
+        vk::ImageCopy imageCopy{};
+        imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imageCopy.srcSubresource.mipLevel = 0;
+        imageCopy.srcSubresource.baseArrayLayer = 0;
+        imageCopy.srcSubresource.layerCount = 1;
+        imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
+        imageCopy.dstSubresource = imageCopy.srcSubresource;
+        imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
+        imageCopy.extent.width = window.getExtent().width;
+        imageCopy.extent.height = window.getExtent().height;
+        imageCopy.extent.depth = 1;
+
+        cmd.copyImage(
+            sceneColor->getImage(),
+            vk::ImageLayout::eTransferSrcOptimal,
+            computeImageA->getImage(),
+            vk::ImageLayout::eTransferDstOptimal,
+            1,
+            &imageCopy
+        );
+
+        computeImageA->revertTransition(cmd);
+
+        sceneColor->revertTransition(cmd);
+
+        tonemap.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
+        swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
+
+        computeImageA->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+            .accessFlags = vk::AccessFlagBits::eTransferRead,
+            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+        });
+
+        frameHandler.copyImageToSwapchain(computeImageA->getImage());
+
+        computeImageA->revertTransition(cmd);
 
         frameHandler.endFrame();
 
