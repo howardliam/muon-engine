@@ -1,4 +1,5 @@
 #include "muon/engine/descriptor/writer.hpp"
+#include "muon/engine/rendergraph.hpp"
 #include "muon/engine/shader.hpp"
 #include "muon/utils/color.hpp"
 #include <limits>
@@ -251,8 +252,8 @@ int main() {
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
         .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-        .setAccessFlags(vk::AccessFlagBits::eColorAttachmentWrite)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+        .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
         .buildUniquePtr();
 
     vk::RenderingAttachmentInfo colorAttachment{};
@@ -267,8 +268,8 @@ int main() {
         .setFormat(vk::Format::eD32Sfloat)
         .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
         .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
-        .setAccessFlags(vk::AccessFlagBits::eDepthStencilAttachmentWrite)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits::eEarlyFragmentTests)
+        .setAccessFlags(vk::AccessFlagBits2::eDepthStencilAttachmentWrite)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eEarlyFragmentTests)
         .buildUniquePtr();
 
     vk::RenderingAttachmentInfo depthAttachment{};
@@ -300,7 +301,7 @@ int main() {
     renderSystem.bake(renderingCreateInfo);
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
-    auto accessFlags = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+    auto accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite;
 
     std::unique_ptr computeImageA = engine::Image::Builder(device)
         .setExtent(window.getExtent())
@@ -308,7 +309,7 @@ int main() {
         .setImageUsageFlags(usageFlags)
         .setImageLayout(vk::ImageLayout::eGeneral)
         .setAccessFlags(accessFlags)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
         .buildUniquePtr();
 
     std::unique_ptr computeImageB = engine::Image::Builder(device)
@@ -317,7 +318,7 @@ int main() {
         .setImageUsageFlags(usageFlags)
         .setImageLayout(vk::ImageLayout::eGeneral)
         .setAccessFlags(accessFlags)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
         .buildUniquePtr();
 
     std::unique_ptr computeImagePool = engine::DescriptorPool::Builder(device)
@@ -382,6 +383,18 @@ int main() {
     frameHandler.beginFrameTiming();
 
     uint32_t frameIndex{0};
+
+    engine::rg::RenderGraph rg;
+
+    rg.addResource("scene_color", {
+        vk::Format::eR8G8B8A8Unorm,
+        vk::ImageLayout::eColorAttachmentOptimal,
+        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
+        vk::AccessFlagBits2::eColorAttachmentWrite | vk::AccessFlagBits2::eTransferRead,
+        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+    });
+
+    // rg.compile();
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -505,14 +518,14 @@ int main() {
 
         sceneColor->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits::eTransferRead,
-            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            .accessFlags = vk::AccessFlagBits2::eTransferRead,
+            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
         });
 
         computeImageA->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferDstOptimal,
-            .accessFlags = vk::AccessFlagBits::eTransferWrite,
-            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            .accessFlags = vk::AccessFlagBits2::eTransferWrite,
+            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
         });
 
         vk::ImageCopy imageCopy{};
@@ -545,8 +558,8 @@ int main() {
 
         computeImageA->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits::eTransferRead,
-            .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
+            .accessFlags = vk::AccessFlagBits2::eTransferRead,
+            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
         });
 
         frameHandler.copyImageToSwapchain(computeImageA->getImage());
