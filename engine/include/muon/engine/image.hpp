@@ -16,8 +16,8 @@ namespace muon::engine {
 
         struct State {
             vk::ImageLayout imageLayout{};
-            vk::AccessFlags accessFlags{};
-            vk::PipelineStageFlags pipelineStageFlags{};
+            vk::AccessFlags2 accessFlags{};
+            vk::PipelineStageFlags2 stageFlags{};
         };
 
         Image(
@@ -32,17 +32,17 @@ namespace muon::engine {
         /**
          * @brief   transitions the image to the desired layout, can only be used once before transition must be reverted.
          *
-         * @param   commandBuffer   command buffer to record to.
-         * @param   newState        the new state to transition to image to.
+         * @param   cmd         command buffer to record to.
+         * @param   newState    the new state to transition to image to.
          */
-        void transitionLayout(vk::CommandBuffer commandBuffer, const State &newState);
+        void transitionLayout(vk::CommandBuffer cmd, const State &newState);
 
         /**
          * @brief   reverts the transition.
          *
-         * @param   commandBuffer   command buffer to record to.
+         * @param   cmd command buffer to record to.
          */
-        void revertTransition(vk::CommandBuffer commandBuffer);
+        void revertTransition(vk::CommandBuffer cmd);
 
         /**
          * @brief   get image extent.
@@ -120,9 +120,9 @@ namespace muon::engine {
 
         Builder &setImageLayout(vk::ImageLayout imageLayout);
 
-        Builder &setAccessFlags(vk::AccessFlags accessFlags);
+        Builder &setAccessFlags(vk::AccessFlags2 accessFlags);
 
-        Builder &setPipelineStageFlags(vk::PipelineStageFlags pipelineStageFlags);
+        Builder &setPipelineStageFlags(vk::PipelineStageFlags2 stageFlags);
 
         Image build() const;
         std::unique_ptr<Image> buildUniquePtr() const;
@@ -135,8 +135,8 @@ namespace muon::engine {
         vk::ImageUsageFlags imageUsageFlags;
 
         vk::ImageLayout imageLayout;
-        vk::AccessFlags accessFlags;
-        vk::PipelineStageFlags pipelineStageFlags;
+        vk::AccessFlags2 accessFlags;
+        vk::PipelineStageFlags2 stageFlags;
     };
 
 }
