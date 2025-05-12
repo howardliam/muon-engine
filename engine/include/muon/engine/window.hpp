@@ -10,7 +10,7 @@
 namespace muon::engine {
 
     /**
-     * @brief   wrapper around SDL window.
+     * @brief   Wrapper around SDL window.
      */
     class Window : NoCopy, NoMove {
     public:
@@ -19,7 +19,7 @@ namespace muon::engine {
         class Builder;
 
         /**
-         * @brief   base initialiser for Window.
+         * @brief   Base initialiser for Window.
          *
          * @throws  program aborts if initialising SDL and window fails.
          */
@@ -27,7 +27,7 @@ namespace muon::engine {
         ~Window();
 
         /*
-         * @brief   creates a Vulkan surface for the window.
+         * @brief   Creates a Vulkan surface for the window.
          *
          * @param   instance    the instance to create the surface for.
          * @param   surface     handle of the surface to be created.
@@ -37,42 +37,45 @@ namespace muon::engine {
         [[nodiscard]] bool createSurface(VkInstance instance, VkSurfaceKHR *surface);
 
         /**
-         * @brief   returns the window handle.
+         * @brief   Returns the window handle.
          *
          * @return  SDL window handle.
          */
         [[nodiscard]] SDL_Window *getWindow() const;
 
         /**
-         * @brief   returns the window extent.
+         * @brief   Returns the window extent.
          *
          * @return  2D vector of the window size.
          */
         [[nodiscard]] vk::Extent2D getExtent() const;
 
         /**
-         * @brief   gets the whether the window is open.
+         * @brief   Gets the whether the window is open.
          *
          * @return  boolean value for whether the window is open.
          */
         [[nodiscard]] bool isOpen() const;
 
         /**
-         * @brief   sets the window to close.
+         * @brief   Sets the window to close.
          */
         void setToClose();
 
         /**
-         * @brief   sets the window's title.
+         * @brief   Sets the window's title.
          *
          * @param   title   new window title.
          */
         void setTitle(std::string_view title);
 
         /**
-         * @brief   sets the window's icon.
+         * @brief   Sets the window's icon.
          *
          * @param   imageData   vector of bytes corresponding to the image data.
+         * @param   width       width of the image in pixels.
+         * @param   height      height of the image in pixels.
+         * @param   channels    number of channels in the image; RGB = 3, RGBA = 4, etc.
          */
         void setIcon(
             std::vector<uint8_t> &imageData,
@@ -82,14 +85,14 @@ namespace muon::engine {
         );
 
         /**
-         * @brief   sets the window's display mode.
+         * @brief   Sets the window's display mode.
          *
          * @param   mode    new display mode.
          */
         void setDisplayMode(DisplayMode mode);
 
         /**
-         * @brief   resizes the window.
+         * @brief   Resizes the window.
          *
          * @param   newWidth    new width.
          * @param   newHeight   new height.
@@ -97,14 +100,14 @@ namespace muon::engine {
         void resize(uint32_t newWidth, uint32_t newHeight);
 
         /**
-         * @brief   checks if the window was resized.
+         * @brief   Checks if the window was resized.
          *
          * @return  whether the window was resized.
          */
         [[nodiscard]] bool wasResized() const;
 
         /**
-         * @brief   resets the window resized to false.
+         * @brief   Resets the window resized flag to false.
          */
         void resetResized();
 
@@ -120,7 +123,7 @@ namespace muon::engine {
          * @brief   Initialises SDL.
          *
          * @throws  if SDL failed to initialise.
-        */
+         */
         void initSdl();
 
         /**
@@ -130,7 +133,7 @@ namespace muon::engine {
          * @param   mode    in what mode the window will start in.
          *
          * @throws  if the window failed to initialise.
-        */
+         */
         void initWindow(std::string_view title, const DisplayMode &mode);
     };
 
@@ -149,12 +152,39 @@ namespace muon::engine {
 
     class Window::Builder {
     public:
+        /**
+         * @brief   Sets the window's dimensions.
+         *
+         * @param   width    the width of the window.
+         * @param   height   the height of the window.
+         *
+         * @return  reference to the builder.
+         */
         Builder &setDimensions(const uint32_t width, const uint32_t height);
 
+        /**
+         * @brief   Sets the window's title.
+         *
+         * @param   title    the title of the window.
+         *
+         * @return  reference to the builder.
+         */
         Builder &setTitle(std::string_view title);
 
+        /**
+         * @brief   Sets the window's initial display mode.
+         *
+         * @param   displayMode the display mode: windowed, borderless, fullscreen, etc.
+         *
+         * @return  reference to the builder.
+         */
         Builder &setInitialDisplayMode(const DisplayMode &displayMode);
 
+        /**
+         * @brief   Builds a new window class from configuration.
+         *
+         * @return  the newly constructed window.
+         */
         Window build() const;
 
     private:
