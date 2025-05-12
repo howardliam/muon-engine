@@ -9,6 +9,9 @@ namespace muon::engine {
 
     class Device;
 
+    /**
+     * @brief   Wrapper around Vulkan descriptor pool.
+     */
     class DescriptorPool {
     public:
         class Builder;
@@ -20,7 +23,13 @@ namespace muon::engine {
         );
         ~DescriptorPool();
 
+        /**
+         * @brief   Gets the descriptor pool handle.
+         *
+         * @return  descriptor pool handle.
+         */
         vk::DescriptorPool getPool() const;
+
     private:
         Device &device;
 
@@ -33,12 +42,37 @@ namespace muon::engine {
     public:
         Builder(Device &device);
 
+        /**
+         * @brief   Adds a pool size for a descriptor type.
+         *
+         * @param   descriptorType  the type of descriptor to set the pool size for.
+         * @param   size            how large the pool will be.
+         *
+         * @return  reference to the builder.
+         */
         Builder &addPoolSize(vk::DescriptorType descriptorType, uint32_t size);
 
+        /**
+         * @brief   Sets the maximum number of descriptor sets which can be allocated from the pool.
+         *
+         * @param   count   max number of descriptor sets allowed to be allocated.
+         *
+         * @return  reference to the builder.
+         */
         Builder &setMaxSets(uint32_t count);
 
+        /**
+         * @brief   Builds a new descriptor pool from the configuration.
+         *
+         * @return  new DescriptorPool object.
+         */
         DescriptorPool build() const;
 
+        /**
+         * @brief   Builds a new descriptor pool from the configuration.
+         *
+         * @return  unique pointer to the new DescriptorPool object.
+         */
         std::unique_ptr<DescriptorPool> buildUniquePtr() const;
 
     private:
