@@ -10,6 +10,9 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 - Custom render graph
 
 ## Usage
+> [!IMPORTANT]
+> Project uses CMake 4.0.0, C++23, and targets Vulkan 1.3.
+
 Add as a git submodule and link to the required libraries.
 
 ## Project Conventions
