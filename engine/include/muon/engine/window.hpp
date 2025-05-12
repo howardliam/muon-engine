@@ -15,19 +15,8 @@ namespace muon::engine {
      */
     class Window : NoCopy, NoMove {
     public:
-        enum class DisplayMode {
-            Windowed,
-            Fullscreen,
-            BorderlessFullscreen,
-        };
-
-        struct Properties {
-            uint32_t width{1280};
-            uint32_t height{720};
-            DisplayMode mode{DisplayMode::Windowed};
-            std::string_view title{"Muon"};
-        };
-
+        enum class DisplayMode;
+        struct Properties;
         class Builder;
 
         /**
@@ -37,9 +26,6 @@ namespace muon::engine {
          */
         explicit Window(const Properties &properties);
         ~Window();
-
-        Window(const Window &) = delete;
-        Window &operator=(const Window &) = delete;
 
         /*
          * @brief   creates a Vulkan surface for the window.
@@ -142,6 +128,19 @@ namespace muon::engine {
          * @throws  if the window failed to initialise.
         */
         void initWindow(std::string_view title, DisplayMode mode);
+    };
+
+    enum class Window::DisplayMode {
+        Windowed,
+        Fullscreen,
+        BorderlessFullscreen,
+    };
+
+    struct Window::Properties {
+        uint32_t width{1280};
+        uint32_t height{720};
+        DisplayMode mode{DisplayMode::Windowed};
+        std::string_view title{"Muon"};
     };
 
     class Window::Builder {
