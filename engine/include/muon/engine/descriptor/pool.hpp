@@ -28,7 +28,7 @@ namespace muon::engine {
          *
          * @return  descriptor pool handle.
          */
-        vk::DescriptorPool getPool() const;
+        [[nodiscard]] vk::DescriptorPool getPool() const;
 
     private:
         Device &device;
@@ -66,14 +66,14 @@ namespace muon::engine {
          *
          * @return  new DescriptorPool object.
          */
-        DescriptorPool build() const;
+        [[nodiscard]] DescriptorPool build() const;
 
         /**
          * @brief   Builds a new descriptor pool from the configuration.
          *
          * @return  unique pointer to the new DescriptorPool object.
          */
-        std::unique_ptr<DescriptorPool> buildUniquePtr() const;
+        [[nodiscard]] std::unique_ptr<DescriptorPool> buildUniquePtr() const;
 
     private:
         Device &device;

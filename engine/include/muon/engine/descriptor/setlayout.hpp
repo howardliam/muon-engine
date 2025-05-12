@@ -30,14 +30,14 @@ namespace muon::engine {
          *
          * @return  descriptor set handle.
          */
-        vk::DescriptorSet createSet(const DescriptorPool &pool);
+        [[nodiscard]] vk::DescriptorSet createSet(const DescriptorPool &pool);
 
         /**
          * @brief   Gets the descriptor set layout handle.
          *
          * @return  descriptor set layout handle.
          */
-        vk::DescriptorSetLayout getSetLayout() const;
+        [[nodiscard]] vk::DescriptorSetLayout getSetLayout() const;
 
     private:
         Device &device;
@@ -69,14 +69,14 @@ namespace muon::engine {
          *
          * @return  new DescriptorSetLayout object.
          */
-        DescriptorSetLayout build() const;
+        [[nodiscard]] DescriptorSetLayout build() const;
 
         /**
          * @brief   Builds a new descriptor set layout from the configuration.
          *
          * @return  unique pointer to the new DescriptorSetLayout object.
          */
-        std::unique_ptr<DescriptorSetLayout> buildUniquePtr() const;
+        [[nodiscard]] std::unique_ptr<DescriptorSetLayout> buildUniquePtr() const;
 
     private:
         Device &device;

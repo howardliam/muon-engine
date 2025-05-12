@@ -44,6 +44,8 @@ namespace muon::engine {
             write.dstSet = set;
         }
         pool.device.getDevice().updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+
+        writes.clear();
     }
 
 }
