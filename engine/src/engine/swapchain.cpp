@@ -8,13 +8,13 @@ namespace muon::engine {
 
     Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent) : device(device), windowExtent(windowExtent) {
         init();
-        log::globalLogger->debug("created swapchain");
+        log::globalLogger->debug("created swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
     }
 
     Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent, std::shared_ptr<Swapchain> previous) : device(device), windowExtent(windowExtent), oldSwapchain(previous) {
         init();
         oldSwapchain = nullptr;
-        log::globalLogger->debug("created swapchain from old swapchain");
+        log::globalLogger->debug("created swapchain from old swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
     }
 
     Swapchain::~Swapchain() {
