@@ -22,9 +22,6 @@ namespace muon::engine {
         Swapchain(Device &device, vk::Extent2D windowExtent, std::shared_ptr<Swapchain> previous);
         ~Swapchain();
 
-        Swapchain(const Swapchain &) = delete;
-        Swapchain &operator=(const Swapchain &) = delete;
-
         /**
          * @brief   acquires the next image in the swapchain.
          *
