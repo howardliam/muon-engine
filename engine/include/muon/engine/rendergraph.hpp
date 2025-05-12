@@ -53,7 +53,7 @@ namespace muon::engine::rg {
 
     class RenderGraph {
     public:
-        RenderGraph();
+        RenderGraph(Device &device);
         ~RenderGraph();
 
         void setImageSize(const vk::Extent2D &imageSize);
@@ -62,11 +62,13 @@ namespace muon::engine::rg {
 
         void addNode(const Node &node);
 
-        void compile(Device &device);
+        void compile();
 
         void execute();
 
     private:
+        Device &device;
+
         vk::Extent2D imageSize;
 
         std::unordered_map<std::string, ResourceConfig> resourceBlueprints;

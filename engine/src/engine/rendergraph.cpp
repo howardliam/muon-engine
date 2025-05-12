@@ -6,7 +6,7 @@
 
 namespace muon::engine::rg {
 
-    RenderGraph::RenderGraph() {}
+    RenderGraph::RenderGraph(Device &device) : device(device) {}
 
     RenderGraph::~RenderGraph() {}
 
@@ -22,10 +22,11 @@ namespace muon::engine::rg {
         nodes.push_back(node);
     }
 
-    void RenderGraph::compile(Device &device) {
+    void RenderGraph::compile() {
         for (const auto &[name, resource] : resourceBlueprints) {
             log::globalLogger->info("creating image {}", name);
             resources[name] = engine::Image::Builder(device)
+                .setExtent(imageSize)
                 .setFormat(resource.format)
                 .setImageLayout(resource.layout)
                 .setImageUsageFlags(resource.usageFlags)
