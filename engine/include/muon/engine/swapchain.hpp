@@ -10,11 +10,11 @@
 
 namespace muon::engine {
 
-    class Device;
-
     namespace constants {
         constexpr uint32_t maxFramesInFlight = 2;
     }
+
+    class Device;
 
     class Swapchain : NoCopy, NoMove {
     public:
