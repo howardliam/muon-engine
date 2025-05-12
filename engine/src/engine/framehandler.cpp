@@ -78,38 +78,32 @@ namespace muon::engine {
     void FrameHandler::copyImageToSwapchain(vk::Image image) {
         auto swapchainImage = swapchain->getImage(currentImageIndex);
 
-        const auto commandBuffer = getCurrentCommandBuffer();
+        const auto cmd = getCurrentCommandBuffer();
 
         {
-            vk::ImageMemoryBarrier barrier{};
+            vk::ImageMemoryBarrier2 barrier{};
             barrier.oldLayout = vk::ImageLayout::eUndefined;
-            barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
-
-            barrier.srcAccessMask = vk::AccessFlagBits{};
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eBottomOfPipe;
+            barrier.srcAccessMask = vk::AccessFlagBits2{};
             barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+
+            barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
             barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
 
             barrier.image = swapchainImage;
-
             barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
 
-            commandBuffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eBottomOfPipe,
-                vk::PipelineStageFlagBits::eTransfer,
-                vk::DependencyFlagBits{},
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-            );
+            vk::DependencyInfo dependencyInfo{};
+            dependencyInfo.imageMemoryBarrierCount = 1;
+            dependencyInfo.pImageMemoryBarriers = &barrier;
+
+            cmd.pipelineBarrier2(dependencyInfo);
         }
 
         vk::ImageCopy imageCopy{};
@@ -119,14 +113,17 @@ namespace muon::engine {
         imageCopy.srcSubresource.layerCount = 1;
         imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
 
-        imageCopy.dstSubresource = imageCopy.srcSubresource;
+        imageCopy.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imageCopy.dstSubresource.mipLevel = 0;
+        imageCopy.dstSubresource.baseArrayLayer = 0;
+        imageCopy.dstSubresource.layerCount = 1;
         imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
 
         imageCopy.extent.width = swapchain->getExtent().width;
         imageCopy.extent.height = swapchain->getExtent().height;
         imageCopy.extent.depth = 1;
 
-        commandBuffer.copyImage(
+        cmd.copyImage(
             image,
             vk::ImageLayout::eTransferSrcOptimal,
             swapchainImage,
@@ -136,32 +133,27 @@ namespace muon::engine {
         );
 
         {
-            vk::ImageMemoryBarrier barrier{};
+            vk::ImageMemoryBarrier2 barrier{};
             barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-            barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
 
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+            barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eBottomOfPipe;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eMemoryRead;
 
             barrier.image = swapchainImage;
-
             barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
 
-            commandBuffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eTransfer,
-                vk::PipelineStageFlagBits::eBottomOfPipe,
-                vk::DependencyFlagBits{},
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-            );
+            vk::DependencyInfo dependencyInfo{};
+            dependencyInfo.imageMemoryBarrierCount = 1;
+            dependencyInfo.pImageMemoryBarriers = &barrier;
+
+            cmd.pipelineBarrier2(dependencyInfo);
         }
     }
 
