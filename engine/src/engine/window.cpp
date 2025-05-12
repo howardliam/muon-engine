@@ -3,9 +3,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_vulkan.h>
-#include <X11/Xlib.h>
 #include <format>
-#include <print>
 #include <stdexcept>
 #include "muon/log/logger.hpp"
 
@@ -51,8 +49,13 @@ namespace muon::engine {
         SDL_SetWindowTitle(window, title.data());
     }
 
-    void Window::setIcon(std::vector<uint8_t> imageData, uint32_t width, uint32_t height, uint8_t channels) {
-        auto pixelFormatFromChannels = [](uint8_t channels)  {
+    void Window::setIcon(
+        std::vector<uint8_t> &imageData,
+        const uint32_t width,
+        const uint32_t height,
+        const uint8_t channels
+    ) {
+        auto pixelFormat = [](const uint8_t &channels) {
             switch (channels) {
             case 3:
                 return SDL_PIXELFORMAT_RGB24;
@@ -63,9 +66,8 @@ namespace muon::engine {
             default:
                 return SDL_PIXELFORMAT_UNKNOWN;
             }
-        };
+        }(channels);
 
-        auto pixelFormat = pixelFormatFromChannels(channels);
         if (pixelFormat == SDL_PIXELFORMAT_UNKNOWN) {
             return;
         }
@@ -73,7 +75,7 @@ namespace muon::engine {
         SDL_Surface *surface = SDL_CreateSurfaceFrom(width, height, pixelFormat, imageData.data(), width * channels);
         bool res = SDL_SetWindowIcon(window, surface);
         if (!res) {
-            std::println("{}", SDL_GetError());
+            log::globalLogger->error("failed to set window icon: {}", SDL_GetError());
         }
         SDL_DestroySurface(surface);
     }
@@ -120,24 +122,22 @@ namespace muon::engine {
         }
     }
 
-    void Window::initWindow(std::string_view title, DisplayMode mode) {
-        SDL_WindowFlags modeFlag = 0;
-        switch (mode) {
-        case DisplayMode::Windowed:
-            modeFlag |= 0;
-            break;
+    void Window::initWindow(std::string_view title, const DisplayMode &mode) {
+        auto modeFlag = [](const DisplayMode &mode) -> SDL_WindowFlags {
+            switch (mode) {
+            case DisplayMode::Fullscreen:
+                return SDL_WINDOW_FULLSCREEN;
 
-        case DisplayMode::Fullscreen:
-            modeFlag |= SDL_WINDOW_FULLSCREEN;
-            break;
+            case DisplayMode::BorderlessFullscreen:
+               return  SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS;
 
-        case DisplayMode::BorderlessFullscreen:
-            modeFlag |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS;
-            break;
-        }
+            case DisplayMode::Windowed:
+            default:
+                return 0;
+            }
+        }(mode);
 
         SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | modeFlag;
-
         window = SDL_CreateWindow(title.data(), static_cast<int32_t>(width), static_cast<int32_t>(height), flags);
 
         if (window == nullptr) {
@@ -151,12 +151,12 @@ namespace muon::engine {
         return *this;
     }
 
-    Window::Builder &Window::Builder::setTitle(const std::string &title) {
+    Window::Builder &Window::Builder::setTitle(std::string_view title) {
         properties.title = title;
         return *this;
     }
 
-    Window::Builder &Window::Builder::setInitialDisplayMode(const DisplayMode displayMode) {
+    Window::Builder &Window::Builder::setInitialDisplayMode(const DisplayMode &displayMode) {
         properties.mode = displayMode;
         return *this;
     }

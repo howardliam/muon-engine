@@ -5,7 +5,6 @@
 #include <SDL3/SDL.h>
 #include <string_view>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
@@ -75,7 +74,12 @@ namespace muon::engine {
          *
          * @param   imageData   vector of bytes corresponding to the image data.
          */
-        void setIcon(std::vector<uint8_t> imageData, uint32_t width, uint32_t height, uint8_t channels);
+        void setIcon(
+            std::vector<uint8_t> &imageData,
+            const uint32_t width,
+            const uint32_t height,
+            const uint8_t channels
+        );
 
         /**
          * @brief   sets the window's display mode.
@@ -109,8 +113,8 @@ namespace muon::engine {
 
         uint32_t width;
         uint32_t height;
-        bool open = true;
-        bool resized = false;
+        bool open{true};
+        bool resized{false};
 
         /**
          * @brief   Initialises SDL.
@@ -127,7 +131,7 @@ namespace muon::engine {
          *
          * @throws  if the window failed to initialise.
         */
-        void initWindow(std::string_view title, DisplayMode mode);
+        void initWindow(std::string_view title, const DisplayMode &mode);
     };
 
     enum class Window::DisplayMode {
@@ -147,9 +151,9 @@ namespace muon::engine {
     public:
         Builder &setDimensions(const uint32_t width, const uint32_t height);
 
-        Builder &setTitle(const std::string &title);
+        Builder &setTitle(std::string_view title);
 
-        Builder &setInitialDisplayMode(const DisplayMode displayMode);
+        Builder &setInitialDisplayMode(const DisplayMode &displayMode);
 
         Window build() const;
 
