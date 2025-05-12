@@ -1,15 +1,17 @@
-#include "muon/engine/descriptor/writer.hpp"
-#include "muon/engine/rendergraph.hpp"
-#include "muon/engine/shader.hpp"
-#include "muon/utils/color.hpp"
 #include <limits>
 #include <memory>
 #include <print>
+#include <fstream>
+#include <thread>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
+#include "muon/engine/descriptor/writer.hpp"
+#include "muon/engine/rendergraph.hpp"
+#include "muon/engine/shader.hpp"
+#include "muon/utils/color.hpp"
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
@@ -344,8 +346,7 @@ int main() {
 
     bool screenshotRequested{false};
 
-    auto extent = window.getExtent();
-    auto size = extent.width * extent.height;
+    auto size = window.getExtent().width * window.getExtent().height;
 
     std::unique_ptr stagingBuffer = std::make_unique<engine::Buffer>(
         device,
@@ -384,17 +385,16 @@ int main() {
 
     uint32_t frameIndex{0};
 
-    engine::rg::RenderGraph rg;
+    engine::rg::RenderGraph rg(device);
+    rg.setImageSize(window.getExtent());
 
     rg.addResource("scene_color", {
         vk::Format::eR8G8B8A8Unorm,
         vk::ImageLayout::eColorAttachmentOptimal,
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
-        vk::AccessFlagBits2::eColorAttachmentWrite | vk::AccessFlagBits2::eTransferRead,
+        vk::AccessFlagBits2::eColorAttachmentWrite,
         vk::PipelineStageFlagBits2::eColorAttachmentOutput,
     });
-
-    // rg.compile();
 
     while (window.isOpen()) {
         SDL_Event event;
@@ -408,14 +408,15 @@ int main() {
                 }
 
                 if (event.key.scancode == SDL_SCANCODE_F2) {
-                    // screenshotRequested = true;
-                    log::globalLogger->info("screenshots disabled");
+                    screenshotRequested = true;
+                    log::globalLogger->info("screenshot requested");
                 }
             }
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 window.resize(event.window.data1, event.window.data2);
             }
         }
+
 
         if (seconds >= 1.0) {
             std::string title = std::format("FPS: {}", frames);
@@ -424,59 +425,100 @@ int main() {
             frames = 0;
         }
 
-        // if (window.wasResized()) {
-        //     device.getDevice().waitIdle();
+        if (window.wasResized()) {
+            device.getDevice().waitIdle();
 
-        //     extent = window.getExtent();
+            auto extent = window.getExtent();
 
-        //     computeImageA = engine::Image::Builder(device)
-        //         .setExtent(extent)
-        //         .setFormat(vk::Format::eR8G8B8A8Unorm)
-        //         .setImageUsageFlags(usageFlags)
-        //         .setImageLayout(vk::ImageLayout::eGeneral)
-        //         .setAccessFlags(accessFlags)
-        //         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-        //         .buildUniquePtr();
+            sceneColor = engine::Image::Builder(device)
+                .setExtent(window.getExtent())
+                .setFormat(vk::Format::eR8G8B8A8Unorm)
+                .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+                .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
+                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
+                .buildUniquePtr();
 
-        //     computeImageB = engine::Image::Builder(device)
-        //         .setExtent(extent)
-        //         .setFormat(vk::Format::eR8G8B8A8Unorm)
-        //         .setImageUsageFlags(usageFlags)
-        //         .setImageLayout(vk::ImageLayout::eGeneral)
-        //         .setAccessFlags(accessFlags)
-        //         .setPipelineStageFlags(vk::PipelineStageFlagBits::eComputeShader)
-        //         .buildUniquePtr();
+            colorAttachment.imageView = sceneColor->getImageView();
+            colorAttachment.imageLayout = sceneColor->getImageLayout();
+            colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+            colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+            colorAttachment.clearValue.color = color::rgbaFromHex<std::array<float, 4>>(0x87ceebff);
 
-        //     computeImagePool->resetPool();
+            sceneDepth = engine::Image::Builder(device)
+                .setExtent(window.getExtent())
+                .setFormat(vk::Format::eD32Sfloat)
+                .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+                .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
+                .setAccessFlags(vk::AccessFlagBits2::eDepthStencilAttachmentWrite)
+                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eEarlyFragmentTests)
+                .buildUniquePtr();
 
-        //     auto infoA = computeImageA->getDescriptorInfo();
-        //     auto infoB = computeImageB->getDescriptorInfo();
+            depthAttachment.imageView = sceneDepth->getImageView();
+            depthAttachment.imageLayout = sceneDepth->getImageLayout();
+            depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+            depthAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+            depthAttachment.clearValue.depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
 
-        //     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-        //         .writeImage(0, &infoA)
-        //         .writeImage(1, &infoB)
-        //         .build(computeDescriptorSets[0]);
+            renderingInfo.renderArea = vk::Rect2D{vk::Offset2D{}, window.getExtent()};
+            renderingInfo.layerCount = 1;
+            renderingInfo.viewMask = 0;
+            renderingInfo.colorAttachmentCount = 1;
+            renderingInfo.pColorAttachments = &colorAttachment;
+            renderingInfo.pDepthAttachment = &depthAttachment;
+            renderingInfo.pStencilAttachment = nullptr;
 
-        //     engine::DescriptorWriter(*computeSetLayout, *computeImagePool)
-        //         .writeImage(0, &infoB)
-        //         .writeImage(1, &infoA)
-        //         .build(computeDescriptorSets[1]);
+            auto sceneColorFormat = sceneColor->getFormat();
 
-        //     size = extent.width * extent.height;
-        //     stagingBuffer = std::make_unique<engine::Buffer>(
-        //         device,
-        //         4,
-        //         size,
-        //         vk::BufferUsageFlagBits::eTransferDst,
-        //         vma::MemoryUsage::eGpuToCpu
-        //     );
+            renderingCreateInfo.viewMask = renderingInfo.viewMask;
+            renderingCreateInfo.colorAttachmentCount = renderingInfo.colorAttachmentCount;
+            renderingCreateInfo.pColorAttachmentFormats = &sceneColorFormat;
+            renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
+            renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-        //     frameHandler.recreateSwapchain(extent);
+            renderSystem.bake(renderingCreateInfo);
 
-        //     window.resetResized();
+            computeImageA = engine::Image::Builder(device)
+                .setExtent(extent)
+                .setFormat(vk::Format::eR8G8B8A8Unorm)
+                .setImageUsageFlags(usageFlags)
+                .setImageLayout(vk::ImageLayout::eGeneral)
+                .setAccessFlags(accessFlags)
+                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
+                .buildUniquePtr();
 
-        //     continue;
-        // }
+            computeImageB = engine::Image::Builder(device)
+                .setExtent(extent)
+                .setFormat(vk::Format::eR8G8B8A8Unorm)
+                .setImageUsageFlags(usageFlags)
+                .setImageLayout(vk::ImageLayout::eGeneral)
+                .setAccessFlags(accessFlags)
+                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
+                .buildUniquePtr();
+
+            auto infoA = computeImageA->getDescriptorInfo();
+            auto infoB = computeImageB->getDescriptorInfo();
+
+            engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
+                .addImageWrite(0, 0, &infoA)
+                .addImageWrite(0, 1, &infoB)
+                .writeAll(computeSet);
+
+            size = extent.width * extent.height;
+            stagingBuffer = std::make_unique<engine::Buffer>(
+                device,
+                4,
+                size,
+                vk::BufferUsageFlagBits::eTransferDst,
+                vma::MemoryUsage::eGpuToCpu
+            );
+
+            frameHandler.recreateSwapchain(extent);
+
+            window.resetResized();
+
+            continue;
+        }
 
         const auto cmd = frameHandler.beginFrame();
 
@@ -499,15 +541,15 @@ int main() {
         vk::Viewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(extent.width);
-        viewport.height = static_cast<float>(extent.height);
+        viewport.width = static_cast<float>(window.getExtent().width);
+        viewport.height = static_cast<float>(window.getExtent().height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         vk::Rect2D scissor{};
         scissor.offset.x = 0;
         scissor.offset.y = 0;
-        scissor.extent = extent;
+        scissor.extent = window.getExtent();
 
         cmd.setViewport(0, 1, &viewport);
         cmd.setScissor(0, 1, &scissor);
@@ -554,6 +596,42 @@ int main() {
         sceneColor->revertTransition(cmd);
 
         tonemap.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
+
+        if (screenshotRequested) {
+            computeImageB->transitionLayout(cmd, {
+                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+                .accessFlags = vk::AccessFlagBits2::eTransferRead,
+                .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
+            });
+
+            auto extent = window.getExtent();
+
+            vk::BufferImageCopy region{};
+            region.bufferOffset = 0;
+            region.bufferRowLength = 0;
+            region.bufferImageHeight = 0;
+            region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+            region.imageSubresource.mipLevel = 0;
+            region.imageSubresource.baseArrayLayer = 0;
+            region.imageSubresource.layerCount = 1;
+            region.imageOffset.x = 0;
+            region.imageOffset.y = 0;
+            region.imageOffset.z = 0;
+            region.imageExtent.width = extent.width;
+            region.imageExtent.height = extent.height;
+            region.imageExtent.depth = 1;
+
+            cmd.copyImageToBuffer(
+                computeImageB->getImage(),
+                vk::ImageLayout::eTransferSrcOptimal,
+                stagingBuffer->getBuffer(),
+                1,
+                &region
+            );
+
+            computeImageB->revertTransition(cmd);
+        }
+
         swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
 
         computeImageA->transitionLayout(cmd, {
@@ -568,68 +646,35 @@ int main() {
 
         frameHandler.endFrame();
 
-        // if (screenshotRequested) {
-        //     computeImageB->transitionLayout(commandBuffer, {
-        //         .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-        //         .accessFlags = vk::AccessFlagBits::eTransferRead,
-        //         .pipelineStageFlags = vk::PipelineStageFlagBits::eTransfer,
-        //     });
+        if (screenshotRequested) {
+            if (stagingBuffer->map() != vk::Result::eSuccess) {
+                continue;
+            }
 
-        //     auto extent = window.getExtent();
+            auto extent = window.getExtent();
 
-        //     vk::BufferImageCopy region{};
-        //     region.bufferOffset = 0;
-        //     region.bufferRowLength = 0;
-        //     region.bufferImageHeight = 0;
-        //     region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-        //     region.imageSubresource.mipLevel = 0;
-        //     region.imageSubresource.baseArrayLayer = 0;
-        //     region.imageSubresource.layerCount = 1;
-        //     region.imageOffset.x = 0;
-        //     region.imageOffset.y = 0;
-        //     region.imageOffset.z = 0;
-        //     region.imageExtent.width = extent.width;
-        //     region.imageExtent.height = extent.height;
-        //     region.imageExtent.depth = 1;
+            asset::Image image{};
+            image.width = extent.width;
+            image.height = extent.height;
+            image.channels = 4;
+            image.bitDepth = 8;
+            image.data.resize(stagingBuffer->getBufferSize());
 
-        //     commandBuffer.copyImageToBuffer(
-        //         computeImageB->getImage(),
-        //         vk::ImageLayout::eTransferSrcOptimal,
-        //         stagingBuffer->getBuffer(),
-        //         1,
-        //         &region
-        //     );
+            std::memcpy(image.data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
 
-        //     computeImageB->revertTransition(commandBuffer);
-        // }
+            stagingBuffer->unmap();
 
-        // if (screenshotRequested) {
-        //     if (stagingBuffer->map() != vk::Result::eSuccess) {
-        //         continue;
-        //     }
+            std::thread([image]() {
+                auto png = asset::encodePng(image);
 
-        //     asset::Image image{};
-        //     image.width = extent.width;
-        //     image.height = extent.height;
-        //     image.channels = 4;
-        //     image.bitDepth = 8;
-        //     image.data.resize(stagingBuffer->getBufferSize());
+                std::ofstream outputFile("./screenshot.png");
+                outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
 
-        //     std::memcpy(image.data.data(), stagingBuffer->getMappedMemory(), stagingBuffer->getBufferSize());
+                log::globalLogger->info("screenshot saved");
+            }).detach();
 
-        //     stagingBuffer->unmap();
-
-        //     std::thread([image]() {
-        //         auto png = asset::encodePng(image);
-
-        //         std::ofstream outputFile("./screenshot.png");
-        //         outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
-
-        //         log::globalLogger->info("screenshot saved");
-        //     }).detach();
-
-        //     screenshotRequested = false;
-        // }
+            screenshotRequested = false;
+        }
 
         frameHandler.updateFrameTiming();
 
