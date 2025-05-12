@@ -356,23 +356,12 @@ namespace muon::engine {
         }
         #endif
 
-        vk::ApplicationInfo appInfo;
-        appInfo.pApplicationName = "Muon";
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "Muon";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_3;
-
-        vk::InstanceCreateInfo createInfo{};
-        createInfo.pApplicationInfo = &appInfo;
-        createInfo.pNext = nullptr;
-
         auto getRequiredExtensions = []() -> std::vector<const char *> {
             uint32_t sdlExtensionCount = 0;
             const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
 
             if (sdlExtensions == nullptr) {
-                throw std::runtime_error(std::format("failed to get instance extensions from SDL: {}", SDL_GetError()));
+                throw std::runtime_error("failed to get instance extensions from SDL: " + std::string(SDL_GetError()));
             }
 
             std::vector<const char *> extensions(sdlExtensions, sdlExtensions + sdlExtensionCount);
@@ -383,6 +372,17 @@ namespace muon::engine {
 
             return extensions;
         };
+
+        vk::ApplicationInfo appInfo;
+        appInfo.pApplicationName = "Muon";
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "Muon";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_3;
+
+        vk::InstanceCreateInfo createInfo{};
+        createInfo.pApplicationInfo = &appInfo;
+        createInfo.pNext = nullptr;
 
         auto extensions = getRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
@@ -528,11 +528,6 @@ namespace muon::engine {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
         createInfo.pNext = &deviceFeatures;
-
-        #ifndef NDEBUG
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-        #endif
 
         auto result = physicalDevice.createDevice(&createInfo, nullptr, &device);
         if (result != vk::Result::eSuccess) {
