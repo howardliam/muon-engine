@@ -3,3 +3,4 @@ build
 
 *.spv
 screenshot.png
+imgui.ini
