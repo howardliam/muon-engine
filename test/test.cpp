@@ -619,9 +619,7 @@ int main() {
         imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
         imageCopy.dstSubresource = imageCopy.srcSubresource;
         imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
-        imageCopy.extent.width = window.getExtent().width;
-        imageCopy.extent.height = window.getExtent().height;
-        imageCopy.extent.depth = 1;
+        imageCopy.extent = vk::Extent3D{window.getExtent(), 1};
 
         cmd.copyImage(
             sceneColor->getImage(),
@@ -655,12 +653,8 @@ int main() {
             region.imageSubresource.mipLevel = 0;
             region.imageSubresource.baseArrayLayer = 0;
             region.imageSubresource.layerCount = 1;
-            region.imageOffset.x = 0;
-            region.imageOffset.y = 0;
-            region.imageOffset.z = 0;
-            region.imageExtent.width = extent.width;
-            region.imageExtent.height = extent.height;
-            region.imageExtent.depth = 1;
+            region.imageOffset = vk::Offset3D{0, 0, 0};
+            region.imageExtent = vk::Extent3D{extent, 1};
 
             cmd.copyImageToBuffer(
                 computeImageB->getImage(),
