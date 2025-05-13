@@ -6,15 +6,11 @@
 #include "muon/engine/image.hpp"
 #include "muon/engine/descriptor/pool.hpp"
 
-#include <array>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 
@@ -24,10 +20,13 @@ namespace muon::engine {
     }
 
     DebugUi::~DebugUi() {
-        device.getDevice().destroyRenderPass(renderPass);
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
+
+        device.getDevice().destroyFramebuffer(framebuffer);
+        device.getDevice().destroyRenderPass(renderPass);
+        device.getDevice().destroyDescriptorPool(descriptorPool);
     }
 
     void DebugUi::beginRendering(vk::CommandBuffer cmd) {
@@ -60,10 +59,20 @@ namespace muon::engine {
     }
 
     void DebugUi::createResources() {
-        descriptorPool = engine::DescriptorPool::Builder(device)
-            .addPoolSize(vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-            .setMaxSets(1)
-            .buildUniquePtr();
+        vk::DescriptorPoolSize poolSize{};
+        poolSize.type = vk::DescriptorType::eCombinedImageSampler;
+        poolSize.descriptorCount = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
+
+        vk::DescriptorPoolCreateInfo dpCreateInfo{};
+        dpCreateInfo.maxSets = 1;
+        dpCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+        dpCreateInfo.poolSizeCount = 1;
+        dpCreateInfo.pPoolSizes = &poolSize;
+
+        auto result = device.getDevice().createDescriptorPool(&dpCreateInfo, nullptr, &descriptorPool);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create debug ui descriptor pool");
+        }
 
         vk::AttachmentDescription2 colorAttachment{};
         colorAttachment.samples = vk::SampleCountFlagBits::e1;
@@ -100,7 +109,7 @@ namespace muon::engine {
         rpCreateInfo.dependencyCount = 1;
         rpCreateInfo.pDependencies = &dependency;
 
-        auto result = device.getDevice().createRenderPass2(&rpCreateInfo, nullptr, &renderPass);
+        result = device.getDevice().createRenderPass2(&rpCreateInfo, nullptr, &renderPass);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui render pass");
         }
@@ -144,8 +153,9 @@ namespace muon::engine {
         initInfo.QueueFamily = *device.getQueueFamilyIndices().graphicsFamily;
         initInfo.Queue = static_cast<VkQueue>(device.getGraphicsQueue());
         initInfo.PipelineCache = nullptr;
-        initInfo.DescriptorPool = static_cast<VkDescriptorPool>(descriptorPool->getPool());
+        initInfo.DescriptorPool = static_cast<VkDescriptorPool>(descriptorPool);
         initInfo.RenderPass = static_cast<VkRenderPass>(renderPass);
+        initInfo.MinImageCount = constants::maxFramesInFlight;
         initInfo.ImageCount = constants::maxFramesInFlight;
         initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
         initInfo.Allocator = nullptr;

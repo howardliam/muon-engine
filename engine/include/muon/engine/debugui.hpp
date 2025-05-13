@@ -24,7 +24,7 @@ namespace muon::engine {
         Window &window;
         Device &device;
 
-        std::unique_ptr<DescriptorPool> descriptorPool;
+        vk::DescriptorPool descriptorPool;
         vk::RenderPass renderPass;
         std::unique_ptr<Image> image;
         vk::Framebuffer framebuffer;
