@@ -4,14 +4,19 @@
 #include <fstream>
 #include <thread>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
-#include "muon/engine/descriptor/writer.hpp"
-#include "muon/engine/rendergraph.hpp"
-#include "muon/engine/shader.hpp"
-#include "muon/utils/color.hpp"
+#include <glm/geometric.hpp>
+#include <muon/engine/descriptor/writer.hpp>
+#include <muon/engine/shader.hpp>
+#include <muon/utils/color.hpp>
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
@@ -196,7 +201,10 @@ int main() {
 
     #ifndef NDEBUG
     logger->info("running in debug");
-    logger->info("vulkan header version: {}.{}.{}", VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE), VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE), VK_API_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE));
+    auto vkMajor = VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE);
+    auto vkMinor = VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE);
+    auto vkPatch = VK_API_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE);
+    logger->info("Vulkan header version: {}.{}.{}", vkMajor, vkMinor, vkPatch);
     #else
     logger->info("running in release");
     #endif
@@ -213,6 +221,8 @@ int main() {
 
     auto windowIcon = asset::decodePng("./muon-logo.png");
     window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
+
+    bool mouseGrab{false};
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
@@ -358,7 +368,6 @@ int main() {
 
     glm::mat4 transform = glm::mat4{1.0f};
     transform = glm::scale(transform, glm::vec3{2.0f});
-    transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3{1.0f, 1.0f, 0.0f});
 
     float seconds{0.0};
     int32_t frames{0};
@@ -385,26 +394,54 @@ int main() {
 
     uint32_t frameIndex{0};
 
-    engine::rg::RenderGraph rg(device);
-    rg.setImageSize(window.getExtent());
+    glm::vec3 position{0.0, 0.0, 10.0};
+    glm::vec3 up{0.0, 1.0, 0.0};
+    glm::vec3 orientation{0.0, 0.0, -1.0};
 
-    rg.addResource("scene_color", {
-        vk::Format::eR8G8B8A8Unorm,
-        vk::ImageLayout::eColorAttachmentOptimal,
-        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
-        vk::AccessFlagBits2::eColorAttachmentWrite,
-        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-    });
+    float sensitivity{1};
+
+    float yaw{0};
 
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_MOUSE_MOTION && mouseGrab) {
+                float dx = event.motion.xrel * sensitivity;
+                float dy = event.motion.yrel * sensitivity;
+
+                yaw += event.motion.xrel;
+                yaw = glm::clamp(yaw, -180.0f, 180.0f);
+
+                log::globalLogger->info("{}", yaw);
+
+                orientation = glm::rotate({0.0, 0.0, -1.0}, glm::radians(yaw), up);
+
+                auto extent = window.getExtent();
+            }
+
             if (event.type == SDL_EVENT_QUIT) {
                 window.setToClose();
             }
+
             if (event.type == SDL_EVENT_KEY_DOWN) {
+                if (event.key.scancode == SDL_SCANCODE_W) {
+                    position -= glm::vec3{0.0, 0.0, 1.0};
+                }
+                if (event.key.scancode == SDL_SCANCODE_S) {
+                    position += glm::vec3{0.0, 0.0, 1.0};
+                }
+                if (event.key.scancode == SDL_SCANCODE_A) {
+                    position -= glm::vec3{1.0, 0.0, 0.0};
+                }
+                if (event.key.scancode == SDL_SCANCODE_D) {
+                    position += glm::vec3{1.0, 0.0, 0.0};
+                }
+
                 if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
-                    window.setToClose();
+                    mouseGrab = !mouseGrab;
+
+                    SDL_SetWindowMouseGrab(window.getWindow(), mouseGrab);
+                    SDL_SetWindowRelativeMouseMode(window.getWindow(), mouseGrab);
                 }
 
                 if (event.key.scancode == SDL_SCANCODE_F2) {
@@ -412,6 +449,7 @@ int main() {
                     log::globalLogger->info("screenshot requested");
                 }
             }
+
             if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 window.resize(event.window.data1, event.window.data2);
             }
@@ -520,14 +558,10 @@ int main() {
             continue;
         }
 
-        const auto cmd = frameHandler.beginFrame();
-
-        frameIndex = frameHandler.getFrameIndex();
-
-        transform = glm::rotate(transform, glm::tau<float>() * frameHandler.getFrameTime(), glm::vec3{1.0f, 1.0f, 1.0f});
+        orientation = glm::rotate(orientation, glm::radians(15.0f) * frameHandler.getFrameTime(), up);
 
         Ubo ubo{};
-        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        ubo.view = glm::lookAt(position, orientation, up);
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
         ubo.transform = transform;
 
@@ -535,6 +569,9 @@ int main() {
         uboBuffer->writeToBuffer(&ubo);
         uboBuffer->flush();
         uboBuffer->unmap();
+
+        const auto cmd = frameHandler.beginFrame();
+        frameIndex = frameHandler.getFrameIndex();
 
         cmd.beginRendering(renderingInfo);
 
