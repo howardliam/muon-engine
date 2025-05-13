@@ -9,9 +9,9 @@ layout(binding = 0, rgba8) uniform image2D images[2];
 void main() {
     ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 
-    vec4 color = imageLoad(images[1], coords);
+    vec4 color = imageLoad(images[0], coords);
 
     color = vec4(color.b, color.g, color.r, color.a);
 
-    imageStore(images[0], coords, color);
+    imageStore(images[1], coords, color);
 }
