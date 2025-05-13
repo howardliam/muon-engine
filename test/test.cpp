@@ -675,6 +675,10 @@ int main() {
 
         swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
 
+        debugUi.beginRendering(cmd);
+
+        debugUi.endRendering(cmd);
+
         computeImageA->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits2::eTransferRead,
