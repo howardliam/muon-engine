@@ -20,7 +20,7 @@ namespace muon::engine {
 
         virtual void dispatch(
             vk::CommandBuffer commandBuffer,
-            vk::DescriptorSet set,
+            const std::vector<vk::DescriptorSet> &sets,
             vk::Extent2D windowExtent,
             const glm::uvec3 &workgroupSize
         ) = 0;
