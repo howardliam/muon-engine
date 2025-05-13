@@ -42,6 +42,22 @@ namespace muon::engine {
 
         cmd.beginRenderPass(&beginInfo, vk::SubpassContents::eInline);
 
+        vk::Viewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(window.getExtent().width);
+        viewport.height = static_cast<float>(window.getExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        vk::Rect2D scissor{};
+        scissor.offset.x = 0;
+        scissor.offset.y = 0;
+        scissor.extent = window.getExtent();
+
+        cmd.setViewport(0, 1, &viewport);
+        cmd.setScissor(0, 1, &scissor);
+
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
