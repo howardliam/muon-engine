@@ -29,6 +29,10 @@ namespace muon::engine {
         device.getDevice().destroyDescriptorPool(descriptorPool);
     }
 
+    void DebugUi::pollEvents(SDL_Event *event) {
+        ImGui_ImplSDL3_ProcessEvent(event);
+    }
+
     void DebugUi::beginRendering(vk::CommandBuffer cmd) {
         vk::RenderPassBeginInfo beginInfo{};
         beginInfo.renderPass = renderPass;
@@ -62,7 +66,7 @@ namespace muon::engine {
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow(&showWindow);
 
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), static_cast<VkCommandBuffer>(cmd));
