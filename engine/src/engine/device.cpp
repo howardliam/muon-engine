@@ -604,7 +604,7 @@ namespace muon::engine {
             log::globalLogger->error("failed to get surface capabilities");
         }
 
-        uint32_t formatCount;
+        uint32_t formatCount{0};
         result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
         if (result != vk::Result::eSuccess) {
             log::globalLogger->error("failed to get surface formats");
