@@ -161,11 +161,11 @@ namespace muon::engine {
         };
 
         auto selectPresentMode = [](const std::vector<vk::PresentModeKHR> &presentModes) -> vk::PresentModeKHR {
-            for (const auto& presentMode : presentModes) {
-                if (presentMode == vk::PresentModeKHR::eMailbox) {
-                    return presentMode;
-                }
-            }
+            // for (const auto& presentMode : presentModes) {
+            //     if (presentMode == vk::PresentModeKHR::eMailbox) {
+            //         return presentMode;
+            //     }
+            // }
 
             return vk::PresentModeKHR::eFifo;
         };
