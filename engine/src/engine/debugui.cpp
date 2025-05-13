@@ -3,71 +3,60 @@
 #include "muon/engine/window.hpp"
 #include "muon/engine/device.hpp"
 #include "muon/engine/swapchain.hpp"
+#include "muon/engine/image.hpp"
 #include "muon/engine/descriptor/pool.hpp"
 
+#include <array>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_vulkan.h>
+#include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 
     DebugUi::DebugUi(Window &window, Device &device) : window(window), device(device) {
         createResources();
-        // IMGUI_CHECKVERSION();
-        // ImGui::CreateContext();
-        // ImGuiIO &io = ImGui::GetIO();
-        // ImGui::StyleColorsDark();
-        // ImGui_ImplSDL3_InitForVulkan(window.getWindow());
-
-        // ImGui_ImplVulkan_InitInfo initInfo{};
-        // initInfo.ApiVersion = VK_API_VERSION_1_3;
-        // initInfo.Instance = static_cast<VkInstance>(device.getInstance());
-        // initInfo.PhysicalDevice = static_cast<VkPhysicalDevice>(device.getPhysicalDevice());
-        // initInfo.Device = static_cast<VkDevice>(device.getDevice());
-        // initInfo.QueueFamily = *device.getQueueFamilyIndices().graphicsFamily;
-        // initInfo.Queue = static_cast<VkQueue>(device.getGraphicsQueue());
-        // initInfo.PipelineCache = nullptr;
-
-        // auto imGuiDescriptorPool = engine::DescriptorPool::Builder(device)
-        //     .addPoolSize(vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-        //     .setMaxSets(1)
-        //     .buildUniquePtr();
-        // initInfo.DescriptorPool = static_cast<VkDescriptorPool>(imGuiDescriptorPool->getPool());
-
-        // ImGui_ImplVulkanH_Window imGuiWindow{};
-        // imGuiWindow.Surface = device.getSurface();
-        // auto swapchainSupport = device.getSwapchainSupportDetails();
-        // imGuiWindow.SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(
-        //     static_cast<VkPhysicalDevice>(device.getPhysicalDevice()),
-        //     static_cast<VkSurfaceKHR>(device.getSurface()),
-        //     reinterpret_cast<VkFormat *>(swapchainSupport.formats.data()),
-        //     swapchainSupport.formats.size(),
-        //     VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-        // );
-        // imGuiWindow.PresentMode = ImGui_ImplVulkanH_SelectPresentMode(
-        //     static_cast<VkPhysicalDevice>(device.getPhysicalDevice()),
-        //     static_cast<VkSurfaceKHR>(device.getSurface()),
-        //     reinterpret_cast<VkPresentModeKHR *>(swapchainSupport.presentModes.data()),
-        //     swapchainSupport.presentModes.size()
-        // );
-        // ImGui_ImplVulkanH_CreateOrResizeWindow(
-        //     static_cast<VkInstance>(device.getInstance()),
-        //     static_cast<VkPhysicalDevice>(device.getPhysicalDevice()),
-        //     static_cast<VkDevice>(device.getDevice()),
-        //     &imGuiWindow,
-        //     *device.getQueueFamilyIndices().graphicsFamily,
-        //     nullptr,
-        //     window.getExtent().width,
-        //     window.getExtent().height,
-        //     engine::constants::maxFramesInFlight
-        // );
+        initImGui();
     }
 
     DebugUi::~DebugUi() {
         device.getDevice().destroyRenderPass(renderPass);
+        ImGui_ImplVulkan_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+    void DebugUi::beginRendering(vk::CommandBuffer cmd) {
+        vk::RenderPassBeginInfo beginInfo{};
+        beginInfo.renderPass = renderPass;
+        beginInfo.framebuffer = framebuffer;
+        beginInfo.renderArea = vk::Rect2D{vk::Offset2D{}, window.getExtent()};
+
+        vk::ClearValue clearValue{};
+        clearValue.color = vk::ClearColorValue{0.0f, 0.0f, 0.0f, 0.0f};
+        beginInfo.clearValueCount = 1;
+        beginInfo.pClearValues = &clearValue;
+
+        cmd.beginRenderPass(&beginInfo, vk::SubpassContents::eInline);
+
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), static_cast<VkCommandBuffer>(cmd));
+    }
+
+    void DebugUi::endRendering(vk::CommandBuffer cmd) {
+        cmd.endRenderPass();
+    }
+
+    Image *DebugUi::getImage() const {
+        return image.get();
     }
 
     void DebugUi::createResources() {
@@ -103,15 +92,68 @@ namespace muon::engine {
         dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
         dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
-        vk::RenderPassCreateInfo2 createInfo{};
-        createInfo.attachmentCount = 1;
-        createInfo.pAttachments = &colorAttachment;
-        createInfo.subpassCount = 1;
-        createInfo.pSubpasses = &subpass;
-        createInfo.dependencyCount = 1;
-        createInfo.pDependencies = &dependency;
+        vk::RenderPassCreateInfo2 rpCreateInfo{};
+        rpCreateInfo.attachmentCount = 1;
+        rpCreateInfo.pAttachments = &colorAttachment;
+        rpCreateInfo.subpassCount = 1;
+        rpCreateInfo.pSubpasses = &subpass;
+        rpCreateInfo.dependencyCount = 1;
+        rpCreateInfo.pDependencies = &dependency;
 
-        auto result = device.getDevice().createRenderPass2(&createInfo, nullptr, &renderPass);
+        auto result = device.getDevice().createRenderPass2(&rpCreateInfo, nullptr, &renderPass);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create debug ui render pass");
+        }
+
+        image = Image::Builder(device)
+            .setExtent(window.getExtent())
+            .setFormat(colorAttachment.format)
+            .setImageLayout(colorAttachment.initialLayout)
+            .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+            .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
+            .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
+            .buildUniquePtr();
+
+        auto fbAttachment = image->getImageView();
+
+        vk::FramebufferCreateInfo fbCreateInfo{};
+        fbCreateInfo.renderPass = renderPass;
+        fbCreateInfo.attachmentCount = 1;
+        fbCreateInfo.pAttachments = &fbAttachment;
+        fbCreateInfo.width = window.getExtent().width;
+        fbCreateInfo.height = window.getExtent().height;
+        fbCreateInfo.layers = 1;
+
+        result = device.getDevice().createFramebuffer(&fbCreateInfo, nullptr, &framebuffer);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create debug ui frame buffer");
+        }
     }
 
+    void DebugUi::initImGui() {
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        ImGui::StyleColorsDark();
+        ImGui_ImplSDL3_InitForVulkan(window.getWindow());
+
+        ImGui_ImplVulkan_InitInfo initInfo{};
+        initInfo.ApiVersion = VK_API_VERSION_1_3;
+        initInfo.Instance = static_cast<VkInstance>(device.getInstance());
+        initInfo.PhysicalDevice = static_cast<VkPhysicalDevice>(device.getPhysicalDevice());
+        initInfo.Device = static_cast<VkDevice>(device.getDevice());
+        initInfo.QueueFamily = *device.getQueueFamilyIndices().graphicsFamily;
+        initInfo.Queue = static_cast<VkQueue>(device.getGraphicsQueue());
+        initInfo.PipelineCache = nullptr;
+        initInfo.DescriptorPool = static_cast<VkDescriptorPool>(descriptorPool->getPool());
+        initInfo.RenderPass = static_cast<VkRenderPass>(renderPass);
+        initInfo.ImageCount = constants::maxFramesInFlight;
+        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        initInfo.Allocator = nullptr;
+        initInfo.CheckVkResultFn = nullptr;
+        ImGui_ImplVulkan_Init(&initInfo);
+
+        ImGui_ImplVulkan_CreateFontsTexture();
+
+        device.getDevice().waitIdle();
+    }
 }
