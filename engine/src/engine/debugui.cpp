@@ -62,6 +62,8 @@ namespace muon::engine {
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
+        ImGui::ShowDemoWindow();
+
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), static_cast<VkCommandBuffer>(cmd));
     }
@@ -92,13 +94,13 @@ namespace muon::engine {
 
         vk::AttachmentDescription2 colorAttachment{};
         colorAttachment.samples = vk::SampleCountFlagBits::e1;
-        colorAttachment.format = vk::Format::eB8G8R8A8Srgb;
+        colorAttachment.format = vk::Format::eR8G8B8A8Unorm;
         colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
         colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
         colorAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
         colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-        colorAttachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
-        colorAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+        colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
+        colorAttachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
 
         vk::AttachmentReference2 colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
@@ -133,7 +135,7 @@ namespace muon::engine {
         image = Image::Builder(device)
             .setExtent(window.getExtent())
             .setFormat(colorAttachment.format)
-            .setImageLayout(colorAttachment.initialLayout)
+            .setImageLayout(colorAttachment.finalLayout)
             .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
             .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
             .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
