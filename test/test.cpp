@@ -118,6 +118,46 @@ protected:
     }
 };
 
+class UiComposite : public engine::ComputeSystem {
+public:
+    UiComposite(
+        engine::Device &device,
+        std::vector<vk::DescriptorSetLayout> setLayouts
+    ) : engine::ComputeSystem(device, setLayouts, {}) {
+        createPipeline();
+    }
+
+    void dispatch(
+        vk::CommandBuffer commandBuffer,
+        const std::vector<vk::DescriptorSet> &sets,
+        vk::Extent2D windowExtent,
+        const glm::uvec3 &workgroupSize
+    ) override {
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
+        commandBuffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eCompute,
+            pipelineLayout,
+            0,
+            sets.size(),
+            sets.data(),
+            0,
+            nullptr
+        );
+
+        auto dispatchSize = calculateDispatchSize(windowExtent, workgroupSize);
+        commandBuffer.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
+    }
+
+protected:
+    void createPipeline() override {
+        pipeline = std::make_unique<engine::ComputePipeline>(
+            device,
+            "./test/assets/shaders/uicomposite.comp.spv",
+            pipelineLayout
+        );
+    }
+};
+
 class ToneMap : public engine::ComputeSystem {
 public:
     ToneMap(
@@ -129,7 +169,7 @@ public:
 
     void dispatch(
         vk::CommandBuffer commandBuffer,
-        vk::DescriptorSet set,
+        const std::vector<vk::DescriptorSet> &sets,
         vk::Extent2D windowExtent,
         const glm::uvec3 &workgroupSize
     ) override {
@@ -138,8 +178,8 @@ public:
             vk::PipelineBindPoint::eCompute,
             pipelineLayout,
             0,
-            1,
-            &set,
+            sets.size(),
+            sets.data(),
             0,
             nullptr
         );
@@ -169,7 +209,7 @@ public:
 
     void dispatch(
         vk::CommandBuffer commandBuffer,
-        vk::DescriptorSet set,
+        const std::vector<vk::DescriptorSet> &sets,
         vk::Extent2D windowExtent,
         const glm::uvec3 &workgroupSize
     ) override {
@@ -178,8 +218,8 @@ public:
             vk::PipelineBindPoint::eCompute,
             pipelineLayout,
             0,
-            1,
-            &set,
+            sets.size(),
+            sets.data(),
             0,
             nullptr
         );
@@ -214,7 +254,7 @@ int main() {
 
     engine::ShaderCompiler shaderCompiler;
     shaderCompiler.addShaders("./test/assets/shaders");
-    shaderCompiler.compile();
+    // shaderCompiler.compile();
 
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)
@@ -319,6 +359,29 @@ int main() {
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite;
 
+    std::unique_ptr computeImagePool = engine::DescriptorPool::Builder(device)
+        .addPoolSize(vk::DescriptorType::eStorageImage, 4)
+        .buildUniquePtr();
+
+    std::unique_ptr uiCompositeImage = engine::Image::Builder(device)
+        .setExtent(window.getExtent())
+        .setFormat(vk::Format::eR8G8B8A8Unorm)
+        .setImageUsageFlags(usageFlags)
+        .setImageLayout(vk::ImageLayout::eGeneral)
+        .setAccessFlags(accessFlags)
+        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
+        .buildUniquePtr();
+
+    std::unique_ptr compositeSetLayout = engine::DescriptorSetLayout::Builder(device)
+        .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute, 1)
+        .buildUniquePtr();
+
+    auto compositeSet = compositeSetLayout->createSet(*computeImagePool);
+    auto compositeInfo = uiCompositeImage->getDescriptorInfo();
+    engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
+        .addImageWrite(0, 0, &compositeInfo)
+        .writeAll(compositeSet);
+
     std::unique_ptr computeImageA = engine::Image::Builder(device)
         .setExtent(window.getExtent())
         .setFormat(vk::Format::eR8G8B8A8Unorm)
@@ -337,24 +400,19 @@ int main() {
         .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
         .buildUniquePtr();
 
-    std::unique_ptr computeImagePool = engine::DescriptorPool::Builder(device)
-        .addPoolSize(vk::DescriptorType::eStorageImage, 4)
-        .buildUniquePtr();
-
     std::unique_ptr computeSetLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute, 2)
         .buildUniquePtr();
 
     auto computeSet = computeSetLayout->createSet(*computeImagePool);
-
     auto infoA = computeImageA->getDescriptorInfo();
     auto infoB = computeImageB->getDescriptorInfo();
-
     engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
         .addImageWrite(0, 0, &infoA)
         .addImageWrite(0, 1, &infoB)
         .writeAll(computeSet);
 
+    UiComposite uiComposite(device, { computeSetLayout->getSetLayout(), compositeSetLayout->getSetLayout() });
     ToneMap tonemap(device, { computeSetLayout->getSetLayout() });
     Swizzle swizzle(device, { computeSetLayout->getSetLayout() });
 
@@ -409,14 +467,14 @@ int main() {
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            debugUi.pollEvents(&event);
+
             if (event.type == SDL_EVENT_MOUSE_MOTION && mouseGrab) {
                 float dx = event.motion.xrel * sensitivity;
                 float dy = event.motion.yrel * sensitivity;
 
                 yaw += event.motion.xrel;
                 yaw = glm::clamp(yaw, -180.0f, 180.0f);
-
-                log::globalLogger->info("{}", yaw);
 
                 orientation = glm::rotate({0.0, 0.0, -1.0}, glm::radians(yaw), up);
 
@@ -604,22 +662,21 @@ int main() {
             .accessFlags = vk::AccessFlagBits2::eTransferRead,
             .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
         });
-
         computeImageA->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferDstOptimal,
             .accessFlags = vk::AccessFlagBits2::eTransferWrite,
             .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
         });
 
-        vk::ImageCopy imageCopy{};
-        imageCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-        imageCopy.srcSubresource.mipLevel = 0;
-        imageCopy.srcSubresource.baseArrayLayer = 0;
-        imageCopy.srcSubresource.layerCount = 1;
-        imageCopy.srcOffset = vk::Offset3D{0, 0, 0};
-        imageCopy.dstSubresource = imageCopy.srcSubresource;
-        imageCopy.dstOffset = vk::Offset3D{0, 0, 0};
-        imageCopy.extent = vk::Extent3D{window.getExtent(), 1};
+        vk::ImageCopy sceneToCompACopy{};
+        sceneToCompACopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        sceneToCompACopy.srcSubresource.mipLevel = 0;
+        sceneToCompACopy.srcSubresource.baseArrayLayer = 0;
+        sceneToCompACopy.srcSubresource.layerCount = 1;
+        sceneToCompACopy.srcOffset = vk::Offset3D{0, 0, 0};
+        sceneToCompACopy.dstSubresource = sceneToCompACopy.srcSubresource;
+        sceneToCompACopy.dstOffset = vk::Offset3D{0, 0, 0};
+        sceneToCompACopy.extent = vk::Extent3D{window.getExtent(), 1};
 
         cmd.copyImage(
             sceneColor->getImage(),
@@ -627,17 +684,56 @@ int main() {
             computeImageA->getImage(),
             vk::ImageLayout::eTransferDstOptimal,
             1,
-            &imageCopy
+            &sceneToCompACopy
         );
 
         computeImageA->revertTransition(cmd);
-
         sceneColor->revertTransition(cmd);
 
-        tonemap.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
+        debugUi.beginRendering(cmd);
+        debugUi.endRendering(cmd);
+
+        auto uiImage = debugUi.getImage();
+
+        uiImage->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
+            .accessFlags = vk::AccessFlagBits2::eTransferRead,
+            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
+        });
+        uiCompositeImage->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eTransferDstOptimal,
+            .accessFlags = vk::AccessFlagBits2::eTransferWrite,
+            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
+        });
+
+        vk::ImageCopy uiToCompositeCopy{};
+        uiToCompositeCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        uiToCompositeCopy.srcSubresource.mipLevel = 0;
+        uiToCompositeCopy.srcSubresource.baseArrayLayer = 0;
+        uiToCompositeCopy.srcSubresource.layerCount = 1;
+        uiToCompositeCopy.srcOffset = vk::Offset3D{0, 0, 0};
+        uiToCompositeCopy.dstSubresource = uiToCompositeCopy.srcSubresource;
+        uiToCompositeCopy.dstOffset = vk::Offset3D{0, 0, 0};
+        uiToCompositeCopy.extent = vk::Extent3D{window.getExtent(), 1};
+
+        cmd.copyImage(
+            uiImage->getImage(),
+            vk::ImageLayout::eTransferSrcOptimal,
+            uiCompositeImage->getImage(),
+            vk::ImageLayout::eTransferDstOptimal,
+            1,
+            &uiToCompositeCopy
+        );
+
+        uiCompositeImage->revertTransition(cmd);
+        uiImage->revertTransition(cmd);
+
+        uiComposite.dispatch(cmd, { computeSet, compositeSet }, window.getExtent(), {32, 32, 1});
+
+        tonemap.dispatch(cmd, { computeSet }, window.getExtent(), {32, 32, 1});
 
         if (screenshotRequested) {
-            computeImageB->transitionLayout(cmd, {
+            computeImageA->transitionLayout(cmd, {
                 .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
                 .accessFlags = vk::AccessFlagBits2::eTransferRead,
                 .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
@@ -657,31 +753,27 @@ int main() {
             region.imageExtent = vk::Extent3D{extent, 1};
 
             cmd.copyImageToBuffer(
-                computeImageB->getImage(),
+                computeImageA->getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
                 stagingBuffer->getBuffer(),
                 1,
                 &region
             );
 
-            computeImageB->revertTransition(cmd);
+            computeImageA->revertTransition(cmd);
         }
 
-        swizzle.dispatch(cmd, computeSet, window.getExtent(), {32, 32, 1});
+        swizzle.dispatch(cmd, { computeSet }, window.getExtent(), {32, 32, 1});
 
-        debugUi.beginRendering(cmd);
-
-        debugUi.endRendering(cmd);
-
-        computeImageA->transitionLayout(cmd, {
+        computeImageB->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits2::eTransferRead,
             .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
         });
 
-        frameHandler.copyImageToSwapchain(computeImageA->getImage());
+        frameHandler.copyImageToSwapchain(computeImageB->getImage());
 
-        computeImageA->revertTransition(cmd);
+        computeImageB->revertTransition(cmd);
 
         frameHandler.endFrame();
 

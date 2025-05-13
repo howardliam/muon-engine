@@ -10,7 +10,6 @@ file(GLOB SHADERS
     "${SHADER_DIR}/*.vert"
     "${SHADER_DIR}/*.frag"
     "${SHADER_DIR}/*.comp"
-    "${SHADER_DIR}/*.hlsl"
 )
 
 foreach(SHADER ${SHADERS})
