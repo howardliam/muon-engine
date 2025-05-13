@@ -3,9 +3,10 @@
 #include <print>
 #include <fstream>
 #include <thread>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -14,6 +15,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
+
+#include <muon/engine/debugui.hpp>
 #include <muon/engine/descriptor/writer.hpp>
 #include <muon/engine/shader.hpp>
 #include <muon/utils/color.hpp>
@@ -33,15 +36,15 @@
 #include <muon/asset/image.hpp>
 #include <muon/engine/system/graphics.hpp>
 #include <muon/engine/texture.hpp>
+
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
+
 #include <spdlog/spdlog.h>
+
 #include <vk_mem_alloc_enums.hpp>
-#include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
+#include <vulkan/vulkan.hpp>
 
 using namespace muon;
 
@@ -226,6 +229,7 @@ int main() {
 
     engine::Device device(window);
     engine::FrameHandler frameHandler(window, device);
+    engine::DebugUi debugUi(window, device);
 
     auto globalPool = engine::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())

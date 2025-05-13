@@ -17,6 +17,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/system/graphics.hpp
 
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
+    ${INCLUDE_DIR}/muon/engine/debugui.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
@@ -47,6 +48,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/system/graphics.cpp
 
     ${SRC_DIR}/engine/buffer.cpp
+    ${SRC_DIR}/engine/debugui.cpp
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/framehandler.cpp
     ${SRC_DIR}/engine/image.cpp
@@ -86,9 +88,10 @@ set(IMGUI_FILES
 add_library(${LIB_NAME} SHARED
     ${HEADER_FILES}
     ${SRC_FILES}
+    ${IMGUI_FILES}
 )
 
-target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
+target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE spirv-reflect-static glslang SPIRV)
 target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
