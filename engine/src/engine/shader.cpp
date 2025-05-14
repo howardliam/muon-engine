@@ -158,7 +158,7 @@ namespace muon::engine {
             std::vector<uint32_t> spirv;
             glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
 
-            auto newPath = path.string().append(".2.spv");
+            auto newPath = path.string().append(".spv");
             std::ofstream outFile{newPath};
             outFile.write(reinterpret_cast<char *>(spirv.data()), spirv.size() * sizeof(uint32_t));
         }
