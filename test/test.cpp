@@ -453,8 +453,6 @@ int main() {
 
     frameHandler.beginFrameTiming();
 
-    uint32_t frameIndex{0};
-
     glm::mat4 transform = glm::mat4{1.0f};
     transform = glm::scale(transform, glm::vec3{2.0f});
 
@@ -698,7 +696,6 @@ int main() {
         uboBuffer->unmap();
 
         const auto cmd = frameHandler.beginFrame();
-        frameIndex = frameHandler.getFrameIndex();
 
         cmd.beginRendering(renderingInfo);
 
