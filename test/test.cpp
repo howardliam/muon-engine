@@ -1,3 +1,4 @@
+#include "imgui.h"
 #include <limits>
 #include <memory>
 #include <print>
@@ -432,7 +433,8 @@ int main() {
     transform = glm::scale(transform, glm::vec3{2.0f});
 
     float seconds{0.0};
-    int32_t frames{0};
+    uint32_t frames{0};
+    uint32_t frameRate{0};
 
     struct Vertex {
         glm::vec3 position;
@@ -461,24 +463,38 @@ int main() {
     glm::vec3 orientation{0.0, 0.0, -1.0};
 
     float sensitivity{1};
+    glm::ivec2 mousePos{0.0, 0.0};
+    glm::ivec2 deltaPos{0.0, 0.0};
 
     float yaw{0};
+
+    float rotationSpeed{15.0};
+    bool xAxis{false};
+    bool yAxis{false};
+    bool zAxis{false};
 
     while (window.isOpen()) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             debugUi.pollEvents(&event);
 
-            if (event.type == SDL_EVENT_MOUSE_MOTION && mouseGrab) {
-                float dx = event.motion.xrel * sensitivity;
-                float dy = event.motion.yrel * sensitivity;
+            if (event.type == SDL_EVENT_MOUSE_MOTION) {
+                float x, y;
+                SDL_GetMouseState(&x, &y);
+                mousePos.x = x;
+                mousePos.y = y;
+                deltaPos.x = event.motion.xrel;
+                deltaPos.y = event.motion.yrel;
 
-                yaw += event.motion.xrel;
-                yaw = glm::clamp(yaw, -180.0f, 180.0f);
+                if (mouseGrab) {
+                    float dx = event.motion.xrel * sensitivity;
+                    float dy = event.motion.yrel * sensitivity;
 
-                orientation = glm::rotate({0.0, 0.0, -1.0}, glm::radians(yaw), up);
+                    yaw += event.motion.xrel;
+                    yaw = glm::clamp(yaw, -180.0f, 180.0f);
 
-                auto extent = window.getExtent();
+                    orientation = glm::rotate({0.0, 0.0, -1.0}, glm::radians(yaw), up);
+                }
             }
 
             if (event.type == SDL_EVENT_QUIT) {
@@ -517,10 +533,8 @@ int main() {
             }
         }
 
-
         if (seconds >= 1.0) {
-            std::string title = std::format("FPS: {}", frames);
-            window.setTitle(title);
+            frameRate = frames;
             seconds = 0;
             frames = 0;
         }
@@ -636,7 +650,14 @@ int main() {
             continue;
         }
 
-        orientation = glm::rotate(orientation, glm::radians(15.0f) * frameHandler.getFrameTime(), up);
+        if (xAxis || yAxis || zAxis) {
+            glm::vec3 rotationAxes{0.0};
+            if (xAxis) rotationAxes.x = 1.0;
+            if (yAxis) rotationAxes.y = 1.0;
+            if (zAxis) rotationAxes.z = 1.0;
+
+            transform = glm::rotate(transform, glm::radians(rotationSpeed) * frameHandler.getFrameTime(), rotationAxes);
+        }
 
         Ubo ubo{};
         ubo.view = glm::lookAt(position, orientation, up);
@@ -707,6 +728,30 @@ int main() {
         sceneColor->revertTransition(cmd);
 
         debugUi.beginRendering(cmd);
+
+        {
+            ImGui::Begin("Debug UI");
+
+            ImGui::Text("FPS: %d", frameRate);
+
+            ImGui::Text("Mouse position: %d, %d", mousePos.x, mousePos.y);
+            ImGui::Text("Delta position: %d, %d", deltaPos.x, deltaPos.y);
+            ImGui::SliderFloat("Sensitivity", &sensitivity, 0.0, 10.0);
+
+            ImGui::End();
+        }
+
+        {
+            ImGui::Begin("Model control");
+
+            ImGui::SliderFloat("Spin speed", &rotationSpeed, 0.0, 360.0);
+            ImGui::Checkbox("X-axis", &xAxis);
+            ImGui::Checkbox("Y-axis", &yAxis);
+            ImGui::Checkbox("Z-axis", &zAxis);
+
+            ImGui::End();
+        }
+
         debugUi.endRendering(cmd);
 
         auto uiImage = debugUi.getImage();
