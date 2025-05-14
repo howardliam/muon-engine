@@ -36,6 +36,7 @@ namespace muon::engine {
 
         vk::DescriptorPool descriptorPool;
         vk::RenderPass renderPass;
+        vk::PipelineCache cache;
         std::unique_ptr<Image> image;
         vk::Framebuffer framebuffer;
 

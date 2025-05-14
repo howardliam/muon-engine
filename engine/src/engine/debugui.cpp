@@ -5,7 +5,6 @@
 #include "muon/engine/swapchain.hpp"
 #include "muon/engine/image.hpp"
 #include "muon/engine/descriptor/pool.hpp"
-#include "muon/log/logger.hpp"
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
@@ -27,6 +26,7 @@ namespace muon::engine {
         ImGui::DestroyContext();
 
         device.getDevice().destroyFramebuffer(framebuffer);
+        device.getDevice().destroyPipelineCache(cache);
         device.getDevice().destroyRenderPass(renderPass);
         device.getDevice().destroyDescriptorPool(descriptorPool);
     }
@@ -143,6 +143,16 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui render pass");
         }
+
+        vk::PipelineCacheCreateInfo pcCreateInfo{};
+        pcCreateInfo.flags = vk::PipelineCacheCreateFlags{};
+        pcCreateInfo.initialDataSize = 0;
+        pcCreateInfo.pInitialData = nullptr;
+
+        result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create debug ui pipeline cache");
+        }
     }
 
     void DebugUi::createSizedResources() {
@@ -186,7 +196,7 @@ namespace muon::engine {
         initInfo.Device = static_cast<VkDevice>(device.getDevice());
         initInfo.QueueFamily = *device.getQueueFamilyIndices().graphicsFamily;
         initInfo.Queue = static_cast<VkQueue>(device.getGraphicsQueue());
-        initInfo.PipelineCache = nullptr;
+        initInfo.PipelineCache = static_cast<VkPipelineCache>(cache);
         initInfo.DescriptorPool = static_cast<VkDescriptorPool>(descriptorPool);
         initInfo.RenderPass = static_cast<VkRenderPass>(renderPass);
         initInfo.MinImageCount = constants::maxFramesInFlight;
