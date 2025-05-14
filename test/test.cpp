@@ -1,3 +1,4 @@
+#include "glm/ext/quaternion_trigonometric.hpp"
 #include "imgui.h"
 #include <limits>
 #include <memory>
@@ -5,6 +6,9 @@
 #include <fstream>
 #include <thread>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_RIGHT_HANDED
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -429,13 +433,6 @@ int main() {
         vma::MemoryUsage::eGpuToCpu
     );
 
-    glm::mat4 transform = glm::mat4{1.0f};
-    transform = glm::scale(transform, glm::vec3{2.0f});
-
-    float seconds{0.0};
-    uint32_t frames{0};
-    uint32_t frameRate{0};
-
     struct Vertex {
         glm::vec3 position;
         glm::vec3 normal;
@@ -458,15 +455,20 @@ int main() {
 
     uint32_t frameIndex{0};
 
+    glm::mat4 transform = glm::mat4{1.0f};
+    transform = glm::scale(transform, glm::vec3{2.0f});
+
+    float seconds{0.0};
+    uint32_t frames{0};
+    uint32_t frameRate{0};
+
     glm::vec3 position{0.0, 0.0, 10.0};
     glm::vec3 up{0.0, 1.0, 0.0};
     glm::vec3 orientation{0.0, 0.0, -1.0};
 
-    float sensitivity{1};
+    float sensitivity{0.5};
     glm::ivec2 mousePos{0.0, 0.0};
     glm::ivec2 deltaPos{0.0, 0.0};
-
-    float yaw{0};
 
     float rotationSpeed{15.0};
     bool xAxis{false};
@@ -487,13 +489,20 @@ int main() {
                 deltaPos.y = event.motion.yrel;
 
                 if (mouseGrab) {
-                    float dx = event.motion.xrel * sensitivity;
-                    float dy = event.motion.yrel * sensitivity;
+                    float dt = frameHandler.getFrameTime();
+                    float yaw = -event.motion.xrel * sensitivity * dt;
+                    float pitch = event.motion.yrel * sensitivity * dt;
 
-                    yaw += event.motion.xrel;
-                    yaw = glm::clamp(yaw, -180.0f, 180.0f);
+                    pitch = glm::clamp(pitch, -1.54f, 1.54f);
 
-                    orientation = glm::rotate({0.0, 0.0, -1.0}, glm::radians(yaw), up);
+                    glm::quat quatYaw = glm::angleAxis(yaw, glm::vec3{0.0, 1.0, 0.0});
+
+                    glm::vec3 right = glm::normalize(glm::cross(orientation, up));
+                    glm::quat quatPitch = glm::angleAxis(pitch, right);
+
+                    glm::quat rotation = quatYaw * quatPitch;
+
+                    orientation = rotation * orientation;
                 }
             }
 
@@ -660,7 +669,7 @@ int main() {
         }
 
         Ubo ubo{};
-        ubo.view = glm::lookAt(position, orientation, up);
+        ubo.view = glm::lookAt(position, position + orientation, up);
         ubo.projection = glm::perspective(glm::radians(45.0f), frameHandler.getAspectRatio(), 0.1f, 1000.0f);
         ubo.transform = transform;
 
@@ -736,7 +745,9 @@ int main() {
 
             ImGui::Text("Mouse position: %d, %d", mousePos.x, mousePos.y);
             ImGui::Text("Delta position: %d, %d", deltaPos.x, deltaPos.y);
-            ImGui::SliderFloat("Sensitivity", &sensitivity, 0.0, 10.0);
+            ImGui::SliderFloat("Sensitivity", &sensitivity, 0.0, 1.0);
+
+            ImGui::Text("Orientation: %f, %f, %f", orientation.x, orientation.y, orientation.z);
 
             ImGui::End();
         }
