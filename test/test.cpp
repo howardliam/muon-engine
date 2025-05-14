@@ -254,7 +254,7 @@ int main() {
 
     engine::ShaderCompiler shaderCompiler;
     shaderCompiler.addShaders("./test/assets/shaders");
-    // shaderCompiler.compile();
+    shaderCompiler.compile();
 
     engine::Window window = engine::Window::Builder()
         .setDimensions(1600, 900)
