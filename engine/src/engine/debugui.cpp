@@ -5,6 +5,7 @@
 #include "muon/engine/swapchain.hpp"
 #include "muon/engine/image.hpp"
 #include "muon/engine/descriptor/pool.hpp"
+#include "muon/log/logger.hpp"
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
@@ -16,6 +17,7 @@ namespace muon::engine {
 
     DebugUi::DebugUi(Window &window, Device &device) : window(window), device(device) {
         createResources();
+        createSizedResources();
         initImGui();
     }
 
@@ -34,10 +36,12 @@ namespace muon::engine {
     }
 
     void DebugUi::beginRendering(vk::CommandBuffer cmd) {
+        auto extent = window.getExtent();
+
         vk::RenderPassBeginInfo beginInfo{};
         beginInfo.renderPass = renderPass;
         beginInfo.framebuffer = framebuffer;
-        beginInfo.renderArea = vk::Rect2D{vk::Offset2D{}, window.getExtent()};
+        beginInfo.renderArea = vk::Rect2D{vk::Offset2D{}, extent};
 
         vk::ClearValue clearValue{};
         clearValue.color = vk::ClearColorValue{0.0f, 0.0f, 0.0f, 0.0f};
@@ -49,15 +53,15 @@ namespace muon::engine {
         vk::Viewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(window.getExtent().width);
-        viewport.height = static_cast<float>(window.getExtent().height);
+        viewport.width = static_cast<float>(extent.width);
+        viewport.height = static_cast<float>(extent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         vk::Rect2D scissor{};
         scissor.offset.x = 0;
         scissor.offset.y = 0;
-        scissor.extent = window.getExtent();
+        scissor.extent = extent;
 
         cmd.setViewport(0, 1, &viewport);
         cmd.setScissor(0, 1, &scissor);
@@ -80,6 +84,11 @@ namespace muon::engine {
         return image.get();
     }
 
+    void DebugUi::recreateSizedResources() {
+        device.getDevice().destroyFramebuffer(framebuffer);
+        createSizedResources();
+    }
+
     void DebugUi::createResources() {
         vk::DescriptorPoolSize poolSize{};
         poolSize.type = vk::DescriptorType::eCombinedImageSampler;
@@ -98,17 +107,17 @@ namespace muon::engine {
 
         vk::AttachmentDescription2 colorAttachment{};
         colorAttachment.samples = vk::SampleCountFlagBits::e1;
-        colorAttachment.format = vk::Format::eR8G8B8A8Unorm;
+        colorAttachment.format = format;
         colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
         colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
         colorAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
         colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
         colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
-        colorAttachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+        colorAttachment.finalLayout = layout;
 
         vk::AttachmentReference2 colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+        colorAttachmentRef.layout = layout;
 
         vk::SubpassDescription2 subpass{};
         subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
@@ -135,11 +144,15 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui render pass");
         }
+    }
+
+    void DebugUi::createSizedResources() {
+        auto extent = window.getExtent();
 
         image = Image::Builder(device)
-            .setExtent(window.getExtent())
-            .setFormat(colorAttachment.format)
-            .setImageLayout(colorAttachment.finalLayout)
+            .setExtent(extent)
+            .setFormat(format)
+            .setImageLayout(layout)
             .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
             .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
             .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
@@ -151,11 +164,11 @@ namespace muon::engine {
         fbCreateInfo.renderPass = renderPass;
         fbCreateInfo.attachmentCount = 1;
         fbCreateInfo.pAttachments = &fbAttachment;
-        fbCreateInfo.width = window.getExtent().width;
-        fbCreateInfo.height = window.getExtent().height;
+        fbCreateInfo.width = extent.width;
+        fbCreateInfo.height = extent.height;
         fbCreateInfo.layers = 1;
 
-        result = device.getDevice().createFramebuffer(&fbCreateInfo, nullptr, &framebuffer);
+        auto result = device.getDevice().createFramebuffer(&fbCreateInfo, nullptr, &framebuffer);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui frame buffer");
         }

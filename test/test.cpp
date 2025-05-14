@@ -530,6 +530,8 @@ int main() {
 
             auto extent = window.getExtent();
 
+            debugUi.recreateSizedResources();
+
             sceneColor = engine::Image::Builder(device)
                 .setExtent(window.getExtent())
                 .setFormat(vk::Format::eR8G8B8A8Unorm)
@@ -577,6 +579,20 @@ int main() {
             renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
             renderSystem.bake(renderingCreateInfo);
+
+            uiCompositeImage = engine::Image::Builder(device)
+                .setExtent(window.getExtent())
+                .setFormat(vk::Format::eR8G8B8A8Unorm)
+                .setImageUsageFlags(usageFlags)
+                .setImageLayout(vk::ImageLayout::eGeneral)
+                .setAccessFlags(accessFlags)
+                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
+                .buildUniquePtr();
+
+            auto compositeInfo = uiCompositeImage->getDescriptorInfo();
+            engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
+                .addImageWrite(0, 0, &compositeInfo)
+                .writeAll(compositeSet);
 
             computeImageA = engine::Image::Builder(device)
                 .setExtent(extent)

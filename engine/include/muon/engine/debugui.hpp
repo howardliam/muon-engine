@@ -23,11 +23,16 @@ namespace muon::engine {
 
         Image *getImage() const;
 
+        void recreateSizedResources();
+
     private:
         Window &window;
         Device &device;
 
         bool showWindow{true};
+
+        vk::Format format{vk::Format::eR8G8B8A8Unorm};
+        vk::ImageLayout layout{vk::ImageLayout::eColorAttachmentOptimal};
 
         vk::DescriptorPool descriptorPool;
         vk::RenderPass renderPass;
@@ -35,6 +40,7 @@ namespace muon::engine {
         vk::Framebuffer framebuffer;
 
         void createResources();
+        void createSizedResources();
 
         void initImGui();
     };
