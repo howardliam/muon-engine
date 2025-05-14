@@ -14,8 +14,9 @@ namespace muon::engine {
     }
 
     ComputePipeline::~ComputePipeline() {
-        device.getDevice().destroyShaderModule(shader, nullptr);
-        device.getDevice().destroyPipeline(pipeline, nullptr);
+        device.getDevice().destroyShaderModule(shader);
+        device.getDevice().destroyPipeline(pipeline);
+        device.getDevice().destroyPipelineCache(cache);
     }
 
     vk::Pipeline ComputePipeline::getPipeline() const {
@@ -37,22 +38,32 @@ namespace muon::engine {
         const std::filesystem::path &shaderPath,
         const vk::PipelineLayout pipelineLayout
     ) {
+        vk::PipelineCacheCreateInfo pcCreateInfo{};
+        pcCreateInfo.flags = vk::PipelineCacheCreateFlags{};
+        pcCreateInfo.initialDataSize = 0;
+        pcCreateInfo.pInitialData = nullptr;
+
+        auto result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create compute pipeline cache");
+        }
+
         std::vector byteCode = ShaderCompiler::readFile(shaderPath);
         createShaderModule(byteCode, shader);
 
-        vk::PipelineShaderStageCreateInfo stageCreateInfo{};
-        stageCreateInfo.stage = vk::ShaderStageFlagBits::eCompute;
-        stageCreateInfo.module = shader;
-        stageCreateInfo.pName = "main";
-        stageCreateInfo.flags = vk::PipelineShaderStageCreateFlags{};
+        vk::PipelineShaderStageCreateInfo sCreateInfo{};
+        sCreateInfo.stage = vk::ShaderStageFlagBits::eCompute;
+        sCreateInfo.module = shader;
+        sCreateInfo.pName = "main";
+        sCreateInfo.flags = vk::PipelineShaderStageCreateFlags{};
 
-        vk::ComputePipelineCreateInfo pipelineCreateInfo{};
-        pipelineCreateInfo.stage = stageCreateInfo;
-        pipelineCreateInfo.layout = pipelineLayout;
-        pipelineCreateInfo.basePipelineIndex = -1;
-        pipelineCreateInfo.basePipelineHandle = nullptr;
+        vk::ComputePipelineCreateInfo pCreateInfo{};
+        pCreateInfo.stage = sCreateInfo;
+        pCreateInfo.layout = pipelineLayout;
+        pCreateInfo.basePipelineIndex = -1;
+        pCreateInfo.basePipelineHandle = nullptr;
 
-        auto result = device.getDevice().createComputePipelines(nullptr, 1, &pipelineCreateInfo, nullptr, &pipeline);
+        result = device.getDevice().createComputePipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create graphics pipeline");
         }

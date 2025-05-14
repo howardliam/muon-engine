@@ -5,6 +5,7 @@
 #include "muon/log/logger.hpp"
 #include <algorithm>
 #include <spirv_reflect.h>
+#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 
@@ -133,10 +134,11 @@ namespace muon::engine {
 
     GraphicsPipeline::~GraphicsPipeline() {
         for (const auto shader : shaders) {
-            device.getDevice().destroyShaderModule(shader, nullptr);
+            device.getDevice().destroyShaderModule(shader);
         }
 
-        device.getDevice().destroyPipeline(pipeline, nullptr);
+        device.getDevice().destroyPipeline(pipeline);
+        device.getDevice().destroyPipelineCache(cache);
     }
 
     void GraphicsPipeline::bind(vk::CommandBuffer commandBuffer) {
@@ -159,6 +161,16 @@ namespace muon::engine {
         const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
         const ConfigInfo &configInfo
     ) {
+        vk::PipelineCacheCreateInfo pcCreateInfo{};
+        pcCreateInfo.flags = vk::PipelineCacheCreateFlags{};
+        pcCreateInfo.initialDataSize = 0;
+        pcCreateInfo.pInitialData = nullptr;
+
+        auto result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create graphics pipeline cache");
+        }
+
         std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
         std::optional<vk::VertexInputBindingDescription> bindingDescription;
 
@@ -205,26 +217,26 @@ namespace muon::engine {
             vertexInputState.pVertexAttributeDescriptions = nullptr;
         }
 
-        vk::GraphicsPipelineCreateInfo pipelineCreateInfo{};
-        pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-        pipelineCreateInfo.pStages = shaderStages.data();
-        pipelineCreateInfo.pVertexInputState = &vertexInputState;
-        pipelineCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyState;
-        pipelineCreateInfo.pViewportState = &configInfo.viewportState;
-        pipelineCreateInfo.pRasterizationState = &configInfo.rasterizationState;
-        pipelineCreateInfo.pMultisampleState = &configInfo.multisampleState;
-        pipelineCreateInfo.pColorBlendState = &configInfo.colorBlendState;
-        pipelineCreateInfo.pDepthStencilState = &configInfo.depthStencilState;
-        pipelineCreateInfo.pDynamicState = &configInfo.dynamicState;
+        vk::GraphicsPipelineCreateInfo pCreateInfo{};
+        pCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+        pCreateInfo.pStages = shaderStages.data();
+        pCreateInfo.pVertexInputState = &vertexInputState;
+        pCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyState;
+        pCreateInfo.pViewportState = &configInfo.viewportState;
+        pCreateInfo.pRasterizationState = &configInfo.rasterizationState;
+        pCreateInfo.pMultisampleState = &configInfo.multisampleState;
+        pCreateInfo.pColorBlendState = &configInfo.colorBlendState;
+        pCreateInfo.pDepthStencilState = &configInfo.depthStencilState;
+        pCreateInfo.pDynamicState = &configInfo.dynamicState;
 
-        pipelineCreateInfo.layout = configInfo.pipelineLayout;
-        pipelineCreateInfo.pNext = &configInfo.renderingInfo;
-        pipelineCreateInfo.subpass = configInfo.subpass;
+        pCreateInfo.layout = configInfo.pipelineLayout;
+        pCreateInfo.pNext = &configInfo.renderingInfo;
+        pCreateInfo.subpass = configInfo.subpass;
 
-        pipelineCreateInfo.basePipelineIndex = -1;
-        pipelineCreateInfo.basePipelineHandle = nullptr;
+        pCreateInfo.basePipelineIndex = -1;
+        pCreateInfo.basePipelineHandle = nullptr;
 
-        auto result = device.getDevice().createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo, nullptr, &pipeline);
+        result = device.getDevice().createGraphicsPipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create graphics pipeline");
         }

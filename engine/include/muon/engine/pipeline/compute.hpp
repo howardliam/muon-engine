@@ -25,6 +25,7 @@ namespace muon::engine {
         Device &device;
 
         vk::Pipeline pipeline;
+        vk::PipelineCache cache;
         vk::ShaderModule shader;
 
         void createShaderModule(const std::vector<uint8_t> &byteCode, vk::ShaderModule &shaderModule);

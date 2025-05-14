@@ -35,6 +35,7 @@ namespace muon::engine {
         Device &device;
 
         vk::Pipeline pipeline;
+        vk::PipelineCache cache;
         std::vector<vk::ShaderModule> shaders;
 
         /**
