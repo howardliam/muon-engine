@@ -466,9 +466,11 @@ int main() {
     glm::vec3 up{0.0, 1.0, 0.0};
     glm::vec3 orientation{0.0, 0.0, -1.0};
 
-    float sensitivity{0.5};
+    float sensitivity{0.1};
     glm::ivec2 mousePos{0.0, 0.0};
     glm::ivec2 deltaPos{0.0, 0.0};
+
+    float moveSpeed{5.0};
 
     float rotationSpeed{15.0};
     bool xAxis{false};
@@ -476,6 +478,8 @@ int main() {
     bool zAxis{false};
 
     while (window.isOpen()) {
+        float dt = frameHandler.getFrameTime();
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             debugUi.pollEvents(&event);
@@ -495,7 +499,7 @@ int main() {
 
                     pitch = glm::clamp(pitch, -1.54f, 1.54f);
 
-                    glm::quat quatYaw = glm::angleAxis(yaw, glm::vec3{0.0, 1.0, 0.0});
+                    glm::quat quatYaw = glm::angleAxis(yaw, up);
 
                     glm::vec3 right = glm::normalize(glm::cross(orientation, up));
                     glm::quat quatPitch = glm::angleAxis(pitch, right);
@@ -511,17 +515,28 @@ int main() {
             }
 
             if (event.type == SDL_EVENT_KEY_DOWN) {
+                glm::vec3 forward = orientation;
+                forward = glm::normalize(forward);
+                glm::vec3 right = glm::normalize(glm::cross(forward, up));
+                right = glm::normalize(right);
+
+                glm::vec3 velocity{0.0, 0.0, 0.0};
                 if (event.key.scancode == SDL_SCANCODE_W) {
-                    position -= glm::vec3{0.0, 0.0, 1.0};
+                    velocity += forward;
                 }
                 if (event.key.scancode == SDL_SCANCODE_S) {
-                    position += glm::vec3{0.0, 0.0, 1.0};
+                    velocity -= forward;
                 }
                 if (event.key.scancode == SDL_SCANCODE_A) {
-                    position -= glm::vec3{1.0, 0.0, 0.0};
+                    velocity -= right;
                 }
                 if (event.key.scancode == SDL_SCANCODE_D) {
-                    position += glm::vec3{1.0, 0.0, 0.0};
+                    velocity += right;
+                }
+
+                if (glm::length(velocity) > 0.0f) {
+                    velocity = glm::normalize(velocity);
+                    position = position + (velocity * moveSpeed * dt);
                 }
 
                 if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
@@ -529,6 +544,10 @@ int main() {
 
                     SDL_SetWindowMouseGrab(window.getWindow(), mouseGrab);
                     SDL_SetWindowRelativeMouseMode(window.getWindow(), mouseGrab);
+                }
+
+                if (event.key.scancode == SDL_SCANCODE_F1) {
+                    orientation = {0.0, 0.0, -1.0};
                 }
 
                 if (event.key.scancode == SDL_SCANCODE_F2) {
