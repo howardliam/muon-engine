@@ -764,14 +764,15 @@ int main() {
 
             ImGui::Text("Mouse position: %d, %d", mousePos.x, mousePos.y);
             ImGui::Text("Delta position: %d, %d", deltaPos.x, deltaPos.y);
-            ImGui::SliderFloat("Sensitivity", &sensitivity, 0.0, 1.0);
 
+            ImGui::DragFloat("Sensitivity", &sensitivity, 0.1, 0.0, 1.0);
             float oriArray[3] = {orientation.x, orientation.y, orientation.z};
             ImGui::DragFloat3("Orientation", oriArray, 0.01, -1.0, 1.0);
             orientation.x = oriArray[0];
             orientation.y = oriArray[1];
             orientation.z = oriArray[2];
 
+            ImGui::DragFloat("Move speed", &moveSpeed, 0.1, 0.0, 50.0);
             float posArray[3] = {position.x, position.y, position.z};
             ImGui::DragFloat3("Position", posArray);
             position.x = posArray[0];
