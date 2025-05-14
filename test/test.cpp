@@ -766,7 +766,17 @@ int main() {
             ImGui::Text("Delta position: %d, %d", deltaPos.x, deltaPos.y);
             ImGui::SliderFloat("Sensitivity", &sensitivity, 0.0, 1.0);
 
-            ImGui::Text("Orientation: %f, %f, %f", orientation.x, orientation.y, orientation.z);
+            float oriArray[3] = {orientation.x, orientation.y, orientation.z};
+            ImGui::DragFloat3("Orientation", oriArray, 0.01, -1.0, 1.0);
+            orientation.x = oriArray[0];
+            orientation.y = oriArray[1];
+            orientation.z = oriArray[2];
+
+            float posArray[3] = {position.x, position.y, position.z};
+            ImGui::DragFloat3("Position", posArray);
+            position.x = posArray[0];
+            position.y = posArray[1];
+            position.z = posArray[2];
 
             ImGui::End();
         }
@@ -774,10 +784,10 @@ int main() {
         {
             ImGui::Begin("Model control");
 
-            ImGui::SliderFloat("Spin speed", &rotationSpeed, 0.0, 360.0);
-            ImGui::Checkbox("X-axis", &xAxis);
-            ImGui::Checkbox("Y-axis", &yAxis);
-            ImGui::Checkbox("Z-axis", &zAxis);
+            ImGui::DragFloat("Spin speed", &rotationSpeed, 1.0, 0.0, 720.0);
+            ImGui::Checkbox("x-axis", &xAxis);
+            ImGui::Checkbox("y-axis", &yAxis);
+            ImGui::Checkbox("z-axis", &zAxis);
 
             ImGui::End();
         }
