@@ -71,12 +71,11 @@ namespace muon::engine {
         ImGui::NewFrame();
 
         ImGui::ShowDemoWindow(&showWindow);
-
-        ImGui::Render();
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), static_cast<VkCommandBuffer>(cmd));
     }
 
     void DebugUi::endRendering(vk::CommandBuffer cmd) {
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), static_cast<VkCommandBuffer>(cmd));
         cmd.endRenderPass();
     }
 
