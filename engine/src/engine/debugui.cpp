@@ -69,8 +69,6 @@ namespace muon::engine {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow(&showWindow);
     }
 
     void DebugUi::endRendering(vk::CommandBuffer cmd) {
