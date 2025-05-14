@@ -10,9 +10,6 @@
 [submodule "external/vulkan-memory-allocator-hpp"]
 	path = external/vulkan-memory-allocator-hpp
 	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp
-[submodule "external/libspng"]
-	path = external/libspng
-	url = https://github.com/randy408/libspng
 [submodule "external/glm"]
 	path = external/glm
 	url = https://github.com/g-truc/glm
