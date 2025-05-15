@@ -10,6 +10,10 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor/setlayout.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor/writer.hpp
 
+    ${INCLUDE_DIR}/muon/engine/framegraph/descriptorhelper.hpp
+    ${INCLUDE_DIR}/muon/engine/framegraph/framegraph.hpp
+    ${INCLUDE_DIR}/muon/engine/framegraph/resourcebuilder.hpp
+
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
 
@@ -40,6 +44,8 @@ set(SRC_FILES
     ${SRC_DIR}/engine/descriptor/pool.cpp
     ${SRC_DIR}/engine/descriptor/setlayout.cpp
     ${SRC_DIR}/engine/descriptor/writer.cpp
+
+    ${SRC_DIR}/engine/framegraph/framegraph.cpp
 
     ${SRC_DIR}/engine/pipeline/compute.cpp
     ${SRC_DIR}/engine/pipeline/graphics.cpp
