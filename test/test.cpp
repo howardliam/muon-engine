@@ -476,7 +476,31 @@ int main() {
     bool yAxis{false};
     bool zAxis{false};
 
-    engine::rg::RenderGraph rg;
+    engine::rg::RenderGraph rg(device);
+
+    rg.configureResources([&](engine::rg::ResourceBuilder &builder) {
+        builder.addImage("compute_image_0", {
+            .extent = window.getExtent(),
+            .format = vk::Format::eR8G8B8A8Unorm,
+            .usageFlags = vk::ImageUsageFlagBits::eStorage,
+            .layout = vk::ImageLayout::eGeneral,
+            .accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite,
+            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
+        });
+        builder.addImage("compute_image_1", {
+            .extent = window.getExtent(),
+            .format = vk::Format::eR8G8B8A8Unorm,
+            .usageFlags = vk::ImageUsageFlagBits::eStorage,
+            .layout = vk::ImageLayout::eGeneral,
+            .accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite,
+            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
+        });
+
+        builder.writeDescriptors(computeImagePool.get(), computeSetLayout.get(), computeSet)
+            .write(0, 0, "compute_image_0")
+            .write(0, 1, "compute_image_0");
+    });
+
     rg.addNode({ // graphics
         .name = "ScenePass",
         .readDeps = {},

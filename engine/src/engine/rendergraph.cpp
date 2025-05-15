@@ -11,9 +11,50 @@
 
 namespace muon::engine::rg {
 
-    RenderGraph::RenderGraph()  {}
+    DescriptorHelper::DescriptorHelper(DescriptorPool *pool, DescriptorSetLayout *layout, vk::DescriptorSet set) {
+        writeContext.pool = pool;
+        writeContext.layout = layout;
+        writeContext.set = set;
+    }
+
+    DescriptorHelper &DescriptorHelper::write(uint32_t binding, uint32_t position, const std::string &name) {
+        writeContext.writes.emplace_back(Write{ binding, position, name });
+        return *this;
+    }
+
+    DescriptorHelper::WriteContext DescriptorHelper::getContext() {
+        return writeContext;
+    }
+
+    ResourceBuilder::ResourceBuilder() {}
+
+    void ResourceBuilder::addImage(const std::string &name, const Layout &layout) {
+        images[name] = layout;
+    }
+
+    DescriptorHelper &ResourceBuilder::writeDescriptors(DescriptorPool *pool, DescriptorSetLayout *layout, vk::DescriptorSet set) {
+        descriptorHelpers.emplace_back(pool, layout, set);
+        return descriptorHelpers.back();
+    }
+
+    RenderGraph::RenderGraph(Device &device) : device(device) {}
 
     RenderGraph::~RenderGraph() {}
+
+    void RenderGraph::configureResources(std::function<void(ResourceBuilder &)> callback) {
+        ResourceBuilder builder;
+        callback(builder);
+
+        for (const auto &[name, image] : builder.images) {
+            log::globalLogger->info("image: {}", name);
+        }
+
+        for (const auto &helper : builder.descriptorHelpers) {
+            for (const auto &write : helper.writeContext.writes) {
+                log::globalLogger->info("writes: {} into binding: {} at position: {}", write.name, write.binding, write.position);
+            }
+        }
+    }
 
     void RenderGraph::addNode(Node node) {
         nodes[node.name] = node;
@@ -24,7 +65,7 @@ namespace muon::engine::rg {
         order = topographicalSort(dependencies);
 
         for (const auto &node : order) {
-            log::globalLogger->info("{}", node);
+            log::globalLogger->info("node: {}", node);
         }
     }
 
