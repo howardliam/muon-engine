@@ -20,8 +20,20 @@ namespace muon::engine::rg {
     }
 
     void RenderGraph::compile() {
+        auto dependencies = determineDependencies(nodes);
+        order = topographicalSort(dependencies);
 
-        std::unordered_map<std::string, std::unordered_set<std::string>> dependencies;
+        for (const auto &node : order) {
+            log::globalLogger->info("{}", node);
+        }
+    }
+
+    void RenderGraph::execute() {
+
+    }
+
+    DependencyMap RenderGraph::determineDependencies(const std::unordered_map<std::string, Node> &nodes) {
+        DependencyMap dependencies;
 
         for (const auto &[_, node] : nodes) {
             dependencies[node.name];
@@ -41,6 +53,10 @@ namespace muon::engine::rg {
             }
         }
 
+        return dependencies;
+    }
+
+    std::vector<std::string> RenderGraph::topographicalSort(const DependencyMap &dependencies) {
         std::unordered_map<std::string, uint32_t> inDegrees;
         std::queue<std::string> queue;
 
@@ -49,12 +65,18 @@ namespace muon::engine::rg {
             if (inDegrees[node] == 0) { queue.push(node); }
         }
 
-        std::vector<std::string> order;
+        size_t index{0};
+        std::vector<std::string> order(dependencies.size());
 
         while (!queue.empty()) {
+            if (index >= order.size()) {
+                throw std::runtime_error("cycle detected");
+            }
+
             auto node = queue.front();
             queue.pop();
-            order.push_back(node);
+
+            order[index++] = node;
 
             for (auto &[dep, deps] : dependencies) {
                 if (!deps.contains(node)) { continue; }
@@ -63,10 +85,8 @@ namespace muon::engine::rg {
                 if (inDegrees[dep] == 0) { queue.push(dep); }
             }
         }
-    }
 
-    void RenderGraph::execute() {
-
+        return order;
     }
 
 }
