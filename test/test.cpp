@@ -1,5 +1,6 @@
 #include "glm/ext/quaternion_trigonometric.hpp"
 #include "imgui.h"
+#include "muon/engine/rendergraph.hpp"
 #include <limits>
 #include <memory>
 #include <print>
@@ -474,6 +475,54 @@ int main() {
     bool xAxis{false};
     bool yAxis{false};
     bool zAxis{false};
+
+    engine::rg::RenderGraph rg;
+    rg.addNode({ // graphics
+        .name = "ScenePass",
+        .readDeps = {},
+        .writeDeps = { "scene_albedo", "scene_normal", "scene_specular", "scene_depth" },
+    });
+    rg.addNode({ // graphics
+        .name = "LightingPass",
+        .readDeps = { "scene_albedo", "scene_normal", "scene_specular" },
+        .writeDeps = { "lighting_output" },
+    });
+    rg.addNode({ // transfer
+        .name = "CopyToComputeChain",
+        .readDeps = { "lighting_output" },
+        .writeDeps = { "compute_image_0" },
+    });
+    rg.addNode({ // graphics
+        .name = "DebugUiPass",
+        .readDeps = {},
+        .writeDeps = { "debug_ui_output" },
+    });
+    rg.addNode({ // transfer
+        .name = "CopyToCompositeImage",
+        .readDeps = { "debug_ui_output" },
+        .writeDeps = { "composite_image" },
+    });
+    rg.addNode({ // post-processing
+        .name = "DebugUiCompositePass",
+        .readDeps = { "compute_image_0", "composite_image" },
+        .writeDeps = { "debug_ui_composite" },
+    });
+    rg.addNode({ // post-processing
+        .name = "ToneMapPass",
+        .readDeps = { "debug_ui_composite" },
+        .writeDeps = { "tone_map_output" },
+    });
+    rg.addNode({ // post-processing
+        .name = "SwizzlePass",
+        .readDeps = { "tone_map_output" },
+        .writeDeps = { "swizzle_output" },
+    });
+    rg.addNode({ // transfer
+        .name = "CopyToSwapchainImage",
+        .readDeps = { "swizzle_output" },
+        .writeDeps = { "swapchain_image" },
+    });
+    rg.compile();
 
     while (window.isOpen()) {
         float dt = frameHandler.getFrameTime();
