@@ -2,9 +2,14 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
+
+namespace {
+    using DependencyMap = std::unordered_map<std::string, std::unordered_set<std::string>>;
+}
 
 // namespace muon::engine {
 //     class Device;
@@ -31,7 +36,11 @@ namespace muon::engine::rg {
 
     private:
         std::unordered_map<std::string, Node> nodes;
+        std::vector<std::string> order;
 
+        DependencyMap determineDependencies(const std::unordered_map<std::string, Node> &nodes);
+
+        std::vector<std::string> topographicalSort(const DependencyMap &dependencies);
     };
 
 }
