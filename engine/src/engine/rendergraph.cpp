@@ -27,24 +27,14 @@ namespace muon::engine::rg {
             dependencies[node.name];
 
             for (const auto &[_, other] : nodes) {
-
-                if (node.name == other.name) {
-                    continue;
-                }
+                if (node.name == other.name) { continue; }
 
                 auto &readDeps = node.readDeps;
                 for (auto &readDep : readDeps) {
+                    auto predicate = [&readDep](const auto &writeDep) { return readDep == writeDep; };
+                    auto it = std::find_if(other.writeDeps.begin(), other.writeDeps.end(), predicate);
 
-                    auto it = std::find_if(
-                        other.writeDeps.begin(),
-                        other.writeDeps.end(),
-                        [&readDep](const auto &writeDep) {
-                            return readDep == writeDep;
-                        }
-                    );
-                    if (it == other.writeDeps.end()) {
-                        continue;
-                    }
+                    if (it == other.writeDeps.end()) { continue; }
 
                     dependencies[node.name].insert(other.name);
                 }
@@ -56,9 +46,7 @@ namespace muon::engine::rg {
 
         for (const auto &[node, deps] : dependencies) {
             inDegrees[node] = deps.size();
-            if (inDegrees[node] == 0) {
-                queue.push(node);
-            }
+            if (inDegrees[node] == 0) { queue.push(node); }
         }
 
         std::vector<std::string> order;
@@ -69,12 +57,10 @@ namespace muon::engine::rg {
             order.push_back(node);
 
             for (auto &[dep, deps] : dependencies) {
-                if (deps.contains(node)) {
-                    inDegrees[dep] -= 1;
-                    if (inDegrees[dep] == 0) {
-                        queue.push(dep);
-                    }
-                }
+                if (!deps.contains(node)) { continue; }
+
+                inDegrees[dep] -= 1;
+                if (inDegrees[dep] == 0) { queue.push(dep); }
             }
         }
     }
