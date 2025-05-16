@@ -28,7 +28,6 @@
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/buffer.hpp>
-#include <muon/engine/system/compute.hpp>
 #include <muon/engine/descriptor/pool.hpp>
 #include <muon/engine/descriptor/setlayout.hpp>
 #include <muon/engine/device.hpp>
