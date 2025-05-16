@@ -204,9 +204,6 @@ int main() {
         .buildUniquePtr();
     basicPipeline->bake(renderingCreateInfo);
 
-    // RenderSystemTest renderSystem(device, { globalSetLayout->getSetLayout() }, {});
-    // renderSystem.bake(renderingCreateInfo);
-
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite;
 
