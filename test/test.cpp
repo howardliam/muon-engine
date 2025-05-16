@@ -125,126 +125,6 @@ protected:
     }
 };
 
-class UiComposite : public engine::ComputeSystem {
-public:
-    UiComposite(
-        engine::Device &device,
-        std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::ComputeSystem(device, setLayouts, {}) {
-        createPipeline();
-    }
-
-    void dispatch(
-        vk::CommandBuffer commandBuffer,
-        const std::vector<vk::DescriptorSet> &sets,
-        vk::Extent2D windowExtent,
-        const glm::uvec3 &workgroupSize
-    ) override {
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
-        commandBuffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eCompute,
-            pipelineLayout,
-            0,
-            sets.size(),
-            sets.data(),
-            0,
-            nullptr
-        );
-
-        auto dispatchSize = calculateDispatchSize(windowExtent, workgroupSize);
-        commandBuffer.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
-    }
-
-protected:
-    void createPipeline() override {
-        pipeline = std::make_unique<engine::ComputePipeline>(
-            device,
-            "./test/assets/shaders/uicomposite.comp.spv",
-            pipelineLayout
-        );
-    }
-};
-
-class ToneMap : public engine::ComputeSystem {
-public:
-    ToneMap(
-        engine::Device &device,
-        std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::ComputeSystem(device, setLayouts, {}) {
-        createPipeline();
-    }
-
-    void dispatch(
-        vk::CommandBuffer commandBuffer,
-        const std::vector<vk::DescriptorSet> &sets,
-        vk::Extent2D windowExtent,
-        const glm::uvec3 &workgroupSize
-    ) override {
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
-        commandBuffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eCompute,
-            pipelineLayout,
-            0,
-            sets.size(),
-            sets.data(),
-            0,
-            nullptr
-        );
-
-        auto dispatchSize = calculateDispatchSize(windowExtent, workgroupSize);
-        commandBuffer.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
-    }
-
-protected:
-    void createPipeline() override {
-        pipeline = std::make_unique<engine::ComputePipeline>(
-            device,
-            "./test/assets/shaders/tonemap.comp.spv",
-            pipelineLayout
-        );
-    }
-};
-
-class Swizzle : public engine::ComputeSystem {
-public:
-    Swizzle(
-        engine::Device &device,
-        std::vector<vk::DescriptorSetLayout> setLayouts
-    ) : engine::ComputeSystem(device, setLayouts, {})  {
-        createPipeline();
-    }
-
-    void dispatch(
-        vk::CommandBuffer commandBuffer,
-        const std::vector<vk::DescriptorSet> &sets,
-        vk::Extent2D windowExtent,
-        const glm::uvec3 &workgroupSize
-    ) override {
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline->getPipeline());
-        commandBuffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eCompute,
-            pipelineLayout,
-            0,
-            sets.size(),
-            sets.data(),
-            0,
-            nullptr
-        );
-
-        auto dispatchSize = calculateDispatchSize(windowExtent, workgroupSize);
-        commandBuffer.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
-    }
-
-protected:
-    void createPipeline() override {
-        pipeline = std::make_unique<engine::ComputePipeline>(
-            device,
-            "./test/assets/shaders/swizzle.comp.spv",
-            pipelineLayout
-        );
-    }
-};
-
 int main() {
     auto logger = std::make_shared<Logger>();
     log::setLogger(logger.get());
@@ -419,9 +299,20 @@ int main() {
         .addImageWrite(0, 1, &infoB)
         .writeAll(computeSet);
 
-    UiComposite uiComposite(device, { computeSetLayout->getSetLayout(), compositeSetLayout->getSetLayout() });
-    ToneMap tonemap(device, { computeSetLayout->getSetLayout() });
-    Swizzle swizzle(device, { computeSetLayout->getSetLayout() });
+    auto uiComposite = engine::ComputePipeline::Builder(device)
+        .setShader("./test/assets/shaders/uicomposite.comp.spv")
+        .setDescriptorSetLayouts({ computeSetLayout->getSetLayout(), compositeSetLayout->getSetLayout() })
+        .buildUniquePtr();
+
+    auto toneMap = engine::ComputePipeline::Builder(device)
+        .setShader("./test/assets/shaders/tonemap.comp.spv")
+        .setDescriptorSetLayouts({ computeSetLayout->getSetLayout() })
+        .buildUniquePtr();
+
+    auto swizzle = engine::ComputePipeline::Builder(device)
+        .setShader("./test/assets/shaders/swizzle.comp.spv")
+        .setDescriptorSetLayouts({ computeSetLayout->getSetLayout() })
+        .buildUniquePtr();
 
     bool screenshotRequested{false};
 
@@ -901,9 +792,11 @@ int main() {
         uiCompositeImage->revertTransition(cmd);
         uiImage->revertTransition(cmd);
 
-        uiComposite.dispatch(cmd, { computeSet, compositeSet }, window.getExtent(), {32, 32, 1});
+        uiComposite->bind(cmd, { computeSet, compositeSet });
+        uiComposite->dispatch(cmd, window.getExtent(), {32, 32, 1});
 
-        tonemap.dispatch(cmd, { computeSet }, window.getExtent(), {32, 32, 1});
+        toneMap->bind(cmd, { computeSet });
+        toneMap->dispatch(cmd, window.getExtent(), {32, 32, 1});
 
         if (screenshotRequested) {
             computeImageA->transitionLayout(cmd, {
@@ -936,7 +829,8 @@ int main() {
             computeImageA->revertTransition(cmd);
         }
 
-        swizzle.dispatch(cmd, { computeSet }, window.getExtent(), {32, 32, 1});
+        swizzle->bind(cmd, { computeSet });
+        swizzle->dispatch(cmd, window.getExtent(), {32, 32, 1});
 
         computeImageB->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,

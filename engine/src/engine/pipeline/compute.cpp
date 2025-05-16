@@ -8,15 +8,42 @@ namespace muon::engine {
     ComputePipeline::ComputePipeline(
         Device &device,
         const std::filesystem::path &shaderPath,
-        const vk::PipelineLayout pipelineLayout
+        const std::vector<vk::DescriptorSetLayout> &setLayouts,
+        const std::vector<vk::PushConstantRange> &pushConstants
     ) : device(device) {
-        createPipeline(shaderPath, pipelineLayout);
+        createPipelineLayout(setLayouts, pushConstants);
+        createPipeline(shaderPath);
     }
 
     ComputePipeline::~ComputePipeline() {
         device.getDevice().destroyShaderModule(shader);
         device.getDevice().destroyPipeline(pipeline);
         device.getDevice().destroyPipelineCache(cache);
+        device.getDevice().destroyPipelineLayout(layout);
+    }
+
+    void ComputePipeline::bind(vk::CommandBuffer cmd, const std::vector<vk::DescriptorSet> &sets) {
+        cmd.bindDescriptorSets(
+            vk::PipelineBindPoint::eCompute,
+            layout,
+            0,
+            sets.size(),
+            sets.data(),
+            0,
+            nullptr
+        );
+        cmd.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline);
+    }
+
+    void ComputePipeline::dispatch(
+        vk::CommandBuffer cmd,
+        const vk::Extent2D &windowExtent,
+        const std::array<uint32_t, 3> &workgroupSize
+    ) {
+        uint32_t groupCountX = (windowExtent.width + workgroupSize[0] - 1) / workgroupSize[0];
+        uint32_t groupCountY = (windowExtent.height + workgroupSize[1] - 1) / workgroupSize[1];
+
+        cmd.dispatch(groupCountX, groupCountY, workgroupSize[2]);
     }
 
     vk::Pipeline ComputePipeline::getPipeline() const {
@@ -34,10 +61,23 @@ namespace muon::engine {
         }
     }
 
-    void ComputePipeline::createPipeline(
-        const std::filesystem::path &shaderPath,
-        const vk::PipelineLayout pipelineLayout
+    void ComputePipeline::createPipelineLayout(
+        const std::vector<vk::DescriptorSetLayout> &setLayouts,
+        const std::vector<vk::PushConstantRange> &pushConstants
     ) {
+        vk::PipelineLayoutCreateInfo createInfo{};
+        createInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+        createInfo.pSetLayouts = setLayouts.data();
+        createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
+        createInfo.pPushConstantRanges = pushConstants.data();
+
+        auto result = device.getDevice().createPipelineLayout(&createInfo, nullptr, &layout);
+        if (result != vk::Result::eSuccess) {
+            throw std::runtime_error("failed to create compute pipeline layout");
+        }
+    }
+
+    void ComputePipeline::createPipeline(const std::filesystem::path &shaderPath) {
         vk::PipelineCacheCreateInfo pcCreateInfo{};
         pcCreateInfo.flags = vk::PipelineCacheCreateFlags{};
         pcCreateInfo.initialDataSize = 0;
@@ -59,14 +99,35 @@ namespace muon::engine {
 
         vk::ComputePipelineCreateInfo pCreateInfo{};
         pCreateInfo.stage = sCreateInfo;
-        pCreateInfo.layout = pipelineLayout;
+        pCreateInfo.layout = layout;
         pCreateInfo.basePipelineIndex = -1;
         pCreateInfo.basePipelineHandle = nullptr;
 
         result = device.getDevice().createComputePipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
         if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create graphics pipeline");
+            throw std::runtime_error("failed to create compute pipeline");
         }
+    }
+
+    ComputePipeline::Builder::Builder(Device &device) : device(device) {}
+
+    ComputePipeline::Builder &ComputePipeline::Builder::setShader(const std::filesystem::path &path) {
+        this->path = path;
+        return *this;
+    }
+
+    ComputePipeline::Builder &ComputePipeline::Builder::setDescriptorSetLayouts(const std::vector<vk::DescriptorSetLayout> &setLayouts) {
+        this->setLayouts = setLayouts;
+        return *this;
+    }
+
+    ComputePipeline::Builder &ComputePipeline::Builder::setPushConstants(const std::vector<vk::PushConstantRange> &pushConstants) {
+        this->pushConstants = pushConstants;
+        return *this;
+    }
+
+    std::unique_ptr<ComputePipeline> ComputePipeline::Builder::buildUniquePtr() {
+        return std::make_unique<ComputePipeline>(device, path, setLayouts, pushConstants);
     }
 
 }
