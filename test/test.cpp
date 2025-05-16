@@ -481,7 +481,7 @@ int main() {
 
     rg.configureResources([&](engine::rg::ResourceBuilder &builder) {
         builder.addImage("compute_image_0", {
-            .extent = window.getExtent(),
+            .extent = window.getExtent(), // change to proportion of swapchain or include window another way
             .format = vk::Format::eR8G8B8A8Unorm,
             .usageFlags = vk::ImageUsageFlagBits::eStorage,
             .layout = vk::ImageLayout::eGeneral,
@@ -499,7 +499,7 @@ int main() {
 
         builder.writeDescriptors(computeImagePool.get(), computeSetLayout.get(), computeSet)
             .write(0, 0, "compute_image_0")
-            .write(0, 1, "compute_image_0");
+            .write(0, 1, "compute_image_1");
     });
 
     rg.addNode({ // graphics

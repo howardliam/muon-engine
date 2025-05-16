@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -26,12 +28,14 @@ namespace muon::engine::fg {
         std::vector<std::string> writeDeps;
     };
 
-    class FrameGraph {
+    class FrameGraph : NoCopy, NoMove {
     public:
+        class Builder;
+
         FrameGraph(Device &device);
         ~FrameGraph();
 
-        void configureResources(std::function<void(ResourceBuilder &)> callback);
+        void configureResources(std::function<void(Builder &)> callback);
 
         void addNode(Node node);
 
@@ -50,6 +54,18 @@ namespace muon::engine::fg {
         DependencyMap determineDependencies(const std::unordered_map<std::string, Node> &nodes);
 
         std::vector<std::string> topographicalSort(const DependencyMap &dependencies);
+    };
+
+    class FrameGraph::Builder : NoCopy, NoMove {
+    public:
+
+        void addImage(const std::string &name);
+
+    private:
+
+
+
+        friend class FrameGraph;
     };
 
 }
