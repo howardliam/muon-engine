@@ -198,9 +198,7 @@ int main() {
     renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
     renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-    std::vector setLayouts = { globalSetLayout->getSetLayout() };
-    std::optional<vk::PushConstantRange> pushConstant;
-    auto basicLayout = std::make_shared<engine::PipelineLayout>(device, setLayouts, pushConstant);
+    auto basicLayout = std::make_shared<engine::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, vk::PushConstantRange{});
 
     auto basicPipeline = engine::GraphicsPipeline::Builder(device)
         .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
