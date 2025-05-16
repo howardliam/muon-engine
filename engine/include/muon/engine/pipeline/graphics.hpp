@@ -13,19 +13,8 @@ namespace muon::engine {
 
     class GraphicsPipeline : NoCopy, NoMove {
     public:
-        struct ConfigInfo {
-            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
-            vk::PipelineViewportStateCreateInfo viewportState;
-            vk::PipelineRasterizationStateCreateInfo rasterizationState;
-            vk::PipelineMultisampleStateCreateInfo multisampleState;
-            vk::PipelineColorBlendAttachmentState colorBlendAttachment;
-            vk::PipelineColorBlendStateCreateInfo colorBlendState;
-            vk::PipelineDepthStencilStateCreateInfo depthStencilState;
-            std::vector<vk::DynamicState> dynamicStateEnables;
-            vk::PipelineDynamicStateCreateInfo dynamicState;
-            uint32_t subpass = 0;
-        };
         class Builder;
+        struct ConfigInfo;
 
         GraphicsPipeline(
             Device &device,
@@ -38,11 +27,6 @@ namespace muon::engine {
 
         void bake(const vk::PipelineRenderingCreateInfo &renderingInfo);
 
-        /**
-         * @brief   binds the pipeline into the command buffer to be used by models for rendering.
-         *
-         * @param   commandBuffer   the command buffer to record this command into.
-         */
         void bind(vk::CommandBuffer cmd, const std::vector<vk::DescriptorSet> &sets);
 
         [[nodiscard]] vk::PipelineLayout getLayout() const;
@@ -102,8 +86,6 @@ namespace muon::engine {
 
         Builder &setDepthStencilState(const vk::PipelineDepthStencilStateCreateInfo &state);
 
-        Builder &setDynamicState(const vk::PipelineDynamicStateCreateInfo &state);
-
         std::unique_ptr<GraphicsPipeline> buildUniquePtr();
 
     private:
@@ -113,6 +95,19 @@ namespace muon::engine {
         std::vector<vk::DescriptorSetLayout> setLayouts;
         std::vector<vk::PushConstantRange> pushConstants;
         std::unique_ptr<ConfigInfo> configInfo;
+    };
+
+    struct GraphicsPipeline::ConfigInfo {
+        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+        vk::PipelineViewportStateCreateInfo viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizationState;
+        vk::PipelineMultisampleStateCreateInfo multisampleState;
+        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+        vk::PipelineColorBlendStateCreateInfo colorBlendState;
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+        std::vector<vk::DynamicState> dynamicStateEnables;
+        vk::PipelineDynamicStateCreateInfo dynamicState;
+        uint32_t subpass = 0;
     };
 
 }

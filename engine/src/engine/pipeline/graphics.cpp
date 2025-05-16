@@ -430,13 +430,6 @@ namespace muon::engine {
         return *this;
     }
 
-    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setDynamicState(
-        const vk::PipelineDynamicStateCreateInfo &state
-    ) {
-        configInfo->dynamicState = state;
-        return *this;
-    }
-
     std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePtr() {
         return std::make_unique<GraphicsPipeline>(device, std::move(configInfo), setLayouts, pushConstants, shaderPaths);
     }
