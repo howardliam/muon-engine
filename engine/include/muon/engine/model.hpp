@@ -2,7 +2,11 @@
 
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
+
 #include <memory>
+#include <vector>
+#include <cstdint>
+
 #include <vulkan/vulkan.hpp>
 
 namespace muon::engine {
@@ -51,10 +55,6 @@ namespace muon::engine {
         void createVertexBuffer(const std::vector<uint8_t> &vertices, uint32_t stride);
         void createIndexBuffer(const std::vector<uint32_t> &indices);
     };
-
-    template<typename T>
-    std::vector<uint8_t> Model::getRawVertexData(const std::vector<T> &vertices) {
-        const uint8_t *data = reinterpret_cast<const uint8_t *>(vertices.data());
-        return std::vector<uint8_t>(data, data + vertices.size() * sizeof(T));
-    }
 }
+
+#include "muon/engine/model.inl"

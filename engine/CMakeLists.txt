@@ -27,6 +27,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
     ${INCLUDE_DIR}/muon/engine/model.hpp
+    ${INCLUDE_DIR}/muon/engine/model.inl
     ${INCLUDE_DIR}/muon/engine/rendergraph.hpp
     ${INCLUDE_DIR}/muon/engine/shader.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
