@@ -152,6 +152,10 @@ namespace muon::engine {
     }
 
     void GraphicsPipeline::bake(const vk::PipelineRenderingCreateInfo &renderingInfo) {
+        if (pipeline != nullptr) {
+            device.getDevice().destroyPipeline(pipeline);
+        }
+
         createPipeline(renderingInfo);
     }
 
