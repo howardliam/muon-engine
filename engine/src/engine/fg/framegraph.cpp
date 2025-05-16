@@ -1,6 +1,5 @@
 #include "muon/engine/fg/framegraph.hpp"
 
-#include "muon/engine/fg/resourcebuilder.hpp"
 #include "muon/engine/image.hpp"
 #include <queue>
 

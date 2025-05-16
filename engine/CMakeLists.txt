@@ -10,10 +10,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor/setlayout.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor/writer.hpp
 
-    ${INCLUDE_DIR}/muon/engine/fg/descriptorhelper.hpp
     ${INCLUDE_DIR}/muon/engine/fg/framegraph.hpp
-    ${INCLUDE_DIR}/muon/engine/fg/resource.hpp
-    ${INCLUDE_DIR}/muon/engine/fg/resourcebuilder.hpp
 
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
