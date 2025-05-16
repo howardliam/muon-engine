@@ -4,8 +4,13 @@
 #include "muon/engine/device.hpp"
 #include "muon/log/logger.hpp"
 #include <algorithm>
+#include <memory>
 #include <spirv_reflect.h>
 #include <vulkan/vulkan_enums.hpp>
+
+namespace {
+    using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
+}
 
 namespace muon::engine {
 
@@ -79,7 +84,6 @@ namespace muon::engine {
         }
     }
 
-    using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
     VertexInputState vertexInputStateFromSpirv(const std::vector<uint8_t> &byteCode) {
         spv_reflect::ShaderModule module(byteCode);
         if (module.GetResult() != SPV_REFLECT_RESULT_SUCCESS) {
@@ -126,41 +130,70 @@ namespace muon::engine {
 
     GraphicsPipeline::GraphicsPipeline(
         Device &device,
-        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-        const ConfigInfo &configInfo
-    ) : device(device) {
-        createPipeline(shaderPaths, configInfo);
+        std::unique_ptr<ConfigInfo> &&configInfo,
+        const std::vector<vk::DescriptorSetLayout> &setLayouts,
+        const std::vector<vk::PushConstantRange> &pushConstants,
+        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
+    ) : device(device), configInfo(std::move(configInfo)) {
+        createPipelineLayout(setLayouts, pushConstants);
+        createPipelineCache();
+        createShaderModules(shaderPaths);
     }
 
     GraphicsPipeline::~GraphicsPipeline() {
+        device.getDevice().destroyPipeline(pipeline);
+
         for (const auto shader : shaders) {
             device.getDevice().destroyShaderModule(shader);
         }
 
-        device.getDevice().destroyPipeline(pipeline);
         device.getDevice().destroyPipelineCache(cache);
+        device.getDevice().destroyPipelineLayout(layout);
     }
 
-    void GraphicsPipeline::bind(vk::CommandBuffer commandBuffer) {
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+    void GraphicsPipeline::bake(const vk::PipelineRenderingCreateInfo &renderingInfo) {
+        createPipeline(renderingInfo);
     }
 
-    void GraphicsPipeline::createShaderModule(const std::vector<uint8_t> &byteCode, vk::ShaderModule &shaderModule) {
-        vk::ShaderModuleCreateInfo createInfo;
-        createInfo.sType = vk::StructureType::eShaderModuleCreateInfo;
-        createInfo.codeSize = byteCode.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
+    void GraphicsPipeline::bind(vk::CommandBuffer cmd, const std::vector<vk::DescriptorSet> &sets) {
+        cmd.bindDescriptorSets(
+            vk::PipelineBindPoint::eGraphics,
+            layout,
+            0,
+            sets.size(),
+            sets.data(),
+            0,
+            nullptr
+        );
 
-        auto result = device.getDevice().createShaderModule(&createInfo, nullptr, &shaderModule);
+        cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+    }
+
+    vk::PipelineLayout GraphicsPipeline::getLayout() const {
+        return layout;
+    }
+
+    vk::Pipeline GraphicsPipeline::getPipeline() const {
+        return pipeline;
+    }
+
+    void GraphicsPipeline::createPipelineLayout(
+        const std::vector<vk::DescriptorSetLayout> &setLayouts,
+        const std::vector<vk::PushConstantRange> &pushConstants
+    ) {
+        vk::PipelineLayoutCreateInfo plCreateInfo{};
+        plCreateInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+        plCreateInfo.pSetLayouts = setLayouts.data();
+        plCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
+        plCreateInfo.pPushConstantRanges = pushConstants.data();
+
+        auto result = device.getDevice().createPipelineLayout(&plCreateInfo, nullptr, &layout);
         if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create shader module");
+            throw std::runtime_error("failed to create graphics pipeline layout");
         }
     }
 
-    void GraphicsPipeline::createPipeline(
-        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-        const ConfigInfo &configInfo
-    ) {
+    void GraphicsPipeline::createPipelineCache() {
         vk::PipelineCacheCreateInfo pcCreateInfo{};
         pcCreateInfo.flags = vk::PipelineCacheCreateFlags{};
         pcCreateInfo.initialDataSize = 0;
@@ -170,12 +203,25 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create graphics pipeline cache");
         }
+    }
 
-        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
-        std::optional<vk::VertexInputBindingDescription> bindingDescription;
+    void GraphicsPipeline::createShaderModules(
+        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
+    ) {
+        auto createShaderModule = [&](const std::vector<uint8_t> &byteCode, vk::ShaderModule &shaderModule) {
+            vk::ShaderModuleCreateInfo smCreateInfo;
+            smCreateInfo.sType = vk::StructureType::eShaderModuleCreateInfo;
+            smCreateInfo.codeSize = byteCode.size();
+            smCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
+
+            auto result = device.getDevice().createShaderModule(&smCreateInfo, nullptr, &shaderModule);
+            if (result != vk::Result::eSuccess) {
+                throw std::runtime_error("failed to create shader module");
+            }
+        };
 
         shaders.resize(shaderPaths.size());
-        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages(shaderPaths.size());
+        shaderStages.resize(shaderPaths.size());
 
         size_t index = 0;
         for (auto &[stage, path] : shaderPaths) {
@@ -191,52 +237,55 @@ namespace muon::engine {
                 bindingDescription = bind;
             }
 
-            vk::PipelineShaderStageCreateInfo stageCreateInfo{};
-            stageCreateInfo.stage = stage;
-            stageCreateInfo.module = shaderModule;
-            stageCreateInfo.pName = "main";
-            stageCreateInfo.flags = vk::PipelineShaderStageCreateFlags{};
-            stageCreateInfo.pNext = nullptr;
-            stageCreateInfo.pSpecializationInfo = nullptr;
+            vk::PipelineShaderStageCreateInfo pssCreateInfo{};
+            pssCreateInfo.stage = stage;
+            pssCreateInfo.module = shaderModule;
+            pssCreateInfo.pName = "main";
+            pssCreateInfo.flags = vk::PipelineShaderStageCreateFlags{};
+            pssCreateInfo.pNext = nullptr;
+            pssCreateInfo.pSpecializationInfo = nullptr;
 
-            shaderStages[index] = stageCreateInfo;
+            shaderStages[index] = pssCreateInfo;
 
             index += 1;
         }
+    }
 
-        vk::PipelineVertexInputStateCreateInfo vertexInputState{};
+    void GraphicsPipeline::createPipeline(const vk::PipelineRenderingCreateInfo &renderingInfo) {
+        vk::PipelineVertexInputStateCreateInfo pvCreateInfo{};
+
         if (bindingDescription.has_value()) {
-            vertexInputState.vertexBindingDescriptionCount = 1;
-            vertexInputState.pVertexBindingDescriptions = &bindingDescription.value();
-            vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-            vertexInputState.pVertexAttributeDescriptions = attributeDescriptions.data();
+            pvCreateInfo.vertexBindingDescriptionCount = 1;
+            pvCreateInfo.pVertexBindingDescriptions = &bindingDescription.value();
+            pvCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+            pvCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
         } else {
-            vertexInputState.vertexBindingDescriptionCount = 0;
-            vertexInputState.pVertexBindingDescriptions = nullptr;
-            vertexInputState.vertexAttributeDescriptionCount = 0;
-            vertexInputState.pVertexAttributeDescriptions = nullptr;
+            pvCreateInfo.vertexBindingDescriptionCount = 0;
+            pvCreateInfo.pVertexBindingDescriptions = nullptr;
+            pvCreateInfo.vertexAttributeDescriptionCount = 0;
+            pvCreateInfo.pVertexAttributeDescriptions = nullptr;
         }
 
-        vk::GraphicsPipelineCreateInfo pCreateInfo{};
-        pCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-        pCreateInfo.pStages = shaderStages.data();
-        pCreateInfo.pVertexInputState = &vertexInputState;
-        pCreateInfo.pInputAssemblyState = &configInfo.inputAssemblyState;
-        pCreateInfo.pViewportState = &configInfo.viewportState;
-        pCreateInfo.pRasterizationState = &configInfo.rasterizationState;
-        pCreateInfo.pMultisampleState = &configInfo.multisampleState;
-        pCreateInfo.pColorBlendState = &configInfo.colorBlendState;
-        pCreateInfo.pDepthStencilState = &configInfo.depthStencilState;
-        pCreateInfo.pDynamicState = &configInfo.dynamicState;
+        vk::GraphicsPipelineCreateInfo gpCreateInfo{};
+        gpCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+        gpCreateInfo.pStages = shaderStages.data();
+        gpCreateInfo.pVertexInputState = &pvCreateInfo;
+        gpCreateInfo.pInputAssemblyState = &configInfo->inputAssemblyState;
+        gpCreateInfo.pViewportState = &configInfo->viewportState;
+        gpCreateInfo.pRasterizationState = &configInfo->rasterizationState;
+        gpCreateInfo.pMultisampleState = &configInfo->multisampleState;
+        gpCreateInfo.pColorBlendState = &configInfo->colorBlendState;
+        gpCreateInfo.pDepthStencilState = &configInfo->depthStencilState;
+        gpCreateInfo.pDynamicState = &configInfo->dynamicState;
 
-        pCreateInfo.layout = configInfo.pipelineLayout;
-        pCreateInfo.pNext = &configInfo.renderingInfo;
-        pCreateInfo.subpass = configInfo.subpass;
+        gpCreateInfo.layout = layout;
+        gpCreateInfo.pNext = &renderingInfo;
+        gpCreateInfo.subpass = 0;
 
-        pCreateInfo.basePipelineIndex = -1;
-        pCreateInfo.basePipelineHandle = nullptr;
+        gpCreateInfo.basePipelineIndex = -1;
+        gpCreateInfo.basePipelineHandle = nullptr;
 
-        result = device.getDevice().createGraphicsPipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
+        auto result = device.getDevice().createGraphicsPipelines(cache, 1, &gpCreateInfo, nullptr, &pipeline);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create graphics pipeline");
         }
@@ -299,12 +348,14 @@ namespace muon::engine {
         configInfo.depthStencilState.back = vk::StencilOpState{};
 
         configInfo.dynamicStateEnables = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
-        configInfo.dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
         configInfo.dynamicState.pDynamicStates = configInfo.dynamicStateEnables.data();
         configInfo.dynamicState.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     }
 
-    GraphicsPipeline::Builder::Builder(Device &device) : device(device) {}
+    GraphicsPipeline::Builder::Builder(Device &device) : device(device) {
+        configInfo = std::make_unique<ConfigInfo>();
+        defaultConfigInfo(*configInfo);
+    }
 
     GraphicsPipeline::Builder &GraphicsPipeline::Builder::addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path) {
         assert(stage < vk::ShaderStageFlagBits::eCompute);
@@ -312,12 +363,78 @@ namespace muon::engine {
         return *this;
     }
 
-    GraphicsPipeline GraphicsPipeline::Builder::build(const ConfigInfo &configInfo) const {
-        return GraphicsPipeline(device, shaderPaths, configInfo);
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setDescriptorSetLayouts(
+        const std::vector<vk::DescriptorSetLayout> &setLayouts
+    ) {
+        this->setLayouts = setLayouts;
+        return *this;
     }
 
-    std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePtr(const ConfigInfo &configInfo) const {
-        return std::make_unique<GraphicsPipeline>(device, shaderPaths, configInfo);
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setPushConstants(
+        const std::vector<vk::PushConstantRange> &pushConstants
+    ) {
+        this->pushConstants = pushConstants;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setInputAssemblyState(
+        const vk::PipelineInputAssemblyStateCreateInfo &state
+    ) {
+        configInfo->inputAssemblyState = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setViewportState(
+        const vk::PipelineViewportStateCreateInfo &state
+    ) {
+        configInfo->viewportState = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setRasterizationState(
+        const vk::PipelineRasterizationStateCreateInfo &state
+    ) {
+        configInfo->rasterizationState = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setMultisampleState(
+        const vk::PipelineMultisampleStateCreateInfo &state
+    ) {
+        configInfo->multisampleState = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setColorBlendAttachmentState(
+        const vk::PipelineColorBlendAttachmentState &state
+    ) {
+        configInfo->colorBlendAttachment = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setColorBlendState(
+        const vk::PipelineColorBlendStateCreateInfo &state
+    ) {
+        configInfo->colorBlendState = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setDepthStencilState(
+        const vk::PipelineDepthStencilStateCreateInfo &state
+    ) {
+        configInfo->depthStencilState = state;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setDynamicState(
+        const vk::PipelineDynamicStateCreateInfo &state
+    ) {
+        configInfo->dynamicState = state;
+        return *this;
+    }
+
+    std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePtr() {
+        return std::make_unique<GraphicsPipeline>(device, std::move(configInfo), setLayouts, pushConstants, shaderPaths);
     }
 
 }

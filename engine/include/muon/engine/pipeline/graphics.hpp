@@ -5,6 +5,7 @@
 #include <map>
 #include <filesystem>
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 
@@ -12,104 +13,106 @@ namespace muon::engine {
 
     class GraphicsPipeline : NoCopy, NoMove {
     public:
-        struct ConfigInfo;
+        struct ConfigInfo {
+            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+            vk::PipelineViewportStateCreateInfo viewportState;
+            vk::PipelineRasterizationStateCreateInfo rasterizationState;
+            vk::PipelineMultisampleStateCreateInfo multisampleState;
+            vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+            vk::PipelineColorBlendStateCreateInfo colorBlendState;
+            vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+            std::vector<vk::DynamicState> dynamicStateEnables;
+            vk::PipelineDynamicStateCreateInfo dynamicState;
+            uint32_t subpass = 0;
+        };
         class Builder;
 
         GraphicsPipeline(
             Device &device,
-            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-            const ConfigInfo &configInfo
+            std::unique_ptr<ConfigInfo> &&configInfo,
+            const std::vector<vk::DescriptorSetLayout> &setLayouts,
+            const std::vector<vk::PushConstantRange> &pushConstants,
+            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
         );
         ~GraphicsPipeline();
+
+        void bake(const vk::PipelineRenderingCreateInfo &renderingInfo);
 
         /**
          * @brief   binds the pipeline into the command buffer to be used by models for rendering.
          *
          * @param   commandBuffer   the command buffer to record this command into.
          */
-        void bind(vk::CommandBuffer commandBuffer);
+        void bind(vk::CommandBuffer cmd, const std::vector<vk::DescriptorSet> &sets);
+
+        [[nodiscard]] vk::PipelineLayout getLayout() const;
+
+        [[nodiscard]] vk::Pipeline getPipeline() const;
 
         static void defaultConfigInfo(ConfigInfo &configInfo);
 
     private:
         Device &device;
 
-        vk::Pipeline pipeline;
+        std::unique_ptr<ConfigInfo> configInfo;
+
+        vk::PipelineLayout layout;
         vk::PipelineCache cache;
+
         std::vector<vk::ShaderModule> shaders;
+        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
+        std::optional<vk::VertexInputBindingDescription> bindingDescription;
 
-        /**
-         * @brief   creates a shader module from the byte code.
-         *
-         * @param   byteCode        SPIR-V byte code to create the shader module with.
-         * @param   shaderModule    shader module handle.
-         */
-        void createShaderModule(const std::vector<uint8_t> &byteCode, vk::ShaderModule &shaderModule);
+        vk::Pipeline pipeline;
 
-        /**
-         * @brief   creates a graphics pipeline from the shaders and config info provided.
-         *
-         * @param   shaderPaths ordered map of shaders.
-         * @param   configInfo  config info to create the pipeline with.
-         */
-        void createPipeline(
-            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths,
-            const ConfigInfo &configInfo
+        void createPipelineLayout(
+            const std::vector<vk::DescriptorSetLayout> &setLayouts,
+            const std::vector<vk::PushConstantRange> &pushConstants
         );
-    };
 
-    struct GraphicsPipeline::ConfigInfo {
-        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
-        vk::PipelineViewportStateCreateInfo viewportState;
-        vk::PipelineRasterizationStateCreateInfo rasterizationState;
-        vk::PipelineMultisampleStateCreateInfo multisampleState;
-        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
-        vk::PipelineColorBlendStateCreateInfo colorBlendState;
-        vk::PipelineDepthStencilStateCreateInfo depthStencilState;
-        std::vector<vk::DynamicState> dynamicStateEnables;
-        vk::PipelineDynamicStateCreateInfo dynamicState;
-        vk::PipelineLayout pipelineLayout = nullptr;
-        vk::PipelineRenderingCreateInfo renderingInfo;
-        uint32_t subpass = 0;
+        void createPipelineCache();
+
+        void createShaderModules(const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths);
+
+        void createPipeline(const vk::PipelineRenderingCreateInfo &renderingInfo);
     };
 
     class GraphicsPipeline::Builder {
     public:
         Builder(Device &device);
 
-        /**
-         * @brief   adds a shader at the stage.
-         *
-         * @param   stage   the stage to add the shader for.
-         * @param   path    path to the shader SPIR-V file.
-         *
-         * @return  reference to Builder.
-         */
         Builder &addShader(vk::ShaderStageFlagBits stage, const std::filesystem::path &path);
 
-        /**
-         * @brief   builds the pipeline from the provided info.
-         *
-         * @param   configInfo  config information for the pipeline to be created with.
-         *
-         * @return  new Pipeline object.
-         */
-        GraphicsPipeline build(const ConfigInfo &configInfo) const;
+        Builder &setDescriptorSetLayouts(const std::vector<vk::DescriptorSetLayout> &setLayouts);
 
-        /**
-         * @brief   builds the pipeline from the provided info.
-         *
-         * @param   configInfo  config information for the pipeline to be created with.
-         *
-         * @return  unique pointer to new Pipeline object.
-         */
-        std::unique_ptr<GraphicsPipeline> buildUniquePtr(const ConfigInfo &configInfo) const;
+        Builder &setPushConstants(const std::vector<vk::PushConstantRange> &pushConstants);
+
+        Builder &setInputAssemblyState(const vk::PipelineInputAssemblyStateCreateInfo &state);
+
+        Builder &setViewportState(const vk::PipelineViewportStateCreateInfo &state);
+
+        Builder &setRasterizationState(const vk::PipelineRasterizationStateCreateInfo &state);
+
+        Builder &setMultisampleState(const vk::PipelineMultisampleStateCreateInfo &state);
+
+        Builder &setColorBlendAttachmentState(const vk::PipelineColorBlendAttachmentState &state);
+
+        Builder &setColorBlendState(const vk::PipelineColorBlendStateCreateInfo &state);
+
+        Builder &setDepthStencilState(const vk::PipelineDepthStencilStateCreateInfo &state);
+
+        Builder &setDynamicState(const vk::PipelineDynamicStateCreateInfo &state);
+
+        std::unique_ptr<GraphicsPipeline> buildUniquePtr();
 
     private:
         Device &device;
 
         std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
-        ConfigInfo configInfo{};
+        std::vector<vk::DescriptorSetLayout> setLayouts;
+        std::vector<vk::PushConstantRange> pushConstants;
+        std::unique_ptr<ConfigInfo> configInfo;
     };
 
 }

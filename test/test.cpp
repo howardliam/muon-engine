@@ -39,7 +39,6 @@
 #include <muon/engine/window.hpp>
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
-#include <muon/engine/system/graphics.hpp>
 #include <muon/engine/texture.hpp>
 
 #include <SDL3/SDL_events.h>
@@ -80,48 +79,6 @@ private:
 
     void errorImpl(const std::string &message) override {
         spdlog::error(message);
-    }
-};
-
-class RenderSystemTest : public engine::GraphicsSystem {
-public:
-    RenderSystemTest(
-        engine::Device &device,
-        const std::vector<vk::DescriptorSetLayout> &setLayouts,
-        const std::vector<vk::PushConstantRange> &pushConstants
-    ) : engine::GraphicsSystem(device, setLayouts, pushConstants)  {
-
-    }
-
-    void renderModel(vk::CommandBuffer commandBuffer, vk::DescriptorSet set, const engine::Model &model) {
-        pipeline->bind(commandBuffer);
-
-        commandBuffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eGraphics,
-            pipelineLayout,
-            0,
-            1,
-            &set,
-            0,
-            nullptr
-        );
-
-        model.bind(commandBuffer);
-        model.draw(commandBuffer);
-    }
-
-protected:
-    void createPipeline(const vk::PipelineRenderingCreateInfo &renderingInfo) override {
-        engine::GraphicsPipeline::ConfigInfo configInfo;
-        engine::GraphicsPipeline::defaultConfigInfo(configInfo);
-
-        configInfo.renderingInfo = renderingInfo;
-        configInfo.pipelineLayout = pipelineLayout;
-
-        pipeline = engine::GraphicsPipeline::Builder(device)
-            .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
-            .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
-            .buildUniquePtr(configInfo);
     }
 };
 
@@ -240,8 +197,15 @@ int main() {
     renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
     renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-    RenderSystemTest renderSystem(device, { globalSetLayout->getSetLayout() }, {});
-    renderSystem.bake(renderingCreateInfo);
+    auto basicPipeline = engine::GraphicsPipeline::Builder(device)
+        .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
+        .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
+        .setDescriptorSetLayouts({ globalSetLayout->getSetLayout() })
+        .buildUniquePtr();
+    basicPipeline->bake(renderingCreateInfo);
+
+    // RenderSystemTest renderSystem(device, { globalSetLayout->getSetLayout() }, {});
+    // renderSystem.bake(renderingCreateInfo);
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite;
@@ -511,7 +475,7 @@ int main() {
             renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
             renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-            renderSystem.bake(renderingCreateInfo);
+            basicPipeline->bake(renderingCreateInfo);
 
             uiCompositeImage = engine::Image::Builder(device)
                 .setExtent(window.getExtent())
@@ -608,7 +572,9 @@ int main() {
         cmd.setViewport(0, 1, &viewport);
         cmd.setScissor(0, 1, &scissor);
 
-        renderSystem.renderModel(cmd, globalSet, square);
+        basicPipeline->bind(cmd, { globalSet });
+        square.bind(cmd);
+        square.draw(cmd);
 
         cmd.endRendering();
 
