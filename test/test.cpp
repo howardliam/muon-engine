@@ -20,26 +20,27 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
 
+#include <muon/engine/descriptor/pool.hpp>
+#include <muon/engine/descriptor/writer.hpp>
+#include <muon/engine/descriptor/setlayout.hpp>
 #include <muon/engine/fg/framegraph.hpp>
 #include <muon/engine/fg/blackboard.hpp>
-#include <muon/engine/debugui.hpp>
-#include <muon/engine/descriptor/writer.hpp>
-#include <muon/engine/shader.hpp>
-#include <muon/utils/color.hpp>
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
+#include <muon/engine/pipeline/layout.hpp>
 #include <muon/engine/buffer.hpp>
-#include <muon/engine/descriptor/pool.hpp>
-#include <muon/engine/descriptor/setlayout.hpp>
+#include <muon/engine/debugui.hpp>
 #include <muon/engine/device.hpp>
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
 #include <muon/engine/model.hpp>
+#include <muon/engine/shader.hpp>
 #include <muon/engine/swapchain.hpp>
+#include <muon/engine/texture.hpp>
 #include <muon/engine/window.hpp>
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
-#include <muon/engine/texture.hpp>
+#include <muon/utils/color.hpp>
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -197,10 +198,14 @@ int main() {
     renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
     renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
+    std::vector setLayouts = { globalSetLayout->getSetLayout() };
+    std::optional<vk::PushConstantRange> pushConstant;
+    auto basicLayout = std::make_shared<engine::PipelineLayout>(device, setLayouts, pushConstant);
+
     auto basicPipeline = engine::GraphicsPipeline::Builder(device)
         .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
         .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
-        .setDescriptorSetLayouts({ globalSetLayout->getSetLayout() })
+        .setPipelineLayout(basicLayout)
         .buildUniquePtr();
     basicPipeline->bake(renderingCreateInfo);
 

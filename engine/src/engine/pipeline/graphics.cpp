@@ -1,5 +1,6 @@
 #include "muon/engine/pipeline/graphics.hpp"
 
+#include "muon/engine/pipeline/layout.hpp"
 #include "muon/engine/shader.hpp"
 #include "muon/engine/device.hpp"
 #include "muon/log/logger.hpp"
@@ -132,10 +133,20 @@ namespace muon::engine {
         Device &device,
         std::unique_ptr<ConfigInfo> &&configInfo,
         const std::vector<vk::DescriptorSetLayout> &setLayouts,
-        const std::vector<vk::PushConstantRange> &pushConstants,
+        const std::optional<vk::PushConstantRange> &pushConstant,
         const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
     ) : device(device), configInfo(std::move(configInfo)) {
-        createPipelineLayout(setLayouts, pushConstants);
+        layout = std::make_shared<PipelineLayout>(device, setLayouts, pushConstant);
+        createPipelineCache();
+        createShaderModules(shaderPaths);
+    }
+
+    GraphicsPipeline::GraphicsPipeline(
+        Device &device,
+        std::unique_ptr<ConfigInfo> &&configInfo,
+        std::shared_ptr<PipelineLayout> layout,
+        const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
+    ) : device(device), configInfo(std::move(configInfo)), layout(layout) {
         createPipelineCache();
         createShaderModules(shaderPaths);
     }
@@ -148,7 +159,6 @@ namespace muon::engine {
         }
 
         device.getDevice().destroyPipelineCache(cache);
-        device.getDevice().destroyPipelineLayout(layout);
     }
 
     void GraphicsPipeline::bake(const vk::PipelineRenderingCreateInfo &renderingInfo) {
@@ -162,7 +172,7 @@ namespace muon::engine {
     void GraphicsPipeline::bind(vk::CommandBuffer cmd, const std::vector<vk::DescriptorSet> &sets) {
         cmd.bindDescriptorSets(
             vk::PipelineBindPoint::eGraphics,
-            layout,
+            layout->getLayout(),
             0,
             sets.size(),
             sets.data(),
@@ -174,7 +184,7 @@ namespace muon::engine {
     }
 
     vk::PipelineLayout GraphicsPipeline::getLayout() const {
-        return layout;
+        return layout->getLayout();
     }
 
     vk::Pipeline GraphicsPipeline::getPipeline() const {
@@ -183,18 +193,18 @@ namespace muon::engine {
 
     void GraphicsPipeline::createPipelineLayout(
         const std::vector<vk::DescriptorSetLayout> &setLayouts,
-        const std::vector<vk::PushConstantRange> &pushConstants
+        const std::optional<vk::PushConstantRange> &pushConstant
     ) {
-        vk::PipelineLayoutCreateInfo plCreateInfo{};
-        plCreateInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-        plCreateInfo.pSetLayouts = setLayouts.data();
-        plCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
-        plCreateInfo.pPushConstantRanges = pushConstants.data();
+        // vk::PipelineLayoutCreateInfo plCreateInfo{};
+        // plCreateInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+        // plCreateInfo.pSetLayouts = setLayouts.data();
+        // plCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
+        // plCreateInfo.pPushConstantRanges = pushConstants.data();
 
-        auto result = device.getDevice().createPipelineLayout(&plCreateInfo, nullptr, &layout);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create graphics pipeline layout");
-        }
+        // auto result = device.getDevice().createPipelineLayout(&plCreateInfo, nullptr, &layout);
+        // if (result != vk::Result::eSuccess) {
+        //     throw std::runtime_error("failed to create graphics pipeline layout");
+        // }
     }
 
     void GraphicsPipeline::createPipelineCache() {
@@ -282,7 +292,7 @@ namespace muon::engine {
         gpCreateInfo.pDepthStencilState = &configInfo->depthStencilState;
         gpCreateInfo.pDynamicState = &configInfo->dynamicState;
 
-        gpCreateInfo.layout = layout;
+        gpCreateInfo.layout = layout->getLayout();
         gpCreateInfo.pNext = &renderingInfo;
         gpCreateInfo.subpass = 0;
 
@@ -374,10 +384,17 @@ namespace muon::engine {
         return *this;
     }
 
-    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setPushConstants(
-        const std::vector<vk::PushConstantRange> &pushConstants
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setPushConstant(
+        const vk::PushConstantRange &pushConstant
     ) {
-        this->pushConstants = pushConstants;
+        this->pushConstant = pushConstant;
+        return *this;
+    }
+
+    GraphicsPipeline::Builder &GraphicsPipeline::Builder::setPipelineLayout(
+        const std::shared_ptr<PipelineLayout> &pipelineLayout
+    ) {
+        this->pipelineLayout = pipelineLayout;
         return *this;
     }
 
@@ -431,7 +448,11 @@ namespace muon::engine {
     }
 
     std::unique_ptr<GraphicsPipeline> GraphicsPipeline::Builder::buildUniquePtr() {
-        return std::make_unique<GraphicsPipeline>(device, std::move(configInfo), setLayouts, pushConstants, shaderPaths);
+        if (pipelineLayout) {
+            return std::make_unique<GraphicsPipeline>(device, std::move(configInfo), pipelineLayout, shaderPaths);
+        }
+
+        return std::make_unique<GraphicsPipeline>(device, std::move(configInfo), setLayouts, pushConstant, shaderPaths);
     }
 
 }

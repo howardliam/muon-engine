@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/engine/pipeline/layout.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <map>
@@ -20,9 +21,16 @@ namespace muon::engine {
             Device &device,
             std::unique_ptr<ConfigInfo> &&configInfo,
             const std::vector<vk::DescriptorSetLayout> &setLayouts,
-            const std::vector<vk::PushConstantRange> &pushConstants,
+            const std::optional<vk::PushConstantRange> &pushConstant,
             const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
         );
+        GraphicsPipeline(
+            Device &device,
+            std::unique_ptr<ConfigInfo> &&configInfo,
+            std::shared_ptr<PipelineLayout> layout,
+            const std::map<vk::ShaderStageFlagBits, std::filesystem::path> &shaderPaths
+        );
+
         ~GraphicsPipeline();
 
         void bake(const vk::PipelineRenderingCreateInfo &renderingInfo);
@@ -40,7 +48,8 @@ namespace muon::engine {
 
         std::unique_ptr<ConfigInfo> configInfo;
 
-        vk::PipelineLayout layout;
+        // vk::PipelineLayout layout;
+        std::shared_ptr<PipelineLayout> layout;
         vk::PipelineCache cache;
 
         std::vector<vk::ShaderModule> shaders;
@@ -52,7 +61,7 @@ namespace muon::engine {
 
         void createPipelineLayout(
             const std::vector<vk::DescriptorSetLayout> &setLayouts,
-            const std::vector<vk::PushConstantRange> &pushConstants
+            const std::optional<vk::PushConstantRange> &pushConstant
         );
 
         void createPipelineCache();
@@ -70,7 +79,9 @@ namespace muon::engine {
 
         Builder &setDescriptorSetLayouts(const std::vector<vk::DescriptorSetLayout> &setLayouts);
 
-        Builder &setPushConstants(const std::vector<vk::PushConstantRange> &pushConstants);
+        Builder &setPushConstant(const vk::PushConstantRange &pushConstant);
+
+        Builder &setPipelineLayout(const std::shared_ptr<PipelineLayout> &pipelineLayout);
 
         Builder &setInputAssemblyState(const vk::PipelineInputAssemblyStateCreateInfo &state);
 
@@ -93,7 +104,8 @@ namespace muon::engine {
 
         std::map<vk::ShaderStageFlagBits, std::filesystem::path> shaderPaths;
         std::vector<vk::DescriptorSetLayout> setLayouts;
-        std::vector<vk::PushConstantRange> pushConstants;
+        std::optional<vk::PushConstantRange> pushConstant;
+        std::shared_ptr<PipelineLayout> pipelineLayout;
         std::unique_ptr<ConfigInfo> configInfo;
     };
 

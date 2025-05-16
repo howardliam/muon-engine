@@ -16,8 +16,7 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
-
-    # ${INCLUDE_DIR}/muon/engine/system/graphics.hpp
+    ${INCLUDE_DIR}/muon/engine/pipeline/layout.hpp
 
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
     ${INCLUDE_DIR}/muon/engine/debugui.hpp
@@ -48,8 +47,7 @@ set(SRC_FILES
 
     ${SRC_DIR}/engine/pipeline/compute.cpp
     ${SRC_DIR}/engine/pipeline/graphics.cpp
-
-    # ${SRC_DIR}/engine/system/graphics.cpp
+    ${SRC_DIR}/engine/pipeline/layout.cpp
 
     ${SRC_DIR}/engine/buffer.cpp
     ${SRC_DIR}/engine/debugui.cpp
