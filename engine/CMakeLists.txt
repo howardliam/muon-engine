@@ -10,6 +10,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor/setlayout.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor/writer.hpp
 
+    ${INCLUDE_DIR}/muon/engine/fg/blackboard.hpp
+    ${INCLUDE_DIR}/muon/engine/fg/blackboard.inl
     ${INCLUDE_DIR}/muon/engine/fg/framegraph.hpp
 
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
@@ -24,7 +26,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/image.hpp
     ${INCLUDE_DIR}/muon/engine/model.hpp
     ${INCLUDE_DIR}/muon/engine/model.inl
-    ${INCLUDE_DIR}/muon/engine/rendergraph.hpp
     ${INCLUDE_DIR}/muon/engine/shader.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/texture.hpp
@@ -56,7 +57,6 @@ set(SRC_FILES
     ${SRC_DIR}/engine/framehandler.cpp
     ${SRC_DIR}/engine/image.cpp
     ${SRC_DIR}/engine/model.cpp
-    ${SRC_DIR}/engine/rendergraph.cpp
     ${SRC_DIR}/engine/shader.cpp
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/texture.cpp

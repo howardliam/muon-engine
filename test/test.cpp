@@ -20,7 +20,8 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
 
-#include <muon/engine/rendergraph.hpp>
+#include <muon/engine/fg/framegraph.hpp>
+#include <muon/engine/fg/blackboard.hpp>
 #include <muon/engine/debugui.hpp>
 #include <muon/engine/descriptor/writer.hpp>
 #include <muon/engine/shader.hpp>
@@ -366,78 +367,6 @@ int main() {
     bool xAxis{false};
     bool yAxis{false};
     bool zAxis{false};
-
-    engine::rg::RenderGraph rg(device);
-
-    rg.configureResources([&](engine::rg::ResourceBuilder &builder) {
-        builder.addImage("compute_image_0", {
-            .extent = window.getExtent(), // change to proportion of swapchain or include window another way
-            .format = vk::Format::eR8G8B8A8Unorm,
-            .usageFlags = vk::ImageUsageFlagBits::eStorage,
-            .layout = vk::ImageLayout::eGeneral,
-            .accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite,
-            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
-        });
-        builder.addImage("compute_image_1", {
-            .extent = window.getExtent(),
-            .format = vk::Format::eR8G8B8A8Unorm,
-            .usageFlags = vk::ImageUsageFlagBits::eStorage,
-            .layout = vk::ImageLayout::eGeneral,
-            .accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite,
-            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
-        });
-
-        builder.writeDescriptors(computeImagePool.get(), computeSetLayout.get(), computeSet)
-            .write(0, 0, "compute_image_0")
-            .write(0, 1, "compute_image_1");
-    });
-
-    rg.addNode({ // graphics
-        .name = "ScenePass",
-        .readDeps = {},
-        .writeDeps = { "scene_albedo", "scene_normal", "scene_specular", "scene_depth" },
-    });
-    rg.addNode({ // graphics
-        .name = "LightingPass",
-        .readDeps = { "scene_albedo", "scene_normal", "scene_specular" },
-        .writeDeps = { "lighting_output" },
-    });
-    rg.addNode({ // transfer
-        .name = "CopyToComputeChain",
-        .readDeps = { "lighting_output" },
-        .writeDeps = { "compute_image_0" },
-    });
-    rg.addNode({ // graphics
-        .name = "DebugUiPass",
-        .readDeps = {},
-        .writeDeps = { "debug_ui_output" },
-    });
-    rg.addNode({ // transfer
-        .name = "CopyToCompositeImage",
-        .readDeps = { "debug_ui_output" },
-        .writeDeps = { "composite_image" },
-    });
-    rg.addNode({ // post-processing
-        .name = "DebugUiCompositePass",
-        .readDeps = { "compute_image_0", "composite_image" },
-        .writeDeps = { "debug_ui_composite" },
-    });
-    rg.addNode({ // post-processing
-        .name = "ToneMapPass",
-        .readDeps = { "debug_ui_composite" },
-        .writeDeps = { "tone_map_output" },
-    });
-    rg.addNode({ // post-processing
-        .name = "SwizzlePass",
-        .readDeps = { "tone_map_output" },
-        .writeDeps = { "swizzle_output" },
-    });
-    rg.addNode({ // transfer
-        .name = "CopyToSwapchainImage",
-        .readDeps = { "swizzle_output" },
-        .writeDeps = { "swapchain_image" },
-    });
-    rg.compile();
 
     while (window.isOpen()) {
         float dt = frameHandler.getFrameTime();
