@@ -1,4 +1,4 @@
-#include "muon/engine/model.hpp"
+#include "muon/engine/mesh.hpp"
 
 #include "muon/engine/buffer.hpp"
 #include "muon/engine/device.hpp"
@@ -6,7 +6,7 @@
 
 namespace muon::engine {
 
-    Model::Model(
+    Mesh::Mesh(
         Device &device,
         const std::vector<uint8_t> &vertices,
         uint32_t stride,
@@ -17,11 +17,11 @@ namespace muon::engine {
         log::globalLogger->debug("created model with: {} vertices, {} faces", vertexCount, indices.size() / 3);
     }
 
-    Model::~Model() {
+    Mesh::~Mesh() {
         log::globalLogger->debug("destroyed model");
     }
 
-    void Model::bind(vk::CommandBuffer commandBuffer) const {
+    void Mesh::bind(vk::CommandBuffer commandBuffer) const {
         const vk::Buffer buffer = vertexBuffer->getBuffer();
         const vk::DeviceSize offset = 0;
 
@@ -29,11 +29,11 @@ namespace muon::engine {
         commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
     }
 
-    void Model::draw(vk::CommandBuffer commandBuffer) const {
+    void Mesh::draw(vk::CommandBuffer commandBuffer) const {
         commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 
-    void Model::createVertexBuffer(const std::vector<uint8_t> &vertices, uint32_t stride) {
+    void Mesh::createVertexBuffer(const std::vector<uint8_t> &vertices, uint32_t stride) {
         uint32_t vertexSize = stride;
         vertexCount = static_cast<uint32_t>(vertices.size() / vertexSize);
 
@@ -63,7 +63,7 @@ namespace muon::engine {
         device.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
     }
 
-    void Model::createIndexBuffer(const std::vector<uint32_t> &indices) {
+    void Mesh::createIndexBuffer(const std::vector<uint32_t> &indices) {
         indexCount = static_cast<uint32_t>(indices.size());
 
         size_t indexSize = sizeof(uint32_t);

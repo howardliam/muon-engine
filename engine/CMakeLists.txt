@@ -23,8 +23,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
-    ${INCLUDE_DIR}/muon/engine/model.hpp
-    ${INCLUDE_DIR}/muon/engine/model.inl
+    ${INCLUDE_DIR}/muon/engine/mesh.hpp
+    ${INCLUDE_DIR}/muon/engine/mesh.inl
     ${INCLUDE_DIR}/muon/engine/shader.hpp
     ${INCLUDE_DIR}/muon/engine/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/texture.hpp
@@ -54,7 +54,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/device.cpp
     ${SRC_DIR}/engine/framehandler.cpp
     ${SRC_DIR}/engine/image.cpp
-    ${SRC_DIR}/engine/model.cpp
+    ${SRC_DIR}/engine/mesh.cpp
     ${SRC_DIR}/engine/shader.cpp
     ${SRC_DIR}/engine/swapchain.cpp
     ${SRC_DIR}/engine/texture.cpp

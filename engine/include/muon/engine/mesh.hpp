@@ -14,10 +14,10 @@ namespace muon::engine {
     class Device;
     class Buffer;
 
-    class Model : NoCopy, NoMove {
+    class Mesh : NoCopy, NoMove {
     public:
-        Model(Device &device, const std::vector<uint8_t> &vertices, uint32_t stride, const std::vector<uint32_t> &indices);
-        ~Model();
+        Mesh(Device &device, const std::vector<uint8_t> &vertices, uint32_t stride, const std::vector<uint32_t> &indices);
+        ~Mesh();
 
         /**
          * @brief   binds the model to the command buffer.
@@ -57,4 +57,4 @@ namespace muon::engine {
     };
 }
 
-#include "muon/engine/model.inl"
+#include "muon/engine/mesh.inl"

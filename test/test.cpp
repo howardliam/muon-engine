@@ -33,7 +33,7 @@
 #include <muon/engine/device.hpp>
 #include <muon/engine/framehandler.hpp>
 #include <muon/engine/image.hpp>
-#include <muon/engine/model.hpp>
+#include <muon/engine/mesh.hpp>
 #include <muon/engine/shader.hpp>
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/texture.hpp>
@@ -304,9 +304,9 @@ int main() {
     };
 
     std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
-    auto vertexData = engine::Model::getRawVertexData(vertices);
+    auto vertexData = engine::Mesh::getRawVertexData(vertices);
 
-    engine::Model square(device, vertexData, 32, indices);
+    engine::Mesh square(device, vertexData, 32, indices);
 
     frameHandler.beginFrameTiming();
 
