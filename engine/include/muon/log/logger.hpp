@@ -1,80 +1,10 @@
 #pragma once
 
-#include <format>
-#include <string>
+#include "muon/common/log/logger.hpp"
 
 namespace muon::log {
+    extern common::log::ILogger *globalLogger;
 
-    class ILogger;
+    void setLogger(common::log::ILogger *logger);
 
-    extern ILogger *globalLogger;
-
-    void setLogger(ILogger *logger);
-
-    class ILogger {
-    public:
-        template <typename... Args>
-        void trace(std::format_string<Args ...> fmt, Args &&...args) {
-            traceImpl(std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        void trace(const std::string &message) {
-            traceImpl(message);
-        }
-
-        template <typename... Args>
-        void debug(std::format_string<Args ...> fmt, Args &&...args) {
-            debugImpl(std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        void debug(const std::string &message) {
-            debugImpl(message);
-        }
-
-        template <typename... Args>
-        void info(std::format_string<Args ...> fmt, Args &&...args) {
-            infoImpl(std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        void info(const std::string &message) {
-            infoImpl(message);
-        }
-
-        template <typename... Args>
-        void warn(std::format_string<Args ...> fmt, Args &&...args) {
-            warnImpl(std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        void warn(const std::string &message) {
-            warnImpl(message);
-        }
-
-        template <typename... Args>
-        void error(std::format_string<Args ...> fmt, Args &&...args) {
-            errorImpl(std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        void error(const std::string &message) {
-            errorImpl(message);
-        }
-
-    private:
-        virtual void traceImpl(const std::string &message) = 0;
-        virtual void debugImpl(const std::string &message) = 0;
-        virtual void infoImpl(const std::string &message) = 0;
-        virtual void warnImpl(const std::string &message) = 0;
-        virtual void errorImpl(const std::string &message) = 0;
-    };
-
-    class BasicLogger : public ILogger {
-    public:
-        BasicLogger();
-
-    private:
-        void traceImpl(const std::string &message) override;
-        void debugImpl(const std::string &message) override;
-        void infoImpl(const std::string &message) override;
-        void warnImpl(const std::string &message) override;
-        void errorImpl(const std::string &message) override;
-    };
 }

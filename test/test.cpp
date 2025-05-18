@@ -38,6 +38,7 @@
 #include <muon/engine/swapchain.hpp>
 #include <muon/engine/texture.hpp>
 #include <muon/engine/window.hpp>
+#include <muon/common/log/logger.hpp>
 #include <muon/log/logger.hpp>
 #include <muon/asset/image.hpp>
 #include <muon/utils/color.hpp>
@@ -55,30 +56,30 @@
 
 using namespace muon;
 
-class Logger : public log::ILogger {
+class Logger final : public common::log::ILogger {
 public:
-    Logger() : log::ILogger() {
+    Logger() : common::log::ILogger() {
         spdlog::set_level(spdlog::level::trace);
     }
 
 private:
-    void traceImpl(const std::string &message) override {
+    void traceImpl(const std::string_view message) override {
         spdlog::trace(message);
     }
 
-    void debugImpl(const std::string &message) override {
+    void debugImpl(const std::string_view message) override {
         spdlog::debug(message);
     }
 
-    void infoImpl(const std::string &message) override {
+    void infoImpl(const std::string_view message) override {
         spdlog::info(message);
     }
 
-    void warnImpl(const std::string &message) override {
+    void warnImpl(const std::string_view message) override {
         spdlog::warn(message);
     }
 
-    void errorImpl(const std::string &message) override {
+    void errorImpl(const std::string_view message) override {
         spdlog::error(message);
     }
 };

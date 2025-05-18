@@ -7,6 +7,9 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(${LIB_NAME} STATIC
 
+    ${INCLUDE_DIR}/muon/common/log/logger.hpp
+    ${SRC_DIR}/log/logger.cpp
+
     ${INCLUDE_DIR}/muon/common/compress.hpp
     ${SRC_DIR}/compress.cpp
 
