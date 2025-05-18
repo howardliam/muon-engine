@@ -296,15 +296,55 @@ int main() {
     glm::vec3 orientation{0.0, 0.0, -1.0};
 
     float sensitivity{0.1};
-    glm::ivec2 mousePos{0.0, 0.0};
-    glm::ivec2 deltaPos{0.0, 0.0};
 
-    float moveSpeed{5.0};
+    float maxSpeed{1.2}; // m s^-1
+    float acceleration{0.3};
+    float friction{5.0};
+    glm::vec3 velocity{0.0, 0.0, 0.0};
+    glm::vec3 moveDir{0.0};
 
     float rotationSpeed{15.0};
     bool xAxis{false};
     bool yAxis{false};
     bool zAxis{false};
+
+    auto handleInput = [&](SDL_Event &event, float dt) -> void {
+        glm::vec3 forward = glm::normalize(orientation);
+        glm::vec3 right = glm::normalize(glm::cross(forward, up));
+
+        glm::vec3 inputDir{0.0};
+        if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.key.scancode == SDL_SCANCODE_W) {
+                inputDir += forward;
+            }
+            if (event.key.scancode == SDL_SCANCODE_S) {
+                inputDir -= forward;
+            }
+            if (event.key.scancode == SDL_SCANCODE_A) {
+                inputDir -= right;
+            }
+            if (event.key.scancode == SDL_SCANCODE_D) {
+                inputDir += right;
+            }
+        }
+
+        moveDir = glm::vec3{0.0};
+        if (glm::length(inputDir) > 0.0f) {
+            moveDir = glm::normalize(inputDir);
+        }
+
+        if (glm::length(moveDir) < 0.01f) {
+            return;
+        } else {
+            glm::vec3 accelerationDir = moveDir * acceleration;
+            velocity += accelerationDir * dt;
+
+            if (glm::length(velocity) > maxSpeed) {
+                velocity = glm::normalize(velocity) * maxSpeed;
+            }
+        }
+
+    };
 
     while (window.isOpen()) {
         float dt = frameHandler.getFrameTime();
@@ -312,15 +352,9 @@ int main() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             debugUi.pollEvents(&event);
+            handleInput(event, dt);
 
             if (event.type == SDL_EVENT_MOUSE_MOTION) {
-                float x, y;
-                SDL_GetMouseState(&x, &y);
-                mousePos.x = x;
-                mousePos.y = y;
-                deltaPos.x = event.motion.xrel;
-                deltaPos.y = event.motion.yrel;
-
                 if (mouseGrab) {
                     float dt = frameHandler.getFrameTime();
                     float yaw = -event.motion.xrel * sensitivity * dt;
@@ -344,30 +378,6 @@ int main() {
             }
 
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                glm::vec3 forward = orientation;
-                forward = glm::normalize(forward);
-                glm::vec3 right = glm::normalize(glm::cross(forward, up));
-                right = glm::normalize(right);
-
-                glm::vec3 velocity{0.0, 0.0, 0.0};
-                if (event.key.scancode == SDL_SCANCODE_W) {
-                    velocity += forward;
-                }
-                if (event.key.scancode == SDL_SCANCODE_S) {
-                    velocity -= forward;
-                }
-                if (event.key.scancode == SDL_SCANCODE_A) {
-                    velocity -= right;
-                }
-                if (event.key.scancode == SDL_SCANCODE_D) {
-                    velocity += right;
-                }
-
-                if (glm::length(velocity) > 0.0f) {
-                    velocity = glm::normalize(velocity);
-                    position = position + (velocity * moveSpeed * dt);
-                }
-
                 if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
                     mouseGrab = !mouseGrab;
 
@@ -389,6 +399,12 @@ int main() {
                 window.resize(event.window.data1, event.window.data2);
             }
         }
+
+        if (glm::length(moveDir) < 0.01f) {
+            velocity -= velocity * glm::min(dt * friction, 1.0f);
+        }
+
+        position += velocity;
 
         if (seconds >= 1.0) {
             frameRate = frames;
@@ -592,9 +608,6 @@ int main() {
 
             ImGui::Text("FPS: %d", frameRate);
 
-            ImGui::Text("Mouse position: %d, %d", mousePos.x, mousePos.y);
-            ImGui::Text("Delta position: %d, %d", deltaPos.x, deltaPos.y);
-
             ImGui::DragFloat("Sensitivity", &sensitivity, 0.1, 0.0, 1.0);
             float oriArray[3] = {orientation.x, orientation.y, orientation.z};
             ImGui::DragFloat3("Orientation", oriArray, 0.01, -1.0, 1.0);
@@ -602,12 +615,12 @@ int main() {
             orientation.y = oriArray[1];
             orientation.z = oriArray[2];
 
-            ImGui::DragFloat("Move speed", &moveSpeed, 0.1, 0.0, 50.0);
-            float posArray[3] = {position.x, position.y, position.z};
-            ImGui::DragFloat3("Position", posArray);
-            position.x = posArray[0];
-            position.y = posArray[1];
-            position.z = posArray[2];
+            ImGui::DragFloat("Max speed", &maxSpeed, 0.1, 0.0, 10.0);
+            ImGui::DragFloat("Acceleration", &acceleration, 0.1, 0.0, 10.0);
+
+            ImGui::Text("Current speed: %f", glm::length(velocity));
+            ImGui::Text("Position: %f, %f, %f", position.x, position.y, position.z);
+            ImGui::Text("Move vector: %f, %f, %f", moveDir.x, moveDir.y, moveDir.z);
 
             ImGui::End();
         }
