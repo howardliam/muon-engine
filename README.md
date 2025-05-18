@@ -4,6 +4,8 @@
 # Muon Engine
 Muon is an experimental game engine built for curiosity and learning graphics programming.
 
+![Progress 2025-05-19](./2025-05-19-progress.png)
+
 ## Features
 - Bindless textures
 - Dynamic rendering
@@ -29,17 +31,23 @@ Add as a git submodule and link to the required libraries.
 
 ## Attributions
 ### Engine
-- [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
-- [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
-- [VulkanMemoryAllocator-Hpp](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp)
-- [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
-- [glslang](https://github.com/KhronosGroup/glslang)
-- [SDL3](https://wiki.libsdl.org/SDL3/FrontPage)
-- [glm](https://github.com/g-truc/glm)
+| library | licences |
+| ----- | ----- |
+| [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) | ... |
+| [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | MIT |
+| [VulkanMemoryAllocator-Hpp](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp) | CC0-1.0 |
+| [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect) | Apache-2.0 |
+| [glslang](https://github.com/KhronosGroup/glslang) | 3-Clause BSD, 2-Clause BSD, MIT, Apache-2.0 |
+| [SDL3](https://wiki.libsdl.org/SDL3/FrontPage) | zlib |
+| [glm](https://github.com/g-truc/glm) | The Happy Bunny License, MIT |
 
 ### Asset
-- [libspng](https://libspng.org/)
-- [libjpeg-turbo](https://libjpeg-turbo.org/)
+| library | licences |
+| ----- | ----- |
+| [libspng](https://libspng.org/) | 2-Clause BSD |
+| [libjpeg-turbo](https://libjpeg-turbo.org/) | IJG, 3-Clause BSD |
 
 ### Test
-- [spdlog](https://github.com/gabime/spdlog)
+| library | licences |
+| ----- | ----- |
+| [spdlog](https://github.com/gabime/spdlog) | MIT |
