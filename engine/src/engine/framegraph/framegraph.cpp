@@ -1,4 +1,4 @@
-#include "muon/engine/fg/framegraph.hpp"
+#include "muon/engine/framegraph/framegraph.hpp"
 
 #include "muon/engine/image.hpp"
 #include <queue>
