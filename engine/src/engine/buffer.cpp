@@ -6,7 +6,7 @@
 #include <vulkan/vulkan_structs.hpp>
 #include "muon/log/logger.hpp"
 #include "muon/engine/device.hpp"
-#include "muon/utils/prettyprint.hpp"
+#include "muon/utils/pretty_print.hpp"
 
 namespace muon::engine {
 

@@ -4,8 +4,6 @@
 #include "muon/log/logger.hpp"
 
 #include <stdexcept>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 namespace muon::engine {
 

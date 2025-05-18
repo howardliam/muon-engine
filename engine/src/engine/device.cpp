@@ -6,10 +6,6 @@
 #include <format>
 #include <set>
 #include <stdexcept>
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #include <vk_mem_alloc.hpp>

@@ -7,7 +7,7 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor/pool.hpp
-    ${INCLUDE_DIR}/muon/engine/descriptor/setlayout.hpp
+    ${INCLUDE_DIR}/muon/engine/descriptor/set_layout.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor/writer.hpp
 
     ${INCLUDE_DIR}/muon/engine/fg/blackboard.hpp
@@ -19,9 +19,9 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/pipeline/layout.hpp
 
     ${INCLUDE_DIR}/muon/engine/buffer.hpp
-    ${INCLUDE_DIR}/muon/engine/debugui.hpp
+    ${INCLUDE_DIR}/muon/engine/debug_ui.hpp
     ${INCLUDE_DIR}/muon/engine/device.hpp
-    ${INCLUDE_DIR}/muon/engine/framehandler.hpp
+    ${INCLUDE_DIR}/muon/engine/frame_handler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
     ${INCLUDE_DIR}/muon/engine/material.hpp
     ${INCLUDE_DIR}/muon/engine/mesh.hpp
@@ -36,12 +36,12 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
-    ${INCLUDE_DIR}/muon/utils/prettyprint.hpp
+    ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
 )
 
 set(SRC_FILES
     ${SRC_DIR}/engine/descriptor/pool.cpp
-    ${SRC_DIR}/engine/descriptor/setlayout.cpp
+    ${SRC_DIR}/engine/descriptor/set_layout.cpp
     ${SRC_DIR}/engine/descriptor/writer.cpp
 
     ${SRC_DIR}/engine/fg/framegraph.cpp
@@ -51,9 +51,9 @@ set(SRC_FILES
     ${SRC_DIR}/engine/pipeline/layout.cpp
 
     ${SRC_DIR}/engine/buffer.cpp
-    ${SRC_DIR}/engine/debugui.cpp
+    ${SRC_DIR}/engine/debug_ui.cpp
     ${SRC_DIR}/engine/device.cpp
-    ${SRC_DIR}/engine/framehandler.cpp
+    ${SRC_DIR}/engine/frame_handler.cpp
     ${SRC_DIR}/engine/image.cpp
     ${SRC_DIR}/engine/mesh.cpp
     ${SRC_DIR}/engine/shader.cpp
@@ -64,7 +64,7 @@ set(SRC_FILES
     ${SRC_DIR}/log/logger.cpp
 
     ${SRC_DIR}/utils/color.cpp
-    ${SRC_DIR}/utils/prettyprint.cpp
+    ${SRC_DIR}/utils/pretty_print.cpp
 )
 
 set(IMGUI_DIR ../external/imgui)

@@ -1,7 +1,7 @@
 #include "muon/engine/descriptor/writer.hpp"
 
 #include "muon/engine/descriptor/pool.hpp"
-#include "muon/engine/descriptor/setlayout.hpp"
+#include "muon/engine/descriptor/set_layout.hpp"
 #include "muon/engine/device.hpp"
 
 namespace muon::engine {

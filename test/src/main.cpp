@@ -23,16 +23,16 @@
 
 #include <muon/engine/descriptor/pool.hpp>
 #include <muon/engine/descriptor/writer.hpp>
-#include <muon/engine/descriptor/setlayout.hpp>
+#include <muon/engine/descriptor/set_layout.hpp>
 #include <muon/engine/fg/framegraph.hpp>
 #include <muon/engine/fg/blackboard.hpp>
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/pipeline/layout.hpp>
 #include <muon/engine/buffer.hpp>
-#include <muon/engine/debugui.hpp>
+#include <muon/engine/debug_ui.hpp>
 #include <muon/engine/device.hpp>
-#include <muon/engine/framehandler.hpp>
+#include <muon/engine/frame_handler.hpp>
 #include <muon/engine/image.hpp>
 #include <muon/engine/mesh.hpp>
 #include <muon/engine/shader.hpp>

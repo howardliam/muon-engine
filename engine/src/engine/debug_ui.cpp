@@ -1,4 +1,4 @@
-#include "muon/engine/debugui.hpp"
+#include "muon/engine/debug_ui.hpp"
 
 #include "muon/engine/window.hpp"
 #include "muon/engine/device.hpp"

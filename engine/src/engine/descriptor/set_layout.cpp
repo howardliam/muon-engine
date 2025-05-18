@@ -1,8 +1,7 @@
-#include "muon/engine/descriptor/setlayout.hpp"
+#include "muon/engine/descriptor/set_layout.hpp"
 
 #include "muon/engine/descriptor/pool.hpp"
 #include "muon/engine/device.hpp"
-#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 

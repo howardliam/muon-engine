@@ -1,4 +1,4 @@
-#include "muon/utils/prettyprint.hpp"
+#include "muon/utils/pretty_print.hpp"
 
 #include <array>
 #include <format>

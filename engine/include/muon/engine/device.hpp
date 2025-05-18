@@ -7,7 +7,6 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::engine {
 

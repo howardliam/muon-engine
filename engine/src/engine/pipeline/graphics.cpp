@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 #include <spirv_reflect.h>
-#include <vulkan/vulkan_enums.hpp>
 
 namespace {
     using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
