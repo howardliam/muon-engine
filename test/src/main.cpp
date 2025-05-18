@@ -1,5 +1,6 @@
 #include <limits>
 #include <memory>
+#include <optional>
 #include <print>
 #include <fstream>
 #include <thread>
@@ -171,7 +172,7 @@ int main() {
     renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
     renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-    auto basicLayout = std::make_shared<engine::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, vk::PushConstantRange{});
+    auto basicLayout = std::make_shared<engine::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, std::nullopt);
 
     auto basicPipeline = engine::GraphicsPipeline::Builder(device)
         .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
