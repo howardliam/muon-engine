@@ -23,6 +23,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/device.hpp
     ${INCLUDE_DIR}/muon/engine/framehandler.hpp
     ${INCLUDE_DIR}/muon/engine/image.hpp
+    ${INCLUDE_DIR}/muon/engine/material.hpp
     ${INCLUDE_DIR}/muon/engine/mesh.hpp
     ${INCLUDE_DIR}/muon/engine/mesh.inl
     ${INCLUDE_DIR}/muon/engine/shader.hpp
