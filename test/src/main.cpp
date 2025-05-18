@@ -47,42 +47,14 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 
-#include <spdlog/spdlog.h>
-
 #include <vk_mem_alloc_enums.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <imgui.h>
 
+#include "logger.hpp"
+
 using namespace muon;
-
-class Logger final : public common::log::ILogger {
-public:
-    Logger() : common::log::ILogger() {
-        spdlog::set_level(spdlog::level::trace);
-    }
-
-private:
-    void traceImpl(const std::string_view message) override {
-        spdlog::trace(message);
-    }
-
-    void debugImpl(const std::string_view message) override {
-        spdlog::debug(message);
-    }
-
-    void infoImpl(const std::string_view message) override {
-        spdlog::info(message);
-    }
-
-    void warnImpl(const std::string_view message) override {
-        spdlog::warn(message);
-    }
-
-    void errorImpl(const std::string_view message) override {
-        spdlog::error(message);
-    }
-};
 
 int main() {
     auto logger = std::make_shared<Logger>();
