@@ -7,7 +7,7 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 ## Features
 - Bindless textures
 - Dynamic rendering
-- Custom render graph
+- In-progress render graph
 
 ## Usage
 > [!IMPORTANT]
