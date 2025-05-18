@@ -20,4 +20,4 @@ namespace muon::engine::fg {
 
 }
 
-#include "muon/engine/framegraph/blackboard.inl"
+#include "muon/engine/frame_graph/blackboard.inl"

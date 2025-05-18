@@ -24,8 +24,8 @@
 #include <muon/engine/descriptor/pool.hpp>
 #include <muon/engine/descriptor/writer.hpp>
 #include <muon/engine/descriptor/set_layout.hpp>
-#include <muon/engine/framegraph/framegraph.hpp>
-#include <muon/engine/framegraph/blackboard.hpp>
+#include <muon/engine/frame_graph/frame_graph.hpp>
+#include <muon/engine/frame_graph/blackboard.hpp>
 #include <muon/engine/pipeline/compute.hpp>
 #include <muon/engine/pipeline/graphics.hpp>
 #include <muon/engine/pipeline/layout.hpp>

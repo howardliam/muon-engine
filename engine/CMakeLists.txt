@@ -10,9 +10,9 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/descriptor/set_layout.hpp
     ${INCLUDE_DIR}/muon/engine/descriptor/writer.hpp
 
-    ${INCLUDE_DIR}/muon/engine/framegraph/blackboard.hpp
-    ${INCLUDE_DIR}/muon/engine/framegraph/blackboard.inl
-    ${INCLUDE_DIR}/muon/engine/framegraph/framegraph.hpp
+    ${INCLUDE_DIR}/muon/engine/frame_graph/blackboard.hpp
+    ${INCLUDE_DIR}/muon/engine/frame_graph/blackboard.inl
+    ${INCLUDE_DIR}/muon/engine/frame_graph/frame_graph.hpp
 
     ${INCLUDE_DIR}/muon/engine/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/engine/pipeline/graphics.hpp
@@ -44,7 +44,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/descriptor/set_layout.cpp
     ${SRC_DIR}/engine/descriptor/writer.cpp
 
-    ${SRC_DIR}/engine/framegraph/framegraph.cpp
+    ${SRC_DIR}/engine/frame_graph/frame_graph.cpp
 
     ${SRC_DIR}/engine/pipeline/compute.cpp
     ${SRC_DIR}/engine/pipeline/graphics.cpp

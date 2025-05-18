@@ -16,13 +16,16 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 Add as a git submodule and link to the required libraries.
 
 ## Project Conventions
-- use cstdint integer types: `int32_t`, `int64_t`, etc.,
-- where possible, forward declare if includes are massive,
-- classes, structs are named in PascalCase,
-- functions, methods, variables, members are named in camelCase,
-- abbreviations and initialisations count as a single word; `initSdl`, `loadGltfModel`, `encodePng`,
-- American English throughout code,
-- Comments and logs may use whatever dialect of English.
+| item | convention |
+| ---- | ---- |
+| integers | use `cstdint`/`stdint.h` integer types: `int32_t`, `int64_t`, etc. |
+| classes, structs | named in PascelCase: `FileManager`, `MaterialInfo` |
+| functions, methods, variables | named in camelCase: `renderModel()` |
+| files | open compound named in snake_case: `frame_handler.hpp` |
+| headers | always use `.hpp` extension over `.h` to be C++ specific |
+| abbreviations, initialisations | treated as single words: `Hdr`, `Ssao`, `Gltf` |
+| code spelling | follow American English |
+| non-code spelling | may follow preferred English dialect |
 
 ## Attributions
 ### Engine
