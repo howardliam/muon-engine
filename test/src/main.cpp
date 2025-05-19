@@ -1,3 +1,4 @@
+#include "g_buffer.hpp"
 #include <limits>
 #include <memory>
 #include <optional>
@@ -90,17 +91,8 @@ int main() {
     engine::FrameHandler frameHandler(window, device);
     engine::DebugUi debugUi(window, device);
 
-    auto globalPool = engine::DescriptorPool::Builder(device)
-        .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
-        .addPoolSize(vk::DescriptorType::eUniformBuffer, std::numeric_limits<int16_t>().max())
-        .buildUniquePtr();
-
-    auto globalSetLayout = engine::DescriptorSetLayout::Builder(device)
-        .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
-        .addBinding(1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics, 1)
-        .buildUniquePtr();
-
-    auto globalSet = globalSetLayout->createSet(*globalPool);
+    GBufferPass gBufferPass(device);
+    gBufferPass.createResources(window.getExtent());
 
     struct Ubo {
         glm::mat4 projection;
@@ -118,68 +110,9 @@ int main() {
 
     auto bufferInfo = uboBuffer->getDescriptorInfo();
 
-    engine::DescriptorWriter(*globalPool, *globalSetLayout)
+    engine::DescriptorWriter(*gBufferPass.getGlobalPool(), *gBufferPass.getGlobalSetLayout())
         .addBufferWrite(1, 0, &bufferInfo)
-        .writeAll(globalSet);
-
-    std::unique_ptr sceneColor = engine::Image::Builder(device)
-        .setExtent(window.getExtent())
-        .setFormat(vk::Format::eR8G8B8A8Unorm)
-        .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
-        .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-        .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-        .buildUniquePtr();
-
-    vk::RenderingAttachmentInfo colorAttachment{};
-    colorAttachment.imageView = sceneColor->getImageView();
-    colorAttachment.imageLayout = sceneColor->getImageLayout();
-    colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
-    colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
-    colorAttachment.clearValue.color = color::rgbaFromHex<std::array<float, 4>>(0x87ceebff);
-
-    std::unique_ptr sceneDepth = engine::Image::Builder(device)
-        .setExtent(window.getExtent())
-        .setFormat(vk::Format::eD32Sfloat)
-        .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
-        .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
-        .setAccessFlags(vk::AccessFlagBits2::eDepthStencilAttachmentWrite)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eEarlyFragmentTests)
-        .buildUniquePtr();
-
-    vk::RenderingAttachmentInfo depthAttachment{};
-    depthAttachment.imageView = sceneDepth->getImageView();
-    depthAttachment.imageLayout = sceneDepth->getImageLayout();
-    depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
-    depthAttachment.storeOp = vk::AttachmentStoreOp::eStore;
-    depthAttachment.clearValue.depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
-
-    vk::RenderingInfo renderingInfo{};
-    renderingInfo.renderArea = vk::Rect2D{vk::Offset2D{}, window.getExtent()};
-    renderingInfo.layerCount = 1;
-    renderingInfo.viewMask = 0;
-    renderingInfo.colorAttachmentCount = 1;
-    renderingInfo.pColorAttachments = &colorAttachment;
-    renderingInfo.pDepthAttachment = &depthAttachment;
-    renderingInfo.pStencilAttachment = nullptr;
-
-    auto sceneColorFormat = sceneColor->getFormat();
-
-    vk::PipelineRenderingCreateInfo renderingCreateInfo{};
-    renderingCreateInfo.viewMask = renderingInfo.viewMask;
-    renderingCreateInfo.colorAttachmentCount = renderingInfo.colorAttachmentCount;
-    renderingCreateInfo.pColorAttachmentFormats = &sceneColorFormat;
-    renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
-    renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
-
-    auto basicLayout = std::make_shared<engine::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, std::nullopt);
-
-    auto basicPipeline = engine::GraphicsPipeline::Builder(device)
-        .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
-        .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
-        .setPipelineLayout(basicLayout)
-        .buildUniquePtr();
-    basicPipeline->bake(renderingCreateInfo);
+        .writeAll(gBufferPass.getGlobalSet());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite;
@@ -419,53 +352,7 @@ int main() {
 
             debugUi.recreateSizedResources();
 
-            sceneColor = engine::Image::Builder(device)
-                .setExtent(window.getExtent())
-                .setFormat(vk::Format::eR8G8B8A8Unorm)
-                .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
-                .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-                .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
-                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-                .buildUniquePtr();
-
-            colorAttachment.imageView = sceneColor->getImageView();
-            colorAttachment.imageLayout = sceneColor->getImageLayout();
-            colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
-            colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
-            colorAttachment.clearValue.color = color::rgbaFromHex<std::array<float, 4>>(0x87ceebff);
-
-            sceneDepth = engine::Image::Builder(device)
-                .setExtent(window.getExtent())
-                .setFormat(vk::Format::eD32Sfloat)
-                .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
-                .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
-                .setAccessFlags(vk::AccessFlagBits2::eDepthStencilAttachmentWrite)
-                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eEarlyFragmentTests)
-                .buildUniquePtr();
-
-            depthAttachment.imageView = sceneDepth->getImageView();
-            depthAttachment.imageLayout = sceneDepth->getImageLayout();
-            depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
-            depthAttachment.storeOp = vk::AttachmentStoreOp::eStore;
-            depthAttachment.clearValue.depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
-
-            renderingInfo.renderArea = vk::Rect2D{vk::Offset2D{}, window.getExtent()};
-            renderingInfo.layerCount = 1;
-            renderingInfo.viewMask = 0;
-            renderingInfo.colorAttachmentCount = 1;
-            renderingInfo.pColorAttachments = &colorAttachment;
-            renderingInfo.pDepthAttachment = &depthAttachment;
-            renderingInfo.pStencilAttachment = nullptr;
-
-            auto sceneColorFormat = sceneColor->getFormat();
-
-            renderingCreateInfo.viewMask = renderingInfo.viewMask;
-            renderingCreateInfo.colorAttachmentCount = renderingInfo.colorAttachmentCount;
-            renderingCreateInfo.pColorAttachmentFormats = &sceneColorFormat;
-            renderingCreateInfo.depthAttachmentFormat = sceneDepth->getFormat();
-            renderingCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
-
-            basicPipeline->bake(renderingCreateInfo);
+            gBufferPass.createResources(extent);
 
             uiCompositeImage = engine::Image::Builder(device)
                 .setExtent(window.getExtent())
@@ -544,31 +431,9 @@ int main() {
 
         const auto cmd = frameHandler.beginFrame();
 
-        cmd.beginRendering(renderingInfo);
+        gBufferPass.drawFrame(cmd, window.getExtent(), square);
 
-        vk::Viewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = static_cast<float>(window.getExtent().width);
-        viewport.height = static_cast<float>(window.getExtent().height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-
-        vk::Rect2D scissor{};
-        scissor.offset.x = 0;
-        scissor.offset.y = 0;
-        scissor.extent = window.getExtent();
-
-        cmd.setViewport(0, 1, &viewport);
-        cmd.setScissor(0, 1, &scissor);
-
-        basicPipeline->bind(cmd, { globalSet });
-        square.bind(cmd);
-        square.draw(cmd);
-
-        cmd.endRendering();
-
-        sceneColor->transitionLayout(cmd, {
+        gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
             .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
             .accessFlags = vk::AccessFlagBits2::eTransferRead,
             .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
@@ -590,7 +455,7 @@ int main() {
         sceneToCompACopy.extent = vk::Extent3D{window.getExtent(), 1};
 
         cmd.copyImage(
-            sceneColor->getImage(),
+            gBufferPass.getAlbedoImage()->getImage(),
             vk::ImageLayout::eTransferSrcOptimal,
             computeImageA->getImage(),
             vk::ImageLayout::eTransferDstOptimal,
@@ -599,7 +464,7 @@ int main() {
         );
 
         computeImageA->revertTransition(cmd);
-        sceneColor->revertTransition(cmd);
+        gBufferPass.getAlbedoImage()->revertTransition(cmd);
 
         debugUi.beginRendering(cmd);
 
