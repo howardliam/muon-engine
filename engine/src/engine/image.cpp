@@ -16,6 +16,7 @@ namespace muon::engine {
         vk::AccessFlags2 accessFlags,
         vk::PipelineStageFlags2 stageFlags
     ) : device(device), extent(extent), format(format), usageFlags(usageFlags) {
+        descriptorInfo = std::make_unique<vk::DescriptorImageInfo>();
         createImage();
 
         auto cmd = device.beginSingleTimeCommands();
@@ -78,7 +79,7 @@ namespace muon::engine {
         transitionLayout(cmd, imageLayout, accessFlags, stageFlags);
         device.endSingleTimeCommands(cmd);
 
-        log::globalLogger->debug("created image with dimensions: {}x{}", extent.width, extent.height);
+        log::globalLogger->debug("recreated image with dimensions: {}x{}", extent.width, extent.height);
     }
 
     vk::Extent2D Image::getExtent() const {
@@ -165,7 +166,6 @@ namespace muon::engine {
             throw std::runtime_error("failed to create image view");
         }
 
-        descriptorInfo = std::make_unique<vk::DescriptorImageInfo>();
         descriptorInfo->imageView = imageView;
         descriptorInfo->sampler = nullptr;
     }
