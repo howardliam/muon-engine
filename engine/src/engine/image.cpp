@@ -53,7 +53,6 @@ namespace muon::engine {
         cmd.pipelineBarrier2(dependencyInfo);
 
         state = newState;
-        transitioned = true;
     }
 
     vk::Extent2D Image::getExtent() const {
