@@ -12,9 +12,16 @@ namespace muon::engine {
         vk::Extent2D extent,
         vk::Format format,
         vk::ImageUsageFlags usageFlags,
-        const State &state
-    ) : device(device), extent(extent), format(format), usageFlags(usageFlags), state(state) {
+        vk::ImageLayout imageLayout,
+        vk::AccessFlags2 accessFlags,
+        vk::PipelineStageFlags2 stageFlags
+    ) : device(device), extent(extent), format(format), usageFlags(usageFlags) {
         createImage();
+
+        auto cmd = device.beginSingleTimeCommands();
+        transitionLayout(cmd, imageLayout, accessFlags, stageFlags);
+        device.endSingleTimeCommands(cmd);
+
         log::globalLogger->debug("created image with dimensions: {}x{}", extent.width, extent.height);
     }
 
@@ -26,17 +33,19 @@ namespace muon::engine {
 
     void Image::transitionLayout(
         vk::CommandBuffer cmd,
-        const State &newState
+        vk::ImageLayout imageLayout,
+        vk::AccessFlags2 accessFlags,
+        vk::PipelineStageFlags2 stageFlags
     ) {
         vk::ImageMemoryBarrier2 barrier{};
-        barrier.oldLayout = state.imageLayout;
-        barrier.srcStageMask = state.stageFlags;
-        barrier.srcAccessMask = state.accessFlags;
+        barrier.oldLayout = this->imageLayout;
+        barrier.srcAccessMask = this->accessFlags;
+        barrier.srcStageMask = this->stageFlags;
         barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
 
-        barrier.newLayout = newState.imageLayout;
-        barrier.dstStageMask = newState.stageFlags;
-        barrier.dstAccessMask = newState.accessFlags;
+        barrier.newLayout = imageLayout;
+        barrier.dstAccessMask = accessFlags;
+        barrier.dstStageMask = stageFlags;
         barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
 
         barrier.image = image;
@@ -52,8 +61,24 @@ namespace muon::engine {
 
         cmd.pipelineBarrier2(dependencyInfo);
 
-        state = newState;
-        descriptorInfo->imageLayout = state.imageLayout;
+        this->imageLayout = imageLayout;
+        this->accessFlags = accessFlags;
+        this->stageFlags = stageFlags;
+        descriptorInfo->imageLayout = this->imageLayout;
+    }
+
+    void Image::resize(vk::Extent2D extent) {
+        device.getDevice().destroyImageView(imageView);
+        device.getAllocator().destroyImage(image, allocation);
+        this->extent = extent;
+
+        createImage();
+
+        auto cmd = device.beginSingleTimeCommands();
+        transitionLayout(cmd, imageLayout, accessFlags, stageFlags);
+        device.endSingleTimeCommands(cmd);
+
+        log::globalLogger->debug("created image with dimensions: {}x{}", extent.width, extent.height);
     }
 
     vk::Extent2D Image::getExtent() const {
@@ -61,7 +86,7 @@ namespace muon::engine {
     }
 
     vk::ImageLayout Image::getImageLayout() const {
-        return state.imageLayout;
+        return imageLayout;
     }
 
     vk::Format Image::getFormat() const {
@@ -108,12 +133,13 @@ namespace muon::engine {
             case vk::Format::eX8D24UnormPack32:
                 return vk::ImageAspectFlagBits::eDepth;
 
+            case vk::Format::eS8Uint:
+                return vk::ImageAspectFlagBits::eStencil;
+
             case vk::Format::eD16UnormS8Uint:
             case vk::Format::eD24UnormS8Uint:
             case vk::Format::eD32SfloatS8Uint:
                 return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-
-            case vk::Format::eS8Uint:
 
             default:
                 return vk::ImageAspectFlagBits::eColor;
@@ -141,37 +167,7 @@ namespace muon::engine {
 
         descriptorInfo = std::make_unique<vk::DescriptorImageInfo>();
         descriptorInfo->imageView = imageView;
-        descriptorInfo->imageLayout = state.imageLayout;
         descriptorInfo->sampler = nullptr;
-
-        vk::ImageMemoryBarrier2 barrier{};
-        barrier.oldLayout = vk::ImageLayout::eUndefined;
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.srcAccessMask = vk::AccessFlags2{};
-        barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
-
-        barrier.newLayout = state.imageLayout;
-        barrier.dstStageMask = state.stageFlags;
-        barrier.dstAccessMask = state.accessFlags;
-        barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
-
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = aspectFlags;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        vk::DependencyInfo dependencyInfo{};
-        dependencyInfo.imageMemoryBarrierCount = 1;
-        dependencyInfo.pImageMemoryBarriers = &barrier;
-
-        auto cmd = device.beginSingleTimeCommands();
-
-        cmd.pipelineBarrier2(dependencyInfo);
-
-        device.endSingleTimeCommands(cmd);
-
     }
 
     Image::Builder::Builder(Device &device) : device(device) { }
@@ -207,11 +203,27 @@ namespace muon::engine {
     }
 
     Image Image::Builder::build() const {
-        return Image(device, extent, format, imageUsageFlags, State{imageLayout, accessFlags, stageFlags});
+        return Image(
+            device,
+            extent,
+            format,
+            imageUsageFlags,
+            imageLayout,
+            accessFlags,
+            stageFlags
+        );
     }
 
     std::unique_ptr<Image> Image::Builder::buildUniquePtr() const {
-        return std::make_unique<Image>(device, extent, format, imageUsageFlags, State{imageLayout, accessFlags, stageFlags});
+        return std::make_unique<Image>(
+            device,
+            extent,
+            format,
+            imageUsageFlags,
+            imageLayout,
+            accessFlags,
+            stageFlags
+        );
     }
 
 }

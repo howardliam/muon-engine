@@ -15,18 +15,14 @@ namespace muon::engine {
     public:
         class Builder;
 
-        struct State {
-            vk::ImageLayout imageLayout{};
-            vk::AccessFlags2 accessFlags{};
-            vk::PipelineStageFlags2 stageFlags{};
-        };
-
         Image(
             Device &device,
             vk::Extent2D extent,
             vk::Format format,
             vk::ImageUsageFlags usageFlags,
-            const State &state
+            vk::ImageLayout imageLayout,
+            vk::AccessFlags2 accessFlags,
+            vk::PipelineStageFlags2 stageFlags
         );
         ~Image();
 
@@ -36,7 +32,14 @@ namespace muon::engine {
          * @param   cmd         command buffer to record to.
          * @param   newState    the new state to transition to image to.
          */
-        void transitionLayout(vk::CommandBuffer cmd, const State &newState);
+        void transitionLayout(
+            vk::CommandBuffer cmd,
+            vk::ImageLayout imageLayout,
+            vk::AccessFlags2 accessFlags,
+            vk::PipelineStageFlags2 stageFlags
+        );
+
+        void resize(vk::Extent2D extent);
 
         /**
          * @brief   get image extent.
@@ -88,7 +91,9 @@ namespace muon::engine {
         vk::ImageAspectFlags aspectFlags;
         vk::ImageUsageFlags usageFlags;
 
-        State state;
+        vk::ImageLayout imageLayout{vk::ImageLayout::eUndefined};
+        vk::AccessFlags2 accessFlags{};
+        vk::PipelineStageFlags2 stageFlags{vk::PipelineStageFlagBits2::eTopOfPipe};
 
         vk::Image image;
         vma::Allocation allocation;
