@@ -160,7 +160,7 @@ namespace muon::engine {
             .setExtent(extent)
             .setFormat(format)
             .setImageLayout(layout)
-            .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+            .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage)
             .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
             .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
             .buildUniquePtr();

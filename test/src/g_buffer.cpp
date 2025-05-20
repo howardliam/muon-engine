@@ -10,7 +10,7 @@ void GBufferPass::createResources(const vk::Extent2D &extent) {
     albedoImage = engine::Image::Builder(device)
         .setExtent(extent)
         .setFormat(vk::Format::eR8G8B8A8Unorm)
-        .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+        .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eStorage)
         .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
         .setAccessFlags(vk::AccessFlagBits2::eColorAttachmentWrite)
         .setPipelineStageFlags(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
