@@ -28,10 +28,6 @@ namespace muon::engine {
         vk::CommandBuffer cmd,
         const State &newState
     ) {
-        if (transitioned) {
-            return;
-        }
-
         vk::ImageMemoryBarrier2 barrier{};
         barrier.oldLayout = state.imageLayout;
         barrier.srcStageMask = state.stageFlags;
@@ -56,38 +52,8 @@ namespace muon::engine {
 
         cmd.pipelineBarrier2(dependencyInfo);
 
-        oldState = state;
         state = newState;
         transitioned = true;
-    }
-
-    void Image::revertTransition(vk::CommandBuffer cmd) {
-        vk::ImageMemoryBarrier2 barrier{};
-        barrier.oldLayout = state.imageLayout;
-        barrier.srcStageMask = state.stageFlags;
-        barrier.srcAccessMask = state.accessFlags;
-        barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
-
-        barrier.newLayout = oldState.imageLayout;
-        barrier.dstStageMask = oldState.stageFlags;
-        barrier.dstAccessMask = oldState.accessFlags;
-        barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
-
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        vk::DependencyInfo dependencyInfo{};
-        dependencyInfo.imageMemoryBarrierCount = 1;
-        dependencyInfo.pImageMemoryBarriers = &barrier;
-
-        cmd.pipelineBarrier2(dependencyInfo);
-
-        state = oldState;
-        transitioned = false;
     }
 
     vk::Extent2D Image::getExtent() const {

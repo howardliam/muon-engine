@@ -38,13 +38,6 @@ namespace muon::engine {
         void transitionLayout(vk::CommandBuffer cmd, const State &newState);
 
         /**
-         * @brief   reverts the transition.
-         *
-         * @param   cmd command buffer to record to.
-         */
-        void revertTransition(vk::CommandBuffer cmd);
-
-        /**
          * @brief   get image extent.
          *
          * @return  size of the image.
@@ -94,9 +87,6 @@ namespace muon::engine {
         vk::ImageUsageFlags usageFlags;
 
         State state;
-
-        bool transitioned{false};
-        State oldState{};
 
         vk::Image image;
         vma::Allocation allocation;
