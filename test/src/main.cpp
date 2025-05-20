@@ -378,27 +378,27 @@ int main() {
 
         const auto cmd = frameHandler.beginFrame();
 
-        gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-            .accessFlags = vk::AccessFlagBits2::eColorAttachmentWrite,
-            .stageFlags = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        });
+        gBufferPass.getAlbedoImage()->transitionLayout(cmd,
+            vk::ImageLayout::eColorAttachmentOptimal,
+            vk::AccessFlagBits2::eColorAttachmentWrite,
+            vk::PipelineStageFlagBits2::eColorAttachmentOutput
+        );
         gBufferPass.drawFrame(cmd, window.getExtent(), square);
 
-        gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eGeneral,
-            .accessFlags = vk::AccessFlagBits2::eShaderRead,
-            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
-        });
+        gBufferPass.getAlbedoImage()->transitionLayout(cmd,
+            vk::ImageLayout::eGeneral,
+            vk::AccessFlagBits2::eShaderRead,
+            vk::PipelineStageFlagBits2::eComputeShader
+        );
         engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
             .addImageWrite(0, 0, gBufferPass.getAlbedoImage()->getDescriptorInfo())
             .writeAll(computeSet);
 
-        debugUi.getImage()->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-            .accessFlags = vk::AccessFlagBits2::eColorAttachmentWrite,
-            .stageFlags = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        });
+        debugUi.getImage()->transitionLayout(cmd,
+            vk::ImageLayout::eColorAttachmentOptimal,
+            vk::AccessFlagBits2::eColorAttachmentWrite,
+            vk::PipelineStageFlagBits2::eColorAttachmentOutput
+        );
 
         debugUi.beginRendering(cmd);
 
@@ -437,11 +437,11 @@ int main() {
 
         debugUi.endRendering(cmd);
 
-        debugUi.getImage()->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eGeneral,
-            .accessFlags = vk::AccessFlagBits2::eShaderRead,
-            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
-        });
+        debugUi.getImage()->transitionLayout(cmd,
+            vk::ImageLayout::eGeneral,
+            vk::AccessFlagBits2::eShaderRead,
+            vk::PipelineStageFlagBits2::eComputeShader
+        );
 
         engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
             .addImageWrite(0, 0, debugUi.getImage()->getDescriptorInfo())
@@ -454,11 +454,11 @@ int main() {
         toneMap->dispatch(cmd, window.getExtent(), {32, 32, 1});
 
         if (screenshotRequested) {
-            gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
-                .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-                .accessFlags = vk::AccessFlagBits2::eTransferRead,
-                .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
-            });
+            gBufferPass.getAlbedoImage()->transitionLayout(cmd,
+                vk::ImageLayout::eTransferSrcOptimal,
+                vk::AccessFlagBits2::eTransferRead,
+                vk::PipelineStageFlagBits2::eTransfer
+            );
 
             auto extent = window.getExtent();
 
@@ -481,29 +481,29 @@ int main() {
                 &region
             );
 
-            gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
-                .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-                .accessFlags = vk::AccessFlagBits2::eColorAttachmentWrite,
-                .stageFlags = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-            });
+            gBufferPass.getAlbedoImage()->transitionLayout(cmd,
+                vk::ImageLayout::eColorAttachmentOptimal,
+                vk::AccessFlagBits2::eColorAttachmentWrite,
+                vk::PipelineStageFlagBits2::eColorAttachmentOutput
+            );
         }
 
         swizzle->bind(cmd, { computeSet });
         swizzle->dispatch(cmd, window.getExtent(), {32, 32, 1});
 
-        computeImageB->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits2::eTransferRead,
-            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
-        });
+        computeImageB->transitionLayout(cmd,
+            vk::ImageLayout::eTransferSrcOptimal,
+            vk::AccessFlagBits2::eTransferRead,
+            vk::PipelineStageFlagBits2::eTransfer
+        );
 
         frameHandler.copyImageToSwapchain(computeImageB->getImage());
 
-        computeImageB->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eGeneral,
-            .accessFlags = accessFlags,
-            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
-        });
+        computeImageB->transitionLayout(cmd,
+            vk::ImageLayout::eGeneral,
+            accessFlags,
+            vk::PipelineStageFlagBits2::eComputeShader
+        );
 
         frameHandler.endFrame();
 
