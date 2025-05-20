@@ -134,9 +134,8 @@ int main() {
         .buildUniquePtr();
 
     auto compositeSet = compositeSetLayout->createSet(*computeImagePool);
-    auto compositeInfo = uiCompositeImage->getDescriptorInfo();
     engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
-        .addImageWrite(0, 0, &compositeInfo)
+        .addImageWrite(0, 0, uiCompositeImage->getDescriptorInfo())
         .writeAll(compositeSet);
 
     std::unique_ptr computeImageA = engine::Image::Builder(device)
@@ -162,11 +161,9 @@ int main() {
         .buildUniquePtr();
 
     auto computeSet = computeSetLayout->createSet(*computeImagePool);
-    auto infoA = computeImageA->getDescriptorInfo();
-    auto infoB = computeImageB->getDescriptorInfo();
     engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-        .addImageWrite(0, 0, &infoA)
-        .addImageWrite(0, 1, &infoB)
+        .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
+        .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
         .writeAll(computeSet);
 
     auto uiComposite = engine::ComputePipeline::Builder(device)
@@ -362,9 +359,8 @@ int main() {
                 .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
                 .buildUniquePtr();
 
-            auto compositeInfo = uiCompositeImage->getDescriptorInfo();
             engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
-                .addImageWrite(0, 0, &compositeInfo)
+                .addImageWrite(0, 0, uiCompositeImage->getDescriptorInfo())
                 .writeAll(compositeSet);
 
             computeImageA = engine::Image::Builder(device)
@@ -385,12 +381,9 @@ int main() {
                 .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
                 .buildUniquePtr();
 
-            auto infoA = computeImageA->getDescriptorInfo();
-            auto infoB = computeImageB->getDescriptorInfo();
-
             engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-                .addImageWrite(0, 0, &infoA)
-                .addImageWrite(0, 1, &infoB)
+                .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
+                .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
                 .writeAll(computeSet);
 
             size = extent.width * extent.height;
@@ -442,9 +435,8 @@ int main() {
             .accessFlags = vk::AccessFlagBits2::eShaderRead,
             .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
         });
-        auto albedoInfo = gBufferPass.getAlbedoImage()->getDescriptorInfo();
         engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-            .addImageWrite(0, 0, &albedoInfo)
+            .addImageWrite(0, 0, gBufferPass.getAlbedoImage()->getDescriptorInfo())
             .writeAll(computeSet);
 
         debugUi.getImage()->transitionLayout(cmd, {
@@ -496,9 +488,8 @@ int main() {
             .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
         });
 
-        auto uiImageInfo = debugUi.getImage()->getDescriptorInfo();
         engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
-            .addImageWrite(0, 0, &uiImageInfo)
+            .addImageWrite(0, 0, debugUi.getImage()->getDescriptorInfo())
             .writeAll(compositeSet);
 
         uiComposite->bind(cmd, { computeSet, compositeSet });
