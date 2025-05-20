@@ -77,7 +77,7 @@ namespace muon::engine {
          *
          * @return  descriptor information struct.
          */
-        [[nodiscard]] vk::DescriptorImageInfo getDescriptorInfo() const;
+        [[nodiscard]] vk::DescriptorImageInfo *getDescriptorInfo() const;
 
     private:
         Device &device;
@@ -91,6 +91,8 @@ namespace muon::engine {
         vk::Image image;
         vma::Allocation allocation;
         vk::ImageView imageView;
+
+        std::unique_ptr<vk::DescriptorImageInfo> descriptorInfo;
 
         /**
          * @brief   creates the image and transitions it to the desired format.

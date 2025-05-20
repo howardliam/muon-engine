@@ -53,6 +53,7 @@ namespace muon::engine {
         cmd.pipelineBarrier2(dependencyInfo);
 
         state = newState;
+        descriptorInfo->imageLayout = state.imageLayout;
     }
 
     vk::Extent2D Image::getExtent() const {
@@ -75,12 +76,8 @@ namespace muon::engine {
         return imageView;
     }
 
-    vk::DescriptorImageInfo Image::getDescriptorInfo() const {
-        return vk::DescriptorImageInfo{
-            nullptr,
-            imageView,
-            state.imageLayout,
-        };
+    vk::DescriptorImageInfo *Image::getDescriptorInfo() const {
+        return descriptorInfo.get();
     }
 
     void Image::createImage() {
@@ -137,6 +134,11 @@ namespace muon::engine {
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create image view");
         }
+
+        descriptorInfo = std::make_unique<vk::DescriptorImageInfo>();
+        descriptorInfo->imageView = imageView;
+        descriptorInfo->imageLayout = state.imageLayout;
+        descriptorInfo->sampler = nullptr;
 
         vk::ImageMemoryBarrier2 barrier{};
         barrier.oldLayout = vk::ImageLayout::eUndefined;
