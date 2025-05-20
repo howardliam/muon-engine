@@ -120,32 +120,11 @@ int main() {
         .addPoolSize(vk::DescriptorType::eStorageImage, 4)
         .buildUniquePtr();
 
-    std::unique_ptr uiCompositeImage = engine::Image::Builder(device)
-        .setExtent(window.getExtent())
-        .setFormat(vk::Format::eR8G8B8A8Unorm)
-        .setImageUsageFlags(usageFlags)
-        .setImageLayout(vk::ImageLayout::eGeneral)
-        .setAccessFlags(accessFlags)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
-        .buildUniquePtr();
-
     std::unique_ptr compositeSetLayout = engine::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute, 1)
         .buildUniquePtr();
 
     auto compositeSet = compositeSetLayout->createSet(*computeImagePool);
-    engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
-        .addImageWrite(0, 0, uiCompositeImage->getDescriptorInfo())
-        .writeAll(compositeSet);
-
-    std::unique_ptr computeImageA = engine::Image::Builder(device)
-        .setExtent(window.getExtent())
-        .setFormat(vk::Format::eR8G8B8A8Unorm)
-        .setImageUsageFlags(usageFlags)
-        .setImageLayout(vk::ImageLayout::eGeneral)
-        .setAccessFlags(accessFlags)
-        .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
-        .buildUniquePtr();
 
     std::unique_ptr computeImageB = engine::Image::Builder(device)
         .setExtent(window.getExtent())
@@ -162,7 +141,7 @@ int main() {
 
     auto computeSet = computeSetLayout->createSet(*computeImagePool);
     engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-        .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
+        // .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
         .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
         .writeAll(computeSet);
 
@@ -350,28 +329,6 @@ int main() {
 
             gBufferPass.createResources(extent);
 
-            uiCompositeImage = engine::Image::Builder(device)
-                .setExtent(window.getExtent())
-                .setFormat(vk::Format::eR8G8B8A8Unorm)
-                .setImageUsageFlags(usageFlags)
-                .setImageLayout(vk::ImageLayout::eGeneral)
-                .setAccessFlags(accessFlags)
-                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
-                .buildUniquePtr();
-
-            engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
-                .addImageWrite(0, 0, uiCompositeImage->getDescriptorInfo())
-                .writeAll(compositeSet);
-
-            computeImageA = engine::Image::Builder(device)
-                .setExtent(extent)
-                .setFormat(vk::Format::eR8G8B8A8Unorm)
-                .setImageUsageFlags(usageFlags)
-                .setImageLayout(vk::ImageLayout::eGeneral)
-                .setAccessFlags(accessFlags)
-                .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
-                .buildUniquePtr();
-
             computeImageB = engine::Image::Builder(device)
                 .setExtent(extent)
                 .setFormat(vk::Format::eR8G8B8A8Unorm)
@@ -382,7 +339,7 @@ int main() {
                 .buildUniquePtr();
 
             engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-                .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
+                // .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
                 .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
                 .writeAll(computeSet);
 
