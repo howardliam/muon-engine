@@ -141,7 +141,6 @@ int main() {
 
     auto computeSet = computeSetLayout->createSet(*computeImagePool);
     engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-        // .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
         .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
         .writeAll(computeSet);
 
@@ -339,7 +338,6 @@ int main() {
                 .buildUniquePtr();
 
             engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
-                // .addImageWrite(0, 0, computeImageA->getDescriptorInfo())
                 .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
                 .writeAll(computeSet);
 
