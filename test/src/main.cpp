@@ -430,40 +430,28 @@ int main() {
 
         const auto cmd = frameHandler.beginFrame();
 
+        gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+            .accessFlags = vk::AccessFlagBits2::eColorAttachmentWrite,
+            .stageFlags = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        });
         gBufferPass.drawFrame(cmd, window.getExtent(), square);
 
         gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits2::eTransferRead,
-            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
+            .imageLayout = vk::ImageLayout::eGeneral,
+            .accessFlags = vk::AccessFlagBits2::eShaderRead,
+            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
         });
-        computeImageA->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eTransferDstOptimal,
-            .accessFlags = vk::AccessFlagBits2::eTransferWrite,
-            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
+        auto albedoInfo = gBufferPass.getAlbedoImage()->getDescriptorInfo();
+        engine::DescriptorWriter(*computeImagePool, *computeSetLayout)
+            .addImageWrite(0, 0, &albedoInfo)
+            .writeAll(computeSet);
+
+        debugUi.getImage()->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+            .accessFlags = vk::AccessFlagBits2::eColorAttachmentWrite,
+            .stageFlags = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
         });
-
-        vk::ImageCopy sceneToCompACopy{};
-        sceneToCompACopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-        sceneToCompACopy.srcSubresource.mipLevel = 0;
-        sceneToCompACopy.srcSubresource.baseArrayLayer = 0;
-        sceneToCompACopy.srcSubresource.layerCount = 1;
-        sceneToCompACopy.srcOffset = vk::Offset3D{0, 0, 0};
-        sceneToCompACopy.dstSubresource = sceneToCompACopy.srcSubresource;
-        sceneToCompACopy.dstOffset = vk::Offset3D{0, 0, 0};
-        sceneToCompACopy.extent = vk::Extent3D{window.getExtent(), 1};
-
-        cmd.copyImage(
-            gBufferPass.getAlbedoImage()->getImage(),
-            vk::ImageLayout::eTransferSrcOptimal,
-            computeImageA->getImage(),
-            vk::ImageLayout::eTransferDstOptimal,
-            1,
-            &sceneToCompACopy
-        );
-
-        computeImageA->revertTransition(cmd);
-        gBufferPass.getAlbedoImage()->revertTransition(cmd);
 
         debugUi.beginRendering(cmd);
 
@@ -502,40 +490,16 @@ int main() {
 
         debugUi.endRendering(cmd);
 
-        auto uiImage = debugUi.getImage();
-
-        uiImage->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
-            .accessFlags = vk::AccessFlagBits2::eTransferRead,
-            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
-        });
-        uiCompositeImage->transitionLayout(cmd, {
-            .imageLayout = vk::ImageLayout::eTransferDstOptimal,
-            .accessFlags = vk::AccessFlagBits2::eTransferWrite,
-            .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
+        debugUi.getImage()->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eGeneral,
+            .accessFlags = vk::AccessFlagBits2::eShaderRead,
+            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
         });
 
-        vk::ImageCopy uiToCompositeCopy{};
-        uiToCompositeCopy.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-        uiToCompositeCopy.srcSubresource.mipLevel = 0;
-        uiToCompositeCopy.srcSubresource.baseArrayLayer = 0;
-        uiToCompositeCopy.srcSubresource.layerCount = 1;
-        uiToCompositeCopy.srcOffset = vk::Offset3D{0, 0, 0};
-        uiToCompositeCopy.dstSubresource = uiToCompositeCopy.srcSubresource;
-        uiToCompositeCopy.dstOffset = vk::Offset3D{0, 0, 0};
-        uiToCompositeCopy.extent = vk::Extent3D{window.getExtent(), 1};
-
-        cmd.copyImage(
-            uiImage->getImage(),
-            vk::ImageLayout::eTransferSrcOptimal,
-            uiCompositeImage->getImage(),
-            vk::ImageLayout::eTransferDstOptimal,
-            1,
-            &uiToCompositeCopy
-        );
-
-        uiCompositeImage->revertTransition(cmd);
-        uiImage->revertTransition(cmd);
+        auto uiImageInfo = debugUi.getImage()->getDescriptorInfo();
+        engine::DescriptorWriter(*computeImagePool, *compositeSetLayout)
+            .addImageWrite(0, 0, &uiImageInfo)
+            .writeAll(compositeSet);
 
         uiComposite->bind(cmd, { computeSet, compositeSet });
         uiComposite->dispatch(cmd, window.getExtent(), {32, 32, 1});
@@ -544,7 +508,7 @@ int main() {
         toneMap->dispatch(cmd, window.getExtent(), {32, 32, 1});
 
         if (screenshotRequested) {
-            computeImageA->transitionLayout(cmd, {
+            gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
                 .imageLayout = vk::ImageLayout::eTransferSrcOptimal,
                 .accessFlags = vk::AccessFlagBits2::eTransferRead,
                 .stageFlags = vk::PipelineStageFlagBits2::eTransfer,
@@ -564,14 +528,18 @@ int main() {
             region.imageExtent = vk::Extent3D{extent, 1};
 
             cmd.copyImageToBuffer(
-                computeImageA->getImage(),
+                gBufferPass.getAlbedoImage()->getImage(),
                 vk::ImageLayout::eTransferSrcOptimal,
                 stagingBuffer->getBuffer(),
                 1,
                 &region
             );
 
-            computeImageA->revertTransition(cmd);
+            gBufferPass.getAlbedoImage()->transitionLayout(cmd, {
+                .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+                .accessFlags = vk::AccessFlagBits2::eColorAttachmentWrite,
+                .stageFlags = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+            });
         }
 
         swizzle->bind(cmd, { computeSet });
@@ -585,7 +553,11 @@ int main() {
 
         frameHandler.copyImageToSwapchain(computeImageB->getImage());
 
-        computeImageB->revertTransition(cmd);
+        computeImageB->transitionLayout(cmd, {
+            .imageLayout = vk::ImageLayout::eGeneral,
+            .accessFlags = accessFlags,
+            .stageFlags = vk::PipelineStageFlagBits2::eComputeShader,
+        });
 
         frameHandler.endFrame();
 
