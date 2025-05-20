@@ -40,7 +40,7 @@ namespace muon::engine {
         barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
 
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.aspectMask = aspectFlags;
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;
@@ -98,23 +98,27 @@ namespace muon::engine {
 
         device.createImage(imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal, vma::MemoryUsage::eGpuOnly, image, allocation);
 
-        auto aspectMask = [](vk::ImageLayout layout, vk::Format format) -> vk::ImageAspectFlags {
-            switch (layout) {
-            case vk::ImageLayout::eGeneral:
-            case vk::ImageLayout::eColorAttachmentOptimal:
-                return vk::ImageAspectFlagBits::eColor;
+        aspectFlags = [](vk::Format format) -> vk::ImageAspectFlags {
+            switch (format) {
+            case vk::Format::eUndefined:
+                return {};
 
-            case vk::ImageLayout::eDepthAttachmentOptimal:
-            case vk::ImageLayout::eDepthStencilAttachmentOptimal:
-                if (format == vk::Format::eD16Unorm || format == vk::Format::eD32Sfloat) {
-                    return vk::ImageAspectFlagBits::eDepth;
-                }
+            case vk::Format::eD16Unorm:
+            case vk::Format::eD32Sfloat:
+            case vk::Format::eX8D24UnormPack32:
+                return vk::ImageAspectFlagBits::eDepth;
+
+            case vk::Format::eD16UnormS8Uint:
+            case vk::Format::eD24UnormS8Uint:
+            case vk::Format::eD32SfloatS8Uint:
                 return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
+            case vk::Format::eS8Uint:
+
             default:
-                return {};
+                return vk::ImageAspectFlagBits::eColor;
             }
-        }(state.imageLayout, format);
+        }(format);
 
         vk::ImageViewCreateInfo viewInfo{};
         viewInfo.image = image;
@@ -124,7 +128,7 @@ namespace muon::engine {
         viewInfo.components.g = vk::ComponentSwizzle::eG;
         viewInfo.components.b = vk::ComponentSwizzle::eB;
         viewInfo.components.a = vk::ComponentSwizzle::eA;
-        viewInfo.subresourceRange.aspectMask = aspectMask;
+        viewInfo.subresourceRange.aspectMask = aspectFlags;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -152,7 +156,7 @@ namespace muon::engine {
         barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
 
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = aspectMask;
+        barrier.subresourceRange.aspectMask = aspectFlags;
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;

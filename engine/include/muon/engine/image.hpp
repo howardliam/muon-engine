@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
 #include <memory>
+#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::engine {
 
@@ -84,6 +85,7 @@ namespace muon::engine {
 
         vk::Extent2D extent;
         vk::Format format;
+        vk::ImageAspectFlags aspectFlags;
         vk::ImageUsageFlags usageFlags;
 
         State state;
