@@ -25,6 +25,3 @@
 [submodule "external/sdl"]
 	path = external/sdl
 	url = https://github.com/libsdl-org/SDL
-[submodule "external/slang"]
-	path = external/slang
-	url = https://github.com/shader-slang/slang
