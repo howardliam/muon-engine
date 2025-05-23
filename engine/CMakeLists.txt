@@ -26,6 +26,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/renderer/material.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/mesh.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/mesh.inl
+    ${INCLUDE_DIR}/muon/engine/renderer/model.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/shader.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/texture.hpp
@@ -57,6 +58,7 @@ set(SRC_FILES
     ${SRC_DIR}/engine/renderer/frame_handler.cpp
     ${SRC_DIR}/engine/renderer/image.cpp
     ${SRC_DIR}/engine/renderer/mesh.cpp
+    ${SRC_DIR}/engine/renderer/model.cpp
     ${SRC_DIR}/engine/renderer/shader.cpp
     ${SRC_DIR}/engine/renderer/swapchain.cpp
     ${SRC_DIR}/engine/renderer/texture.cpp
