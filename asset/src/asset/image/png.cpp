@@ -4,7 +4,7 @@
 #include <optional>
 #include <spng.h>
 
-namespace muon::asset {
+namespace mu::asset {
 
     std::shared_ptr<Image> decodePng(const std::filesystem::path &path) {
         std::ifstream file{path, std::ios::binary | std::ios::ate};

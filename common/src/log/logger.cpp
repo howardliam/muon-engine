@@ -2,7 +2,7 @@
 
 #include <print>
 
-namespace muon::common::log {
+namespace mu::common::log {
 
     void BasicLogger::traceImpl(const std::string_view message) {
         std::println("[TRACE]: {}", message);

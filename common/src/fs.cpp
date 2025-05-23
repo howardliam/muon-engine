@@ -5,7 +5,7 @@
 #include <fstream>
 #include <vector>
 
-namespace muon::common::fs {
+namespace mu::common::fs {
 
     bool compressFile(std::filesystem::path &path, int32_t compressionLevel) {
         if (!std::filesystem::is_regular_file(path)) {

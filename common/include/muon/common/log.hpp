@@ -4,7 +4,7 @@
 #include <chrono>
 #include <optional>
 
-namespace muon::common::log {
+namespace mu::common::log {
 
     /**
      * @brief   Deletes old logs in the target directory.

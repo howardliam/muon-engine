@@ -3,7 +3,7 @@
 #include <cassert>
 #include <zstd.h>
 
-namespace muon::common::compress {
+namespace mu::common::compress {
 
     std::optional<std::vector<char>> compressBuffer(std::vector<char> &buffer, int32_t compressionLevel) {
         size_t compressedSize = ZSTD_compressBound(buffer.size());

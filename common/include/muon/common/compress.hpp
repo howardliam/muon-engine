@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-namespace muon::common::compress {
+namespace mu::common::compress {
 
     /**
      * @brief   Compresses the buffer using libzstd

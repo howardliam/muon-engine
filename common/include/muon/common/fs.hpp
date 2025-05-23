@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-namespace muon::common::fs {
+namespace mu::common::fs {
 
     /**
      * @brief   Compresses the file at the path.

@@ -3,7 +3,7 @@
 #include <format>
 #include <string_view>
 
-namespace muon::common::log {
+namespace mu::common::log {
 
     class ILogger {
     public:
