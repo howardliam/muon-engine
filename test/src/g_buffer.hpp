@@ -9,41 +9,39 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
-using namespace muon;
-
 class GBufferPass {
 public:
-    GBufferPass(engine::Device &device);
+    GBufferPass(mu::Device &device);
 
     void createResources(const vk::Extent2D &extent);
 
-    void drawFrame(vk::CommandBuffer cmd, const vk::Extent2D &extent, const engine::Mesh &mesh);
+    void drawFrame(vk::CommandBuffer cmd, const vk::Extent2D &extent, const mu::Mesh &mesh);
 
-    engine::DescriptorPool *getGlobalPool() const;
+    mu::DescriptorPool *getGlobalPool() const;
 
-    engine::DescriptorSetLayout *getGlobalSetLayout() const;
+    mu::DescriptorSetLayout *getGlobalSetLayout() const;
 
     vk::DescriptorSet getGlobalSet() const;
 
-    engine::Image *getAlbedoImage() const;
+    mu::Image *getAlbedoImage() const;
 
 private:
-    engine::Device &device;
+    mu::Device &device;
 
-    std::unique_ptr<engine::DescriptorPool> globalPool;
-    std::unique_ptr<engine::DescriptorSetLayout> globalSetLayout;
+    std::unique_ptr<mu::DescriptorPool> globalPool;
+    std::unique_ptr<mu::DescriptorSetLayout> globalSetLayout;
     vk::DescriptorSet globalSet;
-    std::shared_ptr<engine::PipelineLayout> globalLayout;
+    std::shared_ptr<mu::PipelineLayout> globalLayout;
 
-    std::unique_ptr<engine::Image> albedoImage;
+    std::unique_ptr<mu::Image> albedoImage;
     std::unique_ptr<vk::RenderingAttachmentInfo> albedoAttachment;
-    std::unique_ptr<engine::Image> depthImage;
+    std::unique_ptr<mu::Image> depthImage;
     std::unique_ptr<vk::RenderingAttachmentInfo> depthAttachment;
 
     std::unique_ptr<vk::RenderingInfo> renderingInfo;
 
     std::unique_ptr<vk::PipelineRenderingCreateInfo> renderingCreateInfo;
-    std::unique_ptr<engine::GraphicsPipeline> basicPipeline;
+    std::unique_ptr<mu::GraphicsPipeline> basicPipeline;
 
     void createStaticResources();
 
