@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-Logger::Logger() : muon::common::log::ILogger() {
+Logger::Logger() : mu::common::log::ILogger() {
     spdlog::set_level(spdlog::level::trace);
 }
 void Logger::traceImpl(const std::string_view message) {

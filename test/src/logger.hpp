@@ -2,7 +2,7 @@
 
 #include <muon/common/log/logger.hpp>
 
-class Logger final : public muon::common::log::ILogger {
+class Logger final : public mu::common::log::ILogger {
 public:
     Logger();
 

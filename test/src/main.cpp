@@ -79,7 +79,7 @@ int main() {
         .setTitle("Testing")
         .build();
 
-    auto windowIcon = muon::asset::decodePng("./muon-logo.png");
+    auto windowIcon = mu::asset::decodePng("./muon-logo.png");
     window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
 
     bool mouseGrab{false};
@@ -512,7 +512,7 @@ int main() {
 
             auto extent = window.getExtent();
 
-            muon::asset::Image image{};
+            mu::asset::Image image{};
             image.width = extent.width;
             image.height = extent.height;
             image.channels = 4;
@@ -524,7 +524,7 @@ int main() {
             stagingBuffer->unmap();
 
             std::thread([image]() {
-                auto png = muon::asset::encodePng(image);
+                auto png = mu::asset::encodePng(image);
 
                 std::ofstream outputFile("./screenshot.png");
                 outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
