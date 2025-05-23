@@ -1,10 +1,11 @@
 #pragma once
 
-#include "muon/engine/renderer/mesh.hpp"
 #include "glm/glm.hpp"
 #include <memory>
 
 namespace mu {
+
+    class Mesh;
 
     struct Node {
         std::shared_ptr<Mesh> mesh;
