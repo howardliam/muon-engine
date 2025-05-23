@@ -1,11 +1,11 @@
 #pragma once
 
-#include <muon/engine/descriptor/pool.hpp>
-#include <muon/engine/descriptor/set_layout.hpp>
-#include <muon/engine/pipeline/graphics.hpp>
-#include <muon/engine/device.hpp>
-#include <muon/engine/image.hpp>
-#include <muon/engine/mesh.hpp>
+#include <muon/engine/renderer/descriptor/pool.hpp>
+#include <muon/engine/renderer/descriptor/set_layout.hpp>
+#include <muon/engine/renderer/pipeline/graphics.hpp>
+#include <muon/engine/renderer/device.hpp>
+#include <muon/engine/renderer/image.hpp>
+#include <muon/engine/renderer/mesh.hpp>
 #include <memory>
 #include <vulkan/vulkan.hpp>
 

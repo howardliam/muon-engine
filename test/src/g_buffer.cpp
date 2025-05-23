@@ -1,6 +1,6 @@
 #include "g_buffer.hpp"
 
-#include <muon/utils/color.hpp>
+#include <muon/engine/utils/color.hpp>
 
 GBufferPass::GBufferPass(engine::Device &device) : device(device) {
     createStaticResources();
