@@ -37,7 +37,7 @@
 #include <muon/engine/renderer/shader.hpp>
 #include <muon/engine/renderer/swapchain.hpp>
 #include <muon/engine/renderer/texture.hpp>
-#include <muon/engine/renderer/window.hpp>
+#include <muon/engine/platform/window.hpp>
 #include <muon/common/log/logger.hpp>
 #include <muon/engine/log/logger.hpp>
 #include <muon/asset/image.hpp>
