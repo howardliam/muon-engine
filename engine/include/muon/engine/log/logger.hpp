@@ -3,8 +3,8 @@
 #include "muon/common/log/logger.hpp"
 
 namespace mu::log {
-    extern muon::common::log::ILogger *globalLogger;
+    extern common::log::ILogger *globalLogger;
 
-    void setLogger(muon::common::log::ILogger *logger);
+    void setLogger(common::log::ILogger *logger);
 
 }
