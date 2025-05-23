@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include "muon/engine/log/logger.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     Window::Window(const Properties &properties) : width(properties.width), height(properties.height) {
         try {

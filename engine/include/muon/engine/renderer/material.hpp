@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace muon::engine {
+namespace mu {
 
     struct Material {
         class Builder;

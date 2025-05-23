@@ -11,7 +11,7 @@
 #include <glslang/Include/ResourceLimits.h>
 #include <SPIRV/GlslangToSpv.h>
 
-namespace muon::engine {
+namespace mu {
 
     ShaderCompiler::ShaderCompiler() {
         glslang::InitializeProcess();

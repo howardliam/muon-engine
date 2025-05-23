@@ -9,7 +9,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_handles.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     class Device;
 

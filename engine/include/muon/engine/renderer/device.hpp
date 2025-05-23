@@ -8,7 +8,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     class Window;
 

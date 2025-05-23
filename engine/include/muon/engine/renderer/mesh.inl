@@ -1,4 +1,4 @@
-namespace muon::engine {
+namespace mu {
 
     template<typename T>
     inline std::vector<uint8_t> Mesh::getRawVertexData(const std::vector<T> &vertices) {

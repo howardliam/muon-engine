@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <vulkan/vulkan.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     class Device;
 

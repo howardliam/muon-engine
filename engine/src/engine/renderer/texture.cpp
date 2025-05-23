@@ -3,7 +3,7 @@
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/buffer.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     Texture::Texture(
         Device &device,

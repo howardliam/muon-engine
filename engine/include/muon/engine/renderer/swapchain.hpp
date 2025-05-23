@@ -8,7 +8,7 @@
 #include <vk_mem_alloc.hpp>
 #include <vulkan/vulkan.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     namespace constants {
         constexpr uint32_t maxFramesInFlight = 2;

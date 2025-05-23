@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     DebugUi::DebugUi(Window &window, Device &device) : window(window), device(device) {
         createResources();

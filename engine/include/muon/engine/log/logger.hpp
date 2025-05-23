@@ -2,9 +2,9 @@
 
 #include "muon/common/log/logger.hpp"
 
-namespace muon::log {
-    extern common::log::ILogger *globalLogger;
+namespace mu::log {
+    extern muon::common::log::ILogger *globalLogger;
 
-    void setLogger(common::log::ILogger *logger);
+    void setLogger(muon::common::log::ILogger *logger);
 
 }

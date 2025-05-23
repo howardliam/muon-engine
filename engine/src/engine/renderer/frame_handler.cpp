@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.hpp>
 #include "muon/engine/log/logger.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
         recreateSwapchain(window.getExtent());

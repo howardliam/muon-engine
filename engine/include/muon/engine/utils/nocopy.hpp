@@ -1,6 +1,6 @@
 #pragma once
 
-namespace muon {
+namespace mu {
 
     class NoCopy {
     protected:

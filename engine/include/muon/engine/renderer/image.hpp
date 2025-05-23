@@ -6,7 +6,7 @@
 #include <vk_mem_alloc.hpp>
 #include <memory>
 
-namespace muon::engine {
+namespace mu {
 
     class Device;
 

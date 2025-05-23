@@ -6,7 +6,7 @@
 #include <chrono>
 #include <vulkan/vulkan.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     class Window;
     class Device;

@@ -1,10 +1,10 @@
 #include "muon/engine/log/logger.hpp"
 
-namespace muon::log {
-    static common::log::BasicLogger basicLogger;
-    common::log::ILogger *globalLogger = &basicLogger;
+namespace mu::log {
+    static muon::common::log::BasicLogger basicLogger;
+    muon::common::log::ILogger *globalLogger = &basicLogger;
 
-    void setLogger(common::log::ILogger *logger) {
+    void setLogger(muon::common::log::ILogger *logger) {
         globalLogger = logger;
     }
 }

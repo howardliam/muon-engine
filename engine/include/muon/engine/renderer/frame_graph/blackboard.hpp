@@ -4,7 +4,7 @@
 #include <typeindex>
 #include <any>
 
-namespace muon::engine::fg {
+namespace mu::fg {
 
     class Blackboard {
     public:

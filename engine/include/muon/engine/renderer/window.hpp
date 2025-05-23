@@ -7,7 +7,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     /**
      * @brief   Wrapper around SDL window.

@@ -3,7 +3,7 @@
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/shader.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     ComputePipeline::ComputePipeline(
         Device &device,

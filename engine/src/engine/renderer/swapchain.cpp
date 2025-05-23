@@ -4,7 +4,7 @@
 #include "muon/engine/log/logger.hpp"
 #include <limits>
 
-namespace muon::engine {
+namespace mu {
 
     Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent) : device(device), windowExtent(windowExtent) {
         init();

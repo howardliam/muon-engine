@@ -4,7 +4,7 @@
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/log/logger.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     Mesh::Mesh(
         Device &device,

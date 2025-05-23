@@ -4,7 +4,7 @@
 #include "muon/engine/renderer/descriptor/set_layout.hpp"
 #include "muon/engine/renderer/device.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     DescriptorWriter::DescriptorWriter(
         DescriptorPool &pool,

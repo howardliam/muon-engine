@@ -2,7 +2,7 @@
 
 #include "muon/engine/renderer/device.hpp"
 
-namespace muon::engine {
+namespace mu {
 
     PipelineLayout::PipelineLayout(
         Device &device,

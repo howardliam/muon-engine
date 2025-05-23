@@ -10,7 +10,7 @@
 #include <vk_mem_alloc.h>
 #include <vk_mem_alloc.hpp>
 
-namespace muon::engine {
+namespace mu {
 
     #ifndef NDEBUG
     /**

@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-namespace muon::engine {
+namespace mu {
 
     DescriptorPool::DescriptorPool(
         Device &device,

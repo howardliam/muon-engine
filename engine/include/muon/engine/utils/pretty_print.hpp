@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace muon::pp {
+namespace mu::pp {
 
     std::string parseBytes(uint64_t numBytes);
 

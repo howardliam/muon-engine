@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 
-namespace muon::color {
+namespace mu::color {
 
     template<typename T>
     T rgbFromHex(uint32_t hex);
