@@ -29,7 +29,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/renderer/shader.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/swapchain.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/texture.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/window.hpp
+
+    ${INCLUDE_DIR}/muon/engine/platform/window.hpp
 
     ${INCLUDE_DIR}/muon/engine/log/logger.hpp
 
@@ -59,7 +60,8 @@ set(SRC_FILES
     ${SRC_DIR}/engine/renderer/shader.cpp
     ${SRC_DIR}/engine/renderer/swapchain.cpp
     ${SRC_DIR}/engine/renderer/texture.cpp
-    ${SRC_DIR}/engine/renderer/window.cpp
+
+    ${SRC_DIR}/engine/platform/window.cpp
 
     ${SRC_DIR}/engine/log/logger.cpp
 

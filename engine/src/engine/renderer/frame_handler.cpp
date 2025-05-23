@@ -2,7 +2,7 @@
 
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/swapchain.hpp"
-#include "muon/engine/renderer/window.hpp"
+#include "muon/engine/platform/window.hpp"
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include "muon/engine/log/logger.hpp"

@@ -1,6 +1,6 @@
 #include "muon/engine/renderer/device.hpp"
 
-#include "muon/engine/renderer/window.hpp"
+#include "muon/engine/platform/window.hpp"
 #include "muon/engine/log/logger.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
