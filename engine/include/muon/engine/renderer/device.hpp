@@ -201,7 +201,7 @@ namespace mu {
 
         vk::Instance instance;
 
-        #ifndef NDEBUG
+        #ifdef MU_DEBUG_ENABLED
         const std::vector<const char *> validationLayers = { "VK_LAYER_KHRONOS_validation" };
         vk::DebugUtilsMessengerEXT debugMessenger;
         #endif
