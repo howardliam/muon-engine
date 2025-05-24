@@ -37,8 +37,6 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/engine/platform/window.hpp
 
-    ${INCLUDE_DIR}/muon/engine/log/logger.hpp
-
     ${INCLUDE_DIR}/muon/engine/utils/color.hpp
     ${INCLUDE_DIR}/muon/engine/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/engine/utils/nomove.hpp
@@ -70,8 +68,6 @@ set(SRC_FILES
     ${SRC_DIR}/engine/renderer/texture.cpp
 
     ${SRC_DIR}/engine/platform/window.cpp
-
-    ${SRC_DIR}/engine/log/logger.cpp
 
     ${SRC_DIR}/engine/utils/color.cpp
     ${SRC_DIR}/engine/utils/pretty_print.cpp
