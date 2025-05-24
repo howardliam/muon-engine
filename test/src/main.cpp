@@ -1,3 +1,4 @@
+#include "muon/engine/core/base.hpp"
 #include <memory>
 #include <optional>
 #include <print>
@@ -56,22 +57,8 @@
 
 #include "g_buffer.hpp"
 
-void startMessage() {
-    #ifdef MU_DEBUG_ENABLED
-    MU_INFO("running in debug");
-    auto vkMajor = VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE);
-    auto vkMinor = VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE);
-    auto vkPatch = VK_API_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE);
-    MU_INFO("Vulkan header version: {}.{}.{}", vkMajor, vkMinor, vkPatch);
-    #else
-    MU_INFO("running in release");
-    #endif
-}
-
 int main() {
     mu::Log::init();
-
-    startMessage();
 
     mu::ShaderCompiler shaderCompiler;
     shaderCompiler.addShaders("./test/assets/shaders");
