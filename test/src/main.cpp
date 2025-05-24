@@ -38,7 +38,6 @@
 #include <muon/engine/renderer/swapchain.hpp>
 #include <muon/engine/renderer/texture.hpp>
 #include <muon/engine/platform/window.hpp>
-#include <muon/engine/log/logger.hpp>
 #include <muon/engine/utils/color.hpp>
 #include <muon/engine/core/assert.hpp>
 #include <muon/engine/core/log.hpp>
@@ -55,24 +54,24 @@
 
 #include <imgui.h>
 
-#include "logger.hpp"
 #include "g_buffer.hpp"
+
+void startMessage() {
+    #ifdef MU_DEBUG_ENABLED
+    MU_INFO("running in debug");
+    auto vkMajor = VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE);
+    auto vkMinor = VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE);
+    auto vkPatch = VK_API_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE);
+    MU_INFO("Vulkan header version: {}.{}.{}", vkMajor, vkMinor, vkPatch);
+    #else
+    MU_INFO("running in release");
+    #endif
+}
 
 int main() {
     mu::Log::init();
 
-    auto logger = std::make_shared<Logger>();
-    mu::log::setLogger(logger.get());
-
-    #ifdef MU_DEBUG_ENABLED
-    logger->info("running in debug");
-    auto vkMajor = VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE);
-    auto vkMinor = VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE);
-    auto vkPatch = VK_API_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE);
-    logger->info("Vulkan header version: {}.{}.{}", vkMajor, vkMinor, vkPatch);
-    #else
-    logger->info("running in release");
-    #endif
+    startMessage();
 
     mu::ShaderCompiler shaderCompiler;
     shaderCompiler.addShaders("./test/assets/shaders");
@@ -301,7 +300,7 @@ int main() {
 
                 if (event.key.scancode == SDL_SCANCODE_F2) {
                     screenshotRequested = true;
-                    mu::log::globalLogger->info("screenshot requested");
+                    MU_INFO("screenshot requested");
                 }
             }
 
@@ -534,7 +533,7 @@ int main() {
                 std::ofstream outputFile("./screenshot.png");
                 outputFile.write(reinterpret_cast<char *>(png->data()), png->size());
 
-                mu::log::globalLogger->info("screenshot saved");
+                MU_INFO("screenshot saved");
             }).detach();
 
             screenshotRequested = false;
