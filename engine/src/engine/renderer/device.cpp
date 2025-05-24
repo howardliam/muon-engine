@@ -1,7 +1,8 @@
 #include "muon/engine/renderer/device.hpp"
 
+#include "muon/engine/core/log.hpp"
+#include "muon/engine/core/assert.hpp"
 #include "muon/engine/platform/window.hpp"
-#include "muon/engine/log/logger.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
 #include <set>
@@ -31,19 +32,19 @@ namespace mu {
     ) {
         switch (messageSeverity) {
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-            log::globalLogger->debug("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_CORE_DEBUG("VULKAN - \n{}\n", callbackData->pMessage);
             break;
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-            log::globalLogger->info("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_CORE_INFO("VULKAN - \n{}\n", callbackData->pMessage);
             break;
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-            log::globalLogger->warn("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_CORE_WARN("VULKAN - \n{}\n", callbackData->pMessage);
             break;
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-            log::globalLogger->error("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_CORE_ERROR("VULKAN - \n{}\n", callbackData->pMessage);
             break;
         }
 
@@ -98,7 +99,7 @@ namespace mu {
     Device::Device(Window &window) : window(window) {
         createInstance();
 
-        #ifndef NDEBUG
+        #ifdef MU_DEBUG_ENABLED
         createDebugMessenger();
         #endif
 
@@ -108,7 +109,7 @@ namespace mu {
         createAllocator();
         createCommandPool();
 
-        log::globalLogger->debug("created device");
+        MU_CORE_DEBUG("created device");
     }
 
     Device::~Device() {
@@ -117,13 +118,13 @@ namespace mu {
         device.destroy(nullptr);
         instance.destroySurfaceKHR(surface, nullptr);
 
-        #ifndef NDEBUG
+        #ifdef MU_DEBUG_ENABLED
         destroyDebugUtilsMessenger(instance, debugMessenger, nullptr);
         #endif
 
         instance.destroy(nullptr);
 
-        log::globalLogger->debug("destroyed device");
+        MU_CORE_DEBUG("destroyed device");
     }
 
     vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
@@ -138,28 +139,25 @@ namespace mu {
             }
         }
 
-        throw std::runtime_error("failed to find a supported format");
+        MU_CORE_ASSERT(false, "failed to find a supported format");
+        return vk::Format::eUndefined;
     }
 
     vk::CommandBuffer Device::beginSingleTimeCommands() {
-        vk::CommandBufferAllocateInfo allocateInfo;
+        vk::CommandBufferAllocateInfo allocateInfo{};
         allocateInfo.level = vk::CommandBufferLevel::ePrimary;
         allocateInfo.commandPool = commandPool;
         allocateInfo.commandBufferCount = 1;
 
         vk::CommandBuffer commandBuffer;
         auto result = device.allocateCommandBuffers(&allocateInfo, &commandBuffer);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to allocate single time command buffer");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate single time command buffer");
 
-        vk::CommandBufferBeginInfo beginInfo;
+        vk::CommandBufferBeginInfo beginInfo{};
         beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
         result = commandBuffer.begin(&beginInfo);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to begin command buffer recording");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to begin command buffer recording");
 
         return commandBuffer;
     }
@@ -167,14 +165,12 @@ namespace mu {
     void Device::endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
         commandBuffer.end();
 
-        vk::SubmitInfo submitInfo;
+        vk::SubmitInfo submitInfo{};
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
         auto result = graphicsQueue.submit(1, &submitInfo, nullptr);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to submit command buffer to graphics queue");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to submit command buffer to graphics queue");
 
         graphicsQueue.waitIdle();
 
@@ -243,9 +239,7 @@ namespace mu {
 
     void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vma::MemoryUsage memoryUsage, vk::Image &image, vma::Allocation &allocation) {
         auto result = device.createImage(&imageInfo, nullptr, &image);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create an image");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create an image");
 
         vk::MemoryRequirements memoryRequirements{};
         device.getImageMemoryRequirements(image, &memoryRequirements);
@@ -257,9 +251,7 @@ namespace mu {
         vma::AllocationInfo allocationInfo;
 
         result = allocator.allocateMemory(&memoryRequirements, &allocCreateInfo, &allocation, &allocationInfo);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to allocate image memory");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate image memory");
 
         allocator.bindImageMemory(allocation, image);
     }
@@ -276,9 +268,7 @@ namespace mu {
         vma::AllocationInfo allocationInfo;
 
         auto result = allocator.createBuffer(&bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocationInfo);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create buffer");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create buffer");
     }
 
     vk::Instance Device::getInstance() const {
@@ -326,7 +316,7 @@ namespace mu {
     }
 
     void Device::createInstance() {
-        #ifndef NDEBUG
+        #ifdef MUON_DEBUG_ENABLED
         auto checkValidationLayerSupport = [this]() -> bool {
             std::vector<vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
@@ -347,22 +337,18 @@ namespace mu {
             return true;
         };
 
-        if (!checkValidationLayerSupport()) {
-            throw std::runtime_error("validation layers were requested but are not available");
-        }
+        MU_CORE_ASSERT(checkValidationLayerSupport(), "validation layers were requested but are not available");
         #endif
 
         auto getRequiredExtensions = []() -> std::vector<const char *> {
             uint32_t sdlExtensionCount = 0;
             const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
 
-            if (sdlExtensions == nullptr) {
-                throw std::runtime_error("failed to get instance extensions from SDL: " + std::string(SDL_GetError()));
-            }
+            MU_CORE_ASSERT(sdlExtensions != nullptr, "SDL must provide extensions");
 
             std::vector<const char *> extensions(sdlExtensions, sdlExtensions + sdlExtensionCount);
 
-            #ifndef NDEBUG
+            #ifdef MU_DEBUG_ENABLED
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             #endif
 
@@ -384,15 +370,13 @@ namespace mu {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
-        #ifndef NDEBUG
+        #ifdef MU_DEBUG_ENABLED
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
         #endif
 
         auto result = vk::createInstance(&createInfo, nullptr, &instance);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create instance");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create instance");
     }
 
     void Device::createDebugMessenger() {
@@ -413,24 +397,17 @@ namespace mu {
             nullptr,
             reinterpret_cast<VkDebugUtilsMessengerEXT *>(&debugMessenger)
         );
-
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create debug messenger");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to debug messenger");
     }
 
     void Device::createSurface() {
         auto success = window.createSurface(instance, reinterpret_cast<VkSurfaceKHR *>(&surface));
-        if (!success) {
-            throw std::runtime_error(std::format("failed to create window surface: {}", SDL_GetError()));
-        }
+        MU_CORE_ASSERT(success, std::format("failed to create window surface: {}", SDL_GetError()));
     }
 
     void Device::selectPhysicalDevice() {
         std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
-        if (physicalDevices.size() == 0) {
-            throw std::runtime_error("no GPUs available with Vulkan support");
-        }
+        MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
         auto checkDeviceExtensionSupport = [&](vk::PhysicalDevice device) -> bool {
             std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
@@ -472,17 +449,12 @@ namespace mu {
                 break;
             }
         }
-
-        if (physicalDevice == nullptr) {
-            throw std::runtime_error("unable to select a suitable GPU");
-        }
+        MU_CORE_ASSERT(physicalDevice, "unable to select a suitable GPU");
     }
 
     void Device::createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-        if (!indices.isComplete()) {
-            throw std::runtime_error("queue family indices are not complete");
-        }
+        MU_CORE_ASSERT(indices.isComplete(), "queue family indices are not complete");
 
         std::set<uint32_t> uniqueQueueFamilies = {
             *indices.graphicsFamily,
@@ -526,9 +498,7 @@ namespace mu {
         createInfo.pNext = &deviceFeatures;
 
         auto result = physicalDevice.createDevice(&createInfo, nullptr, &device);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create a logical device");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create a logical device");
 
         device.getQueue(*indices.graphicsFamily, 0, &graphicsQueue);
         device.getQueue(*indices.computeFamily, 0, &computeQueue);
@@ -542,9 +512,7 @@ namespace mu {
         allocatorInfo.device = device;
 
         auto result = vma::createAllocator(&allocatorInfo, &allocator);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create allocator");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create allocator");
     }
 
     void Device::createCommandPool() {
@@ -555,9 +523,7 @@ namespace mu {
         poolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
         auto result = device.createCommandPool(&poolInfo, nullptr, &commandPool);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create command pool");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create command pool");
     }
 
     QueueFamilyIndices Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
@@ -596,37 +562,25 @@ namespace mu {
         SwapchainSupportDetails details{};
 
         auto result = physicalDevice.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
-        if (result != vk::Result::eSuccess) {
-            log::globalLogger->error("failed to get surface capabilities");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface capabilities");
 
         uint32_t formatCount{0};
         result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
-        if (result != vk::Result::eSuccess) {
-            log::globalLogger->error("failed to get surface formats");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
+        MU_CORE_ASSERT(formatCount > 0, "there must be more than 0 surface formats");
 
-        if (formatCount > 0) {
-            details.formats.resize(formatCount);
-            result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, details.formats.data());
-            if (result != vk::Result::eSuccess) {
-                log::globalLogger->error("failed to get surface formats");
-            }
-        }
+        details.formats.resize(formatCount);
+        result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, details.formats.data());
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
 
         uint32_t presentModeCount;
         result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
-        if (result != vk::Result::eSuccess) {
-            log::globalLogger->error("failed to get surface present modes");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
+        MU_CORE_ASSERT(presentModeCount > 0, "there must be more than 0 present modes");
 
-        if (presentModeCount > 0) {
-            details.presentModes.resize(presentModeCount);
-            result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, details.presentModes.data());
-            if (result != vk::Result::eSuccess) {
-                log::globalLogger->error("failed to get surface present modes");
-            }
-        }
+        details.presentModes.resize(presentModeCount);
+        result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, details.presentModes.data());
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
 
         return details;
     }
