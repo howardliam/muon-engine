@@ -28,12 +28,10 @@ namespace mu {
         std::unordered_map<std::filesystem::path, ShaderMetadata> shaders;
 
         void compileGlslToSpv();
-        void compileHlslToSpv();
     };
 
     enum class ShaderCompiler::ShaderLanguage {
         Glsl,
-        Hlsl,
     };
 
     enum class ShaderCompiler::ShaderStage {

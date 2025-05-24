@@ -30,17 +30,17 @@ namespace mu {
 
         ShaderMetadata metadata;
 
-        if (filename.ends_with(".vert") || filename.ends_with(".vs.hlsl")) {
+        if (filename.ends_with(".vert")) {
             metadata.stage = ShaderStage::Vertex;
-        } else if (filename.ends_with(".tesc") || filename.ends_with(".hs.hlsl")) {
+        } else if (filename.ends_with(".tesc")) {
             metadata.stage = ShaderStage::TessellationControl;
-        } else if (filename.ends_with(".tese") || filename.ends_with(".ds.hlsl")) {
+        } else if (filename.ends_with(".tese")) {
             metadata.stage = ShaderStage::TessellationEvaluation;
-        } else if (filename.ends_with(".geom") || filename.ends_with(".gs.hlsl")) {
+        } else if (filename.ends_with(".geom")) {
             metadata.stage = ShaderStage::Geometry;
-        } else if (filename.ends_with(".frag") || filename.ends_with(".ps.hlsl")) {
+        } else if (filename.ends_with(".frag")) {
             metadata.stage = ShaderStage::Fragment;
-        } else if (filename.ends_with(".comp") || filename.ends_with(".cs.hlsl")) {
+        } else if (filename.ends_with(".comp")) {
             metadata.stage = ShaderStage::Compute;
         } else {
             if (filename.ends_with(".spv")) {
@@ -50,11 +50,7 @@ namespace mu {
             return;
         }
 
-        if (filename.ends_with("hlsl")) {
-            metadata.language = ShaderLanguage::Hlsl;
-        } else {
-            metadata.language = ShaderLanguage::Glsl;
-        }
+        metadata.language = ShaderLanguage::Glsl;
 
         shaders[file] = metadata;
         log::globalLogger->debug("added {} to compilation queue", filename);
@@ -162,19 +158,6 @@ namespace mu {
             std::ofstream outFile{newPath};
             outFile.write(reinterpret_cast<char *>(spirv.data()), spirv.size() * sizeof(uint32_t));
         }
-    }
-
-    void ShaderCompiler::compileHlslToSpv() {
-        std::vector<std::pair<std::filesystem::path, ShaderMetadata>> hlslShaders;
-
-        std::copy_if(
-            shaders.begin(),
-            shaders.end(),
-            std::back_inserter(hlslShaders),
-            [](const auto &pair) {
-                return pair.second.language == ShaderLanguage::Hlsl;
-            }
-        );
     }
 
 }
