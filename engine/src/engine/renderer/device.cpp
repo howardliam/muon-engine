@@ -12,7 +12,7 @@
 
 namespace mu {
 
-    #ifndef NDEBUG
+    #ifdef MU_DEBUG_ENABLED
     /**
      * @brief   callback function for Vulkan validation layers.
      *
