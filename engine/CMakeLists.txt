@@ -107,3 +107,7 @@ target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE spirv-reflect-static glslang SPIRV muon::common spdlog::spdlog_header_only)
 target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(${LIB_NAME} PRIVATE MU_DEBUG_ENABLED)
+endif()
