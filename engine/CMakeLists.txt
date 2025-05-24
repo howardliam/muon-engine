@@ -8,6 +8,7 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/core/assert.hpp
     ${INCLUDE_DIR}/muon/engine/core/base.hpp
+    ${INCLUDE_DIR}/muon/engine/core/entry_point.hpp
     ${INCLUDE_DIR}/muon/engine/core/log.hpp
 
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/pool.hpp
