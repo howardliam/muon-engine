@@ -8,7 +8,7 @@
 #ifdef MU_DEBUG_ENABLED
 
     #define MU_INTERNAL_ASSERT_IMPL(type, check, msg, ...) \
-        { if(!(check)) { MU##type##ERROR(msg, __VA_ARGS__); MU_DEBUG_EXIT(); } }
+        { if(!(check)) { MU##type##ERROR(msg, __VA_ARGS__); MU_DEBUG_BREAK(); } }
 
     #define MU_INTERNAL_ASSERT_WITH_MSG(type, check, ...) \
         MU_INTERNAL_ASSERT_IMPL(type, check, "assertion failed: {0}", __VA_ARGS__)
