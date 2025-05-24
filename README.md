@@ -28,6 +28,7 @@ Add as a git submodule and link to the required libraries.
 | abbreviations, initialisations | treated as single words: `Hdr`, `Ssao`, `Gltf` |
 | code spelling | follow American English |
 | non-code spelling | may follow preferred English dialect |
+| commits | commits should follow the [Conventional Commits Spec](https://www.conventionalcommits.org/en/v1.0.0/), post 2025-05-24 |
 
 ## Attributions
 ### Engine
