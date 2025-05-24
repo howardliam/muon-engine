@@ -1,7 +1,7 @@
 #include "muon/engine/renderer/device.hpp"
 
-#include "muon/engine/core/log.hpp"
 #include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 #include "muon/engine/platform/window.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>

@@ -1,9 +1,8 @@
 #include "muon/engine/renderer/descriptor/pool.hpp"
 
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 #include "muon/engine/renderer/device.hpp"
-#include "muon/engine/log/logger.hpp"
-
-#include <stdexcept>
 
 namespace mu {
 
@@ -19,16 +18,14 @@ namespace mu {
         createInfo.pPoolSizes = poolSizes.data();
 
         auto result = device.getDevice().createDescriptorPool(&createInfo, nullptr, &pool);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create descriptor pool");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create descriptor pool");
 
-        log::globalLogger->debug("created descriptor pool");
+        MU_CORE_DEBUG("created descriptor pool");
     }
 
     DescriptorPool::~DescriptorPool() {
         device.getDevice().destroyDescriptorPool(pool);
-        log::globalLogger->debug("destroyed descriptor pool");
+        MU_CORE_DEBUG("destroyed descriptor pool");
     }
 
     vk::DescriptorPool DescriptorPool::getPool() const {

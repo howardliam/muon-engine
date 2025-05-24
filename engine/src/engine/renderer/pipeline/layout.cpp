@@ -1,5 +1,6 @@
 #include "muon/engine/renderer/pipeline/layout.hpp"
 
+#include "muon/engine/core/assert.hpp"
 #include "muon/engine/renderer/device.hpp"
 
 namespace mu {
@@ -23,16 +24,14 @@ namespace mu {
         }
 
         auto result = device.getDevice().createPipelineLayout(&createInfo, nullptr, &layout);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create compute pipeline layout");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline layout");
     }
 
     PipelineLayout::~PipelineLayout() {
         device.getDevice().destroyPipelineLayout(layout);
     }
 
-    [[nodiscard]] vk::PipelineLayout PipelineLayout::getLayout() const {
+    vk::PipelineLayout PipelineLayout::getLayout() const {
         return layout;
     }
 

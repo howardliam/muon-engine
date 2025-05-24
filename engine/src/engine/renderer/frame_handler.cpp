@@ -1,23 +1,23 @@
 #include "muon/engine/renderer/frame_handler.hpp"
 
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
+#include "muon/engine/platform/window.hpp"
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/swapchain.hpp"
-#include "muon/engine/platform/window.hpp"
-#include <stdexcept>
 #include <vulkan/vulkan.hpp>
-#include "muon/engine/log/logger.hpp"
 
 namespace mu {
 
     FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
         recreateSwapchain(window.getExtent());
         createCommandBuffers();
-        log::globalLogger->debug("created frame handler");
+        MU_CORE_DEBUG("created frame handler");
     }
 
     FrameHandler::~FrameHandler() {
         freeCommandBuffers();
-        log::globalLogger->debug("destroyed frame handler");
+        MU_CORE_DEBUG("destroyed frame handler");
     }
 
     vk::CommandBuffer FrameHandler::beginFrame() {
@@ -28,9 +28,7 @@ namespace mu {
             return nullptr;
         }
 
-        if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
-            throw std::runtime_error("failed to acquire next swapchain image");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR, "failed to acquire next swapchain image");
 
         frameInProgress = true;
 
@@ -39,9 +37,7 @@ namespace mu {
         vk::CommandBufferBeginInfo beginInfo;
 
         result = commandBuffer.begin(&beginInfo);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to begin recording command buffer");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to begin recording command buffer");
 
         return commandBuffer;
     }
@@ -51,11 +47,16 @@ namespace mu {
         commandBuffer.end();
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+        MU_CORE_ASSERT(
+            result == vk::Result::eErrorOutOfDateKHR ||
+            result == vk::Result::eSuboptimalKHR ||
+            result == vk::Result::eSuccess,
+            "failed to present swapchain image"
+        );
+
 
         if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
             recreateSwapchain(window.getExtent());
-        } else if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to present swapchain image");
         }
 
         frameInProgress = false;
@@ -184,9 +185,7 @@ namespace mu {
         allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
         auto result = device.getDevice().allocateCommandBuffers(&allocInfo, commandBuffers.data());
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to allocate command buffers");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate command buffers");
     }
 
     void FrameHandler::freeCommandBuffers() {
@@ -204,7 +203,7 @@ namespace mu {
             swapchain = std::make_unique<Swapchain>(device, windowExtent, oldSwapChain);
 
             if (!swapchain->compareSwapFormats(*oldSwapChain)) {
-                log::globalLogger->debug("new and old swapchain formats do not match");
+                MU_CORE_DEBUG("new and old swapchain formats do not match");
             }
         }
     }

@@ -1,5 +1,6 @@
 #include "muon/engine/renderer/pipeline/compute.hpp"
 
+#include "muon/engine/core/assert.hpp"
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/shader.hpp"
 
@@ -56,9 +57,7 @@ namespace mu {
         createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
         auto result = device.getDevice().createShaderModule(&createInfo, nullptr, &shaderModule);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create shader module");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create shader module");
     }
 
     void ComputePipeline::createPipelineLayout(
@@ -72,9 +71,7 @@ namespace mu {
         createInfo.pPushConstantRanges = pushConstants.data();
 
         auto result = device.getDevice().createPipelineLayout(&createInfo, nullptr, &layout);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create compute pipeline layout");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline layout");
     }
 
     void ComputePipeline::createPipeline(const std::filesystem::path &shaderPath) {
@@ -84,9 +81,7 @@ namespace mu {
         pcCreateInfo.pInitialData = nullptr;
 
         auto result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create compute pipeline cache");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline cache");
 
         std::vector byteCode = ShaderCompiler::readFile(shaderPath);
         createShaderModule(byteCode, shader);
@@ -104,9 +99,7 @@ namespace mu {
         pCreateInfo.basePipelineHandle = nullptr;
 
         result = device.getDevice().createComputePipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create compute pipeline");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline");
     }
 
     ComputePipeline::Builder::Builder(Device &device) : device(device) {}

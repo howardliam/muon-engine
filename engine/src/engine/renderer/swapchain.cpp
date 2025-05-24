@@ -1,20 +1,29 @@
 #include "muon/engine/renderer/swapchain.hpp"
 
 #include "muon/engine/renderer/device.hpp"
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 #include "muon/engine/log/logger.hpp"
 #include <limits>
 
 namespace mu {
 
-    Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent) : device(device), windowExtent(windowExtent) {
+    Swapchain::Swapchain(
+        Device &device,
+        vk::Extent2D windowExtent
+    ) : device(device), windowExtent(windowExtent) {
         init();
-        log::globalLogger->debug("created swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
+        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
     }
 
-    Swapchain::Swapchain(Device &device, vk::Extent2D windowExtent, std::shared_ptr<Swapchain> previous) : device(device), windowExtent(windowExtent), oldSwapchain(previous) {
+    Swapchain::Swapchain(
+        Device &device,
+        vk::Extent2D windowExtent,
+        std::shared_ptr<Swapchain> previous
+    ) : device(device), windowExtent(windowExtent), oldSwapchain(previous) {
         init();
         oldSwapchain = nullptr;
-        log::globalLogger->debug("created swapchain from old swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
+        MU_CORE_DEBUG("created swapchain from old swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
     }
 
     Swapchain::~Swapchain() {
@@ -34,7 +43,7 @@ namespace mu {
 
         device.getDevice().destroySwapchainKHR(swapchain, nullptr);
 
-        log::globalLogger->debug("destroyed swapchain");
+        MU_CORE_DEBUG("destroyed swapchain");
     }
 
     vk::Result Swapchain::acquireNextImage(uint32_t *imageIndex) {
@@ -57,9 +66,7 @@ namespace mu {
     vk::Result Swapchain::submitCommandBuffers(const vk::CommandBuffer *buffers, uint32_t *imageIndex) {
         if (imagesInFlight[*imageIndex] != nullptr) {
             auto result = device.getDevice().waitForFences(1, &imagesInFlight[*imageIndex], true, std::numeric_limits<uint64_t>::max());
-            if (result != vk::Result::eSuccess) {
-                log::globalLogger->error("failed to wait for fences");
-            }
+            MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to wait for fences");
         }
         imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
 
@@ -79,13 +86,10 @@ namespace mu {
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         auto result = device.getDevice().resetFences(1, &inFlightFences[currentFrame]);
-        if (result != vk::Result::eSuccess) {
-            log::globalLogger->error("failed to reset fences");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to reset fences");
+
         result = device.getGraphicsQueue().submit(1, &submitInfo, inFlightFences[currentFrame]);
-        if (result != vk::Result::eSuccess) {
-            log::globalLogger->error("failed to submit draw command buffer");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to submit draw command buffer");
 
         vk::PresentInfoKHR presentInfo{};
         presentInfo.waitSemaphoreCount = 1;
@@ -197,7 +201,7 @@ namespace mu {
             imageCount = supportDetails.capabilities.maxImageCount;
         }
 
-        vk::SwapchainCreateInfoKHR createInfo;
+        vk::SwapchainCreateInfoKHR createInfo{};
         createInfo.surface = device.getSurface();
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
@@ -227,21 +231,16 @@ namespace mu {
         createInfo.oldSwapchain = oldSwapchain == nullptr ? nullptr : oldSwapchain->swapchain;
 
         auto result = device.getDevice().createSwapchainKHR(&createInfo, nullptr, &swapchain);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create the swapchain");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create the swapchain");
 
         result = device.getDevice().getSwapchainImagesKHR(swapchain, &imageCount, nullptr);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to get swapchain images");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get swapchain images");
+        MU_CORE_ASSERT(imageCount > 0, "there must be more than 0 images");
 
         swapchainImages.resize(imageCount);
 
         result = device.getDevice().getSwapchainImagesKHR(swapchain, &imageCount, swapchainImages.data());
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to get swapchain images");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get swapchain images");
 
         swapchainImageFormat = surfaceFormat.format;
         swapchainExtent = extent;
@@ -268,9 +267,7 @@ namespace mu {
             createInfo.subresourceRange.layerCount = 1;
 
             auto result = device.getDevice().createImageView(&createInfo, nullptr, &swapchainImageViews[i]);
-            if (result != vk::Result::eSuccess) {
-                throw std::runtime_error("failed to create an image view");
-            }
+            MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create a swapchain image view");
         }
     }
 
@@ -287,11 +284,8 @@ namespace mu {
             auto semaphoreRes = device.getDevice().createSemaphore(&semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
             auto fenceRes = device.getDevice().createFence(&fenceInfo, nullptr, &inFlightFences[i]);
 
-            if (semaphoreRes != vk::Result::eSuccess) {
-                throw std::runtime_error("failed to create image available semaphores");
-            } else if (fenceRes != vk::Result::eSuccess) {
-                throw std::runtime_error("failed to create in flight fences");
-            }
+            MU_CORE_ASSERT(semaphoreRes == vk::Result::eSuccess, "failed to create image available semaphores");
+            MU_CORE_ASSERT(fenceRes == vk::Result::eSuccess, "failed to create in flight fences");
         }
 
         renderFinishedSemaphores.resize(swapchainImages.size());
@@ -299,9 +293,7 @@ namespace mu {
         for (uint32_t i = 0; i < swapchainImages.size(); i++) {
             auto semaphoreRes = device.getDevice().createSemaphore(&semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
 
-            if (semaphoreRes != vk::Result::eSuccess) {
-                throw std::runtime_error("failed to create render finished semaphores");
-            }
+            MU_CORE_ASSERT(semaphoreRes == vk::Result::eSuccess, "failed to create render finished semaphores");
         }
 
         imagesInFlight.resize(swapchainImages.size(), nullptr);

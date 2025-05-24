@@ -1,9 +1,10 @@
 #include "muon/engine/renderer/pipeline/graphics.hpp"
 
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 #include "muon/engine/renderer/pipeline/layout.hpp"
 #include "muon/engine/renderer/shader.hpp"
 #include "muon/engine/renderer/device.hpp"
-#include "muon/engine/log/logger.hpp"
 #include <algorithm>
 #include <memory>
 #include <spirv_reflect.h>
@@ -87,7 +88,7 @@ namespace mu {
     VertexInputState vertexInputStateFromSpirv(const std::vector<uint8_t> &byteCode) {
         spv_reflect::ShaderModule module(byteCode);
         if (module.GetResult() != SPV_REFLECT_RESULT_SUCCESS) {
-            log::globalLogger->warn("failed to load SPIR-V for reflection");
+            MU_CORE_ERROR("failed to load SPIR-V for reflection");
             return {};
         }
 
@@ -96,7 +97,7 @@ namespace mu {
         std::vector<SpvReflectInterfaceVariable *> inputVars(inputVarCount);
         module.EnumerateInputVariables(&inputVarCount, inputVars.data());
 
-        log::globalLogger->trace("input var count: {}", inputVarCount);
+        MU_CORE_TRACE("input var count: {}", inputVarCount);
 
         auto sorter = [](SpvReflectInterfaceVariable *a, SpvReflectInterfaceVariable *b) -> bool {
             return a->location < b->location;
@@ -108,13 +109,13 @@ namespace mu {
         size_t offset{0};
         for (const auto &inputVar : inputVars) {
             size_t index = inputVar->location;
-            log::globalLogger->trace("setting location: {}", inputVar->location);
+            MU_CORE_TRACE("setting location: {}", inputVar->location);
             attributeDescriptions[index].location = inputVar->location;
-            log::globalLogger->trace("setting binding");
+            MU_CORE_TRACE("setting binding");
             attributeDescriptions[index].binding = 0;
-            log::globalLogger->trace("setting format");
+            MU_CORE_TRACE("setting format");
             attributeDescriptions[index].format = static_cast<vk::Format>(inputVar->format);
-            log::globalLogger->trace("setting offset: {}", offset);
+            MU_CORE_TRACE("setting offset: {}", offset);
             attributeDescriptions[index].offset = offset;
 
             offset += offsetFromSpirvFormat(inputVar->format);
@@ -213,9 +214,7 @@ namespace mu {
         pcCreateInfo.pInitialData = nullptr;
 
         auto result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create graphics pipeline cache");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create graphics pipeline cache");
     }
 
     void GraphicsPipeline::createShaderModules(
@@ -228,9 +227,7 @@ namespace mu {
             smCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
             auto result = device.getDevice().createShaderModule(&smCreateInfo, nullptr, &shaderModule);
-            if (result != vk::Result::eSuccess) {
-                throw std::runtime_error("failed to create shader module");
-            }
+            MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create shader module");
         };
 
         shaders.resize(shaderPaths.size());
@@ -299,9 +296,7 @@ namespace mu {
         gpCreateInfo.basePipelineHandle = nullptr;
 
         auto result = device.getDevice().createGraphicsPipelines(cache, 1, &gpCreateInfo, nullptr, &pipeline);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create graphics pipeline");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create graphics pipeline");
     }
 
     void GraphicsPipeline::defaultConfigInfo(ConfigInfo &configInfo) {

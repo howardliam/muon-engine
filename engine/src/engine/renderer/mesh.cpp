@@ -2,7 +2,8 @@
 
 #include "muon/engine/renderer/buffer.hpp"
 #include "muon/engine/renderer/device.hpp"
-#include "muon/engine/log/logger.hpp"
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 
 namespace mu {
 
@@ -14,11 +15,11 @@ namespace mu {
     ) : device(device) {
         createVertexBuffer(vertices, stride);
         createIndexBuffer(indices);
-        log::globalLogger->debug("created model with: {} vertices, {} faces", vertexCount, indices.size() / 3);
+        MU_CORE_DEBUG("created model with: {} vertices, {} faces", vertexCount, indices.size() / 3);
     }
 
     Mesh::~Mesh() {
-        log::globalLogger->debug("destroyed model");
+        MU_CORE_DEBUG("destroyed model");
     }
 
     void Mesh::bind(vk::CommandBuffer commandBuffer) const {
@@ -45,9 +46,9 @@ namespace mu {
             vma::MemoryUsage::eCpuOnly
         );
 
-        if (stagingBuffer.map() != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to map staging buffer");
-        }
+        auto result = stagingBuffer.map();
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to map staging buffer");
+
         stagingBuffer.writeToBuffer((void *)vertices.data());
 
         vertexBuffer = std::make_unique<Buffer>(
@@ -77,9 +78,9 @@ namespace mu {
             vma::MemoryUsage::eCpuOnly
         );
 
-        if (stagingBuffer.map() != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to map staging buffer");
-        }
+        auto result = stagingBuffer.map();
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to map staging buffer");
+
         stagingBuffer.writeToBuffer((void *)indices.data());
 
         indexBuffer = std::make_unique<Buffer>(

@@ -1,5 +1,6 @@
 #include "muon/engine/renderer/texture.hpp"
 
+#include "muon/engine/core/assert.hpp"
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/buffer.hpp"
 
@@ -77,9 +78,7 @@ namespace mu {
         viewInfo.subresourceRange.layerCount = 1;
 
         auto result = device.getDevice().createImageView(&viewInfo, nullptr, &imageView);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create image view");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create texture image view");
 
         vk::SamplerCreateInfo samplerInfo{};
         samplerInfo.minFilter = vk::Filter::eLinear;
@@ -97,9 +96,7 @@ namespace mu {
         samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
 
         result = device.getDevice().createSampler(&samplerInfo, nullptr, &sampler);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create sampler");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create texture sampler");
     }
 
     void Texture::prepareForCopying() {

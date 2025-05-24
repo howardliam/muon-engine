@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include "muon/engine/renderer/device.hpp"
-#include "muon/engine/log/logger.hpp"
+#include "muon/engine/core/log.hpp"
 #include "muon/engine/utils/pretty_print.hpp"
 
 namespace mu {
@@ -27,13 +27,13 @@ namespace mu {
 
         device.createBuffer(bufferSize, usageFlags, memoryUsage, buffer, allocation);
 
-        log::globalLogger->debug("created buffer with size: {}", pp::parseBytes(bufferSize));
+        MU_CORE_DEBUG("created buffer with size: {}", pp::parseBytes(bufferSize));
     }
 
     Buffer::~Buffer() {
         unmap();
         device.getAllocator().destroyBuffer(buffer, allocation);
-        log::globalLogger->debug("destroyed buffer");
+        MU_CORE_DEBUG("destroyed buffer");
     }
 
     vk::Result Buffer::map() {
@@ -41,9 +41,7 @@ namespace mu {
     }
 
     void Buffer::unmap() {
-        if (mapped == nullptr) {
-            return;
-        }
+        if (mapped == nullptr) { return; }
 
         device.getAllocator().unmapMemory(allocation);
         mapped = nullptr;

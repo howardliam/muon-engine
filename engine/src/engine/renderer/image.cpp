@@ -1,9 +1,9 @@
 #include "muon/engine/renderer/image.hpp"
 
 #include <memory>
-#include <stdexcept>
 #include "muon/engine/renderer/device.hpp"
-#include "muon/engine/log/logger.hpp"
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 
 namespace mu {
 
@@ -23,13 +23,13 @@ namespace mu {
         transitionLayout(cmd, imageLayout, accessFlags, stageFlags);
         device.endSingleTimeCommands(cmd);
 
-        log::globalLogger->debug("created image with dimensions: {}x{}", extent.width, extent.height);
+        MU_CORE_DEBUG("created image with dimensions: {}x{}", extent.width, extent.height);
     }
 
     Image::~Image() {
         device.getDevice().destroyImageView(imageView);
         device.getAllocator().destroyImage(image, allocation);
-        log::globalLogger->debug("destroyed image");
+        MU_CORE_DEBUG("destroyed image");
     }
 
     void Image::transitionLayout(
@@ -79,7 +79,7 @@ namespace mu {
         transitionLayout(cmd, imageLayout, accessFlags, stageFlags);
         device.endSingleTimeCommands(cmd);
 
-        log::globalLogger->debug("recreated image with dimensions: {}x{}", extent.width, extent.height);
+        MU_CORE_DEBUG("recreated image with dimensions: {}x{}", extent.width, extent.height);
     }
 
     vk::Extent2D Image::getExtent() const {
@@ -162,9 +162,7 @@ namespace mu {
         viewInfo.subresourceRange.layerCount = 1;
 
         auto result = device.getDevice().createImageView(&viewInfo, nullptr, &imageView);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create image view");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create image view")
 
         descriptorInfo->imageView = imageView;
         descriptorInfo->sampler = nullptr;

@@ -1,11 +1,11 @@
 #include "muon/engine/renderer/shader.hpp"
 
-#include "muon/engine/log/logger.hpp"
-#include <cassert>
+#include "muon/engine/core/log.hpp"
+
 #include <filesystem>
-#include <stdexcept>
 #include <vector>
 #include <fstream>
+#include <stdexcept>
 
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/Include/ResourceLimits.h>
@@ -46,14 +46,14 @@ namespace mu {
             if (filename.ends_with(".spv")) {
                 return;
             }
-            log::globalLogger->warn("skipping unknown file: {}", filename);
+            MU_CORE_WARN("skipping unknown file: {}", filename);
             return;
         }
 
         metadata.language = ShaderLanguage::Glsl;
 
         shaders[file] = metadata;
-        log::globalLogger->debug("added {} to compilation queue", filename);
+        MU_CORE_DEBUG("added {} to compilation queue", filename);
     }
 
     void ShaderCompiler::addShaders(const std::filesystem::path &directory) {
@@ -67,7 +67,7 @@ namespace mu {
     }
 
     void ShaderCompiler::compile() {
-        log::globalLogger->debug("beginning compilation of {} shaders", shaders.size());
+        MU_CORE_DEBUG("beginning compilation of {} shaders", shaders.size());
 
         compileGlslToSpv();
     }
@@ -119,7 +119,7 @@ namespace mu {
         };
 
         for (const auto &[path, metadata] : glslShaders) {
-            log::globalLogger->debug("compiling {}", path.string());
+            MU_CORE_DEBUG("compiling {}", path.string());
 
             auto data = readFile(path);
             auto stage = parseStage(metadata.stage);

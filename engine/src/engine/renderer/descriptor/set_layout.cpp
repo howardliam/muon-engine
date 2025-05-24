@@ -1,5 +1,6 @@
 #include "muon/engine/renderer/descriptor/set_layout.hpp"
 
+#include "muon/engine/core/assert.hpp"
 #include "muon/engine/renderer/descriptor/pool.hpp"
 #include "muon/engine/renderer/device.hpp"
 
@@ -35,9 +36,7 @@ namespace mu {
         createInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool;
 
         auto result = device.getDevice().createDescriptorSetLayout(&createInfo, nullptr, &setLayout);
-        if (result != vk::Result::eSuccess) {
-            throw std::runtime_error("failed to create descriptor set layout");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create descriptor set layout");
     }
 
     DescriptorSetLayout::~DescriptorSetLayout() {
