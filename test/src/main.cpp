@@ -1,4 +1,3 @@
-#include "muon/engine/core/base.hpp"
 #include <memory>
 #include <optional>
 #include <print>
@@ -43,7 +42,6 @@
 #include <muon/engine/core/assert.hpp>
 #include <muon/engine/core/log.hpp>
 
-#include <muon/common/log/logger.hpp>
 #include <muon/asset/image.hpp>
 
 #include <SDL3/SDL_events.h>
