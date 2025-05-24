@@ -6,6 +6,7 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
+    ${INCLUDE_DIR}/muon/engine/core/application.hpp
     ${INCLUDE_DIR}/muon/engine/core/assert.hpp
     ${INCLUDE_DIR}/muon/engine/core/base.hpp
     ${INCLUDE_DIR}/muon/engine/core/entry_point.hpp
@@ -45,6 +46,7 @@ set(HEADER_FILES
 )
 
 set(SRC_FILES
+    ${SRC_DIR}/engine/core/application.cpp
     ${SRC_DIR}/engine/core/log.cpp
 
     ${SRC_DIR}/engine/renderer/descriptor/pool.cpp
