@@ -38,10 +38,13 @@
 #include <muon/engine/renderer/swapchain.hpp>
 #include <muon/engine/renderer/texture.hpp>
 #include <muon/engine/platform/window.hpp>
-#include <muon/common/log/logger.hpp>
 #include <muon/engine/log/logger.hpp>
-#include <muon/asset/image.hpp>
 #include <muon/engine/utils/color.hpp>
+#include <muon/engine/core/assert.hpp>
+#include <muon/engine/core/log.hpp>
+
+#include <muon/common/log/logger.hpp>
+#include <muon/asset/image.hpp>
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -56,10 +59,12 @@
 #include "g_buffer.hpp"
 
 int main() {
+    mu::Log::init();
+
     auto logger = std::make_shared<Logger>();
     mu::log::setLogger(logger.get());
 
-    #ifndef NDEBUG
+    #ifdef MUON_DEBUG_ENABLED
     logger->info("running in debug");
     auto vkMajor = VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE);
     auto vkMinor = VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE);
