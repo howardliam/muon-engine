@@ -4,3 +4,5 @@ build
 *.spv
 screenshot.png
 imgui.ini
+
+*.log

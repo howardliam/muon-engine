@@ -6,6 +6,10 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
+    ${INCLUDE_DIR}/muon/engine/core/assert.hpp
+    ${INCLUDE_DIR}/muon/engine/core/base.hpp
+    ${INCLUDE_DIR}/muon/engine/core/log.hpp
+
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/pool.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/set_layout.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/writer.hpp
@@ -42,6 +46,8 @@ set(HEADER_FILES
 )
 
 set(SRC_FILES
+    ${SRC_DIR}/engine/core/log.cpp
+
     ${SRC_DIR}/engine/renderer/descriptor/pool.cpp
     ${SRC_DIR}/engine/renderer/descriptor/set_layout.cpp
     ${SRC_DIR}/engine/renderer/descriptor/writer.cpp
@@ -99,5 +105,5 @@ add_library(muon::engine ALIAS ${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
 
-target_link_libraries(${LIB_NAME} PRIVATE spirv-reflect-static glslang SPIRV muon::common)
+target_link_libraries(${LIB_NAME} PRIVATE spirv-reflect-static glslang SPIRV muon::common spdlog::spdlog_header_only)
 target_link_libraries(${LIB_NAME} PUBLIC SDL3 vulkan VulkanMemoryAllocator-Hpp VulkanMemoryAllocator glm)
