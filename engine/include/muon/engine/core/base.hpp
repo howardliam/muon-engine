@@ -3,7 +3,7 @@
 #define MU_EXPAND_MACRO(x) x
 #define MU_STRINGIFY_MACRO(x) #x
 
-#ifndef NDEBUG
+#ifdef MU_DEBUG_ENABLED
 
     #include <csignal>
     #define MU_DEBUG_EXIT() raise(SIGTRAP)

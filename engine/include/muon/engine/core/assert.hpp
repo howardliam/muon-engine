@@ -5,7 +5,7 @@
 
 // implementation borrowed from https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Assert.h
 
-#ifndef NDEBUG
+#ifdef MU_DEBUG_ENABLED
 
     #define MU_INTERNAL_ASSERT_IMPL(type, check, msg, ...) \
         { if(!(check)) { MU##type##ERROR(msg, __VA_ARGS__); MU_DEBUG_EXIT(); } }
