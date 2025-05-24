@@ -64,7 +64,7 @@ int main() {
     auto logger = std::make_shared<Logger>();
     mu::log::setLogger(logger.get());
 
-    #ifdef MUON_DEBUG_ENABLED
+    #ifdef MU_DEBUG_ENABLED
     logger->info("running in debug");
     auto vkMajor = VK_API_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE);
     auto vkMinor = VK_API_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE);
