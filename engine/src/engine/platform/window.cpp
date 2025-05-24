@@ -1,11 +1,11 @@
 #include "muon/engine/platform/window.hpp"
 
+#include "muon/engine/core/assert.hpp"
+#include "muon/engine/core/log.hpp"
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_vulkan.h>
 #include <format>
-#include <stdexcept>
-#include "muon/engine/log/logger.hpp"
 
 namespace mu {
 
@@ -14,15 +14,15 @@ namespace mu {
             initSdl();
             initWindow(properties.title, properties.mode);
         } catch (std::exception &e) {
-            log::globalLogger->error("{}", e.what());
+            MU_CORE_ERROR("{}", e.what());
         }
-        log::globalLogger->debug("created window");
+        MU_CORE_DEBUG("created window");
     }
 
     Window::~Window() {
         SDL_DestroyWindow(window);
         SDL_Quit();
-        log::globalLogger->debug("destroyed window");
+        MU_CORE_DEBUG("destroyed window");
     }
 
     bool Window::createSurface(VkInstance instance, VkSurfaceKHR *surface) {
@@ -75,7 +75,7 @@ namespace mu {
         SDL_Surface *surface = SDL_CreateSurfaceFrom(width, height, pixelFormat, imageData.data(), width * channels);
         bool res = SDL_SetWindowIcon(window, surface);
         if (!res) {
-            log::globalLogger->error("failed to set window icon: {}", SDL_GetError());
+            MU_CORE_ERROR("failed to set window icon: {}", SDL_GetError());
         }
         SDL_DestroySurface(surface);
     }
@@ -139,10 +139,7 @@ namespace mu {
 
         SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | modeFlag;
         window = SDL_CreateWindow(title.data(), static_cast<int32_t>(width), static_cast<int32_t>(height), flags);
-
-        if (window == nullptr) {
-            throw std::runtime_error(std::format("failed to create window: {}", SDL_GetError()));
-        }
+        MU_CORE_ASSERT(window, std::format("failed to create window: {}", SDL_GetError()));
     }
 
     Window::Builder &Window::Builder::setDimensions(const uint32_t width, const uint32_t height) {

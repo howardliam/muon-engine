@@ -3,7 +3,6 @@
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/core/assert.hpp"
 #include "muon/engine/core/log.hpp"
-#include "muon/engine/log/logger.hpp"
 #include <limits>
 
 namespace mu {
@@ -48,9 +47,7 @@ namespace mu {
 
     vk::Result Swapchain::acquireNextImage(uint32_t *imageIndex) {
         auto result = device.getDevice().waitForFences(1, &inFlightFences[currentFrame], true, std::numeric_limits<uint64_t>::max());
-        if (result != vk::Result::eSuccess) {
-            log::globalLogger->error("failed to wait for fences");
-        }
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to wait for fences");
 
         result = device.getDevice().acquireNextImageKHR(
             swapchain,
