@@ -7,7 +7,7 @@
 #include <SDL3/SDL_vulkan.h>
 #include <format>
 
-namespace mu {
+namespace muon {
 
     Window::Window(const Properties &properties) : width(properties.width), height(properties.height) {
         try {

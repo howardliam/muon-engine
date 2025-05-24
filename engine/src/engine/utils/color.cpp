@@ -2,7 +2,7 @@
 
 #include <limits>
 
-namespace mu::color {
+namespace muon::color {
 
     namespace constants {
         constexpr uint8_t ubyteMax = std::numeric_limits<uint8_t>().max();

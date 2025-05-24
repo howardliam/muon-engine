@@ -1,6 +1,6 @@
 #include "muon/engine/renderer/material.hpp"
 
-namespace mu {
+namespace muon {
 
     uint16_t operator&(uint16_t lhs, Material::TextureMaskBits rhs) {
         return lhs & static_cast<uint16_t>(rhs);

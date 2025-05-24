@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vulkan/vulkan.hpp>
 
-namespace mu {
+namespace muon {
 
     class DescriptorPool;
     class DescriptorSetLayout;

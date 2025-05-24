@@ -4,7 +4,7 @@
 #include "muon/engine/core/log.hpp"
 #include "muon/engine/renderer/device.hpp"
 
-namespace mu {
+namespace muon {
 
     DescriptorPool::DescriptorPool(
         Device &device,

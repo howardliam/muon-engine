@@ -3,7 +3,7 @@
 #include <array>
 #include <format>
 
-namespace mu::pp {
+namespace muon::pp {
 
     namespace constants {
         constexpr std::array<const char *, 4> byteSuffixes = {

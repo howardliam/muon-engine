@@ -5,7 +5,7 @@
 #include "muon/engine/core/assert.hpp"
 #include "muon/engine/core/log.hpp"
 
-namespace mu {
+namespace muon {
 
     Mesh::Mesh(
         Device &device,

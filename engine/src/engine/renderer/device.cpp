@@ -10,7 +10,7 @@
 #include <vk_mem_alloc.h>
 #include <vk_mem_alloc.hpp>
 
-namespace mu {
+namespace muon {
 
     #ifdef MU_DEBUG_ENABLED
     /**

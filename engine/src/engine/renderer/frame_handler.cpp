@@ -7,7 +7,7 @@
 #include "muon/engine/renderer/swapchain.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace mu {
+namespace muon {
 
     FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
         recreateSwapchain(window.getExtent());

@@ -5,7 +5,7 @@
 #include "muon/engine/core/log.hpp"
 #include <limits>
 
-namespace mu {
+namespace muon {
 
     Swapchain::Swapchain(
         Device &device,

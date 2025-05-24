@@ -4,7 +4,7 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
-namespace mu {
+namespace muon {
 
     class Window;
     class Device;

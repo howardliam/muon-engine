@@ -3,7 +3,7 @@
 #include "muon/engine/utils/nocopy.hpp"
 #include "muon/engine/utils/nomove.hpp"
 
-namespace mu::fg {
+namespace muon::fg {
 
     class FrameGraph : NoCopy, NoMove {
     public:

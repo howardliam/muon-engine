@@ -2,12 +2,12 @@
 
 #include <muon/engine/utils/color.hpp>
 
-GBufferPass::GBufferPass(mu::Device &device) : device(device) {
+GBufferPass::GBufferPass(muon::Device &device) : device(device) {
     createStaticResources();
 }
 
 void GBufferPass::createResources(const vk::Extent2D &extent) {
-    albedoImage = mu::Image::Builder(device)
+    albedoImage = muon::Image::Builder(device)
         .setExtent(extent)
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eStorage)
@@ -21,9 +21,9 @@ void GBufferPass::createResources(const vk::Extent2D &extent) {
     albedoAttachment->imageLayout = albedoImage->getImageLayout();
     albedoAttachment->loadOp = vk::AttachmentLoadOp::eClear;
     albedoAttachment->storeOp = vk::AttachmentStoreOp::eStore;
-    albedoAttachment->clearValue.color = mu::color::rgbaFromHex<std::array<float, 4>>(0x87ceebff);
+    albedoAttachment->clearValue.color = muon::color::rgbaFromHex<std::array<float, 4>>(0x87ceebff);
 
-    depthImage = mu::Image::Builder(device)
+    depthImage = muon::Image::Builder(device)
         .setExtent(extent)
         .setFormat(vk::Format::eD32Sfloat)
         .setImageUsageFlags(vk::ImageUsageFlagBits::eDepthStencilAttachment)
@@ -60,7 +60,7 @@ void GBufferPass::createResources(const vk::Extent2D &extent) {
     basicPipeline->bake(*renderingCreateInfo);
 }
 
-void GBufferPass::drawFrame(vk::CommandBuffer cmd, const vk::Extent2D &extent, const mu::Mesh &mesh) {
+void GBufferPass::drawFrame(vk::CommandBuffer cmd, const vk::Extent2D &extent, const muon::Mesh &mesh) {
     cmd.beginRendering(*renderingInfo);
 
     vk::Viewport viewport{};
@@ -88,11 +88,11 @@ void GBufferPass::drawFrame(vk::CommandBuffer cmd, const vk::Extent2D &extent, c
     cmd.endRendering();
 }
 
-mu::DescriptorPool *GBufferPass::getGlobalPool() const {
+muon::DescriptorPool *GBufferPass::getGlobalPool() const {
     return globalPool.get();
 }
 
-mu::DescriptorSetLayout *GBufferPass::getGlobalSetLayout() const {
+muon::DescriptorSetLayout *GBufferPass::getGlobalSetLayout() const {
     return globalSetLayout.get();
 }
 
@@ -100,26 +100,26 @@ vk::DescriptorSet GBufferPass::getGlobalSet() const {
     return globalSet;
 }
 
-mu::Image *GBufferPass::getAlbedoImage() const {
+muon::Image *GBufferPass::getAlbedoImage() const {
     return albedoImage.get();
 }
 
 void GBufferPass::createStaticResources() {
-    globalPool = mu::DescriptorPool::Builder(device)
+    globalPool = muon::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eCombinedImageSampler, std::numeric_limits<int16_t>().max())
         .addPoolSize(vk::DescriptorType::eUniformBuffer, std::numeric_limits<int16_t>().max())
         .buildUniquePtr();
 
-    globalSetLayout = mu::DescriptorSetLayout::Builder(device)
+    globalSetLayout = muon::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eAllGraphics, std::numeric_limits<int16_t>().max())
         .addBinding(1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eAllGraphics, 1)
         .buildUniquePtr();
 
     globalSet = globalSetLayout->createSet(*globalPool);
 
-    globalLayout = std::make_shared<mu::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, std::nullopt);
+    globalLayout = std::make_shared<muon::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, std::nullopt);
 
-    basicPipeline = mu::GraphicsPipeline::Builder(device)
+    basicPipeline = muon::GraphicsPipeline::Builder(device)
         .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")
         .addShader(vk::ShaderStageFlagBits::eFragment, "./test/assets/shaders/shader.frag.spv")
         .setPipelineLayout(globalLayout)

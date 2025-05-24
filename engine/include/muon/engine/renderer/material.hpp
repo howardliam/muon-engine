@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace mu {
+namespace muon {
 
     struct Material {
         class Builder;

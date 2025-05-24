@@ -7,7 +7,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-namespace mu {
+namespace muon {
 
     class Window : NoCopy, NoMove {
     public:

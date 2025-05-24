@@ -5,7 +5,7 @@
 #include "muon/engine/core/log.hpp"
 #include "muon/engine/utils/pretty_print.hpp"
 
-namespace mu {
+namespace muon {
 
     Buffer::Buffer(
         Device &device,

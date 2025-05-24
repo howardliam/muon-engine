@@ -56,26 +56,26 @@
 #include "g_buffer.hpp"
 
 int main() {
-    mu::Log::init();
+    muon::Log::init();
 
-    mu::ShaderCompiler shaderCompiler;
+    muon::ShaderCompiler shaderCompiler;
     shaderCompiler.addShaders("./test/assets/shaders");
     shaderCompiler.compile();
 
-    mu::Window window = mu::Window::Builder()
+    muon::Window window = muon::Window::Builder()
         .setDimensions(1600, 900)
-        .setInitialDisplayMode(mu::Window::DisplayMode::Windowed)
+        .setInitialDisplayMode(muon::Window::DisplayMode::Windowed)
         .setTitle("Testing")
         .build();
 
-    auto windowIcon = mu::asset::decodePng("./muon-logo.png");
+    auto windowIcon = muon::asset::decodePng("./muon-logo.png");
     window.setIcon(windowIcon->data, windowIcon->width, windowIcon->height, windowIcon->channels);
 
     bool mouseGrab{false};
 
-    mu::Device device(window);
-    mu::FrameHandler frameHandler(window, device);
-    mu::DebugUi debugUi(window, device);
+    muon::Device device(window);
+    muon::FrameHandler frameHandler(window, device);
+    muon::DebugUi debugUi(window, device);
 
     GBufferPass gBufferPass(device);
     gBufferPass.createResources(window.getExtent());
@@ -86,7 +86,7 @@ int main() {
         glm::mat4 transform;
     };
 
-    auto uboBuffer = std::make_unique<mu::Buffer>(
+    auto uboBuffer = std::make_unique<muon::Buffer>(
         device,
         sizeof(Ubo),
         1,
@@ -96,24 +96,24 @@ int main() {
 
     auto bufferInfo = uboBuffer->getDescriptorInfo();
 
-    mu::DescriptorWriter(*gBufferPass.getGlobalPool(), *gBufferPass.getGlobalSetLayout())
+    muon::DescriptorWriter(*gBufferPass.getGlobalPool(), *gBufferPass.getGlobalSetLayout())
         .addBufferWrite(1, 0, &bufferInfo)
         .writeAll(gBufferPass.getGlobalSet());
 
     auto usageFlags = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
     auto accessFlags = vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite;
 
-    std::unique_ptr computeImagePool = mu::DescriptorPool::Builder(device)
+    std::unique_ptr computeImagePool = muon::DescriptorPool::Builder(device)
         .addPoolSize(vk::DescriptorType::eStorageImage, 4)
         .buildUniquePtr();
 
-    std::unique_ptr compositeSetLayout = mu::DescriptorSetLayout::Builder(device)
+    std::unique_ptr compositeSetLayout = muon::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute, 1)
         .buildUniquePtr();
 
     auto compositeSet = compositeSetLayout->createSet(*computeImagePool);
 
-    std::unique_ptr computeImageB = mu::Image::Builder(device)
+    std::unique_ptr computeImageB = muon::Image::Builder(device)
         .setExtent(window.getExtent())
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setImageUsageFlags(usageFlags)
@@ -122,26 +122,26 @@ int main() {
         .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
         .buildUniquePtr();
 
-    std::unique_ptr computeSetLayout = mu::DescriptorSetLayout::Builder(device)
+    std::unique_ptr computeSetLayout = muon::DescriptorSetLayout::Builder(device)
         .addBinding(0, vk::DescriptorType::eStorageImage, vk::ShaderStageFlagBits::eCompute, 2)
         .buildUniquePtr();
 
     auto computeSet = computeSetLayout->createSet(*computeImagePool);
-    mu::DescriptorWriter(*computeImagePool, *computeSetLayout)
+    muon::DescriptorWriter(*computeImagePool, *computeSetLayout)
         .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
         .writeAll(computeSet);
 
-    auto uiComposite = mu::ComputePipeline::Builder(device)
+    auto uiComposite = muon::ComputePipeline::Builder(device)
         .setShader("./test/assets/shaders/uicomposite.comp.spv")
         .setDescriptorSetLayouts({ computeSetLayout->getSetLayout(), compositeSetLayout->getSetLayout() })
         .buildUniquePtr();
 
-    auto toneMap = mu::ComputePipeline::Builder(device)
+    auto toneMap = muon::ComputePipeline::Builder(device)
         .setShader("./test/assets/shaders/tonemap.comp.spv")
         .setDescriptorSetLayouts({ computeSetLayout->getSetLayout() })
         .buildUniquePtr();
 
-    auto swizzle = mu::ComputePipeline::Builder(device)
+    auto swizzle = muon::ComputePipeline::Builder(device)
         .setShader("./test/assets/shaders/swizzle.comp.spv")
         .setDescriptorSetLayouts({ computeSetLayout->getSetLayout() })
         .buildUniquePtr();
@@ -150,7 +150,7 @@ int main() {
 
     auto size = window.getExtent().width * window.getExtent().height;
 
-    std::unique_ptr stagingBuffer = std::make_unique<mu::Buffer>(
+    std::unique_ptr stagingBuffer = std::make_unique<muon::Buffer>(
         device,
         4,
         size,
@@ -172,9 +172,9 @@ int main() {
     };
 
     std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
-    auto vertexData = mu::Mesh::getRawVertexData(vertices);
+    auto vertexData = muon::Mesh::getRawVertexData(vertices);
 
-    mu::Mesh square(device, vertexData, 32, indices);
+    muon::Mesh square(device, vertexData, 32, indices);
 
     frameHandler.beginFrameTiming();
 
@@ -315,7 +315,7 @@ int main() {
 
             gBufferPass.createResources(extent);
 
-            computeImageB = mu::Image::Builder(device)
+            computeImageB = muon::Image::Builder(device)
                 .setExtent(extent)
                 .setFormat(vk::Format::eR8G8B8A8Unorm)
                 .setImageUsageFlags(usageFlags)
@@ -324,12 +324,12 @@ int main() {
                 .setPipelineStageFlags(vk::PipelineStageFlagBits2::eComputeShader)
                 .buildUniquePtr();
 
-            mu::DescriptorWriter(*computeImagePool, *computeSetLayout)
+            muon::DescriptorWriter(*computeImagePool, *computeSetLayout)
                 .addImageWrite(0, 1, computeImageB->getDescriptorInfo())
                 .writeAll(computeSet);
 
             size = extent.width * extent.height;
-            stagingBuffer = std::make_unique<mu::Buffer>(
+            stagingBuffer = std::make_unique<muon::Buffer>(
                 device,
                 4,
                 size,
@@ -377,7 +377,7 @@ int main() {
             vk::AccessFlagBits2::eShaderRead,
             vk::PipelineStageFlagBits2::eComputeShader
         );
-        mu::DescriptorWriter(*computeImagePool, *computeSetLayout)
+        muon::DescriptorWriter(*computeImagePool, *computeSetLayout)
             .addImageWrite(0, 0, gBufferPass.getAlbedoImage()->getDescriptorInfo())
             .writeAll(computeSet);
 
@@ -430,7 +430,7 @@ int main() {
             vk::PipelineStageFlagBits2::eComputeShader
         );
 
-        mu::DescriptorWriter(*computeImagePool, *compositeSetLayout)
+        muon::DescriptorWriter(*computeImagePool, *compositeSetLayout)
             .addImageWrite(0, 0, debugUi.getImage()->getDescriptorInfo())
             .writeAll(compositeSet);
 
@@ -501,7 +501,7 @@ int main() {
 
             auto extent = window.getExtent();
 
-            mu::asset::Image image{};
+            muon::asset::Image image{};
             image.width = extent.width;
             image.height = extent.height;
             image.channels = 4;
@@ -513,7 +513,7 @@ int main() {
             stagingBuffer->unmap();
 
             std::thread([image]() {
-                auto png = mu::asset::encodePng(image);
+                auto png = muon::asset::encodePng(image);
 
                 std::ofstream outputFile("./screenshot.png");
                 outputFile.write(reinterpret_cast<char *>(png->data()), png->size());

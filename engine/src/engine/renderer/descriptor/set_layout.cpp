@@ -4,7 +4,7 @@
 #include "muon/engine/renderer/descriptor/pool.hpp"
 #include "muon/engine/renderer/device.hpp"
 
-namespace mu {
+namespace muon {
 
     DescriptorSetLayout::DescriptorSetLayout(
         Device &device,

@@ -6,7 +6,7 @@
 #include <optional>
 #include <vector>
 
-namespace mu::asset {
+namespace muon::asset {
 
     struct Image {
         uint32_t width;

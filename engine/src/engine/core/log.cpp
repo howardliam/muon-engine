@@ -1,11 +1,11 @@
 #include "muon/engine/core/log.hpp"
 
-#include <spdlog/spdlog-inl.h>
 #include <vector>
+#include <spdlog/spdlog-inl.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-namespace mu {
+namespace muon {
 
     std::shared_ptr<spdlog::logger> Log::coreLogger;
     std::shared_ptr<spdlog::logger> Log::clientLogger;

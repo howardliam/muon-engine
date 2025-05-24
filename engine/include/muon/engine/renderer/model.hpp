@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include <memory>
 
-namespace mu {
+namespace muon {
 
     class Mesh;
 

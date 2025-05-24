@@ -1,4 +1,4 @@
-namespace mu::fg {
+namespace muon::fg {
 
     template<typename T, typename ...Args>
     T &Blackboard::add(Args &&...args) {

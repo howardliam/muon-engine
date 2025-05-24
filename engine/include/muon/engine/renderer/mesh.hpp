@@ -9,7 +9,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace mu {
+namespace muon {
 
     class Device;
     class Buffer;

@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace mu {
+namespace muon {
 
     class ShaderCompiler {
     public:

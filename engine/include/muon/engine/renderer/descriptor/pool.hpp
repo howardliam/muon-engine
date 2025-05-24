@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.hpp>
 #include <memory>
 
-namespace mu {
+namespace muon {
 
     class Device;
 

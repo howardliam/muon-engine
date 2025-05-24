@@ -13,7 +13,7 @@ namespace {
     using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
 }
 
-namespace mu {
+namespace muon {
 
     uint32_t offsetFromSpirvFormat(SpvReflectFormat format) {
         switch (format) {

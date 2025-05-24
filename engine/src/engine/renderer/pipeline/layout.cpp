@@ -3,7 +3,7 @@
 #include "muon/engine/core/assert.hpp"
 #include "muon/engine/renderer/device.hpp"
 
-namespace mu {
+namespace muon {
 
     PipelineLayout::PipelineLayout(
         Device &device,
