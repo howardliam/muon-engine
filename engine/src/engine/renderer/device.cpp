@@ -179,7 +179,7 @@ namespace mu {
     void Device::copyBuffer(vk::Buffer src, vk::Buffer dest, vk::DeviceSize size) {
         vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
 
-        vk::BufferCopy copyRegion;
+        vk::BufferCopy copyRegion{};
         copyRegion.srcOffset = 0;
         copyRegion.dstOffset = 0;
         copyRegion.size = size;
@@ -192,7 +192,7 @@ namespace mu {
     void Device::copyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount) {
         vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
 
-        vk::BufferImageCopy region;
+        vk::BufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
