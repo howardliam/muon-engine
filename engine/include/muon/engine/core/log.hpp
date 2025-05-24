@@ -13,10 +13,12 @@ namespace mu {
 
         static std::shared_ptr<spdlog::logger> &getCoreLogger();
         static std::shared_ptr<spdlog::logger> &getClientLogger();
+        static std::shared_ptr<spdlog::logger> &getVulkanLogger();
 
     private:
         static std::shared_ptr<spdlog::logger> coreLogger;
         static std::shared_ptr<spdlog::logger> clientLogger;
+        static std::shared_ptr<spdlog::logger> vulkanLogger;
     };
 
 }
@@ -29,6 +31,9 @@ namespace mu {
     #define MU_TRACE(...)           mu::Log::getClientLogger()->trace(__VA_ARGS__)
     #define MU_DEBUG(...)           mu::Log::getClientLogger()->debug(__VA_ARGS__)
 
+    #define MU_VK_TRACE(...)        mu::Log::getVulkanLogger()->trace(__VA_ARGS__)
+    #define MU_VK_DEBUG(...)        mu::Log::getVulkanLogger()->debug(__VA_ARGS__)
+
 #else
 
     #define MU_CORE_TRACE(...)
@@ -36,6 +41,9 @@ namespace mu {
 
     #define MU_TRACE(...)
     #define MU_DEBUG(...)
+
+    #define MU_VK_TRACE(...)
+    #define MU_VK_DEBUG(...)
 
 #endif
 
@@ -48,3 +56,8 @@ namespace mu {
 #define MU_WARN(...)            mu::Log::getClientLogger()->warn(__VA_ARGS__)
 #define MU_ERROR(...)           mu::Log::getClientLogger()->error(__VA_ARGS__)
 #define MU_CRITICAL(...)        mu::Log::getClientLogger()->critical(__VA_ARGS__)
+
+#define MU_VK_INFO(...)         mu::Log::getVulkanLogger()->info(__VA_ARGS__)
+#define MU_VK_WARN(...)         mu::Log::getVulkanLogger()->warn(__VA_ARGS__)
+#define MU_VK_ERROR(...)        mu::Log::getVulkanLogger()->error(__VA_ARGS__)
+#define MU_VK_CRITICAL(...)     mu::Log::getVulkanLogger()->critical(__VA_ARGS__)

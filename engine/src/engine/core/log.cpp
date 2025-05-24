@@ -9,6 +9,8 @@ namespace mu {
 
     std::shared_ptr<spdlog::logger> Log::coreLogger;
     std::shared_ptr<spdlog::logger> Log::clientLogger;
+    std::shared_ptr<spdlog::logger> Log::vulkanLogger;
+
 
     void Log::init() {
         std::vector<spdlog::sink_ptr> sinks;
@@ -27,6 +29,11 @@ namespace mu {
         spdlog::register_logger(clientLogger);
         clientLogger->set_level(spdlog::level::trace);
         clientLogger->flush_on(spdlog::level::trace);
+
+        vulkanLogger = std::make_shared<spdlog::logger>("VK", sinks.begin(), sinks.end());
+        spdlog::register_logger(vulkanLogger);
+        vulkanLogger->set_level(spdlog::level::trace);
+        vulkanLogger->flush_on(spdlog::level::trace);
     }
 
     std::shared_ptr<spdlog::logger> &Log::getCoreLogger() {
@@ -36,5 +43,9 @@ namespace mu {
     std::shared_ptr<spdlog::logger> &Log::getClientLogger() {
         return clientLogger;
     }
+
+        std::shared_ptr<spdlog::logger> &Log::getVulkanLogger() {
+            return vulkanLogger;
+        }
 
 }

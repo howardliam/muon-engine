@@ -31,19 +31,19 @@ namespace mu {
     ) {
         switch (messageSeverity) {
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-            MU_CORE_DEBUG("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_VK_DEBUG(callbackData->pMessage);
             break;
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-            MU_CORE_INFO("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_VK_INFO(callbackData->pMessage);
             break;
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-            MU_CORE_WARN("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_VK_WARN(callbackData->pMessage);
             break;
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-            MU_CORE_ERROR("VULKAN - \n{}\n", callbackData->pMessage);
+            MU_VK_ERROR(callbackData->pMessage);
             break;
         }
 
