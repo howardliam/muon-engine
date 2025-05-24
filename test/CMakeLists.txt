@@ -1,8 +1,6 @@
 add_executable(test
     src/g_buffer.hpp
     src/g_buffer.cpp
-    src/logger.hpp
-    src/logger.cpp
     src/main.cpp
 )
 
