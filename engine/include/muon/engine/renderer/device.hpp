@@ -188,10 +188,13 @@ namespace muon {
          *
          * @return  struct containing the supported swapchain options.
          */
-        [[nodiscard]] SwapchainSupportDetails swapchainSupportDetails();
+        [[nodiscard]] std::unique_ptr<SwapchainSupportDetails> &swapchainSupportDetails();
 
     private:
         Window &m_window;
+
+        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
+        std::unique_ptr<SwapchainSupportDetails> m_swapchainSupportDetails;
 
         const std::vector<const char *> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -210,14 +213,14 @@ namespace muon {
         vk::SurfaceKHR m_surface;
         vk::PhysicalDevice m_physicalDevice;
         vk::Device m_device;
-        vk::CommandPool m_commandPool;
 
-        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
         vk::Queue m_graphicsQueue;
         vk::Queue m_computeQueue;
         vk::Queue m_presentQueue;
 
         vma::Allocator m_allocator;
+
+        vk::CommandPool m_commandPool;
 
         /**
          * @brief   creates instance.
@@ -270,7 +273,7 @@ namespace muon {
          *
          * @return  struct containing the supported swapchain options.
          */
-        [[nodiscard]] SwapchainSupportDetails querySwapchainSupport(vk::PhysicalDevice physicalDevice);
+        void querySwapchainSupport(vk::PhysicalDevice physicalDevice);
     };
 
 }

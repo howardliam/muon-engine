@@ -187,15 +187,15 @@ namespace muon {
             }
         };
 
-        auto supportDetails = device.swapchainSupportDetails();
+        auto &supportDetails = device.swapchainSupportDetails();
 
-        auto surfaceFormat = selectSurfaceFormat(supportDetails.formats);
-        auto presentMode = selectPresentMode(supportDetails.presentModes);
-        auto extent = selectExtent(supportDetails.capabilities, windowExtent);
+        auto surfaceFormat = selectSurfaceFormat(supportDetails->formats);
+        auto presentMode = selectPresentMode(supportDetails->presentModes);
+        auto extent = selectExtent(supportDetails->capabilities, windowExtent);
 
-        uint32_t imageCount = supportDetails.capabilities.minImageCount + 1;
-        if (supportDetails.capabilities.maxImageCount > 0 && imageCount > supportDetails.capabilities.maxImageCount) {
-            imageCount = supportDetails.capabilities.maxImageCount;
+        uint32_t imageCount = supportDetails->capabilities.minImageCount + 1;
+        if (supportDetails->capabilities.maxImageCount > 0 && imageCount > supportDetails->capabilities.maxImageCount) {
+            imageCount = supportDetails->capabilities.maxImageCount;
         }
 
         vk::SwapchainCreateInfoKHR createInfo{};
@@ -221,7 +221,7 @@ namespace muon {
             createInfo.pQueueFamilyIndices = nullptr;
         }
 
-        createInfo.preTransform = supportDetails.capabilities.currentTransform;
+        createInfo.preTransform = supportDetails->capabilities.currentTransform;
         createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
         createInfo.presentMode = presentMode;
         createInfo.clipped = true;

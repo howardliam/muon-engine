@@ -6,6 +6,7 @@
 #include "muon/engine/platform/window.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
+#include <memory>
 #include <set>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
@@ -332,8 +333,8 @@ namespace muon {
         return m_queueFamilyIndices;
     }
 
-    SwapchainSupportDetails Device::swapchainSupportDetails() {
-        return querySwapchainSupport(m_physicalDevice);
+    std::unique_ptr<SwapchainSupportDetails> &Device::swapchainSupportDetails() {
+        return m_swapchainSupportDetails;
     }
 
     void Device::createInstance() {
@@ -456,28 +457,29 @@ namespace muon {
             bool extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
             bool swapchainAdequate = false;
             if (extensionsSupported) {
-                SwapchainSupportDetails supportDetails = querySwapchainSupport(physicalDevice);
-                swapchainAdequate = !supportDetails.formats.empty() && !supportDetails.presentModes.empty();
+                querySwapchainSupport(physicalDevice);
+                swapchainAdequate = !m_swapchainSupportDetails->formats.empty() && !m_swapchainSupportDetails->presentModes.empty();
             }
             bool supportsBindless = indexingFeatures.descriptorBindingPartiallyBound && indexingFeatures.runtimeDescriptorArray;
-
 
             return isDiscrete && hasCompleteIndices && supportsGeometryShader && extensionsSupported && swapchainAdequate && supportsBindless;
         };
 
-        for (const auto &pd : physicalDevices) {
-            if (isDeviceSuitable(pd)) {
-                m_physicalDevice = pd;
+        for (const auto &physicalDevice : physicalDevices) {
+            if (isDeviceSuitable(physicalDevice)) {
+                m_physicalDevice = physicalDevice;
                 break;
             }
         }
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
-    }
 
-    void Device::createLogicalDevice() {
         findQueueFamilies(m_physicalDevice);
         MU_CORE_ASSERT(m_queueFamilyIndices->isComplete(), "queue family indices are not complete");
 
+        querySwapchainSupport(m_physicalDevice);
+    }
+
+    void Device::createLogicalDevice() {
         std::set<uint32_t> uniqueQueueFamilies = {
             *m_queueFamilyIndices->graphicsFamily,
             *m_queueFamilyIndices->computeFamily,
@@ -578,10 +580,10 @@ namespace muon {
         }
     }
 
-    SwapchainSupportDetails Device::querySwapchainSupport(vk::PhysicalDevice physicalDevice) {
-        SwapchainSupportDetails details{};
+    void Device::querySwapchainSupport(vk::PhysicalDevice physicalDevice) {
+        m_swapchainSupportDetails = std::make_unique<SwapchainSupportDetails>();
 
-        auto result = physicalDevice.getSurfaceCapabilitiesKHR(m_surface, &details.capabilities);
+        auto result = physicalDevice.getSurfaceCapabilitiesKHR(m_surface, &m_swapchainSupportDetails->capabilities);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface capabilities");
 
         uint32_t formatCount{0};
@@ -589,8 +591,8 @@ namespace muon {
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
         MU_CORE_ASSERT(formatCount > 0, "there must be more than 0 surface formats");
 
-        details.formats.resize(formatCount);
-        result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, details.formats.data());
+        m_swapchainSupportDetails->formats.resize(formatCount);
+        result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, m_swapchainSupportDetails->formats.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
 
         uint32_t presentModeCount;
@@ -598,11 +600,9 @@ namespace muon {
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
         MU_CORE_ASSERT(presentModeCount > 0, "there must be more than 0 present modes");
 
-        details.presentModes.resize(presentModeCount);
-        result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, details.presentModes.data());
+        m_swapchainSupportDetails->presentModes.resize(presentModeCount);
+        result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, m_swapchainSupportDetails->presentModes.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
-
-        return details;
     }
 
 }
