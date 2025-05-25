@@ -20,6 +20,15 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
 
+#include <muon/asset/image.hpp>
+
+#include <muon/engine/core/assert.hpp>
+#include <muon/engine/core/log.hpp>
+
+#include <muon/engine/debug/profiler.hpp>
+
+#include <muon/engine/platform/window.hpp>
+
 #include <muon/engine/renderer/descriptor/pool.hpp>
 #include <muon/engine/renderer/descriptor/writer.hpp>
 #include <muon/engine/renderer/descriptor/set_layout.hpp>
@@ -37,12 +46,8 @@
 #include <muon/engine/renderer/shader.hpp>
 #include <muon/engine/renderer/swapchain.hpp>
 #include <muon/engine/renderer/texture.hpp>
-#include <muon/engine/platform/window.hpp>
-#include <muon/engine/utils/color.hpp>
-#include <muon/engine/core/assert.hpp>
-#include <muon/engine/core/log.hpp>
 
-#include <muon/asset/image.hpp>
+#include <muon/engine/utils/color.hpp>
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
