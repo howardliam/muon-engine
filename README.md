@@ -23,6 +23,8 @@ Add as a git submodule and link to the required libraries.
 | integers | use `cstdint`/`stdint.h` integer types: `int32_t`, `int64_t`, etc. |
 | classes, structs | named in PascelCase: `FileManager`, `MaterialInfo` |
 | functions, methods, variables | named in camelCase: `renderModel()` |
+| static variables | name begins with `s_`, e.g.: `static tracy::VkCtx *s_tracyContext;` |
+| member variables | name begins with `m_`, e.g.: `Device &m_device;` |
 | files | open compound named in snake_case: `frame_handler.hpp` |
 | headers | always use `.hpp` extension over `.h` to be C++ specific |
 | abbreviations, initialisations | treated as single words: `Hdr`, `Ssao`, `Gltf` |
