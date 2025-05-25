@@ -2,24 +2,16 @@
 
 #include <cstdint>
 
-#ifdef __linux__
+#if INTPTR_MAX == INT64_MAX
 
-    #if INTPTR_MAX == INT64_MAX
+    #ifdef __linux__
         #define MU_PLATFORM_LINUX
-    #else
-        #error "32 bit Linux is not supported"
+    #elifdef _WIN32
+        #define MU_PLATFORM_WINDOWS
     #endif
-
-#elifdef _WIN32
-
-        #ifdef _WIN64
-            #define MU_PLATFORM_WINDOWS
-        #else
-            #error "32 bit Windows is not supported"
-        #endif
 
 #else
 
-    #error "Unknown platform"
+    #error "32 bit systems are not supported"
 
 #endif
