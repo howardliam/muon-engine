@@ -23,12 +23,12 @@ namespace muon {
             createInfo.pPushConstantRanges = nullptr;
         }
 
-        auto result = device.getDevice().createPipelineLayout(&createInfo, nullptr, &layout);
+        auto result = device.device().createPipelineLayout(&createInfo, nullptr, &layout);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline layout");
     }
 
     PipelineLayout::~PipelineLayout() {
-        device.getDevice().destroyPipelineLayout(layout);
+        device.device().destroyPipelineLayout(layout);
     }
 
     vk::PipelineLayout PipelineLayout::getLayout() const {

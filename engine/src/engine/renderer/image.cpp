@@ -27,8 +27,8 @@ namespace muon {
     }
 
     Image::~Image() {
-        device.getDevice().destroyImageView(imageView);
-        device.getAllocator().destroyImage(image, allocation);
+        device.device().destroyImageView(imageView);
+        device.allocator().destroyImage(image, allocation);
         MU_CORE_DEBUG("destroyed image");
     }
 
@@ -69,8 +69,8 @@ namespace muon {
     }
 
     void Image::resize(vk::Extent2D extent) {
-        device.getDevice().destroyImageView(imageView);
-        device.getAllocator().destroyImage(image, allocation);
+        device.device().destroyImageView(imageView);
+        device.allocator().destroyImage(image, allocation);
         this->extent = extent;
 
         createImage();
@@ -161,7 +161,7 @@ namespace muon {
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        auto result = device.getDevice().createImageView(&viewInfo, nullptr, &imageView);
+        auto result = device.device().createImageView(&viewInfo, nullptr, &imageView);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create image view")
 
         descriptorInfo->imageView = imageView;

@@ -25,10 +25,10 @@ namespace muon {
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
 
-        device.getDevice().destroyFramebuffer(framebuffer);
-        device.getDevice().destroyPipelineCache(cache);
-        device.getDevice().destroyRenderPass(renderPass);
-        device.getDevice().destroyDescriptorPool(descriptorPool);
+        device.device().destroyFramebuffer(framebuffer);
+        device.device().destroyPipelineCache(cache);
+        device.device().destroyRenderPass(renderPass);
+        device.device().destroyDescriptorPool(descriptorPool);
     }
 
     void DebugUi::pollEvents(SDL_Event *event) {
@@ -82,7 +82,7 @@ namespace muon {
     }
 
     void DebugUi::recreateSizedResources() {
-        device.getDevice().destroyFramebuffer(framebuffer);
+        device.device().destroyFramebuffer(framebuffer);
         createSizedResources();
     }
 
@@ -97,7 +97,7 @@ namespace muon {
         dpCreateInfo.poolSizeCount = 1;
         dpCreateInfo.pPoolSizes = &poolSize;
 
-        auto result = device.getDevice().createDescriptorPool(&dpCreateInfo, nullptr, &descriptorPool);
+        auto result = device.device().createDescriptorPool(&dpCreateInfo, nullptr, &descriptorPool);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui descriptor pool");
         }
@@ -137,7 +137,7 @@ namespace muon {
         rpCreateInfo.dependencyCount = 1;
         rpCreateInfo.pDependencies = &dependency;
 
-        result = device.getDevice().createRenderPass2(&rpCreateInfo, nullptr, &renderPass);
+        result = device.device().createRenderPass2(&rpCreateInfo, nullptr, &renderPass);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui render pass");
         }
@@ -147,7 +147,7 @@ namespace muon {
         pcCreateInfo.initialDataSize = 0;
         pcCreateInfo.pInitialData = nullptr;
 
-        result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
+        result = device.device().createPipelineCache(&pcCreateInfo, nullptr, &cache);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui pipeline cache");
         }
@@ -175,7 +175,7 @@ namespace muon {
         fbCreateInfo.height = extent.height;
         fbCreateInfo.layers = 1;
 
-        auto result = device.getDevice().createFramebuffer(&fbCreateInfo, nullptr, &framebuffer);
+        auto result = device.device().createFramebuffer(&fbCreateInfo, nullptr, &framebuffer);
         if (result != vk::Result::eSuccess) {
             throw std::runtime_error("failed to create debug ui frame buffer");
         }
@@ -189,11 +189,11 @@ namespace muon {
 
         ImGui_ImplVulkan_InitInfo initInfo{};
         initInfo.ApiVersion = VK_API_VERSION_1_3;
-        initInfo.Instance = static_cast<VkInstance>(device.getInstance());
-        initInfo.PhysicalDevice = static_cast<VkPhysicalDevice>(device.getPhysicalDevice());
-        initInfo.Device = static_cast<VkDevice>(device.getDevice());
-        initInfo.QueueFamily = *device.getQueueFamilyIndices().graphicsFamily;
-        initInfo.Queue = static_cast<VkQueue>(device.getGraphicsQueue());
+        initInfo.Instance = static_cast<VkInstance>(device.instance());
+        initInfo.PhysicalDevice = static_cast<VkPhysicalDevice>(device.physicalDevice());
+        initInfo.Device = static_cast<VkDevice>(device.device());
+        initInfo.QueueFamily = *device.queueFamilyIndices()->graphicsFamily;
+        initInfo.Queue = static_cast<VkQueue>(device.graphicsQueue());
         initInfo.PipelineCache = static_cast<VkPipelineCache>(cache);
         initInfo.DescriptorPool = static_cast<VkDescriptorPool>(descriptorPool);
         initInfo.RenderPass = static_cast<VkRenderPass>(renderPass);
@@ -206,6 +206,6 @@ namespace muon {
 
         ImGui_ImplVulkan_CreateFontsTexture();
 
-        device.getDevice().waitIdle();
+        device.device().waitIdle();
     }
 }

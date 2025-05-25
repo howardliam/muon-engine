@@ -19,9 +19,9 @@ namespace muon {
     }
 
     Texture::~Texture() {
-        device.getDevice().destroySampler(sampler);
-        device.getDevice().destroyImageView(imageView);
-        device.getAllocator().destroyImage(image, allocation);
+        device.device().destroySampler(sampler);
+        device.device().destroyImageView(imageView);
+        device.allocator().destroyImage(image, allocation);
     }
 
     vk::DescriptorImageInfo Texture::getDescriptorInfo() const {
@@ -77,7 +77,7 @@ namespace muon {
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        auto result = device.getDevice().createImageView(&viewInfo, nullptr, &imageView);
+        auto result = device.device().createImageView(&viewInfo, nullptr, &imageView);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create texture image view");
 
         vk::SamplerCreateInfo samplerInfo{};
@@ -95,7 +95,7 @@ namespace muon {
         samplerInfo.anisotropyEnable = false;
         samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
 
-        result = device.getDevice().createSampler(&samplerInfo, nullptr, &sampler);
+        result = device.device().createSampler(&samplerInfo, nullptr, &sampler);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create texture sampler");
     }
 

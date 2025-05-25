@@ -17,10 +17,10 @@ namespace muon {
     }
 
     ComputePipeline::~ComputePipeline() {
-        device.getDevice().destroyShaderModule(shader);
-        device.getDevice().destroyPipeline(pipeline);
-        device.getDevice().destroyPipelineCache(cache);
-        device.getDevice().destroyPipelineLayout(layout);
+        device.device().destroyShaderModule(shader);
+        device.device().destroyPipeline(pipeline);
+        device.device().destroyPipelineCache(cache);
+        device.device().destroyPipelineLayout(layout);
     }
 
     void ComputePipeline::bind(vk::CommandBuffer cmd, const std::vector<vk::DescriptorSet> &sets) {
@@ -56,7 +56,7 @@ namespace muon {
         createInfo.codeSize = byteCode.size();
         createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
-        auto result = device.getDevice().createShaderModule(&createInfo, nullptr, &shaderModule);
+        auto result = device.device().createShaderModule(&createInfo, nullptr, &shaderModule);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create shader module");
     }
 
@@ -70,7 +70,7 @@ namespace muon {
         createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
         createInfo.pPushConstantRanges = pushConstants.data();
 
-        auto result = device.getDevice().createPipelineLayout(&createInfo, nullptr, &layout);
+        auto result = device.device().createPipelineLayout(&createInfo, nullptr, &layout);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline layout");
     }
 
@@ -80,7 +80,7 @@ namespace muon {
         pcCreateInfo.initialDataSize = 0;
         pcCreateInfo.pInitialData = nullptr;
 
-        auto result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
+        auto result = device.device().createPipelineCache(&pcCreateInfo, nullptr, &cache);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline cache");
 
         std::vector byteCode = ShaderCompiler::readFile(shaderPath);
@@ -98,7 +98,7 @@ namespace muon {
         pCreateInfo.basePipelineIndex = -1;
         pCreateInfo.basePipelineHandle = nullptr;
 
-        result = device.getDevice().createComputePipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
+        result = device.device().createComputePipelines(cache, 1, &pCreateInfo, nullptr, &pipeline);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create compute pipeline");
     }
 

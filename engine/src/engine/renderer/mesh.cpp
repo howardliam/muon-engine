@@ -22,16 +22,16 @@ namespace muon {
         MU_CORE_DEBUG("destroyed model");
     }
 
-    void Mesh::bind(vk::CommandBuffer commandBuffer) const {
+    void Mesh::bind(vk::CommandBuffer cmd) const {
         const vk::Buffer buffer = vertexBuffer->getBuffer();
         const vk::DeviceSize offset = 0;
 
-        commandBuffer.bindVertexBuffers(0, 1, &buffer, &offset);
-        commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
+        cmd.bindVertexBuffers(0, 1, &buffer, &offset);
+        cmd.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
     }
 
-    void Mesh::draw(vk::CommandBuffer commandBuffer) const {
-        commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
+    void Mesh::draw(vk::CommandBuffer cmd) const {
+        cmd.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 
     void Mesh::createVertexBuffer(const std::vector<uint8_t> &vertices, uint32_t stride) {

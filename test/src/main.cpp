@@ -312,7 +312,7 @@ int main() {
         }
 
         if (window.wasResized()) {
-            device.getDevice().waitIdle();
+            device.device().waitIdle();
 
             auto extent = window.getExtent();
 
@@ -535,5 +535,5 @@ int main() {
         frames += 1;
     }
 
-    device.getDevice().waitIdle();
+    device.device().waitIdle();
 }

@@ -35,12 +35,12 @@ namespace muon {
         createInfo.pBindings = setLayoutBindings.data();
         createInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool;
 
-        auto result = device.getDevice().createDescriptorSetLayout(&createInfo, nullptr, &setLayout);
+        auto result = device.device().createDescriptorSetLayout(&createInfo, nullptr, &setLayout);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create descriptor set layout");
     }
 
     DescriptorSetLayout::~DescriptorSetLayout() {
-        device.getDevice().destroyDescriptorSetLayout(setLayout, nullptr);
+        device.device().destroyDescriptorSetLayout(setLayout, nullptr);
     }
 
     vk::DescriptorSet DescriptorSetLayout::createSet(const DescriptorPool &pool) {
@@ -50,7 +50,7 @@ namespace muon {
         allocInfo.descriptorSetCount = 1;
 
         vk::DescriptorSet set;
-        auto _ = device.getDevice().allocateDescriptorSets(&allocInfo, &set);
+        auto _ = device.device().allocateDescriptorSets(&allocInfo, &set);
         return set;
     }
 

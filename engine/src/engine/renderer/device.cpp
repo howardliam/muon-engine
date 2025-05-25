@@ -11,9 +11,10 @@
 #include <vk_mem_alloc.h>
 #include <vk_mem_alloc.hpp>
 
-namespace muon {
+#ifdef MU_DEBUG_ENABLED
 
-    #ifdef MU_DEBUG_ENABLED
+namespace {
+
     /**
      * @brief   callback function for Vulkan validation layers.
      *
@@ -94,9 +95,14 @@ namespace muon {
 
         return function(instance, debugMessenger, allocator);
     }
-    #endif
 
-    Device::Device(Window &window) : window(window) {
+}
+
+#endif
+
+namespace muon {
+
+    Device::Device(Window &window) : m_window(window) {
         createInstance();
 
         #ifdef MU_DEBUG_ENABLED
@@ -112,14 +118,14 @@ namespace muon {
         {
             vk::CommandBufferAllocateInfo allocateInfo{};
             allocateInfo.level = vk::CommandBufferLevel::ePrimary;
-            allocateInfo.commandPool = commandPool;
+            allocateInfo.commandPool = m_commandPool;
             allocateInfo.commandBufferCount = 1;
 
             vk::CommandBuffer cmd;
-            auto result = device.allocateCommandBuffers(&allocateInfo, &cmd);
+            auto result = m_device.allocateCommandBuffers(&allocateInfo, &cmd);
             MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate profiler creation command buffer");
 
-            Profiler::createContext(physicalDevice, device, graphicsQueue, cmd);
+            Profiler::createContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
         }
 
         MU_CORE_DEBUG("created device");
@@ -128,16 +134,16 @@ namespace muon {
     Device::~Device() {
         Profiler::destroyContext();
 
-        device.destroyCommandPool(commandPool, nullptr);
-        allocator.destroy();
-        device.destroy(nullptr);
-        instance.destroySurfaceKHR(surface, nullptr);
+        m_device.destroyCommandPool(m_commandPool, nullptr);
+        m_allocator.destroy();
+        m_device.destroy(nullptr);
+        m_instance.destroySurfaceKHR(m_surface, nullptr);
 
         #ifdef MU_DEBUG_ENABLED
-        destroyDebugUtilsMessenger(instance, debugMessenger, nullptr);
+        destroyDebugUtilsMessenger(m_instance, m_debugMessenger, nullptr);
         #endif
 
-        instance.destroy(nullptr);
+        m_instance.destroy(nullptr);
 
         MU_CORE_DEBUG("destroyed device");
     }
@@ -145,7 +151,7 @@ namespace muon {
     vk::Format Device::findSupportedFormat(const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
         for (auto format : candidates) {
             vk::FormatProperties props;
-            physicalDevice.getFormatProperties(format, &props);
+            m_physicalDevice.getFormatProperties(format, &props);
 
             if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
                 return format;
@@ -161,11 +167,11 @@ namespace muon {
     vk::CommandBuffer Device::beginSingleTimeCommands() {
         vk::CommandBufferAllocateInfo allocateInfo{};
         allocateInfo.level = vk::CommandBufferLevel::ePrimary;
-        allocateInfo.commandPool = commandPool;
+        allocateInfo.commandPool = m_commandPool;
         allocateInfo.commandBufferCount = 1;
 
         vk::CommandBuffer commandBuffer;
-        auto result = device.allocateCommandBuffers(&allocateInfo, &commandBuffer);
+        auto result = m_device.allocateCommandBuffers(&allocateInfo, &commandBuffer);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate single time command buffer");
 
         vk::CommandBufferBeginInfo beginInfo{};
@@ -184,12 +190,12 @@ namespace muon {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        auto result = graphicsQueue.submit(1, &submitInfo, nullptr);
+        auto result = m_graphicsQueue.submit(1, &submitInfo, nullptr);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to submit command buffer to graphics queue");
 
-        graphicsQueue.waitIdle();
+        m_graphicsQueue.waitIdle();
 
-        device.freeCommandBuffers(commandPool, 1, &commandBuffer);
+        m_device.freeCommandBuffers(m_commandPool, 1, &commandBuffer);
     }
 
     void Device::copyBuffer(vk::Buffer src, vk::Buffer dest, vk::DeviceSize size) {
@@ -253,11 +259,11 @@ namespace muon {
     }
 
     void Device::createImage(const vk::ImageCreateInfo &imageInfo, vk::MemoryPropertyFlags properties, vma::MemoryUsage memoryUsage, vk::Image &image, vma::Allocation &allocation) {
-        auto result = device.createImage(&imageInfo, nullptr, &image);
+        auto result = m_device.createImage(&imageInfo, nullptr, &image);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create an image");
 
         vk::MemoryRequirements memoryRequirements{};
-        device.getImageMemoryRequirements(image, &memoryRequirements);
+        m_device.getImageMemoryRequirements(image, &memoryRequirements);
 
         vma::AllocationCreateInfo allocCreateInfo{};
         allocCreateInfo.usage = memoryUsage;
@@ -265,10 +271,10 @@ namespace muon {
 
         vma::AllocationInfo allocationInfo;
 
-        result = allocator.allocateMemory(&memoryRequirements, &allocCreateInfo, &allocation, &allocationInfo);
+        result = m_allocator.allocateMemory(&memoryRequirements, &allocCreateInfo, &allocation, &allocationInfo);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate image memory");
 
-        allocator.bindImageMemory(allocation, image);
+        m_allocator.bindImageMemory(allocation, image);
     }
 
     void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vma::MemoryUsage memoryUsage, vk::Buffer &buffer, vma::Allocation &allocation) {
@@ -282,52 +288,52 @@ namespace muon {
 
         vma::AllocationInfo allocationInfo;
 
-        auto result = allocator.createBuffer(&bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocationInfo);
+        auto result = m_allocator.createBuffer(&bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocationInfo);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create buffer");
     }
 
-    vk::Instance Device::getInstance() const {
-        return instance;
+    vk::Instance Device::instance() const {
+        return m_instance;
     }
 
-    vk::SurfaceKHR Device::getSurface() const {
-        return surface;
+    vk::SurfaceKHR Device::surface() const {
+        return m_surface;
     }
 
-    vk::PhysicalDevice Device::getPhysicalDevice() const {
-        return physicalDevice;
+    vk::PhysicalDevice Device::physicalDevice() const {
+        return m_physicalDevice;
     }
 
-    vk::Device Device::getDevice() const {
-        return device;
+    vk::Device Device::device() const {
+        return m_device;
     }
 
-    vk::CommandPool Device::getCommandPool() const {
-        return commandPool;
+    vk::CommandPool Device::commandPool() const {
+        return m_commandPool;
     }
 
-    vk::Queue Device::getGraphicsQueue() const {
-        return graphicsQueue;
+    vk::Queue Device::graphicsQueue() const {
+        return m_graphicsQueue;
     }
 
-    vk::Queue Device::getComputeQueue() const {
-        return computeQueue;
+    vk::Queue Device::computeQueue() const {
+        return m_computeQueue;
     }
 
-    vk::Queue Device::getPresentQueue() const {
-        return presentQueue;
+    vk::Queue Device::presentQueue() const {
+        return m_presentQueue;
     }
 
-    vma::Allocator Device::getAllocator() const {
-        return allocator;
+    vma::Allocator Device::allocator() const {
+        return m_allocator;
     }
 
-    QueueFamilyIndices Device::getQueueFamilyIndices() {
-        return findQueueFamilies(physicalDevice);
+    std::unique_ptr<QueueFamilyIndices> &Device::queueFamilyIndices() {
+        return m_queueFamilyIndices;
     }
 
-    SwapchainSupportDetails Device::getSwapchainSupportDetails() {
-        return querySwapchainSupport(physicalDevice);
+    SwapchainSupportDetails Device::swapchainSupportDetails() {
+        return querySwapchainSupport(m_physicalDevice);
     }
 
     void Device::createInstance() {
@@ -386,11 +392,11 @@ namespace muon {
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         #ifdef MU_DEBUG_ENABLED
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+        createInfo.ppEnabledLayerNames = m_validationLayers.data();
         #endif
 
-        auto result = vk::createInstance(&createInfo, nullptr, &instance);
+        auto result = vk::createInstance(&createInfo, nullptr, &m_instance);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create instance");
     }
 
@@ -407,27 +413,27 @@ namespace muon {
         createInfo.pfnUserCallback = debugCallback;
 
         auto result = createDebugUtilsMessenger(
-            instance,
+            m_instance,
             reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT *>(&createInfo),
             nullptr,
-            reinterpret_cast<VkDebugUtilsMessengerEXT *>(&debugMessenger)
+            reinterpret_cast<VkDebugUtilsMessengerEXT *>(&m_debugMessenger)
         );
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to debug messenger");
     }
 
     void Device::createSurface() {
-        auto success = window.createSurface(instance, reinterpret_cast<VkSurfaceKHR *>(&surface));
+        auto success = m_window.createSurface(m_instance, reinterpret_cast<VkSurfaceKHR *>(&m_surface));
         MU_CORE_ASSERT(success, std::format("failed to create window surface: {}", SDL_GetError()));
     }
 
     void Device::selectPhysicalDevice() {
-        std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+        std::vector<vk::PhysicalDevice> physicalDevices = m_instance.enumeratePhysicalDevices();
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
         auto checkDeviceExtensionSupport = [&](vk::PhysicalDevice device) -> bool {
             std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
 
-            std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+            std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
 
             for (const auto &extension : availableExtensions) {
                 requiredExtensions.erase(extension.extensionName);
@@ -436,20 +442,21 @@ namespace muon {
             return requiredExtensions.empty();
         };
 
-        auto isDeviceSuitable = [&](vk::PhysicalDevice device) -> bool {
-            vk::PhysicalDeviceProperties2 deviceProperties = device.getProperties2();
+        auto isDeviceSuitable = [&](vk::PhysicalDevice physicalDevice) -> bool {
+            vk::PhysicalDeviceProperties2 deviceProperties = physicalDevice.getProperties2();
             vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
             vk::PhysicalDeviceFeatures2 deviceFeatures{};
             deviceFeatures.pNext = &indexingFeatures;
-            device.getFeatures2(&deviceFeatures);
+            physicalDevice.getFeatures2(&deviceFeatures);
 
             bool isDiscrete = deviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
-            bool hasCompleteIndices = findQueueFamilies(device).isComplete();
+            findQueueFamilies(physicalDevice);
+            bool hasCompleteIndices = m_queueFamilyIndices->isComplete();
             bool supportsGeometryShader = deviceFeatures.features.geometryShader;
-            bool extensionsSupported = checkDeviceExtensionSupport(device);
+            bool extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
             bool swapchainAdequate = false;
             if (extensionsSupported) {
-                SwapchainSupportDetails supportDetails = querySwapchainSupport(device);
+                SwapchainSupportDetails supportDetails = querySwapchainSupport(physicalDevice);
                 swapchainAdequate = !supportDetails.formats.empty() && !supportDetails.presentModes.empty();
             }
             bool supportsBindless = indexingFeatures.descriptorBindingPartiallyBound && indexingFeatures.runtimeDescriptorArray;
@@ -460,21 +467,21 @@ namespace muon {
 
         for (const auto &pd : physicalDevices) {
             if (isDeviceSuitable(pd)) {
-                physicalDevice = pd;
+                m_physicalDevice = pd;
                 break;
             }
         }
-        MU_CORE_ASSERT(physicalDevice, "unable to select a suitable GPU");
+        MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
     }
 
     void Device::createLogicalDevice() {
-        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-        MU_CORE_ASSERT(indices.isComplete(), "queue family indices are not complete");
+        findQueueFamilies(m_physicalDevice);
+        MU_CORE_ASSERT(m_queueFamilyIndices->isComplete(), "queue family indices are not complete");
 
         std::set<uint32_t> uniqueQueueFamilies = {
-            *indices.graphicsFamily,
-            *indices.computeFamily,
-            *indices.presentFamily
+            *m_queueFamilyIndices->graphicsFamily,
+            *m_queueFamilyIndices->computeFamily,
+            *m_queueFamilyIndices->presentFamily
         };
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
 
@@ -503,98 +510,96 @@ namespace muon {
 
         vk::PhysicalDeviceFeatures2 deviceFeatures{};
         deviceFeatures.pNext = &indexingFeatures;
-        physicalDevice.getFeatures2(&deviceFeatures);
+        m_physicalDevice.getFeatures2(&deviceFeatures);
 
         vk::DeviceCreateInfo createInfo{};
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
         createInfo.pNext = &deviceFeatures;
 
-        auto result = physicalDevice.createDevice(&createInfo, nullptr, &device);
+        auto result = m_physicalDevice.createDevice(&createInfo, nullptr, &m_device);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create a logical device");
 
-        device.getQueue(*indices.graphicsFamily, 0, &graphicsQueue);
-        device.getQueue(*indices.computeFamily, 0, &computeQueue);
-        device.getQueue(*indices.presentFamily, 0, &presentQueue);
+        m_device.getQueue(*m_queueFamilyIndices->graphicsFamily, 0, &m_graphicsQueue);
+        m_device.getQueue(*m_queueFamilyIndices->computeFamily, 0, &m_computeQueue);
+        m_device.getQueue(*m_queueFamilyIndices->presentFamily, 0, &m_presentQueue);
     }
 
     void Device::createAllocator() {
         vma::AllocatorCreateInfo allocatorInfo{};
-        allocatorInfo.instance = instance;
-        allocatorInfo.physicalDevice = physicalDevice;
-        allocatorInfo.device = device;
+        allocatorInfo.instance = m_instance;
+        allocatorInfo.physicalDevice = m_physicalDevice;
+        allocatorInfo.device = m_device;
 
-        auto result = vma::createAllocator(&allocatorInfo, &allocator);
+        auto result = vma::createAllocator(&allocatorInfo, &m_allocator);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create allocator");
     }
 
     void Device::createCommandPool() {
-        QueueFamilyIndices queueFamilyIndices = getQueueFamilyIndices();
+        auto &indices = m_queueFamilyIndices;
 
         vk::CommandPoolCreateInfo poolInfo{};
-        poolInfo.queueFamilyIndex = *queueFamilyIndices.graphicsFamily;
+        poolInfo.queueFamilyIndex = *indices->graphicsFamily;
         poolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
-        auto result = device.createCommandPool(&poolInfo, nullptr, &commandPool);
+        auto result = m_device.createCommandPool(&poolInfo, nullptr, &m_commandPool);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create command pool");
     }
 
-    QueueFamilyIndices Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
-        QueueFamilyIndices indices;
+    void Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
+        m_queueFamilyIndices = std::make_unique<QueueFamilyIndices>();
 
         std::vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
         uint32_t i = 0;
         for (const auto &queueFamily : queueFamilies) {
             if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
-                indices.graphicsFamily = i;
+                m_queueFamilyIndices->graphicsFamily = i;
             }
 
             if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) {
-                indices.computeFamily = i;
+                m_queueFamilyIndices->computeFamily = i;
             }
 
             vk::Bool32 presentSupport = false;
-            auto result = physicalDevice.getSurfaceSupportKHR(i, surface, &presentSupport);
+            auto result = physicalDevice.getSurfaceSupportKHR(i, m_surface, &presentSupport);
 
             if (presentSupport && result == vk::Result::eSuccess) {
-                indices.presentFamily = i;
+                m_queueFamilyIndices->presentFamily = i;
             }
 
-            if (indices.isComplete()) {
+            if (m_queueFamilyIndices->isComplete()) {
                 break;
             }
 
             i++;
         }
-
-        return indices;
     }
 
     SwapchainSupportDetails Device::querySwapchainSupport(vk::PhysicalDevice physicalDevice) {
         SwapchainSupportDetails details{};
 
-        auto result = physicalDevice.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
+        auto result = physicalDevice.getSurfaceCapabilitiesKHR(m_surface, &details.capabilities);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface capabilities");
 
         uint32_t formatCount{0};
-        result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
+        result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, nullptr);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
         MU_CORE_ASSERT(formatCount > 0, "there must be more than 0 surface formats");
 
         details.formats.resize(formatCount);
-        result = physicalDevice.getSurfaceFormatsKHR(surface, &formatCount, details.formats.data());
+        result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, details.formats.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
 
         uint32_t presentModeCount;
-        result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
+        result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, nullptr);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
         MU_CORE_ASSERT(presentModeCount > 0, "there must be more than 0 present modes");
 
         details.presentModes.resize(presentModeCount);
-        result = physicalDevice.getSurfacePresentModesKHR(surface, &presentModeCount, details.presentModes.data());
+        result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, details.presentModes.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
 
         return details;

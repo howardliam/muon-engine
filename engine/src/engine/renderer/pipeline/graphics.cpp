@@ -10,10 +10,8 @@
 #include <spirv_reflect.h>
 
 namespace {
-    using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
-}
 
-namespace muon {
+    using VertexInputState = std::tuple<std::vector<vk::VertexInputAttributeDescription>, std::optional<vk::VertexInputBindingDescription>>;
 
     uint32_t offsetFromSpirvFormat(SpvReflectFormat format) {
         switch (format) {
@@ -129,6 +127,10 @@ namespace muon {
         return {std::move(attributeDescriptions), bindingDescription};
     }
 
+}
+
+namespace muon {
+
     GraphicsPipeline::GraphicsPipeline(
         Device &device,
         std::unique_ptr<ConfigInfo> &&configInfo,
@@ -152,18 +154,18 @@ namespace muon {
     }
 
     GraphicsPipeline::~GraphicsPipeline() {
-        device.getDevice().destroyPipeline(pipeline);
+        device.device().destroyPipeline(pipeline);
 
         for (const auto shader : shaders) {
-            device.getDevice().destroyShaderModule(shader);
+            device.device().destroyShaderModule(shader);
         }
 
-        device.getDevice().destroyPipelineCache(cache);
+        device.device().destroyPipelineCache(cache);
     }
 
     void GraphicsPipeline::bake(const vk::PipelineRenderingCreateInfo &renderingInfo) {
         if (pipeline != nullptr) {
-            device.getDevice().destroyPipeline(pipeline);
+            device.device().destroyPipeline(pipeline);
         }
 
         createPipeline(renderingInfo);
@@ -201,7 +203,7 @@ namespace muon {
         // plCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
         // plCreateInfo.pPushConstantRanges = pushConstants.data();
 
-        // auto result = device.getDevice().createPipelineLayout(&plCreateInfo, nullptr, &layout);
+        // auto result = device.device().createPipelineLayout(&plCreateInfo, nullptr, &layout);
         // if (result != vk::Result::eSuccess) {
         //     throw std::runtime_error("failed to create graphics pipeline layout");
         // }
@@ -213,7 +215,7 @@ namespace muon {
         pcCreateInfo.initialDataSize = 0;
         pcCreateInfo.pInitialData = nullptr;
 
-        auto result = device.getDevice().createPipelineCache(&pcCreateInfo, nullptr, &cache);
+        auto result = device.device().createPipelineCache(&pcCreateInfo, nullptr, &cache);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create graphics pipeline cache");
     }
 
@@ -226,7 +228,7 @@ namespace muon {
             smCreateInfo.codeSize = byteCode.size();
             smCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
-            auto result = device.getDevice().createShaderModule(&smCreateInfo, nullptr, &shaderModule);
+            auto result = device.device().createShaderModule(&smCreateInfo, nullptr, &shaderModule);
             MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create shader module");
         };
 
@@ -295,7 +297,7 @@ namespace muon {
         gpCreateInfo.basePipelineIndex = -1;
         gpCreateInfo.basePipelineHandle = nullptr;
 
-        auto result = device.getDevice().createGraphicsPipelines(cache, 1, &gpCreateInfo, nullptr, &pipeline);
+        auto result = device.device().createGraphicsPipelines(cache, 1, &gpCreateInfo, nullptr, &pipeline);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create graphics pipeline");
     }
 

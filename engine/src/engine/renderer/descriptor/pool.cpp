@@ -17,14 +17,14 @@ namespace muon {
         createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
         createInfo.pPoolSizes = poolSizes.data();
 
-        auto result = device.getDevice().createDescriptorPool(&createInfo, nullptr, &pool);
+        auto result = device.device().createDescriptorPool(&createInfo, nullptr, &pool);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create descriptor pool");
 
         MU_CORE_DEBUG("created descriptor pool");
     }
 
     DescriptorPool::~DescriptorPool() {
-        device.getDevice().destroyDescriptorPool(pool);
+        device.device().destroyDescriptorPool(pool);
         MU_CORE_DEBUG("destroyed descriptor pool");
     }
 

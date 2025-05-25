@@ -184,20 +184,20 @@ namespace muon {
 
         vk::CommandBufferAllocateInfo allocInfo{};
         allocInfo.level = vk::CommandBufferLevel::ePrimary;
-        allocInfo.commandPool = device.getCommandPool();
+        allocInfo.commandPool = device.commandPool();
         allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
-        auto result = device.getDevice().allocateCommandBuffers(&allocInfo, commandBuffers.data());
+        auto result = device.device().allocateCommandBuffers(&allocInfo, commandBuffers.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate command buffers");
     }
 
     void FrameHandler::freeCommandBuffers() {
-        device.getDevice().freeCommandBuffers(device.getCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+        device.device().freeCommandBuffers(device.commandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
         commandBuffers.clear();
     }
 
     void FrameHandler::recreateSwapchain(vk::Extent2D windowExtent) {
-        device.getDevice().waitIdle();
+        device.device().waitIdle();
 
         if (swapchain == nullptr) {
             swapchain = std::make_unique<Swapchain>(device, windowExtent);

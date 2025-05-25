@@ -32,18 +32,18 @@ namespace muon {
 
     Buffer::~Buffer() {
         unmap();
-        device.getAllocator().destroyBuffer(buffer, allocation);
+        device.allocator().destroyBuffer(buffer, allocation);
         MU_CORE_DEBUG("destroyed buffer");
     }
 
     vk::Result Buffer::map() {
-        return device.getAllocator().mapMemory(allocation, &mapped);
+        return device.allocator().mapMemory(allocation, &mapped);
     }
 
     void Buffer::unmap() {
         if (mapped == nullptr) { return; }
 
-        device.getAllocator().unmapMemory(allocation);
+        device.allocator().unmapMemory(allocation);
         mapped = nullptr;
     }
 
@@ -58,7 +58,7 @@ namespace muon {
     }
 
     void Buffer::flush(vk::DeviceSize size, vk::DeviceSize offset) {
-        device.getAllocator().flushAllocation(allocation, offset, size);
+        device.allocator().flushAllocation(allocation, offset, size);
     }
 
     vk::DescriptorBufferInfo Buffer::getDescriptorInfo(vk::DeviceSize size, vk::DeviceSize offset) {
@@ -66,7 +66,7 @@ namespace muon {
     }
 
     void Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) {
-        device.getAllocator().invalidateAllocation(allocation, offset, size);
+        device.allocator().invalidateAllocation(allocation, offset, size);
     }
 
     vk::Buffer Buffer::getBuffer() const {

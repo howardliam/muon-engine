@@ -2,6 +2,7 @@
 
 #include "muon/engine/utils/nocopy.hpp"
 #include "muon/engine/utils/nomove.hpp"
+#include <memory>
 #include <optional>
 #include <cstdint>
 #include <vector>
@@ -117,105 +118,106 @@ namespace muon {
          *
          * @return  instance.
          */
-        [[nodiscard]] vk::Instance getInstance() const;
+        [[nodiscard]] vk::Instance instance() const;
 
         /**
          * @brief   gets surface.
          *
          * @return  surface.
          */
-        [[nodiscard]] vk::SurfaceKHR getSurface() const;
+        [[nodiscard]] vk::SurfaceKHR surface() const;
 
         /**
          * @brief   gets physical device.
          *
          * @return  physical device.
          */
-        [[nodiscard]] vk::PhysicalDevice getPhysicalDevice() const;
+        [[nodiscard]] vk::PhysicalDevice physicalDevice() const;
 
         /**
          * @brief   gets logical device.
          *
          * @return  logical device.
          */
-        [[nodiscard]] vk::Device getDevice() const;
+        [[nodiscard]] vk::Device device() const;
 
         /**
          * @brief   gets command pool.
          *
          * @return  command pool.
          */
-        [[nodiscard]] vk::CommandPool getCommandPool() const;
+        [[nodiscard]] vk::CommandPool commandPool() const;
 
         /**
          * @brief   gets graphics queue.
          *
          * @return  graphics queue.
          */
-        [[nodiscard]] vk::Queue getGraphicsQueue() const;
+        [[nodiscard]] vk::Queue graphicsQueue() const;
 
         /**
             * @brief   gets compute queue.
             *
             * @return  compute queue.
             */
-        [[nodiscard]] vk::Queue getComputeQueue() const;
+        [[nodiscard]] vk::Queue computeQueue() const;
 
         /**
          * @brief   gets present queue.
          *
          * @return  present queue.
          */
-        [[nodiscard]] vk::Queue getPresentQueue() const;
+        [[nodiscard]] vk::Queue presentQueue() const;
 
         /**
          * @brief   gets allocator.
          *
          * @return  allocator.
          */
-        [[nodiscard]] vma::Allocator getAllocator() const;
+        [[nodiscard]] vma::Allocator allocator() const;
 
         /**
          * @brief   gets queue family indices.
          *
          * @return  struct containing the indices of required queue families.
          */
-        [[nodiscard]] QueueFamilyIndices getQueueFamilyIndices();
+        [[nodiscard]] std::unique_ptr<QueueFamilyIndices> &queueFamilyIndices();
 
         /**
          * @brief   gets swapchain support details.
          *
          * @return  struct containing the supported swapchain options.
          */
-        [[nodiscard]] SwapchainSupportDetails getSwapchainSupportDetails();
+        [[nodiscard]] SwapchainSupportDetails swapchainSupportDetails();
 
     private:
-        Window &window;
+        Window &m_window;
 
-        const std::vector<const char *> deviceExtensions = {
+        const std::vector<const char *> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
         };
 
-        vk::Instance instance;
+        vk::Instance m_instance;
 
         #ifdef MU_DEBUG_ENABLED
-        const std::vector<const char *> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-        vk::DebugUtilsMessengerEXT debugMessenger;
+        const std::vector<const char *> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+        vk::DebugUtilsMessengerEXT m_debugMessenger;
         #endif
 
-        vk::SurfaceKHR surface;
-        vk::PhysicalDevice physicalDevice;
-        vk::Device device;
-        vk::CommandPool commandPool;
+        vk::SurfaceKHR m_surface;
+        vk::PhysicalDevice m_physicalDevice;
+        vk::Device m_device;
+        vk::CommandPool m_commandPool;
 
-        vk::Queue graphicsQueue;
-        vk::Queue computeQueue;
-        vk::Queue presentQueue;
+        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
+        vk::Queue m_graphicsQueue;
+        vk::Queue m_computeQueue;
+        vk::Queue m_presentQueue;
 
-        vma::Allocator allocator;
+        vma::Allocator m_allocator;
 
         /**
          * @brief   creates instance.
@@ -259,7 +261,7 @@ namespace muon {
          *
          * @return  struct containing the indices of required queue families.
          */
-        [[nodiscard]] QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice physicalDevice);
+        void findQueueFamilies(vk::PhysicalDevice physicalDevice);
 
         /**
          * @brief   queries the physical device for supported swapchain features.
