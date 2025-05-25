@@ -1,5 +1,6 @@
 #include "muon/engine/debug/profiler.hpp"
 
+#include "muon/engine/core/assert.hpp"
 #include "muon/engine/core/log.hpp"
 
 namespace muon {
@@ -11,6 +12,7 @@ namespace muon {
     }
 
     tracy::VkCtx *Profiler::context() {
+        MU_CORE_ASSERT(s_tracyContext, "tracy context must exist");
         return s_tracyContext;
     }
 
