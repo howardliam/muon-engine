@@ -27,9 +27,9 @@ namespace muon {
     };
 
     struct SwapchainSupportDetails {
-        vk::SurfaceCapabilitiesKHR capabilities;
-        std::vector<vk::SurfaceFormatKHR> formats;
-        std::vector<vk::PresentModeKHR> presentModes;
+        vk::SurfaceCapabilitiesKHR capabilities{};
+        std::vector<vk::SurfaceFormatKHR> formats{};
+        std::vector<vk::PresentModeKHR> presentModes{};
     };
 
     class Device : NoCopy, NoMove {
@@ -188,13 +188,10 @@ namespace muon {
          *
          * @return  struct containing the supported swapchain options.
          */
-        [[nodiscard]] std::unique_ptr<SwapchainSupportDetails> &swapchainSupportDetails();
+        [[nodiscard]] SwapchainSupportDetails swapchainSupportDetails();
 
     private:
         Window &m_window;
-
-        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
-        std::unique_ptr<SwapchainSupportDetails> m_swapchainSupportDetails;
 
         const std::vector<const char *> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -214,6 +211,7 @@ namespace muon {
         vk::PhysicalDevice m_physicalDevice;
         vk::Device m_device;
 
+        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
         vk::Queue m_graphicsQueue;
         vk::Queue m_computeQueue;
         vk::Queue m_presentQueue;
@@ -266,17 +264,7 @@ namespace muon {
          */
         void findQueueFamilies(vk::PhysicalDevice physicalDevice);
 
-    private:
-        /**
-         * @brief   queries the physical device for supported swapchain features.
-         *
-         * @param   physicalDevice  the physical device to query swapchain information.
-         *
-         * @return  struct containing the supported swapchain options.
-         */
-        void querySwapchainSupport(vk::PhysicalDevice physicalDevice);
-
-        friend class Swapchain;
+        [[nodiscard]] SwapchainSupportDetails querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice);
     };
 
 }

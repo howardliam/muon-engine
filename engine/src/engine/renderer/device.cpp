@@ -333,8 +333,8 @@ namespace muon {
         return m_queueFamilyIndices;
     }
 
-    std::unique_ptr<SwapchainSupportDetails> &Device::swapchainSupportDetails() {
-        return m_swapchainSupportDetails;
+    SwapchainSupportDetails Device::swapchainSupportDetails() {
+        return querySwapchainSupportDetails(m_physicalDevice);
     }
 
     void Device::createInstance() {
@@ -457,8 +457,8 @@ namespace muon {
             bool extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
             bool swapchainAdequate = false;
             if (extensionsSupported) {
-                querySwapchainSupport(physicalDevice);
-                swapchainAdequate = !m_swapchainSupportDetails->formats.empty() && !m_swapchainSupportDetails->presentModes.empty();
+                auto details = querySwapchainSupportDetails(physicalDevice);
+                swapchainAdequate = !details.formats.empty() && !details.presentModes.empty();
             }
             bool supportsBindless = indexingFeatures.descriptorBindingPartiallyBound && indexingFeatures.runtimeDescriptorArray;
 
@@ -475,8 +475,6 @@ namespace muon {
 
         findQueueFamilies(m_physicalDevice);
         MU_CORE_ASSERT(m_queueFamilyIndices->isComplete(), "queue family indices are not complete");
-
-        querySwapchainSupport(m_physicalDevice);
     }
 
     void Device::createLogicalDevice() {
@@ -580,29 +578,35 @@ namespace muon {
         }
     }
 
-    void Device::querySwapchainSupport(vk::PhysicalDevice physicalDevice) {
-        m_swapchainSupportDetails = std::make_unique<SwapchainSupportDetails>();
+    SwapchainSupportDetails Device::querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice) {
+        SwapchainSupportDetails details{};
 
-        auto result = physicalDevice.getSurfaceCapabilitiesKHR(m_surface, &m_swapchainSupportDetails->capabilities);
+        vk::Result result;
+
+        result = physicalDevice.getSurfaceCapabilitiesKHR(m_surface, &details.capabilities);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface capabilities");
 
         uint32_t formatCount{0};
         result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, nullptr);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
-        MU_CORE_ASSERT(formatCount > 0, "there must be more than 0 surface formats");
 
-        m_swapchainSupportDetails->formats.resize(formatCount);
-        result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, m_swapchainSupportDetails->formats.data());
+        MU_CORE_ASSERT(formatCount > 0, "there must be more than 0 surface formats");
+        details.formats.resize(formatCount);
+
+        result = physicalDevice.getSurfaceFormatsKHR(m_surface, &formatCount, details.formats.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface formats");
 
         uint32_t presentModeCount;
         result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, nullptr);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
-        MU_CORE_ASSERT(presentModeCount > 0, "there must be more than 0 present modes");
 
-        m_swapchainSupportDetails->presentModes.resize(presentModeCount);
-        result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, m_swapchainSupportDetails->presentModes.data());
+        MU_CORE_ASSERT(presentModeCount > 0, "there must be more than 0 present modes");
+        details.presentModes.resize(presentModeCount);
+
+        result = physicalDevice.getSurfacePresentModesKHR(m_surface, &presentModeCount, details.presentModes.data());
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to get surface present modes");
+
+        return details;
     }
 
 }
