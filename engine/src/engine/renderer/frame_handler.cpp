@@ -29,7 +29,7 @@ namespace muon {
             return nullptr;
         }
 
-        MU_CORE_ASSERT(result == vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR, "failed to acquire next swapchain image");
+        MU_CORE_ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "failed to acquire next swapchain image");
 
         frameInProgress = true;
 
