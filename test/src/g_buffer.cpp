@@ -1,6 +1,9 @@
 #include "g_buffer.hpp"
 
+#include <muon/engine/debug/profiler.hpp>
 #include <muon/engine/utils/color.hpp>
+
+#include <tracy/TracyVulkan.hpp>
 
 GBufferPass::GBufferPass(muon::Device &device) : device(device) {
     createStaticResources();
@@ -61,6 +64,8 @@ void GBufferPass::createResources(const vk::Extent2D &extent) {
 }
 
 void GBufferPass::drawFrame(vk::CommandBuffer cmd, const vk::Extent2D &extent, const muon::Mesh &mesh) {
+    TracyVkZone(muon::Profiler::context(), cmd, "G-Buffer Pass");
+
     cmd.beginRendering(*renderingInfo);
 
     vk::Viewport viewport{};
