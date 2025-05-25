@@ -18,6 +18,10 @@ set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 find_package(zstd REQUIRED)
 
+option(TRACY_ENABLE "" ON)
+option(TRACY_ON_DEMAND "" ON)
+add_subdirectory(external/tracy)
+
 set(SDL_SHARED OFF FORCE)
 set(SDL_STATIC ON FORCE)
 set(SDL_TEST_LIBRARY OFF FORCE)
