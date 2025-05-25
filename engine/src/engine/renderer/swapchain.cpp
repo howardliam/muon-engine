@@ -22,7 +22,7 @@ namespace muon {
     ) : device(device), windowExtent(windowExtent), oldSwapchain(previous) {
         init();
         oldSwapchain = nullptr;
-        MU_CORE_DEBUG("created swapchain from old swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
+        MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", windowExtent.width, windowExtent.height);
     }
 
     Swapchain::~Swapchain() {
@@ -187,6 +187,7 @@ namespace muon {
             }
         };
 
+        device.querySwapchainSupport(device.physicalDevice());
         auto &supportDetails = device.swapchainSupportDetails();
 
         auto surfaceFormat = selectSurfaceFormat(supportDetails->formats);

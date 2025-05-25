@@ -266,6 +266,7 @@ namespace muon {
          */
         void findQueueFamilies(vk::PhysicalDevice physicalDevice);
 
+    private:
         /**
          * @brief   queries the physical device for supported swapchain features.
          *
@@ -274,6 +275,8 @@ namespace muon {
          * @return  struct containing the supported swapchain options.
          */
         void querySwapchainSupport(vk::PhysicalDevice physicalDevice);
+
+        friend class Swapchain;
     };
 
 }
