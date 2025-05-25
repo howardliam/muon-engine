@@ -16,9 +16,9 @@ namespace muon {
         static std::shared_ptr<spdlog::logger> &getVulkanLogger();
 
     private:
-        static std::shared_ptr<spdlog::logger> coreLogger;
-        static std::shared_ptr<spdlog::logger> clientLogger;
-        static std::shared_ptr<spdlog::logger> vulkanLogger;
+        static std::shared_ptr<spdlog::logger> s_coreLogger;
+        static std::shared_ptr<spdlog::logger> s_clientLogger;
+        static std::shared_ptr<spdlog::logger> s_vulkanLogger;
     };
 
 }

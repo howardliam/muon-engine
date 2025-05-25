@@ -7,10 +7,9 @@
 
 namespace muon {
 
-    std::shared_ptr<spdlog::logger> Log::coreLogger;
-    std::shared_ptr<spdlog::logger> Log::clientLogger;
-    std::shared_ptr<spdlog::logger> Log::vulkanLogger;
-
+    std::shared_ptr<spdlog::logger> Log::s_coreLogger;
+    std::shared_ptr<spdlog::logger> Log::s_clientLogger;
+    std::shared_ptr<spdlog::logger> Log::s_vulkanLogger;
 
     void Log::init() {
         std::vector<spdlog::sink_ptr> sinks;
@@ -20,32 +19,32 @@ namespace muon {
         sinks[0]->set_pattern("%^[%T] %n: %v%$");
         sinks[1]->set_pattern("[%T] [%l] %n: %v");
 
-        coreLogger = std::make_shared<spdlog::logger>("MUON", sinks.begin(), sinks.end());
-        spdlog::register_logger(coreLogger);
-        coreLogger->set_level(spdlog::level::trace);
-        coreLogger->flush_on(spdlog::level::trace);
+        s_coreLogger = std::make_shared<spdlog::logger>("MUON", sinks.begin(), sinks.end());
+        spdlog::register_logger(s_coreLogger);
+        s_coreLogger->set_level(spdlog::level::trace);
+        s_coreLogger->flush_on(spdlog::level::trace);
 
-        clientLogger = std::make_shared<spdlog::logger>("APP", sinks.begin(), sinks.end());
-        spdlog::register_logger(clientLogger);
-        clientLogger->set_level(spdlog::level::trace);
-        clientLogger->flush_on(spdlog::level::trace);
+        s_clientLogger = std::make_shared<spdlog::logger>("APP", sinks.begin(), sinks.end());
+        spdlog::register_logger(s_clientLogger);
+        s_clientLogger->set_level(spdlog::level::trace);
+        s_clientLogger->flush_on(spdlog::level::trace);
 
-        vulkanLogger = std::make_shared<spdlog::logger>("VK", sinks.begin(), sinks.end());
-        spdlog::register_logger(vulkanLogger);
-        vulkanLogger->set_level(spdlog::level::trace);
-        vulkanLogger->flush_on(spdlog::level::trace);
+        s_vulkanLogger = std::make_shared<spdlog::logger>("VK", sinks.begin(), sinks.end());
+        spdlog::register_logger(s_vulkanLogger);
+        s_vulkanLogger->set_level(spdlog::level::trace);
+        s_vulkanLogger->flush_on(spdlog::level::trace);
     }
 
     std::shared_ptr<spdlog::logger> &Log::getCoreLogger() {
-        return coreLogger;
+        return s_coreLogger;
     }
 
     std::shared_ptr<spdlog::logger> &Log::getClientLogger() {
-        return clientLogger;
+        return s_clientLogger;
     }
 
-        std::shared_ptr<spdlog::logger> &Log::getVulkanLogger() {
-            return vulkanLogger;
-        }
+    std::shared_ptr<spdlog::logger> &Log::getVulkanLogger() {
+        return s_vulkanLogger;
+    }
 
 }
