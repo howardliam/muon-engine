@@ -2,6 +2,7 @@
 
 #include "muon/engine/core/assert.hpp"
 #include "muon/engine/core/log.hpp"
+#include "muon/engine/debug/profiler.hpp"
 #include "muon/engine/platform/window.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <format>
@@ -108,12 +109,27 @@ namespace muon {
         createAllocator();
         createCommandPool();
 
+        {
+            vk::CommandBufferAllocateInfo allocateInfo{};
+            allocateInfo.level = vk::CommandBufferLevel::ePrimary;
+            allocateInfo.commandPool = commandPool;
+            allocateInfo.commandBufferCount = 1;
+
+            vk::CommandBuffer cmd;
+            auto result = device.allocateCommandBuffers(&allocateInfo, &cmd);
+            MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate profiler creation command buffer");
+
+            Profiler::createContext(physicalDevice, device, graphicsQueue, cmd);
+        }
+
         MU_CORE_DEBUG("created device");
     }
 
     Device::~Device() {
-        allocator.destroy();
+        Profiler::destroyContext();
+
         device.destroyCommandPool(commandPool, nullptr);
+        allocator.destroy();
         device.destroy(nullptr);
         instance.destroySurfaceKHR(surface, nullptr);
 

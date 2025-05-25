@@ -13,6 +13,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/core/log.hpp
     ${INCLUDE_DIR}/muon/engine/core/platform_detection.hpp
 
+    ${INCLUDE_DIR}/muon/engine/debug/profiler.hpp
+
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/pool.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/set_layout.hpp
     ${INCLUDE_DIR}/muon/engine/renderer/descriptor/writer.hpp
@@ -49,6 +51,8 @@ set(HEADER_FILES
 set(SRC_FILES
     ${SRC_DIR}/engine/core/application.cpp
     ${SRC_DIR}/engine/core/log.cpp
+
+    ${SRC_DIR}/engine/debug/profiler.cpp
 
     ${SRC_DIR}/engine/renderer/descriptor/pool.cpp
     ${SRC_DIR}/engine/renderer/descriptor/set_layout.cpp

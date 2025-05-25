@@ -2,6 +2,7 @@
 
 #include "muon/engine/core/assert.hpp"
 #include "muon/engine/core/log.hpp"
+#include "muon/engine/debug/profiler.hpp"
 #include "muon/engine/platform/window.hpp"
 #include "muon/engine/renderer/device.hpp"
 #include "muon/engine/renderer/swapchain.hpp"
@@ -45,6 +46,8 @@ namespace muon {
     void FrameHandler::endFrame() {
         const auto commandBuffer = getCurrentCommandBuffer();
         commandBuffer.end();
+
+        Profiler::collect(commandBuffer);
 
         auto result = swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
         MU_CORE_ASSERT(
