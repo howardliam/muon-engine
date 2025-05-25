@@ -34,7 +34,7 @@ namespace muon {
 
         const auto commandBuffer = getCurrentCommandBuffer();
 
-        vk::CommandBufferBeginInfo beginInfo;
+        vk::CommandBufferBeginInfo beginInfo{};
 
         result = commandBuffer.begin(&beginInfo);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to begin recording command buffer");
