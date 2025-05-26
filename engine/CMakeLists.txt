@@ -1,3 +1,26 @@
+# Engine ImGui Library
+
+set(IMGUI_DIR ../external/imgui)
+add_library(muon-imgui STATIC
+    ${IMGUI_DIR}/imconfig.h
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui.h
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_internal.h
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imstb_rectpack.h
+    ${IMGUI_DIR}/imstb_textedit.h
+    ${IMGUI_DIR}/imstb_truetype.h
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.h
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
+)
+add_library(muon::imgui ALIAS muon-imgui)
+target_include_directories(muon-imgui PUBLIC ${IMGUI_DIR})
+
 # Engine Library
 
 set(LIB_NAME ${CMAKE_PROJECT_NAME}-engine)
@@ -81,33 +104,13 @@ set(SRC_FILES
     ${SRC_DIR}/engine/utils/pretty_print.cpp
 )
 
-set(IMGUI_DIR ../external/imgui)
-set(IMGUI_FILES
-    ${IMGUI_DIR}/imconfig.h
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui.h
-    ${IMGUI_DIR}/imgui_demo.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_internal.h
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imstb_rectpack.h
-    ${IMGUI_DIR}/imstb_textedit.h
-    ${IMGUI_DIR}/imstb_truetype.h
-    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_sdl3.h
-    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
-)
-
 add_library(${LIB_NAME} STATIC
     ${HEADER_FILES}
     ${SRC_FILES}
-    ${IMGUI_FILES}
 )
 add_library(muon::engine ALIAS ${LIB_NAME})
 
-target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR} ${IMGUI_DIR})
+target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE
     spirv-reflect-static glslang SPIRV
@@ -121,6 +124,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     VulkanMemoryAllocator-Hpp VulkanMemoryAllocator
     glm
     Tracy::TracyClient
+    muon::imgui
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
