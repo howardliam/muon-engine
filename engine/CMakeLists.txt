@@ -35,6 +35,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/engine/core/entry_point.hpp
     ${INCLUDE_DIR}/muon/engine/core/log.hpp
     ${INCLUDE_DIR}/muon/engine/core/platform_detection.hpp
+    ${INCLUDE_DIR}/muon/engine/core/window.hpp
 
     ${INCLUDE_DIR}/muon/engine/debug/profiler.hpp
 
