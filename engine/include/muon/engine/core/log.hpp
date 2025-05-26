@@ -11,9 +11,9 @@ namespace muon {
     public:
         static void init();
 
-        static std::shared_ptr<spdlog::logger> &getCoreLogger();
-        static std::shared_ptr<spdlog::logger> &getClientLogger();
-        static std::shared_ptr<spdlog::logger> &getVulkanLogger();
+        static std::shared_ptr<spdlog::logger> &coreLogger();
+        static std::shared_ptr<spdlog::logger> &clientLogger();
+        static std::shared_ptr<spdlog::logger> &vulkanLogger();
 
     private:
         static std::shared_ptr<spdlog::logger> s_coreLogger;
@@ -25,14 +25,14 @@ namespace muon {
 
 #ifdef MU_DEBUG_ENABLED
 
-    #define MU_CORE_TRACE(...)      muon::Log::getCoreLogger()->trace(__VA_ARGS__)
-    #define MU_CORE_DEBUG(...)      muon::Log::getCoreLogger()->debug(__VA_ARGS__)
+    #define MU_CORE_TRACE(...)      muon::Log::coreLogger()->trace(__VA_ARGS__)
+    #define MU_CORE_DEBUG(...)      muon::Log::coreLogger()->debug(__VA_ARGS__)
 
-    #define MU_TRACE(...)           muon::Log::getClientLogger()->trace(__VA_ARGS__)
-    #define MU_DEBUG(...)           muon::Log::getClientLogger()->debug(__VA_ARGS__)
+    #define MU_TRACE(...)           muon::Log::clientLogger()->trace(__VA_ARGS__)
+    #define MU_DEBUG(...)           muon::Log::clientLogger()->debug(__VA_ARGS__)
 
-    #define MU_VK_TRACE(...)        muon::Log::getVulkanLogger()->trace(__VA_ARGS__)
-    #define MU_VK_DEBUG(...)        muon::Log::getVulkanLogger()->debug(__VA_ARGS__)
+    #define MU_VK_TRACE(...)        muon::Log::vulkanLogger()->trace(__VA_ARGS__)
+    #define MU_VK_DEBUG(...)        muon::Log::vulkanLogger()->debug(__VA_ARGS__)
 
 #else
 
@@ -47,17 +47,17 @@ namespace muon {
 
 #endif
 
-#define MU_CORE_INFO(...)       muon::Log::getCoreLogger()->info(__VA_ARGS__)
-#define MU_CORE_WARN(...)       muon::Log::getCoreLogger()->warn(__VA_ARGS__)
-#define MU_CORE_ERROR(...)      muon::Log::getCoreLogger()->error(__VA_ARGS__)
-#define MU_CORE_CRITICAL(...)   muon::Log::getCoreLogger()->critical(__VA_ARGS__)
+#define MU_CORE_INFO(...)       muon::Log::coreLogger()->info(__VA_ARGS__)
+#define MU_CORE_WARN(...)       muon::Log::coreLogger()->warn(__VA_ARGS__)
+#define MU_CORE_ERROR(...)      muon::Log::coreLogger()->error(__VA_ARGS__)
+#define MU_CORE_CRITICAL(...)   muon::Log::coreLogger()->critical(__VA_ARGS__)
 
-#define MU_INFO(...)            muon::Log::getClientLogger()->info(__VA_ARGS__)
-#define MU_WARN(...)            muon::Log::getClientLogger()->warn(__VA_ARGS__)
-#define MU_ERROR(...)           muon::Log::getClientLogger()->error(__VA_ARGS__)
-#define MU_CRITICAL(...)        muon::Log::getClientLogger()->critical(__VA_ARGS__)
+#define MU_INFO(...)            muon::Log::clientLogger()->info(__VA_ARGS__)
+#define MU_WARN(...)            muon::Log::clientLogger()->warn(__VA_ARGS__)
+#define MU_ERROR(...)           muon::Log::clientLogger()->error(__VA_ARGS__)
+#define MU_CRITICAL(...)        muon::Log::clientLogger()->critical(__VA_ARGS__)
 
-#define MU_VK_INFO(...)         muon::Log::getVulkanLogger()->info(__VA_ARGS__)
-#define MU_VK_WARN(...)         muon::Log::getVulkanLogger()->warn(__VA_ARGS__)
-#define MU_VK_ERROR(...)        muon::Log::getVulkanLogger()->error(__VA_ARGS__)
-#define MU_VK_CRITICAL(...)     muon::Log::getVulkanLogger()->critical(__VA_ARGS__)
+#define MU_VK_INFO(...)         muon::Log::vulkanLogger()->info(__VA_ARGS__)
+#define MU_VK_WARN(...)         muon::Log::vulkanLogger()->warn(__VA_ARGS__)
+#define MU_VK_ERROR(...)        muon::Log::vulkanLogger()->error(__VA_ARGS__)
+#define MU_VK_CRITICAL(...)     muon::Log::vulkanLogger()->critical(__VA_ARGS__)
