@@ -27,6 +27,7 @@ Add as a git submodule and link to the required libraries.
 | member variables | name begins with `m_`, e.g.: `Device &m_device;` |
 | pointers, references | `*` and `&` must be on the variable name, e.g.: `const std::vector<uint8_t> &data;` |
 | files | open compound named in snake_case: `frame_handler.hpp` |
+| class/struct visibility | group visibility by methods and members separately |
 | headers | always use `.hpp` extension over `.h` to be C++ specific |
 | abbreviations, initialisations | treated as single words: `Hdr`, `Ssao`, `Gltf` |
 | code spelling | follow American English |
