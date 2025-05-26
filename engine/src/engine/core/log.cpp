@@ -7,10 +7,6 @@
 
 namespace muon {
 
-    std::shared_ptr<spdlog::logger> Log::s_coreLogger;
-    std::shared_ptr<spdlog::logger> Log::s_clientLogger;
-    std::shared_ptr<spdlog::logger> Log::s_vulkanLogger;
-
     void Log::init() {
         std::vector<spdlog::sink_ptr> sinks;
         sinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());

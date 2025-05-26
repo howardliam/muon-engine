@@ -5,8 +5,6 @@
 
 namespace muon {
 
-    tracy::VkCtx *Profiler::s_tracyContext{nullptr};
-
     void Profiler::collect(vk::CommandBuffer cmd) {
         TracyVkCollect(s_tracyContext, cmd);
     }

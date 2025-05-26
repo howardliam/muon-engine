@@ -17,7 +17,7 @@ namespace muon {
         friend class Device;
 
     private:
-        static tracy::VkCtx *s_tracyContext;
+        static inline tracy::VkCtx *s_tracyContext{nullptr};
     };
 
 }
