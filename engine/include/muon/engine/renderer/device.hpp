@@ -191,6 +191,18 @@ namespace muon {
         [[nodiscard]] SwapchainSupportDetails swapchainSupportDetails();
 
     private:
+        void createInstance();
+        void createDebugMessenger();
+        void createSurface();
+        void selectPhysicalDevice();
+        void createLogicalDevice();
+        void createAllocator();
+        void createCommandPool();
+
+        void findQueueFamilies(vk::PhysicalDevice physicalDevice);
+        [[nodiscard]] SwapchainSupportDetails querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice);
+
+    private:
         Window &m_window;
 
         const std::vector<const char *> m_deviceExtensions = {
@@ -200,10 +212,13 @@ namespace muon {
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
         };
 
+        #ifdef MU_DEBUG_ENABLED
+        const std::vector<const char *> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+        #endif
+
         vk::Instance m_instance;
 
         #ifdef MU_DEBUG_ENABLED
-        const std::vector<const char *> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
         vk::DebugUtilsMessengerEXT m_debugMessenger;
         #endif
 
@@ -219,52 +234,6 @@ namespace muon {
         vma::Allocator m_allocator;
 
         vk::CommandPool m_commandPool;
-
-        /**
-         * @brief   creates instance.
-         */
-        void createInstance();
-
-        /**
-         * @brief   creates debug messenger.
-         */
-        void createDebugMessenger();
-
-        /**
-         * @brief   creates window surface.
-         */
-        void createSurface();
-
-        /**
-         * @brief   selects the physical device.
-         */
-        void selectPhysicalDevice();
-
-        /**
-         * @brief   creates logical device.
-         */
-        void createLogicalDevice();
-
-        /**
-         * @brief   creates GPU memory allocator.
-         */
-        void createAllocator();
-
-        /**
-         * @brief   creates the command pool for making command buffers.
-         */
-        void createCommandPool();
-
-        /**
-         * @brief   finds queue family indices for the physical device.
-         *
-         * @param   physicalDevice  the physical device to query queue index information about.
-         *
-         * @return  struct containing the indices of required queue families.
-         */
-        void findQueueFamilies(vk::PhysicalDevice physicalDevice);
-
-        [[nodiscard]] SwapchainSupportDetails querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice);
     };
 
 }
