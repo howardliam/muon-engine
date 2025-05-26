@@ -37,13 +37,13 @@ namespace muon {
          *
          * @return  descriptor set layout handle.
          */
-        [[nodiscard]] vk::DescriptorSetLayout getSetLayout() const;
+        [[nodiscard]] vk::DescriptorSetLayout setLayout() const;
 
     private:
-        Device &device;
+        Device &m_device;
 
-        vk::DescriptorSetLayout setLayout;
-        std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
+        vk::DescriptorSetLayout m_setLayout;
+        std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> m_bindings{};
 
         friend class DescriptorWriter;
     };
@@ -79,8 +79,8 @@ namespace muon {
         [[nodiscard]] std::unique_ptr<DescriptorSetLayout> buildUniquePtr() const;
 
     private:
-        Device &device;
+        Device &m_device;
 
-        std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
+        std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> m_bindings{};
     };
 }

@@ -28,12 +28,12 @@ namespace muon {
          *
          * @return  descriptor pool handle.
          */
-        [[nodiscard]] vk::DescriptorPool getPool() const;
+        [[nodiscard]] vk::DescriptorPool pool() const;
 
     private:
-        Device &device;
+        Device &m_device;
 
-        vk::DescriptorPool pool;
+        vk::DescriptorPool m_pool;
 
         friend class DescriptorWriter;
     };
@@ -76,10 +76,10 @@ namespace muon {
         [[nodiscard]] std::unique_ptr<DescriptorPool> buildUniquePtr() const;
 
     private:
-        Device &device;
+        Device &m_device;
 
-        std::vector<vk::DescriptorPoolSize> poolSizes{};
-        uint32_t maxSets{1000};
+        std::vector<vk::DescriptorPoolSize> m_poolSizes{};
+        uint32_t m_maxSets{1000};
     };
 
 }

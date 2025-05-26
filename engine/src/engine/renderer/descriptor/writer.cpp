@@ -9,10 +9,10 @@ namespace muon {
     DescriptorWriter::DescriptorWriter(
         DescriptorPool &pool,
         DescriptorSetLayout &setLayout
-    ) : pool(pool), setLayout(setLayout) {}
+    ) : m_pool(pool), m_setLayout(setLayout) {}
 
     DescriptorWriter &DescriptorWriter::addBufferWrite(uint32_t binding, size_t position, vk::DescriptorBufferInfo *bufferInfo) {
-        auto &bindingDescription = setLayout.bindings[binding];
+        auto &bindingDescription = m_setLayout.m_bindings[binding];
 
         vk::WriteDescriptorSet write{};
         write.descriptorType = bindingDescription.descriptorType;
@@ -21,12 +21,12 @@ namespace muon {
         write.descriptorCount = 1;
         write.dstArrayElement = position;
 
-        writes.push_back(write);
+        m_writes.push_back(write);
         return *this;
     }
 
     DescriptorWriter &DescriptorWriter::addImageWrite(uint32_t binding, size_t position, vk::DescriptorImageInfo *imageInfo) {
-        auto &bindingDescription = setLayout.bindings[binding];
+        auto &bindingDescription = m_setLayout.m_bindings[binding];
 
         vk::WriteDescriptorSet write{};
         write.descriptorType = bindingDescription.descriptorType;
@@ -35,17 +35,17 @@ namespace muon {
         write.descriptorCount = 1;
         write.dstArrayElement = position;
 
-        writes.push_back(write);
+        m_writes.push_back(write);
         return *this;
     }
 
     void DescriptorWriter::writeAll(vk::DescriptorSet set) {
-        for (auto &write : writes) {
+        for (auto &write : m_writes) {
             write.dstSet = set;
         }
-        pool.device.device().updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+        m_pool.m_device.device().updateDescriptorSets(m_writes.size(), m_writes.data(), 0, nullptr);
 
-        writes.clear();
+        m_writes.clear();
     }
 
 }

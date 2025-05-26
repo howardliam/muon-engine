@@ -122,7 +122,7 @@ void GBufferPass::createStaticResources() {
 
     globalSet = globalSetLayout->createSet(*globalPool);
 
-    globalLayout = std::make_shared<muon::PipelineLayout>(device, std::vector{ globalSetLayout->getSetLayout() }, std::nullopt);
+    globalLayout = std::make_shared<muon::PipelineLayout>(device, std::vector{ globalSetLayout->setLayout() }, std::nullopt);
 
     basicPipeline = muon::GraphicsPipeline::Builder(device)
         .addShader(vk::ShaderStageFlagBits::eVertex, "./test/assets/shaders/shader.vert.spv")

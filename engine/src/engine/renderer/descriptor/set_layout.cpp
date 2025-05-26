@@ -9,7 +9,7 @@ namespace muon {
     DescriptorSetLayout::DescriptorSetLayout(
         Device &device,
         const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings
-    ) : device(device), bindings(bindings) {
+    ) : m_device(device), m_bindings(bindings) {
         std::vector<vk::DescriptorSetLayoutBinding> setLayoutBindings(bindings.size());
 
         size_t index = 0;
@@ -35,30 +35,30 @@ namespace muon {
         createInfo.pBindings = setLayoutBindings.data();
         createInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool;
 
-        auto result = device.device().createDescriptorSetLayout(&createInfo, nullptr, &setLayout);
+        auto result = m_device.device().createDescriptorSetLayout(&createInfo, nullptr, &m_setLayout);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create descriptor set layout");
     }
 
     DescriptorSetLayout::~DescriptorSetLayout() {
-        device.device().destroyDescriptorSetLayout(setLayout, nullptr);
+        m_device.device().destroyDescriptorSetLayout(m_setLayout, nullptr);
     }
 
     vk::DescriptorSet DescriptorSetLayout::createSet(const DescriptorPool &pool) {
         vk::DescriptorSetAllocateInfo allocInfo{};
-        allocInfo.descriptorPool = pool.getPool();
-        allocInfo.pSetLayouts = &setLayout;
+        allocInfo.descriptorPool = pool.pool();
+        allocInfo.pSetLayouts = &m_setLayout;
         allocInfo.descriptorSetCount = 1;
 
         vk::DescriptorSet set;
-        auto _ = device.device().allocateDescriptorSets(&allocInfo, &set);
+        auto _ = m_device.device().allocateDescriptorSets(&allocInfo, &set);
         return set;
     }
 
-    vk::DescriptorSetLayout DescriptorSetLayout::getSetLayout() const {
-        return setLayout;
+    vk::DescriptorSetLayout DescriptorSetLayout::setLayout() const {
+        return m_setLayout;
     }
 
-    DescriptorSetLayout::Builder::Builder(Device &device) : device(device) {}
+    DescriptorSetLayout::Builder::Builder(Device &device) : m_device(device) {}
 
     DescriptorSetLayout::Builder &DescriptorSetLayout::Builder::addBinding(
         uint32_t binding,
@@ -72,17 +72,17 @@ namespace muon {
         layoutBinding.descriptorCount = count;
         layoutBinding.stageFlags = stageFlags;
 
-        bindings[binding] = layoutBinding;
+        m_bindings[binding] = layoutBinding;
 
         return *this;
     }
 
     DescriptorSetLayout DescriptorSetLayout::Builder::build() const {
-        return DescriptorSetLayout(device, bindings);
+        return DescriptorSetLayout(m_device, m_bindings);
     }
 
     std::unique_ptr<DescriptorSetLayout> DescriptorSetLayout::Builder::buildUniquePtr() const {
-        return std::make_unique<DescriptorSetLayout>(device, bindings);
+        return std::make_unique<DescriptorSetLayout>(m_device, m_bindings);
     }
 
 }

@@ -45,9 +45,9 @@ namespace muon {
         void writeAll(vk::DescriptorSet set);
 
     private:
-        DescriptorPool &pool;
-        DescriptorSetLayout &setLayout;
-        std::vector<vk::WriteDescriptorSet> writes;
+        DescriptorPool &m_pool;
+        DescriptorSetLayout &m_setLayout;
+        std::vector<vk::WriteDescriptorSet> m_writes;
     };
 
 }

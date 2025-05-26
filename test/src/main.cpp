@@ -138,17 +138,17 @@ int main() {
 
     auto uiComposite = muon::ComputePipeline::Builder(device)
         .setShader("./test/assets/shaders/uicomposite.comp.spv")
-        .setDescriptorSetLayouts({ computeSetLayout->getSetLayout(), compositeSetLayout->getSetLayout() })
+        .setDescriptorSetLayouts({ computeSetLayout->setLayout(), compositeSetLayout->setLayout() })
         .buildUniquePtr();
 
     auto toneMap = muon::ComputePipeline::Builder(device)
         .setShader("./test/assets/shaders/tonemap.comp.spv")
-        .setDescriptorSetLayouts({ computeSetLayout->getSetLayout() })
+        .setDescriptorSetLayouts({ computeSetLayout->setLayout() })
         .buildUniquePtr();
 
     auto swizzle = muon::ComputePipeline::Builder(device)
         .setShader("./test/assets/shaders/swizzle.comp.spv")
-        .setDescriptorSetLayouts({ computeSetLayout->getSetLayout() })
+        .setDescriptorSetLayouts({ computeSetLayout->setLayout() })
         .buildUniquePtr();
 
     bool screenshotRequested{false};
