@@ -112,7 +112,6 @@ target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE
     spirv-reflect-static glslang SPIRV
-    muon::common
     glfw
 )
 
