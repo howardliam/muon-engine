@@ -1,6 +1,7 @@
 #include "muon/core/window.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/event.hpp"
 #include "muon/core/log.hpp"
 
 #include <vulkan/vulkan.hpp>
@@ -12,10 +13,11 @@ namespace muon {
         GLFWwindow *window;
     };
 
-    Window::Window(const Properties &props) {
+    Window::Window(const Properties &props, EventDispatcher *dispatcher) {
         m_data.title = props.title;
         m_data.width = props.width;
         m_data.height = props.height;
+        m_data.dispatcher = dispatcher;
 
         glfwSetErrorCallback([](int32_t code, const char *message) {
             MU_CORE_ERROR(message);
@@ -31,6 +33,16 @@ namespace muon {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
         MU_CORE_ASSERT(m_handle->window, "window must exist");
+
+        glfwSetWindowUserPointer(m_handle->window, &m_data);
+
+        glfwSetWindowCloseCallback(m_handle->window, [](GLFWwindow *window) {
+            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            data.dispatcher->dispatch(Event{
+                .type = EventType::WindowClose,
+                .data = CloseEventData {}
+            });
+        });
 
         glfwSetScrollCallback(m_handle->window, [](GLFWwindow *window, double xOffset, double yOffset) {
             MU_CORE_INFO("mouse scrolled");
@@ -57,7 +69,7 @@ namespace muon {
         }
 
         glfwSetCursorPosCallback(m_handle->window, [](GLFWwindow *window, double x, double y) {
-            MU_CORE_INFO("mouse moved");
+            // MU_CORE_INFO("mouse moved");
         });
     }
 

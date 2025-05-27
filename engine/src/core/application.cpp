@@ -10,9 +10,15 @@ namespace muon {
     Application::Application(const Specification &spec) {
         MU_CORE_INFO("creating application");
 
-        m_window = std::make_unique<Window>(Window::Properties{ spec.name, 1600, 900 });
+        m_window = std::make_unique<Window>(Window::Properties{ spec.name, 1600, 900 }, &m_dispatcher);
         m_device = std::make_unique<Device>(*m_window);
         m_frameHandler = std::make_unique<FrameHandler>(*m_window, *m_device);
+
+        m_dispatcher.appendListener(EventType::WindowClose, [&](const Event &event) {
+            MU_CORE_INFO("window closed receive");
+            const auto &test = event.get<CloseEventData>();
+            m_running = false;
+        });
 
     }
 

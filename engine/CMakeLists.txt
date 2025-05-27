@@ -33,6 +33,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/core/assert.hpp
     ${INCLUDE_DIR}/muon/core/base.hpp
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
+    ${INCLUDE_DIR}/muon/core/event.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
     ${INCLUDE_DIR}/muon/core/window.hpp
@@ -122,6 +123,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     Tracy::TracyClient
     muon::imgui
     spdlog::spdlog_header_only
+    eventpp::eventpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

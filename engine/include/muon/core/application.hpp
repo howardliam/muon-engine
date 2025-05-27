@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <filesystem>
 #include "muon/core/assert.hpp"
+#include "muon/core/event.hpp"
 
 int main(int argc, char **argv);
 
@@ -39,11 +40,13 @@ namespace muon {
         friend int ::main(int argc, char **argv);
 
     private:
+        EventDispatcher m_dispatcher;
+
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Device> m_device;
         std::unique_ptr<FrameHandler> m_frameHandler;
 
-        bool m_running = true;
+        bool m_running{true};
     };
 
     Application *createApplication(Application::CommandLineArgs args);

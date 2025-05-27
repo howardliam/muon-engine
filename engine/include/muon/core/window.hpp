@@ -1,10 +1,12 @@
 #pragma once
 
+#include "muon/core/event.hpp"
 #include <string>
 #include <cstdint>
 #include <vector>
 #include <memory>
 #include <vulkan/vulkan.hpp>
+#include <eventpp/eventdispatcher.h>
 
 namespace muon {
 
@@ -16,7 +18,7 @@ namespace muon {
             uint32_t height;
         };
 
-        Window(const Properties &props);
+        Window(const Properties &props, EventDispatcher *dispatcher);
         ~Window();
 
         void pollEvents() const;
@@ -38,6 +40,8 @@ namespace muon {
             std::string title;
             uint32_t width;
             uint32_t height;
+
+            EventDispatcher *dispatcher;
         };
         Data m_data;
     };
