@@ -42,6 +42,8 @@ namespace muon {
             m_frameHandler->endFrame();
             m_frameHandler->updateFrameTiming();
         }
+
+        m_device->device().waitIdle();
     }
 
 }
