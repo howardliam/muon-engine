@@ -116,7 +116,6 @@ target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 target_link_libraries(${LIB_NAME} PRIVATE
     spirv-reflect-static glslang SPIRV
     muon::common
-    spdlog::spdlog_header_only
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
@@ -126,6 +125,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     glm
     Tracy::TracyClient
     muon::imgui
+    spdlog::spdlog_header_only
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

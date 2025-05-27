@@ -26,7 +26,7 @@ namespace muon {
             CommandLineArgs cliArgs;
         };
 
-        Application(const Specification &specification);
+        Application(const Specification &spec);
         virtual ~Application();
 
     private:
