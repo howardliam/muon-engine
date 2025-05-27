@@ -8,7 +8,7 @@
 
 namespace muon {
 
-    struct Window::Handle {
+    struct Window::Impl {
         GLFWwindow *window;
     };
 
@@ -27,7 +27,7 @@ namespace muon {
         auto vkSupported = glfwVulkanSupported();
         MU_CORE_ASSERT(vkSupported == GLFW_TRUE, "GLFW must support Vulkan");
 
-        m_handle = new Handle;
+        m_handle = std::make_unique<Impl>();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
         MU_CORE_ASSERT(m_handle->window, "window must exist");
@@ -35,7 +35,6 @@ namespace muon {
 
     Window::~Window() {
         glfwDestroyWindow(m_handle->window);
-        delete m_handle;
 
         glfwTerminate();
     }

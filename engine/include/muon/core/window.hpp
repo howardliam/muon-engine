@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <memory>
 #include <vulkan/vulkan.hpp>
 
 namespace muon {
@@ -28,8 +29,8 @@ namespace muon {
         [[nodiscard]] uint32_t height() const;
 
     private:
-        struct Handle;
-        Handle *m_handle;
+        struct Impl;
+        std::unique_ptr<Impl> m_handle;
 
         struct Data {
             std::string title;
