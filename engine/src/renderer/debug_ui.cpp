@@ -1,16 +1,17 @@
 #include "muon/renderer/debug_ui.hpp"
 
-#include "muon/platform/window.hpp"
+#include "muon/core/window.hpp"
 #include "muon/renderer/device.hpp"
 #include "muon/renderer/swapchain.hpp"
 #include "muon/renderer/image.hpp"
 #include "muon/renderer/descriptor/pool.hpp"
 
 #include <imgui.h>
-#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
+#include <GLFW/glfw3.h>
 
 namespace muon {
 
@@ -22,7 +23,7 @@ namespace muon {
 
     DebugUi::~DebugUi() {
         ImGui_ImplVulkan_Shutdown();
-        ImGui_ImplSDL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
         device.device().destroyFramebuffer(framebuffer);
@@ -31,12 +32,12 @@ namespace muon {
         device.device().destroyDescriptorPool(descriptorPool);
     }
 
-    void DebugUi::pollEvents(SDL_Event *event) {
-        ImGui_ImplSDL3_ProcessEvent(event);
+    void DebugUi::pollEvents() {
+        // ImGui_ImplGlfw_
     }
 
     void DebugUi::beginRendering(vk::CommandBuffer cmd) {
-        auto extent = window.getExtent();
+        auto extent = window.extent();
 
         vk::RenderPassBeginInfo beginInfo{};
         beginInfo.renderPass = renderPass;
@@ -67,7 +68,7 @@ namespace muon {
         cmd.setScissor(0, 1, &scissor);
 
         ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
@@ -154,7 +155,7 @@ namespace muon {
     }
 
     void DebugUi::createSizedResources() {
-        auto extent = window.getExtent();
+        auto extent = window.extent();
 
         image = Image::Builder(device)
             .setExtent(extent)
@@ -185,7 +186,7 @@ namespace muon {
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
         ImGui::StyleColorsDark();
-        ImGui_ImplSDL3_InitForVulkan(window.getWindow());
+        ImGui_ImplGlfw_InitForVulkan(reinterpret_cast<GLFWwindow *>(window.window()), false);
 
         ImGui_ImplVulkan_InitInfo initInfo{};
         initInfo.ApiVersion = VK_API_VERSION_1_3;

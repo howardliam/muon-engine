@@ -13,8 +13,8 @@ add_library(muon-imgui STATIC
     ${IMGUI_DIR}/imstb_rectpack.h
     ${IMGUI_DIR}/imstb_textedit.h
     ${IMGUI_DIR}/imstb_truetype.h
-    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_sdl3.h
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.h
     ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
     ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
 )
@@ -64,8 +64,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/renderer/swapchain.hpp
     ${INCLUDE_DIR}/muon/renderer/texture.hpp
 
-    ${INCLUDE_DIR}/muon/platform/window.hpp
-
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
@@ -100,8 +98,6 @@ set(SRC_FILES
     ${SRC_DIR}/renderer/swapchain.cpp
     ${SRC_DIR}/renderer/texture.cpp
 
-    ${SRC_DIR}/platform/window.cpp
-
     ${SRC_DIR}/utils/color.cpp
     ${SRC_DIR}/utils/pretty_print.cpp
 )
@@ -117,10 +113,10 @@ target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 target_link_libraries(${LIB_NAME} PRIVATE
     spirv-reflect-static glslang SPIRV
     muon::common
+    glfw
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
-    SDL3
     vulkan
     VulkanMemoryAllocator-Hpp VulkanMemoryAllocator
     glm

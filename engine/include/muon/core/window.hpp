@@ -7,7 +7,7 @@
 
 namespace muon {
 
-    class Window2 {
+    class Window {
     public:
         struct Properties {
             std::string title;
@@ -15,33 +15,27 @@ namespace muon {
             uint32_t height;
         };
 
-        Window2();
-        ~Window2();
+        Window(const Properties &props);
+        ~Window();
 
-        [[nodiscard]] bool createSurface(VkInstance instance, VkSurfaceKHR *surface);
+        [[nodiscard]] vk::Result createSurface(vk::Instance instance, vk::SurfaceKHR *surface);
         [[nodiscard]] std::vector<const char *> requiredExtensions() const;
+
+        [[nodiscard]] void *window() const;
 
         [[nodiscard]] vk::Extent2D extent() const;
         [[nodiscard]] uint32_t width() const;
         [[nodiscard]] uint32_t height() const;
 
     private:
-        void initSdl();
-        void initWindow(const std::string_view title);
-
-    private:
         struct Handle;
-
-        Handle *handle;
-
-        // GLFWwindow *m_window;
+        Handle *m_handle;
 
         struct Data {
             std::string title;
             uint32_t width;
             uint32_t height;
         };
-
         Data m_data;
     };
 

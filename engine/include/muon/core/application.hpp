@@ -8,6 +8,9 @@ int main(int argc, char **argv);
 
 namespace muon {
 
+    class Window;
+    class Device;
+
     class Application {
     public:
         struct CommandLineArgs {
@@ -30,10 +33,15 @@ namespace muon {
         virtual ~Application();
 
     private:
-
         void run();
 
         friend int ::main(int argc, char **argv);
+
+    private:
+        std::unique_ptr<Window> m_window;
+        std::unique_ptr<Device> m_device;
+
+        bool m_running = true;
     };
 
     Application *createApplication(Application::CommandLineArgs args);

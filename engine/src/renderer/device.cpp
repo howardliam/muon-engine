@@ -3,9 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
-#include "muon/platform/window.hpp"
-#include <SDL3/SDL_vulkan.h>
-#include <format>
+#include "muon/core/window.hpp"
 #include <memory>
 #include <set>
 #define VMA_IMPLEMENTATION
@@ -362,20 +360,24 @@ namespace muon {
         MU_CORE_ASSERT(checkValidationLayerSupport(), "validation layers were requested but are not available");
         #endif
 
-        auto getRequiredExtensions = []() -> std::vector<const char *> {
-            uint32_t sdlExtensionCount = 0;
-            const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
+        // auto getRequiredExtensions = []() -> std::vector<const char *> {
+        //     uint32_t sdlExtensionCount = 0;
+        //     const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
 
-            MU_CORE_ASSERT(sdlExtensions != nullptr, "SDL must provide extensions");
+        //     MU_CORE_ASSERT(sdlExtensions != nullptr, "SDL must provide extensions");
 
-            std::vector<const char *> extensions(sdlExtensions, sdlExtensions + sdlExtensionCount);
+        //     std::vector<const char *> extensions(sdlExtensions, sdlExtensions + sdlExtensionCount);
 
-            #ifdef MU_DEBUG_ENABLED
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            #endif
+        //     #ifdef MU_DEBUG_ENABLED
+        //     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        //     #endif
 
-            return extensions;
-        };
+        //     return extensions;
+        // };
+        auto extensions = m_window.requiredExtensions();
+        #ifdef MU_DEBUG_ENABLED
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        #endif
 
         vk::ApplicationInfo appInfo;
         appInfo.pApplicationName = "Muon";
@@ -388,7 +390,6 @@ namespace muon {
         createInfo.pApplicationInfo = &appInfo;
         createInfo.pNext = nullptr;
 
-        auto extensions = getRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -423,8 +424,10 @@ namespace muon {
     }
 
     void Device::createSurface() {
-        auto success = m_window.createSurface(m_instance, reinterpret_cast<VkSurfaceKHR *>(&m_surface));
-        MU_CORE_ASSERT(success, std::format("failed to create window surface: {}", SDL_GetError()));
+        // auto success = m_window.createSurface(m_instance, reinterpret_cast<VkSurfaceKHR *>(&m_surface));
+        // MU_CORE_ASSERT(success, std::format("failed to create window surface: {}", SDL_GetError()));
+        auto result = m_window.createSurface(m_instance, &m_surface);
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create window surface");
     }
 
     void Device::selectPhysicalDevice() {

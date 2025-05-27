@@ -3,7 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
-#include "muon/platform/window.hpp"
+#include "muon/core/window.hpp"
 #include "muon/renderer/device.hpp"
 #include "muon/renderer/swapchain.hpp"
 #include <vulkan/vulkan.hpp>
@@ -11,7 +11,7 @@
 namespace muon {
 
     FrameHandler::FrameHandler(Window &window, Device &device) : window(window), device(device) {
-        recreateSwapchain(window.getExtent());
+        recreateSwapchain(window.extent());
         createCommandBuffers();
         MU_CORE_DEBUG("created frame handler");
     }
@@ -25,7 +25,7 @@ namespace muon {
         auto result = swapchain->acquireNextImage(&currentImageIndex);
 
         if (result == vk::Result::eErrorOutOfDateKHR) {
-            recreateSwapchain(window.getExtent());
+            recreateSwapchain(window.extent());
             return nullptr;
         }
 
@@ -59,7 +59,7 @@ namespace muon {
 
 
         if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
-            recreateSwapchain(window.getExtent());
+            recreateSwapchain(window.extent());
         }
 
         frameInProgress = false;

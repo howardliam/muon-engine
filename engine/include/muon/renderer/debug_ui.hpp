@@ -16,7 +16,7 @@ namespace muon {
         DebugUi(Window &window, Device &device);
         ~DebugUi();
 
-        void pollEvents(SDL_Event *event);
+        void pollEvents();
 
         void beginRendering(vk::CommandBuffer cmd);
         void endRendering(vk::CommandBuffer cmd);
