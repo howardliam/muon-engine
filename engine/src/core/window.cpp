@@ -3,7 +3,6 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
-#include <cinttypes>
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
@@ -18,19 +17,20 @@ namespace muon {
         m_data.width = props.width;
         m_data.height = props.height;
 
-        // MU_CORE_ASSERT(glfwVulkanSupported() == GLFW_TRUE, "GLFW must support Vulkan");
+        glfwSetErrorCallback([](int32_t code, const char *message) {
+            MU_CORE_ERROR(message);
+        });
 
-        auto result = glfwInit();
-        MU_CORE_ASSERT(result == GLFW_TRUE, "GLFW must initialise");
+        auto initialized = glfwInit();
+        MU_CORE_ASSERT(initialized == GLFW_TRUE, "GLFW must be initialised");
+
+        auto vkSupported = glfwVulkanSupported();
+        MU_CORE_ASSERT(vkSupported == GLFW_TRUE, "GLFW must support Vulkan");
 
         m_handle = new Handle;
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
         MU_CORE_ASSERT(m_handle->window, "window must exist");
-
-        for (auto extension : requiredExtensions()) {
-            MU_CORE_INFO(extension);
-        }
     }
 
     Window::~Window() {
