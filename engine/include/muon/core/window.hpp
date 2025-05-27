@@ -19,6 +19,8 @@ namespace muon {
         Window(const Properties &props);
         ~Window();
 
+        void pollEvents() const;
+
         [[nodiscard]] vk::Result createSurface(vk::Instance instance, vk::SurfaceKHR *surface);
         [[nodiscard]] std::vector<const char *> requiredExtensions() const;
 

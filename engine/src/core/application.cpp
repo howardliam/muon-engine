@@ -25,6 +25,8 @@ namespace muon {
 
         m_frameHandler->beginFrameTiming();
         while (m_running) {
+            m_window->pollEvents();
+
             auto cmd = m_frameHandler->beginFrame();
 
 

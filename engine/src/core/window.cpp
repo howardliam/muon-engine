@@ -31,12 +31,44 @@ namespace muon {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
         MU_CORE_ASSERT(m_handle->window, "window must exist");
+
+        glfwSetScrollCallback(m_handle->window, [](GLFWwindow *window, double xOffset, double yOffset) {
+            MU_CORE_INFO("mouse scrolled");
+        });
+
+        glfwSetKeyCallback(m_handle->window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
+            if (action == GLFW_PRESS) {
+                MU_CORE_INFO("key pressed");
+            } else if (action == GLFW_RELEASE) {
+                MU_CORE_INFO("key released");
+            }
+        });
+
+        glfwSetMouseButtonCallback(m_handle->window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
+            if (action == GLFW_PRESS) {
+                MU_CORE_INFO("mouse button clicked");
+            } else if (action == GLFW_RELEASE) {
+                MU_CORE_INFO("mouse button released");
+            }
+        });
+
+        if (glfwRawMouseMotionSupported()) {
+            glfwSetInputMode(m_handle->window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+
+        glfwSetCursorPosCallback(m_handle->window, [](GLFWwindow *window, double x, double y) {
+            MU_CORE_INFO("mouse moved");
+        });
     }
 
     Window::~Window() {
         glfwDestroyWindow(m_handle->window);
 
         glfwTerminate();
+    }
+
+    void Window::pollEvents() const {
+        glfwPollEvents();
     }
 
     vk::Result Window::createSurface(vk::Instance instance, vk::SurfaceKHR *surface) {
