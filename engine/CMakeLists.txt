@@ -29,80 +29,81 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
-    ${INCLUDE_DIR}/muon/engine/core/application.hpp
-    ${INCLUDE_DIR}/muon/engine/core/assert.hpp
-    ${INCLUDE_DIR}/muon/engine/core/base.hpp
-    ${INCLUDE_DIR}/muon/engine/core/entry_point.hpp
-    ${INCLUDE_DIR}/muon/engine/core/log.hpp
-    ${INCLUDE_DIR}/muon/engine/core/platform_detection.hpp
-    ${INCLUDE_DIR}/muon/engine/core/window.hpp
+    ${INCLUDE_DIR}/muon/core/application.hpp
+    ${INCLUDE_DIR}/muon/core/assert.hpp
+    ${INCLUDE_DIR}/muon/core/base.hpp
+    ${INCLUDE_DIR}/muon/core/entry_point.hpp
+    ${INCLUDE_DIR}/muon/core/log.hpp
+    ${INCLUDE_DIR}/muon/core/platform_detection.hpp
+    ${INCLUDE_DIR}/muon/core/window.hpp
 
-    ${INCLUDE_DIR}/muon/engine/debug/profiler.hpp
+    ${INCLUDE_DIR}/muon/debug/profiler.hpp
 
-    ${INCLUDE_DIR}/muon/engine/renderer/descriptor/pool.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/descriptor/set_layout.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/descriptor/writer.hpp
+    ${INCLUDE_DIR}/muon/renderer/descriptor/pool.hpp
+    ${INCLUDE_DIR}/muon/renderer/descriptor/set_layout.hpp
+    ${INCLUDE_DIR}/muon/renderer/descriptor/writer.hpp
 
-    ${INCLUDE_DIR}/muon/engine/renderer/frame_graph/blackboard.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/frame_graph/blackboard.inl
-    ${INCLUDE_DIR}/muon/engine/renderer/frame_graph/frame_graph.hpp
+    ${INCLUDE_DIR}/muon/renderer/frame_graph/blackboard.hpp
+    ${INCLUDE_DIR}/muon/renderer/frame_graph/blackboard.inl
+    ${INCLUDE_DIR}/muon/renderer/frame_graph/frame_graph.hpp
 
-    ${INCLUDE_DIR}/muon/engine/renderer/pipeline/compute.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/pipeline/graphics.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/pipeline/layout.hpp
+    ${INCLUDE_DIR}/muon/renderer/pipeline/compute.hpp
+    ${INCLUDE_DIR}/muon/renderer/pipeline/graphics.hpp
+    ${INCLUDE_DIR}/muon/renderer/pipeline/layout.hpp
 
-    ${INCLUDE_DIR}/muon/engine/renderer/buffer.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/debug_ui.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/device.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/frame_handler.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/image.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/material.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/mesh.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/mesh.inl
-    ${INCLUDE_DIR}/muon/engine/renderer/model.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/shader.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/swapchain.hpp
-    ${INCLUDE_DIR}/muon/engine/renderer/texture.hpp
+    ${INCLUDE_DIR}/muon/renderer/buffer.hpp
+    ${INCLUDE_DIR}/muon/renderer/debug_ui.hpp
+    ${INCLUDE_DIR}/muon/renderer/device.hpp
+    ${INCLUDE_DIR}/muon/renderer/frame_handler.hpp
+    ${INCLUDE_DIR}/muon/renderer/image.hpp
+    ${INCLUDE_DIR}/muon/renderer/material.hpp
+    ${INCLUDE_DIR}/muon/renderer/mesh.hpp
+    ${INCLUDE_DIR}/muon/renderer/mesh.inl
+    ${INCLUDE_DIR}/muon/renderer/model.hpp
+    ${INCLUDE_DIR}/muon/renderer/shader.hpp
+    ${INCLUDE_DIR}/muon/renderer/swapchain.hpp
+    ${INCLUDE_DIR}/muon/renderer/texture.hpp
 
-    ${INCLUDE_DIR}/muon/engine/platform/window.hpp
+    ${INCLUDE_DIR}/muon/platform/window.hpp
 
-    ${INCLUDE_DIR}/muon/engine/utils/color.hpp
-    ${INCLUDE_DIR}/muon/engine/utils/nocopy.hpp
-    ${INCLUDE_DIR}/muon/engine/utils/nomove.hpp
-    ${INCLUDE_DIR}/muon/engine/utils/pretty_print.hpp
+    ${INCLUDE_DIR}/muon/utils/color.hpp
+    ${INCLUDE_DIR}/muon/utils/nocopy.hpp
+    ${INCLUDE_DIR}/muon/utils/nomove.hpp
+    ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
 )
 
 set(SRC_FILES
-    ${SRC_DIR}/engine/core/application.cpp
-    ${SRC_DIR}/engine/core/log.cpp
+    ${SRC_DIR}/core/application.cpp
+    ${SRC_DIR}/core/log.cpp
+    ${SRC_DIR}/core/window.cpp
 
-    ${SRC_DIR}/engine/debug/profiler.cpp
+    ${SRC_DIR}/debug/profiler.cpp
 
-    ${SRC_DIR}/engine/renderer/descriptor/pool.cpp
-    ${SRC_DIR}/engine/renderer/descriptor/set_layout.cpp
-    ${SRC_DIR}/engine/renderer/descriptor/writer.cpp
+    ${SRC_DIR}/renderer/descriptor/pool.cpp
+    ${SRC_DIR}/renderer/descriptor/set_layout.cpp
+    ${SRC_DIR}/renderer/descriptor/writer.cpp
 
-    ${SRC_DIR}/engine/renderer/frame_graph/frame_graph.cpp
+    ${SRC_DIR}/renderer/frame_graph/frame_graph.cpp
 
-    ${SRC_DIR}/engine/renderer/pipeline/compute.cpp
-    ${SRC_DIR}/engine/renderer/pipeline/graphics.cpp
-    ${SRC_DIR}/engine/renderer/pipeline/layout.cpp
+    ${SRC_DIR}/renderer/pipeline/compute.cpp
+    ${SRC_DIR}/renderer/pipeline/graphics.cpp
+    ${SRC_DIR}/renderer/pipeline/layout.cpp
 
-    ${SRC_DIR}/engine/renderer/buffer.cpp
-    ${SRC_DIR}/engine/renderer/debug_ui.cpp
-    ${SRC_DIR}/engine/renderer/device.cpp
-    ${SRC_DIR}/engine/renderer/frame_handler.cpp
-    ${SRC_DIR}/engine/renderer/image.cpp
-    ${SRC_DIR}/engine/renderer/mesh.cpp
-    ${SRC_DIR}/engine/renderer/model.cpp
-    ${SRC_DIR}/engine/renderer/shader.cpp
-    ${SRC_DIR}/engine/renderer/swapchain.cpp
-    ${SRC_DIR}/engine/renderer/texture.cpp
+    ${SRC_DIR}/renderer/buffer.cpp
+    ${SRC_DIR}/renderer/debug_ui.cpp
+    ${SRC_DIR}/renderer/device.cpp
+    ${SRC_DIR}/renderer/frame_handler.cpp
+    ${SRC_DIR}/renderer/image.cpp
+    ${SRC_DIR}/renderer/mesh.cpp
+    ${SRC_DIR}/renderer/model.cpp
+    ${SRC_DIR}/renderer/shader.cpp
+    ${SRC_DIR}/renderer/swapchain.cpp
+    ${SRC_DIR}/renderer/texture.cpp
 
-    ${SRC_DIR}/engine/platform/window.cpp
+    ${SRC_DIR}/platform/window.cpp
 
-    ${SRC_DIR}/engine/utils/color.cpp
-    ${SRC_DIR}/engine/utils/pretty_print.cpp
+    ${SRC_DIR}/utils/color.cpp
+    ${SRC_DIR}/utils/pretty_print.cpp
 )
 
 add_library(${LIB_NAME} STATIC

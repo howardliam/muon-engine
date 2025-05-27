@@ -1,5 +1,5 @@
-#include "muon/engine/core/application.hpp"
-#include "muon/engine/core/entry_point.hpp"
+#include "muon/core/application.hpp"
+#include "muon/core/entry_point.hpp"
 
 namespace muon {
 
