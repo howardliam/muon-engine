@@ -24,13 +24,6 @@ add_subdirectory(external/tracy)
 
 add_subdirectory(external/glfw)
 
-# set(SDL_SHARED OFF FORCE)
-# set(SDL_STATIC ON FORCE)
-# set(SDL_TEST_LIBRARY OFF FORCE)
-# set(SDL_TESTS OFF FORCE)
-# set(SDL_INSTALL_TESTS OFF FORCE)
-# add_subdirectory(external/sdl)
-
 find_package(Vulkan REQUIRED)
 find_package(SPIRV-Tools REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
