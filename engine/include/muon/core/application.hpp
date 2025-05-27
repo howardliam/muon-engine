@@ -10,6 +10,7 @@ namespace muon {
 
     class Window;
     class Device;
+    class FrameHandler;
 
     class Application {
     public:
@@ -40,6 +41,7 @@ namespace muon {
     private:
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Device> m_device;
+        std::unique_ptr<FrameHandler> m_frameHandler;
 
         bool m_running = true;
     };
