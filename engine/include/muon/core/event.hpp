@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/core/assert.hpp"
+#include "muon/core/input.hpp"
 #include <variant>
 #include <cstdint>
 #include <eventpp/eventdispatcher.h>
@@ -15,11 +16,18 @@ namespace muon {
 
     enum class EventType : int32_t {
         WindowClose,
+        MouseButton,
     };
 
     struct CloseEventData {};
 
-    using EventData = std::variant<CloseEventData>;
+    struct MouseButtonEventData {
+        int32_t button;
+        Action action;
+        int32_t mods;
+    };
+
+    using EventData = std::variant<CloseEventData, MouseButtonEventData>;
 
     struct Event {
         EventType type;

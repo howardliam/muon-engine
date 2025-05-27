@@ -1,5 +1,6 @@
 #include "muon/core/application.hpp"
 
+#include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/renderer/device.hpp"
@@ -15,10 +16,21 @@ namespace muon {
         m_frameHandler = std::make_unique<FrameHandler>(*m_window, *m_device);
 
         m_dispatcher.appendListener(EventType::WindowClose, [&](const Event &event) {
-            MU_CORE_INFO("window closed receive");
+            MU_CORE_INFO("window closed received");
             m_running = false;
         });
 
+        m_dispatcher.appendListener(EventType::MouseButton, [&](const Event &event) {
+            auto data = event.get<MouseButtonEventData>();
+
+            if (data.action == Action::Press) {
+                MU_CORE_INFO("mouse button pressed");
+            } else if (data.action == Action::Release) {
+                MU_CORE_INFO("mouse button released");
+            } else if (data.action == Action::Repeat) {
+                MU_CORE_INFO("mouse button held");
+            }
+        });
     }
 
     Application::~Application() {

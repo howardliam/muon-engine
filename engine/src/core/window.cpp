@@ -2,6 +2,7 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/event.hpp"
+#include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 
 #include <vulkan/vulkan.hpp>
@@ -115,11 +116,15 @@ namespace muon {
         });
 
         glfwSetMouseButtonCallback(m_handle->window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
-            if (action == GLFW_PRESS) {
-                MU_CORE_INFO("mouse button clicked");
-            } else if (action == GLFW_RELEASE) {
-                MU_CORE_INFO("mouse button released");
-            }
+            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            data.dispatcher->dispatch(Event{
+                .type = EventType::MouseButton,
+                .data = MouseButtonEventData {
+                    .button = button,
+                    .action = static_cast<Action>(action),
+                    .mods = mods,
+                }
+            });
         });
 
         glfwSetCursorPosCallback(m_handle->window, [](GLFWwindow *window, double x, double y) {
