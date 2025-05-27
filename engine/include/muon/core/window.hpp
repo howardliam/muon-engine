@@ -6,7 +6,6 @@
 #include <vector>
 #include <memory>
 #include <vulkan/vulkan.hpp>
-#include <eventpp/eventdispatcher.h>
 
 namespace muon {
 
@@ -31,6 +30,10 @@ namespace muon {
         [[nodiscard]] vk::Extent2D extent() const;
         [[nodiscard]] uint32_t width() const;
         [[nodiscard]] uint32_t height() const;
+
+    private:
+        void init();
+        void configureDispatcher();
 
     private:
         struct Impl;

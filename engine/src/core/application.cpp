@@ -16,7 +16,6 @@ namespace muon {
 
         m_dispatcher.appendListener(EventType::WindowClose, [&](const Event &event) {
             MU_CORE_INFO("window closed receive");
-            const auto &test = event.get<CloseEventData>();
             m_running = false;
         });
 
