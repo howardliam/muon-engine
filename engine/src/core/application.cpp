@@ -5,6 +5,7 @@
 #include "muon/core/window.hpp"
 #include "muon/renderer/device.hpp"
 #include "muon/renderer/frame_handler.hpp"
+#include "muon/scripting/script_manager.hpp"
 
 namespace muon {
 
@@ -15,20 +16,19 @@ namespace muon {
         m_device = std::make_unique<Device>(*m_window);
         m_frameHandler = std::make_unique<FrameHandler>(*m_window, *m_device);
 
+        m_scriptManager = std::make_unique<ScriptManager>();
+
         m_dispatcher.appendListener(EventType::WindowClose, [&](const Event &event) {
             MU_CORE_INFO("window closed received");
             m_running = false;
         });
 
+
         m_dispatcher.appendListener(EventType::MouseButton, [&](const Event &event) {
             auto data = event.get<MouseButtonEventData>();
 
             if (data.action == Action::Press) {
-                MU_CORE_INFO("mouse button pressed");
-            } else if (data.action == Action::Release) {
-                MU_CORE_INFO("mouse button released");
-            } else if (data.action == Action::Repeat) {
-                MU_CORE_INFO("mouse button held");
+                m_scriptManager->run();
             }
         });
     }

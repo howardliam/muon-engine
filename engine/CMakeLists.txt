@@ -66,6 +66,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/renderer/swapchain.hpp
     ${INCLUDE_DIR}/muon/renderer/texture.hpp
 
+    ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
+
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
@@ -100,6 +102,8 @@ set(SRC_FILES
     ${SRC_DIR}/renderer/swapchain.cpp
     ${SRC_DIR}/renderer/texture.cpp
 
+    ${SRC_DIR}/scripting/script_manager.cpp
+
     ${SRC_DIR}/utils/color.cpp
     ${SRC_DIR}/utils/pretty_print.cpp
 )
@@ -125,6 +129,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     muon::imgui
     spdlog::spdlog_header_only
     eventpp::eventpp
+    lua sol2::sol2
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

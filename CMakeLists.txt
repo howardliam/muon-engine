@@ -26,6 +26,9 @@ add_subdirectory(external/glfw)
 
 add_subdirectory(external/eventpp)
 
+find_package(Lua REQUIRED)
+add_subdirectory(external/sol2)
+
 find_package(Vulkan REQUIRED)
 find_package(SPIRV-Tools REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
