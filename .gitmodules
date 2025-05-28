@@ -31,3 +31,6 @@
 [submodule "external/eventpp"]
 	path = external/eventpp
 	url = https://github.com/wqking/eventpp
+[submodule "external/sol2"]
+	path = external/sol2
+	url = https://github.com/ThePhD/sol2
