@@ -198,6 +198,7 @@ namespace muon {
         void createLogicalDevice();
         void createAllocator();
         void createCommandPool();
+        void createProfiler();
 
         void findQueueFamilies(vk::PhysicalDevice physicalDevice);
         [[nodiscard]] SwapchainSupportDetails querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice);

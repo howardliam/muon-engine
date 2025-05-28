@@ -115,16 +115,7 @@ namespace muon {
         createCommandPool();
 
         #ifdef MU_DEBUG_ENABLED
-        vk::CommandBufferAllocateInfo allocateInfo{};
-        allocateInfo.level = vk::CommandBufferLevel::ePrimary;
-        allocateInfo.commandPool = m_commandPool;
-        allocateInfo.commandBufferCount = 1;
-
-        vk::CommandBuffer cmd;
-        auto result = m_device.allocateCommandBuffers(&allocateInfo, &cmd);
-        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate profiler creation command buffer");
-
-        Profiler::createContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
+        createProfiler();
         #endif
 
         MU_CORE_DEBUG("created device");
@@ -536,6 +527,19 @@ namespace muon {
 
         auto result = m_device.createCommandPool(&poolInfo, nullptr, &m_commandPool);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create command pool");
+    }
+
+    void Device::createProfiler() {
+        vk::CommandBufferAllocateInfo allocateInfo{};
+        allocateInfo.level = vk::CommandBufferLevel::ePrimary;
+        allocateInfo.commandPool = m_commandPool;
+        allocateInfo.commandBufferCount = 1;
+
+        vk::CommandBuffer cmd;
+        auto result = m_device.allocateCommandBuffers(&allocateInfo, &cmd);
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate profiler creation command buffer");
+
+        Profiler::createContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
     }
 
     void Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
