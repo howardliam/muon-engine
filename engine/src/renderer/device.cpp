@@ -101,37 +101,39 @@ namespace {
 
 namespace muon {
 
-    Device::Device(Window &window) : m_window(window) {
-        createInstance();
+    Device::Device(Window *window) {
+        createInstance(window);
 
         #ifdef MU_DEBUG_ENABLED
         createDebugMessenger();
         #endif
 
-        createSurface();
+        createSurface(window);
         selectPhysicalDevice();
         createLogicalDevice();
         createAllocator();
         createCommandPool();
 
-        {
-            vk::CommandBufferAllocateInfo allocateInfo{};
-            allocateInfo.level = vk::CommandBufferLevel::ePrimary;
-            allocateInfo.commandPool = m_commandPool;
-            allocateInfo.commandBufferCount = 1;
+        #ifdef MU_DEBUG_ENABLED
+        vk::CommandBufferAllocateInfo allocateInfo{};
+        allocateInfo.level = vk::CommandBufferLevel::ePrimary;
+        allocateInfo.commandPool = m_commandPool;
+        allocateInfo.commandBufferCount = 1;
 
-            vk::CommandBuffer cmd;
-            auto result = m_device.allocateCommandBuffers(&allocateInfo, &cmd);
-            MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate profiler creation command buffer");
+        vk::CommandBuffer cmd;
+        auto result = m_device.allocateCommandBuffers(&allocateInfo, &cmd);
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to allocate profiler creation command buffer");
 
-            Profiler::createContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
-        }
+        Profiler::createContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
+        #endif
 
         MU_CORE_DEBUG("created device");
     }
 
     Device::~Device() {
+        #ifdef MU_DEBUG_ENABLED
         Profiler::destroyContext();
+        #endif
 
         m_device.destroyCommandPool(m_commandPool, nullptr);
         m_allocator.destroy();
@@ -335,12 +337,12 @@ namespace muon {
         return querySwapchainSupportDetails(m_physicalDevice);
     }
 
-    void Device::createInstance() {
-        #ifdef MUON_DEBUG_ENABLED
+    void Device::createInstance(Window *window) {
+        #ifdef MU_DEBUG_ENABLED
         auto checkValidationLayerSupport = [this]() -> bool {
             std::vector<vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
-            for (const auto layerName : validationLayers) {
+            for (const auto layerName : m_validationLayers) {
                 bool layerFound = false;
                 for (const auto &layerProperties : availableLayers) {
                     if (std::strcmp(layerName, layerProperties.layerName) == 0) {
@@ -360,21 +362,8 @@ namespace muon {
         MU_CORE_ASSERT(checkValidationLayerSupport(), "validation layers were requested but are not available");
         #endif
 
-        // auto getRequiredExtensions = []() -> std::vector<const char *> {
-        //     uint32_t sdlExtensionCount = 0;
-        //     const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
+        auto extensions = window->requiredExtensions();
 
-        //     MU_CORE_ASSERT(sdlExtensions != nullptr, "SDL must provide extensions");
-
-        //     std::vector<const char *> extensions(sdlExtensions, sdlExtensions + sdlExtensionCount);
-
-        //     #ifdef MU_DEBUG_ENABLED
-        //     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        //     #endif
-
-        //     return extensions;
-        // };
-        auto extensions = m_window.requiredExtensions();
         #ifdef MU_DEBUG_ENABLED
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         #endif
@@ -420,13 +409,11 @@ namespace muon {
             nullptr,
             reinterpret_cast<VkDebugUtilsMessengerEXT *>(&m_debugMessenger)
         );
-        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to debug messenger");
+        MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create debug messenger");
     }
 
-    void Device::createSurface() {
-        // auto success = m_window.createSurface(m_instance, reinterpret_cast<VkSurfaceKHR *>(&m_surface));
-        // MU_CORE_ASSERT(success, std::format("failed to create window surface: {}", SDL_GetError()));
-        auto result = m_window.createSurface(m_instance, &m_surface);
+    void Device::createSurface(Window *window) {
+        auto result = window->createSurface(m_instance, &m_surface);
         MU_CORE_ASSERT(result == vk::Result::eSuccess, "failed to create window surface");
     }
 

@@ -34,7 +34,7 @@ namespace muon {
 
     class Device : NoCopy, NoMove {
     public:
-        Device(Window &window);
+        Device(Window *window);
         ~Device();
 
         /**
@@ -191,9 +191,9 @@ namespace muon {
         [[nodiscard]] SwapchainSupportDetails swapchainSupportDetails();
 
     private:
-        void createInstance();
+        void createInstance(Window *window);
         void createDebugMessenger();
-        void createSurface();
+        void createSurface(Window *window);
         void selectPhysicalDevice();
         void createLogicalDevice();
         void createAllocator();
@@ -203,7 +203,7 @@ namespace muon {
         [[nodiscard]] SwapchainSupportDetails querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice);
 
     private:
-        Window &m_window;
+        // Window &m_window;
 
         const std::vector<const char *> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,

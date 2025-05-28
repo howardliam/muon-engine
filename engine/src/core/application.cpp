@@ -13,7 +13,7 @@ namespace muon {
         MU_CORE_INFO("creating application");
 
         m_window = std::make_unique<Window>(Window::Properties{ spec.name, 1600, 900 }, &m_dispatcher);
-        m_device = std::make_unique<Device>(*m_window);
+        m_device = std::make_unique<Device>(m_window.get());
         m_frameHandler = std::make_unique<FrameHandler>(*m_window, *m_device);
 
         m_scriptManager = std::make_unique<ScriptManager>();
@@ -22,7 +22,6 @@ namespace muon {
             MU_CORE_INFO("window closed received");
             m_running = false;
         });
-
 
         m_dispatcher.appendListener(EventType::MouseButton, [&](const Event &event) {
             auto data = event.get<MouseButtonEventData>();
