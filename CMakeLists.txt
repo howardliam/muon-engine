@@ -8,7 +8,6 @@ project(muon)
 
 add_subdirectory(asset)
 add_subdirectory(engine)
-add_subdirectory(common)
 
 find_package(PkgConfig REQUIRED)
 
