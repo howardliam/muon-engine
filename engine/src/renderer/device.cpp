@@ -432,8 +432,8 @@ namespace muon {
             physicalDevice.getFeatures2(&deviceFeatures);
 
             bool isDiscrete = deviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
-            findQueueFamilies(physicalDevice);
-            bool hasCompleteIndices = m_queueFamilyIndices->isComplete();
+            auto indices = findQueueFamilies(physicalDevice);
+            bool hasCompleteIndices = indices.isComplete();
             bool supportsGeometryShader = deviceFeatures.features.geometryShader;
             bool extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
             bool swapchainAdequate = false;
@@ -454,7 +454,7 @@ namespace muon {
         }
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
 
-        findQueueFamilies(m_physicalDevice);
+        m_queueFamilyIndices = std::make_unique<QueueFamilyIndices>(findQueueFamilies(m_physicalDevice));
         MU_CORE_ASSERT(m_queueFamilyIndices->isComplete(), "queue family indices are not complete");
     }
 
@@ -542,34 +542,36 @@ namespace muon {
         Profiler::createContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
     }
 
-    void Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
-        m_queueFamilyIndices = std::make_unique<QueueFamilyIndices>();
+    QueueFamilyIndices Device::findQueueFamilies(vk::PhysicalDevice physicalDevice) {
+        QueueFamilyIndices indices{};
 
         std::vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
         uint32_t i = 0;
         for (const auto &queueFamily : queueFamilies) {
             if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
-                m_queueFamilyIndices->graphicsFamily = i;
+                indices.graphicsFamily = i;
             }
 
             if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) {
-                m_queueFamilyIndices->computeFamily = i;
+                indices.computeFamily = i;
             }
 
             vk::Bool32 presentSupport = false;
             auto result = physicalDevice.getSurfaceSupportKHR(i, m_surface, &presentSupport);
 
             if (presentSupport && result == vk::Result::eSuccess) {
-                m_queueFamilyIndices->presentFamily = i;
+                indices.presentFamily = i;
             }
 
-            if (m_queueFamilyIndices->isComplete()) {
+            if (indices.isComplete()) {
                 break;
             }
 
             i++;
         }
+
+        return indices;
     }
 
     SwapchainSupportDetails Device::querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice) {

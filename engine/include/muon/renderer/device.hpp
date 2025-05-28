@@ -200,12 +200,10 @@ namespace muon {
         void createCommandPool();
         void createProfiler();
 
-        void findQueueFamilies(vk::PhysicalDevice physicalDevice);
+        [[nodiscard]] QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice physicalDevice);
         [[nodiscard]] SwapchainSupportDetails querySwapchainSupportDetails(vk::PhysicalDevice physicalDevice);
 
     private:
-        // Window &m_window;
-
         const std::vector<const char *> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
