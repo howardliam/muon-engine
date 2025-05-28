@@ -10,7 +10,6 @@ namespace muon {
         }
     };
 
-
     Application *createApplication(Application::CommandLineArgs args) {
         Application::Specification spec{};
         spec.name = "Muon Editor";
