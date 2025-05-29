@@ -1,5 +1,6 @@
 #include "muon/core/application.hpp"
 
+#include "muon/core/event_data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"

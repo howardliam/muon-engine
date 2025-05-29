@@ -34,6 +34,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/core/base.hpp
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
     ${INCLUDE_DIR}/muon/core/event.hpp
+    ${INCLUDE_DIR}/muon/core/event_data.hpp
     ${INCLUDE_DIR}/muon/core/input.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp

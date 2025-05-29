@@ -1,33 +1,28 @@
 #pragma once
 
 #include "muon/core/assert.hpp"
-#include "muon/core/input.hpp"
+#include "muon/core/event_data.hpp"
 #include <variant>
 #include <cstdint>
 #include <eventpp/eventdispatcher.h>
 
 namespace muon {
 
-    enum class EventType;
-    struct Event;
-    struct EventPolicies;
-
-    using EventDispatcher = eventpp::EventDispatcher<EventType, void (const Event &), EventPolicies>;
-
     enum class EventType : int32_t {
         WindowClose,
         MouseButton,
+        MouseScroll,
+        Key,
+        CursorPosition,
     };
 
-    struct CloseEventData {};
-
-    struct MouseButtonEventData {
-        int32_t button;
-        Action action;
-        int32_t mods;
-    };
-
-    using EventData = std::variant<CloseEventData, MouseButtonEventData>;
+    using EventData = std::variant<
+        CloseEventData,
+        MouseButtonEventData,
+        MouseScrollEventData,
+        KeyEventData,
+        CursorPositionEventData
+    >;
 
     struct Event {
         EventType type;
@@ -48,5 +43,7 @@ namespace muon {
         MU_CORE_ASSERT(std::holds_alternative<T>(data), "bad variant cast");
         return std::get<T>(data);
     }
+
+    using EventDispatcher = eventpp::EventDispatcher<EventType, void (const Event &), EventPolicies>;
 
 }

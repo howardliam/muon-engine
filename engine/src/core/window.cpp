@@ -2,6 +2,7 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/event.hpp"
+#include "muon/core/event_data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 
@@ -104,15 +105,27 @@ namespace muon {
         });
 
         glfwSetScrollCallback(m_handle->window, [](GLFWwindow *window, double xOffset, double yOffset) {
-            MU_CORE_INFO("mouse scrolled");
+            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            data.dispatcher->dispatch(Event{
+                .type = EventType::MouseScroll,
+                .data = MouseScrollEventData {
+                    .xOffset = xOffset,
+                    .yOffset = yOffset,
+                }
+            });
         });
 
         glfwSetKeyCallback(m_handle->window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
-            if (action == GLFW_PRESS) {
-                MU_CORE_INFO("key pressed");
-            } else if (action == GLFW_RELEASE) {
-                MU_CORE_INFO("key released");
-            }
+            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            data.dispatcher->dispatch(Event{
+                .type = EventType::Key,
+                .data = KeyEventData {
+                    .key = key,
+                    .scancode = scancode,
+                    .action = static_cast<Action>(action),
+                    .mods = mods
+                }
+            });
         });
 
         glfwSetMouseButtonCallback(m_handle->window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
@@ -128,7 +141,14 @@ namespace muon {
         });
 
         glfwSetCursorPosCallback(m_handle->window, [](GLFWwindow *window, double x, double y) {
-            // MU_CORE_INFO("mouse moved");
+            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            data.dispatcher->dispatch(Event{
+                .type = EventType::CursorPosition,
+                .data = CursorPositionEventData {
+                    .x = x,
+                    .y = y
+                }
+            });
         });
     }
 
