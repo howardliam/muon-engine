@@ -17,12 +17,6 @@ namespace muon {
 
     class Window {
     public:
-        struct Properties {
-            std::string title;
-            uint32_t width;
-            uint32_t height;
-        };
-
         Window(const WindowProperties &props, EventDispatcher *dispatcher);
         ~Window();
 
@@ -44,14 +38,14 @@ namespace muon {
     private:
         GLFWwindow *m_window;
 
-        struct Data {
+        struct WindowData {
             std::string title;
             uint32_t width;
             uint32_t height;
 
             EventDispatcher *dispatcher;
         };
-        Data m_data;
+        WindowData m_data;
     };
 
 }
