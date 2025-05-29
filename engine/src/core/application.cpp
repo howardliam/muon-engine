@@ -1,5 +1,6 @@
 #include "muon/core/application.hpp"
 
+#include "GLFW/glfw3.h"
 #include "muon/core/event_data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
@@ -38,6 +39,15 @@ namespace muon {
 
             if (data.action == Action::Press) {
                 m_scriptManager->run();
+            }
+        });
+
+        m_dispatcher.appendListener(EventType::Key, [&](const Event &event) {
+            auto data = event.get<KeyEventData>();
+
+            if (data.action != Action::Press) { return; }
+            if (data.mods & (GLFW_MOD_CONTROL) && data.key == GLFW_KEY_V) {
+                MU_CORE_INFO(m_window->clipboardContents());
             }
         });
     }
