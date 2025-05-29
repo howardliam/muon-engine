@@ -1,9 +1,8 @@
 #include "muon/core/window.hpp"
 
-#include "GLFW/glfw3.h"
+#include "muon/core/event/event.hpp"
+#include "muon/core/event/data.hpp"
 #include "muon/core/assert.hpp"
-#include "muon/core/event.hpp"
-#include "muon/core/event_data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 

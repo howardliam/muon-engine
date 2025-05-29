@@ -1,7 +1,7 @@
 #include "muon/core/application.hpp"
 
 #include "GLFW/glfw3.h"
-#include "muon/core/event_data.hpp"
+#include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"

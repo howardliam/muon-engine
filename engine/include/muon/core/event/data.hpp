@@ -1,5 +1,6 @@
 #pragma once
 
+#include <variant>
 #include <cstdint>
 #include "muon/core/input.hpp"
 
@@ -29,5 +30,13 @@ namespace muon {
         double x;
         double y;
     };
+
+    using EventData = std::variant<
+        CloseEventData,
+        MouseButtonEventData,
+        MouseScrollEventData,
+        KeyEventData,
+        CursorPositionEventData
+    >;
 
 }

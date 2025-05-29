@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <filesystem>
 #include "muon/core/assert.hpp"
-#include "muon/core/event.hpp"
+#include "muon/core/event/dispatcher.hpp"
 
 int main(int argc, char **argv);
 

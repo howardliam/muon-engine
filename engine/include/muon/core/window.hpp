@@ -1,11 +1,11 @@
 #pragma once
 
-#include "muon/core/event.hpp"
 #include <string>
 #include <cstdint>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
+#include "muon/core/event/dispatcher.hpp"
 
 namespace muon {
 

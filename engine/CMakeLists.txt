@@ -29,12 +29,14 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
+    ${INCLUDE_DIR}/muon/core/event/event.hpp
+    ${INCLUDE_DIR}/muon/core/event/data.hpp
+    ${INCLUDE_DIR}/muon/core/event/dispatcher.hpp
+
     ${INCLUDE_DIR}/muon/core/application.hpp
     ${INCLUDE_DIR}/muon/core/assert.hpp
     ${INCLUDE_DIR}/muon/core/base.hpp
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
-    ${INCLUDE_DIR}/muon/core/event.hpp
-    ${INCLUDE_DIR}/muon/core/event_data.hpp
     ${INCLUDE_DIR}/muon/core/input.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
