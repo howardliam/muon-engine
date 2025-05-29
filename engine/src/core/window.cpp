@@ -89,7 +89,7 @@ namespace muon {
 
     void Window::configureDispatcher() {
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
-            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::WindowClose,
                 .data = CloseEventData {}
@@ -97,7 +97,7 @@ namespace muon {
         });
 
         glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
-            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::MouseScroll,
                 .data = MouseScrollEventData {
@@ -108,7 +108,7 @@ namespace muon {
         });
 
         glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
-            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::Key,
                 .data = KeyEventData {
@@ -121,7 +121,7 @@ namespace muon {
         });
 
         glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
-            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::MouseButton,
                 .data = MouseButtonEventData {
@@ -133,7 +133,7 @@ namespace muon {
         });
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
-            Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
+            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::CursorPosition,
                 .data = CursorPositionEventData {
