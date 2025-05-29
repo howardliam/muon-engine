@@ -8,6 +8,7 @@ namespace muon {
 
     enum class EventType : uint32_t {
         WindowClose,
+        WindowResize,
         MouseButton,
         MouseScroll,
         Key,

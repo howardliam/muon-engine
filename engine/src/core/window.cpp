@@ -1,5 +1,6 @@
 #include "muon/core/window.hpp"
 
+#include "GLFW/glfw3.h"
 #include "muon/core/event/event.hpp"
 #include "muon/core/event/data.hpp"
 #include "muon/core/assert.hpp"
@@ -99,7 +100,18 @@ namespace muon {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::WindowClose,
-                .data = CloseEventData {}
+                .data = WindowCloseEventData {}
+            });
+        });
+
+        glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
+            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data.dispatcher->dispatch(Event{
+                .type = EventType::WindowResize,
+                .data = WindowResizeEventData {
+                    .width = static_cast<uint32_t>(width),
+                    .height = static_cast<uint32_t>(height),
+                }
             });
         });
 
@@ -122,7 +134,7 @@ namespace muon {
                     .key = key,
                     .scancode = scancode,
                     .action = static_cast<Action>(action),
-                    .mods = mods
+                    .mods = mods,
                 }
             });
         });
@@ -145,7 +157,7 @@ namespace muon {
                 .type = EventType::CursorPosition,
                 .data = CursorPositionEventData {
                     .x = x,
-                    .y = y
+                    .y = y,
                 }
             });
         });

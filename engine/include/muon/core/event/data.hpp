@@ -6,7 +6,12 @@
 
 namespace muon {
 
-    struct CloseEventData {};
+    struct WindowCloseEventData {};
+
+    struct WindowResizeEventData {
+        uint32_t width;
+        uint32_t height;
+    };
 
     struct MouseButtonEventData {
         int32_t button;
@@ -32,7 +37,8 @@ namespace muon {
     };
 
     using EventData = std::variant<
-        CloseEventData,
+        WindowCloseEventData,
+        WindowResizeEventData,
         MouseButtonEventData,
         MouseScrollEventData,
         KeyEventData,
