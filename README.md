@@ -35,24 +35,20 @@ Add as a git submodule and link to the required libraries.
 | commits | commits should follow the [Conventional Commits Spec](https://www.conventionalcommits.org/en/v1.0.0/), post 2025-05-24 |
 
 ## Attributions
-### Engine
-| library | licences |
-| ----- | ----- |
-| [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) | ... |
-| [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | MIT |
-| [VulkanMemoryAllocator-Hpp](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp) | CC0-1.0 |
-| [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect) | Apache-2.0 |
-| [glslang](https://github.com/KhronosGroup/glslang) | 3-Clause BSD, 2-Clause BSD, MIT, Apache-2.0 |
-| [SDL3](https://wiki.libsdl.org/SDL3/FrontPage) | zlib |
-| [glm](https://github.com/g-truc/glm) | The Happy Bunny License, MIT |
-
-### Asset
-| library | licences |
-| ----- | ----- |
-| [libspng](https://libspng.org/) | 2-Clause BSD |
-| [libjpeg-turbo](https://libjpeg-turbo.org/) | IJG, 3-Clause BSD |
-
-### Test
-| library | licences |
-| ----- | ----- |
-| [spdlog](https://github.com/gabime/spdlog) | MIT |
+- SPIRV-Reflect
+- glslang
+- SPIRV-Tools
+- GLFW
+- Vulkan
+- Vulkan Memory Allocator
+- Vulkan Memory Allocator Hpp
+- GLM
+- Tracy
+- spdlog
+- ImGui
+- eventpp
+- Lua
+- sol2
+- yaml-cpp
+- libspng
+- libjpeg-turbo
