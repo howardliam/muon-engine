@@ -4,10 +4,16 @@
 #include <string>
 #include <cstdint>
 #include <vector>
-#include <memory>
 #include <vulkan/vulkan.hpp>
+#include <GLFW/glfw3.h>
 
 namespace muon {
+
+    struct WindowProperties {
+        std::string title;
+        uint32_t width;
+        uint32_t height;
+    };
 
     class Window {
     public:
@@ -17,7 +23,7 @@ namespace muon {
             uint32_t height;
         };
 
-        Window(const Properties &props, EventDispatcher *dispatcher);
+        Window(const WindowProperties &props, EventDispatcher *dispatcher);
         ~Window();
 
         void pollEvents() const;
@@ -36,8 +42,7 @@ namespace muon {
         void configureDispatcher();
 
     private:
-        struct Impl;
-        std::unique_ptr<Impl> m_handle;
+        GLFWwindow *m_window;
 
         struct Data {
             std::string title;

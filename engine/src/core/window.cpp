@@ -6,16 +6,9 @@
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 
-#include <vulkan/vulkan.hpp>
-#include <GLFW/glfw3.h>
-
 namespace muon {
 
-    struct Window::Impl {
-        GLFWwindow *window;
-    };
-
-    Window::Window(const Properties &props, EventDispatcher *dispatcher) {
+    Window::Window(const WindowProperties &props, EventDispatcher *dispatcher) {
         m_data.title = props.title;
         m_data.width = props.width;
         m_data.height = props.height;
@@ -26,7 +19,7 @@ namespace muon {
     }
 
     Window::~Window() {
-        glfwDestroyWindow(m_handle->window);
+        glfwDestroyWindow(m_window);
 
         glfwTerminate();
     }
@@ -38,7 +31,7 @@ namespace muon {
     vk::Result Window::createSurface(vk::Instance instance, vk::SurfaceKHR *surface) {
         auto result = glfwCreateWindowSurface(
             static_cast<VkInstance>(instance),
-            m_handle->window,
+            m_window,
             nullptr,
             reinterpret_cast<VkSurfaceKHR *>(surface)
         );
@@ -54,7 +47,7 @@ namespace muon {
     }
 
     void *Window::window() const {
-        return m_handle->window;
+        return m_window;
     }
 
     vk::Extent2D Window::extent() const {
@@ -83,20 +76,19 @@ namespace muon {
         auto vkSupported = glfwVulkanSupported();
         MU_CORE_ASSERT(vkSupported == GLFW_TRUE, "GLFW must support Vulkan");
 
-        m_handle = std::make_unique<Impl>();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
-        MU_CORE_ASSERT(m_handle->window, "window must exist");
+        m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+        MU_CORE_ASSERT(m_window, "window must exist");
 
-        glfwSetWindowUserPointer(m_handle->window, &m_data);
+        glfwSetWindowUserPointer(m_window, &m_data);
 
         if (glfwRawMouseMotionSupported()) {
-            glfwSetInputMode(m_handle->window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
         }
     }
 
     void Window::configureDispatcher() {
-        glfwSetWindowCloseCallback(m_handle->window, [](GLFWwindow *window) {
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::WindowClose,
@@ -104,7 +96,7 @@ namespace muon {
             });
         });
 
-        glfwSetScrollCallback(m_handle->window, [](GLFWwindow *window, double xOffset, double yOffset) {
+        glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
             Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::MouseScroll,
@@ -115,7 +107,7 @@ namespace muon {
             });
         });
 
-        glfwSetKeyCallback(m_handle->window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
+        glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
             Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::Key,
@@ -128,7 +120,7 @@ namespace muon {
             });
         });
 
-        glfwSetMouseButtonCallback(m_handle->window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
+        glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
             Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::MouseButton,
@@ -140,7 +132,7 @@ namespace muon {
             });
         });
 
-        glfwSetCursorPosCallback(m_handle->window, [](GLFWwindow *window, double x, double y) {
+        glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
             Data &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::CursorPosition,

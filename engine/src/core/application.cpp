@@ -16,7 +16,7 @@ namespace muon {
 
         YAML::Node config = YAML::LoadFile("Muon.yaml");
 
-        Window::Properties properties{
+        WindowProperties properties{
             .title = spec.name,
             .width = config["window"]["dimensions"]["width"].as<uint32_t>(),
             .height = config["window"]["dimensions"]["height"].as<uint32_t>()
