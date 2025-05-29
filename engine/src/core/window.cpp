@@ -1,5 +1,6 @@
 #include "muon/core/window.hpp"
 
+#include "GLFW/glfw3.h"
 #include "muon/core/assert.hpp"
 #include "muon/core/event.hpp"
 #include "muon/core/event_data.hpp"
@@ -50,6 +51,10 @@ namespace muon {
         return m_window;
     }
 
+    const char *Window::clipboardContents() const {
+        return glfwGetClipboardString(m_window);
+    }
+
     vk::Extent2D Window::extent() const {
         return {
             m_data.width,
@@ -84,6 +89,9 @@ namespace muon {
 
         if (glfwRawMouseMotionSupported()) {
             glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            m_data.rawMouseMotion = true;
+        } else {
+            m_data.rawMouseMotion = false;
         }
     }
 

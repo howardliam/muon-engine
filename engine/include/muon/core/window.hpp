@@ -27,6 +27,8 @@ namespace muon {
 
         [[nodiscard]] void *window() const;
 
+        [[nodiscard]] const char *clipboardContents() const;
+
         [[nodiscard]] vk::Extent2D extent() const;
         [[nodiscard]] uint32_t width() const;
         [[nodiscard]] uint32_t height() const;
@@ -42,6 +44,7 @@ namespace muon {
             std::string title;
             uint32_t width;
             uint32_t height;
+            bool rawMouseMotion;
 
             EventDispatcher *dispatcher;
         };
