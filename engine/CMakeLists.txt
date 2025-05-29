@@ -118,11 +118,12 @@ add_library(muon::engine ALIAS ${LIB_NAME})
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE
-    spirv-reflect-static glslang SPIRV
-    glfw
+
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
+    spirv-reflect-static glslang SPIRV
+    glfw
     vulkan
     VulkanMemoryAllocator-Hpp VulkanMemoryAllocator
     glm
@@ -131,6 +132,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     spdlog::spdlog_header_only
     eventpp::eventpp
     lua sol2::sol2
+    yaml-cpp::yaml-cpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

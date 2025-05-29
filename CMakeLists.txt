@@ -21,6 +21,8 @@ option(TRACY_ENABLE "" ON)
 option(TRACY_ON_DEMAND "" ON)
 add_subdirectory(external/tracy)
 
+add_subdirectory(external/yaml-cpp)
+
 add_subdirectory(external/glfw)
 
 add_subdirectory(external/eventpp)

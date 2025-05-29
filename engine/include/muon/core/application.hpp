@@ -14,25 +14,25 @@ namespace muon {
     class FrameHandler;
     class ScriptManager;
 
+    struct ApplicationCommandLineArgs {
+        int32_t count;
+        char **args = nullptr;
+
+        const char *operator[](int32_t index) const {
+            MU_CORE_ASSERT(index < count);
+            return args[index];
+        }
+    };
+
+    struct ApplicationSpecification {
+        std::string name{"Muon Application"};
+        std::filesystem::path workingDirectory;
+        ApplicationCommandLineArgs cliArgs;
+    };
+
     class Application {
     public:
-        struct CommandLineArgs {
-            int32_t count;
-            char **args = nullptr;
-
-            const char *operator[](int32_t index) const {
-                MU_CORE_ASSERT(index < count);
-                return args[index];
-            }
-        };
-
-        struct Specification {
-            std::string name{"Muon Application"};
-            std::filesystem::path workingDirectory;
-            CommandLineArgs cliArgs;
-        };
-
-        Application(const Specification &spec);
+        Application(const ApplicationSpecification &spec);
         virtual ~Application();
 
     private:
@@ -51,6 +51,6 @@ namespace muon {
         bool m_running{true};
     };
 
-    Application *createApplication(Application::CommandLineArgs args);
+    Application *createApplication(ApplicationCommandLineArgs args);
 
 }

@@ -5,13 +5,13 @@ namespace muon {
 
     class MuonEditor final : public Application {
     public:
-        MuonEditor(const Specification &spec) : Application(spec) {
+        MuonEditor(const ApplicationSpecification &spec) : Application(spec) {
 
         }
     };
 
-    Application *createApplication(Application::CommandLineArgs args) {
-        Application::Specification spec{};
+    Application *createApplication(ApplicationCommandLineArgs args) {
+        ApplicationSpecification spec{};
         spec.name = "Muon Editor";
         spec.cliArgs = args;
 

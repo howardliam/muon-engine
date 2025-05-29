@@ -4,7 +4,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
-extern muon::Application *muon::createApplication(Application::CommandLineArgs args);
+extern muon::Application *muon::createApplication(ApplicationCommandLineArgs args);
 
 int main(int argc, char **argv) {
     muon::Log::init();

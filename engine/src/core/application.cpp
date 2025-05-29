@@ -7,13 +7,22 @@
 #include "muon/renderer/device.hpp"
 #include "muon/renderer/frame_handler.hpp"
 #include "muon/scripting/script_manager.hpp"
+#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
-    Application::Application(const Specification &spec) {
+    Application::Application(const ApplicationSpecification &spec) {
         MU_CORE_INFO("creating application");
 
-        m_window = std::make_unique<Window>(Window::Properties{ spec.name, 1600, 900 }, &m_dispatcher);
+        YAML::Node config = YAML::LoadFile("Muon.yaml");
+
+        Window::Properties properties{
+            .title = spec.name,
+            .width = config["window"]["dimensions"]["width"].as<uint32_t>(),
+            .height = config["window"]["dimensions"]["height"].as<uint32_t>()
+        };
+
+        m_window = std::make_unique<Window>(properties, &m_dispatcher);
         m_device = std::make_unique<Device>(m_window.get());
         m_frameHandler = std::make_unique<FrameHandler>(*m_window, *m_device);
 
