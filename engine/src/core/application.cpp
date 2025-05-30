@@ -1,6 +1,7 @@
 #include "muon/core/application.hpp"
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
+#include <yaml-cpp/yaml.h>
 #include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
@@ -8,7 +9,6 @@
 #include "muon/renderer/device.hpp"
 #include "muon/renderer/frame_handler.hpp"
 #include "muon/scripting/script_manager.hpp"
-#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
