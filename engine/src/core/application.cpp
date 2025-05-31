@@ -68,6 +68,7 @@ namespace muon {
 
 
 
+            m_frameHandler->prepareToPresent();
 
             m_frameHandler->endFrame();
             m_frameHandler->updateFrameTiming();

@@ -159,6 +159,34 @@ namespace muon {
         }
     }
 
+    void FrameHandler::prepareToPresent() {
+        auto swapchainImage = swapchain->getImage(currentImageIndex);
+
+        const auto cmd = getCurrentCommandBuffer();
+
+        vk::ImageMemoryBarrier2 barrier{};
+        barrier.oldLayout = vk::ImageLayout::eUndefined;
+        barrier.srcStageMask = vk::PipelineStageFlags2{};
+        barrier.srcAccessMask = vk::AccessFlags2{};
+
+        barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+        barrier.dstStageMask = vk::PipelineStageFlagBits2::eBottomOfPipe;
+        barrier.dstAccessMask = vk::AccessFlagBits2::eMemoryRead;
+
+        barrier.image = swapchainImage;
+        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        vk::DependencyInfo dependencyInfo{};
+        dependencyInfo.imageMemoryBarrierCount = 1;
+        dependencyInfo.pImageMemoryBarriers = &barrier;
+
+        cmd.pipelineBarrier2(dependencyInfo);
+    }
+
     vk::CommandBuffer FrameHandler::getCurrentCommandBuffer() const {
         return commandBuffers[currentFrameIndex];
     }
