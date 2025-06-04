@@ -48,10 +48,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/renderer/descriptor/set_layout.hpp
     ${INCLUDE_DIR}/muon/renderer/descriptor/writer.hpp
 
-    ${INCLUDE_DIR}/muon/renderer/frame_graph/blackboard.hpp
-    ${INCLUDE_DIR}/muon/renderer/frame_graph/blackboard.inl
-    ${INCLUDE_DIR}/muon/renderer/frame_graph/frame_graph.hpp
-
     ${INCLUDE_DIR}/muon/renderer/pipeline/compute.hpp
     ${INCLUDE_DIR}/muon/renderer/pipeline/graphics.hpp
     ${INCLUDE_DIR}/muon/renderer/pipeline/layout.hpp
@@ -87,8 +83,6 @@ set(SRC_FILES
     ${SRC_DIR}/renderer/descriptor/pool.cpp
     ${SRC_DIR}/renderer/descriptor/set_layout.cpp
     ${SRC_DIR}/renderer/descriptor/writer.cpp
-
-    ${SRC_DIR}/renderer/frame_graph/frame_graph.cpp
 
     ${SRC_DIR}/renderer/pipeline/compute.cpp
     ${SRC_DIR}/renderer/pipeline/graphics.cpp
