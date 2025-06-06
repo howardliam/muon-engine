@@ -44,6 +44,8 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/debug/profiler.hpp
 
+    ${INCLUDE_DIR}/muon/graphics/context.hpp
+
     ${INCLUDE_DIR}/muon/renderer/descriptor/pool.hpp
     ${INCLUDE_DIR}/muon/renderer/descriptor/set_layout.hpp
     ${INCLUDE_DIR}/muon/renderer/descriptor/writer.hpp
@@ -79,6 +81,8 @@ set(SRC_FILES
     ${SRC_DIR}/core/window.cpp
 
     ${SRC_DIR}/debug/profiler.cpp
+
+    ${SRC_DIR}/graphics/context.cpp
 
     ${SRC_DIR}/renderer/descriptor/pool.cpp
     ${SRC_DIR}/renderer/descriptor/set_layout.cpp
