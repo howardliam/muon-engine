@@ -4,11 +4,7 @@
 #include "muon/core/window.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/gpu.hpp"
-#include <bitset>
 #include <cstdint>
-#include <string_view>
-#include <unordered_map>
-#include <unordered_set>
 #include <vulkan/vulkan_core.h>
 
 #ifdef MU_DEBUG_ENABLED
@@ -192,76 +188,14 @@ namespace muon::gfx {
         vkEnumeratePhysicalDevices(m_instance, &deviceCount, physicalDevices.data());
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
-        // std::unordered_map<GpuSuitability, VkPhysicalDevice> physicalDeviceSuitabilities{};
-
-        auto determineSuitability = [](VkPhysicalDevice physicalDevice, const std::vector<const char *> &deviceExtensions) -> GpuSuitability {
-            GpuSuitability suitability;
-
-            VkPhysicalDeviceProperties2 deviceProperties{};
-            deviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-            vkGetPhysicalDeviceProperties2(physicalDevice, &deviceProperties);
-
-            if (deviceProperties.properties.apiVersion >= VK_API_VERSION_1_3) {
-                suitability.SetFlag(SuitabilityFlagBits::ApiVersion13);
-            }
-
-            if (deviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-                suitability.SetFlag(SuitabilityFlagBits::DiscreteGPU);
-            }
-
-            if (deviceProperties.properties.limits.maxPushConstantsSize >= 128) {
-                suitability.SetFlag(SuitabilityFlagBits::MinimumPushConstantSize);
-            }
-
-            uint32_t availableExtensionCount{0};
-            vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableExtensionCount, nullptr);
-            std::vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
-            vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableExtensionCount, availableExtensions.data());
-
-            std::unordered_set<std::string_view> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-            for (const auto &extension : availableExtensions) {
-                requiredExtensions.erase(extension.extensionName);
-            }
-
-            if (requiredExtensions.empty()) {
-                suitability.SetFlag(SuitabilityFlagBits::HasRequiredExtensions);
-            }
-
-            VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
-            indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-
-            VkPhysicalDeviceFeatures2 deviceFeatures{};
-            deviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-            deviceFeatures.pNext = &indexingFeatures;
-            vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures);
-
-            uint32_t queueFamilyPropertyCount{0};
-            vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, nullptr);
-            std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyPropertyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
-
-            if (queueFamilyPropertyCount == 1) {
-                suitability.SetFlag(SuitabilityFlagBits::UnifiedQueue);
-            }
-
-            for (const auto &props : queueFamilyProperties) {
-                MU_CORE_INFO("queue count: {}", props.queueCount);
-                MU_CORE_INFO("supports graphics {}", (props.queueFlags & VK_QUEUE_GRAPHICS_BIT) > 0);
-                MU_CORE_INFO("supports compute {}", (props.queueFlags & VK_QUEUE_COMPUTE_BIT) > 0);
-                MU_CORE_INFO("supports transfer {}", (props.queueFlags & VK_QUEUE_TRANSFER_BIT) > 0);
-            }
-
-            MU_CORE_INFO("{}", deviceProperties.properties.deviceName);
-
-            return suitability;
-        };
-
         for (const auto &physicalDevice : physicalDevices) {
-            MU_CORE_INFO("{}", determineSuitability(physicalDevice, m_deviceExtensions).ToString());
-            // physicalDeviceSuitabilities[determineSuitability(physicalDevice, m_deviceExtensions)] = physicalDevice;
-        }
+            auto suitability = GpuSuitability::DetermineSuitability(physicalDevice, m_surface, m_deviceExtensions);
 
-        MU_CORE_INFO("{}", 1ul << 47);
+            if (suitability.IsSuitable()) {
+                m_physicalDevice = physicalDevice;
+                break;
+            }
+        }
 
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
 
