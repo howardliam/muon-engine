@@ -29,14 +29,9 @@ namespace muon {
         glfwPollEvents();
     }
 
-    vk::Result Window::CreateSurface(vk::Instance instance, vk::SurfaceKHR *surface) {
-        auto result = glfwCreateWindowSurface(
-            static_cast<VkInstance>(instance),
-            m_window,
-            nullptr,
-            reinterpret_cast<VkSurfaceKHR *>(surface)
-        );
-        return static_cast<vk::Result>(result);
+    VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) {
+        auto result = glfwCreateWindowSurface(instance, m_window, nullptr, surface);
+        return static_cast<VkResult>(result);
     }
 
     std::vector<const char *> Window::RequiredExtensions() const {
@@ -55,7 +50,7 @@ namespace muon {
         return glfwGetClipboardString(m_window);
     }
 
-    vk::Extent2D Window::Extent() const {
+    VkExtent2D Window::Extent() const {
         return {
             m_data.width,
             m_data.height

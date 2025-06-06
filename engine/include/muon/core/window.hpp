@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
 #include "muon/core/event/dispatcher.hpp"
 
@@ -22,14 +22,14 @@ namespace muon {
 
         void PollEvents() const;
 
-        [[nodiscard]] vk::Result CreateSurface(vk::Instance instance, vk::SurfaceKHR *surface);
+        [[nodiscard]] VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface);
         [[nodiscard]] std::vector<const char *> RequiredExtensions() const;
 
         [[nodiscard]] void *Get() const;
 
         [[nodiscard]] const char *ClipboardContents() const;
 
-        [[nodiscard]] vk::Extent2D Extent() const;
+        [[nodiscard]] VkExtent2D Extent() const;
         [[nodiscard]] uint32_t Width() const;
         [[nodiscard]] uint32_t Height() const;
 
