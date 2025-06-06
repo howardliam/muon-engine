@@ -49,6 +49,7 @@ add_subdirectory(external/eventpp)
 
 # scripting
 find_package(Lua REQUIRED)
+# pkg_check_modules(LuaJIT REQUIRED luajit)
 add_subdirectory(external/sol2)
 
 # maths
