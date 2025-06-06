@@ -7,7 +7,7 @@
 extern muon::Application *muon::createApplication(ApplicationCommandLineArgs args);
 
 int main(int argc, char **argv) {
-    muon::Log::init();
+    muon::Log::Init();
 
     auto app = muon::createApplication({ argc, argv });
     MU_CORE_ASSERT(app, "application must exist");
