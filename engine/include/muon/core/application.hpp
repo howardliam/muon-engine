@@ -34,6 +34,7 @@ namespace muon {
         virtual ~Application();
 
         [[nodiscard]] Window &GetWindow();
+        [[nodiscard]] gfx::Context &GetGraphicsContext();
 
         [[nodiscard]] static Application &Get();
 

@@ -60,6 +60,10 @@ namespace muon {
         return *m_window;
     }
 
+    gfx::Context &Application::GetGraphicsContext() {
+        return *m_graphicsContext;
+    }
+
     Application &Application::Get() {
         return *s_instance;
     }
