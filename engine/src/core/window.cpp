@@ -15,8 +15,8 @@ namespace muon {
         m_data.height = props.height;
         m_data.dispatcher = dispatcher;
 
-        init();
-        configureDispatcher();
+        Init();
+        ConfigureDispatcher();
     }
 
     Window::~Window() {
@@ -25,11 +25,11 @@ namespace muon {
         glfwTerminate();
     }
 
-    void Window::pollEvents() const {
+    void Window::PollEvents() const {
         glfwPollEvents();
     }
 
-    vk::Result Window::createSurface(vk::Instance instance, vk::SurfaceKHR *surface) {
+    vk::Result Window::CreateSurface(vk::Instance instance, vk::SurfaceKHR *surface) {
         auto result = glfwCreateWindowSurface(
             static_cast<VkInstance>(instance),
             m_window,
@@ -39,7 +39,7 @@ namespace muon {
         return static_cast<vk::Result>(result);
     }
 
-    std::vector<const char *> Window::requiredExtensions() const {
+    std::vector<const char *> Window::RequiredExtensions() const {
         uint32_t count{0};
         const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&count);
 
@@ -47,30 +47,30 @@ namespace muon {
         return extensions;
     }
 
-    void *Window::window() const {
+    void *Window::Get() const {
         return m_window;
     }
 
-    const char *Window::clipboardContents() const {
+    const char *Window::ClipboardContents() const {
         return glfwGetClipboardString(m_window);
     }
 
-    vk::Extent2D Window::extent() const {
+    vk::Extent2D Window::Extent() const {
         return {
             m_data.width,
             m_data.height
         };
     }
 
-    uint32_t Window::width() const {
+    uint32_t Window::Width() const {
         return m_data.width;
     }
 
-    uint32_t Window::height() const {
+    uint32_t Window::Height() const {
         return m_data.height;
     }
 
-    void Window::init() {
+    void Window::Init() {
         glfwSetErrorCallback([](int32_t code, const char *message) {
             MU_CORE_ERROR(message);
         });
@@ -95,7 +95,7 @@ namespace muon {
         }
     }
 
-    void Window::configureDispatcher() {
+    void Window::ConfigureDispatcher() {
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{

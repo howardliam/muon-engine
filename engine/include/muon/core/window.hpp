@@ -20,22 +20,22 @@ namespace muon {
         Window(const WindowProperties &props, EventDispatcher *dispatcher);
         ~Window();
 
-        void pollEvents() const;
+        void PollEvents() const;
 
-        [[nodiscard]] vk::Result createSurface(vk::Instance instance, vk::SurfaceKHR *surface);
-        [[nodiscard]] std::vector<const char *> requiredExtensions() const;
+        [[nodiscard]] vk::Result CreateSurface(vk::Instance instance, vk::SurfaceKHR *surface);
+        [[nodiscard]] std::vector<const char *> RequiredExtensions() const;
 
-        [[nodiscard]] void *window() const;
+        [[nodiscard]] void *Get() const;
 
-        [[nodiscard]] const char *clipboardContents() const;
+        [[nodiscard]] const char *ClipboardContents() const;
 
-        [[nodiscard]] vk::Extent2D extent() const;
-        [[nodiscard]] uint32_t width() const;
-        [[nodiscard]] uint32_t height() const;
+        [[nodiscard]] vk::Extent2D Extent() const;
+        [[nodiscard]] uint32_t Width() const;
+        [[nodiscard]] uint32_t Height() const;
 
     private:
-        void init();
-        void configureDispatcher();
+        void Init();
+        void ConfigureDispatcher();
 
     private:
         GLFWwindow *m_window;
