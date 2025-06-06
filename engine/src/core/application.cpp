@@ -1,6 +1,7 @@
 #include "muon/core/application.hpp"
 
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
 #include "muon/core/event/data.hpp"
@@ -81,7 +82,7 @@ namespace muon {
         //     m_frameHandler->updateFrameTiming();
         // }
 
-        // m_device->device().waitIdle();
+        vkDeviceWaitIdle(m_graphicsContext->GetDevice());
     }
 
 }

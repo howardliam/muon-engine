@@ -11,13 +11,22 @@ namespace muon::gfx {
         Context();
         ~Context();
 
+        [[nodiscard]] VkInstance GetInstance() const;
+        [[nodiscard]] VkSurfaceKHR GetSurface() const;
+        [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
+        [[nodiscard]] VkDevice GetDevice() const;
+        [[nodiscard]] VkQueue GetGraphicsQueue() const;
+        [[nodiscard]] VkQueue GetComputeQueue() const;
+        [[nodiscard]] VkQueue GetPresentQueue() const;
+        [[nodiscard]] VmaAllocator GetAllocator() const;
+        [[nodiscard]] VkCommandPool GetCommandPool() const;
+
     private:
         void CreateInstance();
         void CreateDebugMessenger();
         void CreateSurface();
         void SelectPhysicalDevice();
         void CreateLogicalDevice();
-        void CreateQueues();
         void CreateAllocator();
         void CreateCommandPool();
         void CreateProfiler();
