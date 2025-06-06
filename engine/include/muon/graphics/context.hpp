@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.hpp>
+#include <vulkan/vulkan_core.h>
+#include <vk_mem_alloc.h>
 
 namespace muon::gfx {
 
@@ -17,6 +17,7 @@ namespace muon::gfx {
         void CreateSurface();
         void SelectPhysicalDevice();
         void CreateLogicalDevice();
+        void CreateQueues();
         void CreateAllocator();
         void CreateCommandPool();
         void CreateProfiler();
@@ -29,23 +30,23 @@ namespace muon::gfx {
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
         };
 
-        vk::Instance m_instance;
+        VkInstance m_instance;
 
         #ifdef MU_DEBUG_ENABLED
-        vk::DebugUtilsMessengerEXT m_debugMessenger;
+        VkDebugUtilsMessengerEXT m_debugMessenger;
         #endif
 
-        vk::SurfaceKHR m_surface;
-        vk::PhysicalDevice m_physicalDevice;
-        vk::Device m_device;
+        VkSurfaceKHR m_surface;
+        VkPhysicalDevice m_physicalDevice;
+        VkDevice m_device;
 
-        vk::Queue m_graphicsQueue;
-        vk::Queue m_computeQueue;
-        vk::Queue m_presentQueue;
+        VkQueue m_graphicsQueue;
+        VkQueue m_computeQueue;
+        VkQueue m_presentQueue;
 
-        vma::Allocator m_allocator;
+        VmaAllocator m_allocator;
 
-        vk::CommandPool m_commandPool;
+        VkCommandPool m_commandPool;
     };
 
 }

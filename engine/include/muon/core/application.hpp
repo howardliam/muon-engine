@@ -4,15 +4,13 @@
 #include <filesystem>
 #include "muon/core/assert.hpp"
 #include "muon/core/event/dispatcher.hpp"
+#include "muon/core/window.hpp"
+#include "muon/graphics/context.hpp"
+#include "muon/scripting/script_manager.hpp"
 
 int main(int argc, char **argv);
 
 namespace muon {
-
-    class Window;
-    class Device;
-    class FrameHandler;
-    class ScriptManager;
 
     struct ApplicationCommandLineArgs {
         int32_t count;
@@ -48,8 +46,7 @@ namespace muon {
         EventDispatcher m_dispatcher;
 
         std::unique_ptr<Window> m_window;
-        std::unique_ptr<Device> m_device;
-        std::unique_ptr<FrameHandler> m_frameHandler;
+        std::unique_ptr<gfx::Context> m_graphicsContext;
         std::unique_ptr<ScriptManager> m_scriptManager;
 
         bool m_running{true};

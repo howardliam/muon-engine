@@ -2,17 +2,17 @@
 
 #include <GLFW/glfw3.h>
 #include <yaml-cpp/yaml.h>
+#include "muon/core/assert.hpp"
 #include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
-#include "muon/core/window.hpp"
-#include "muon/renderer/device.hpp"
-#include "muon/renderer/frame_handler.hpp"
-#include "muon/scripting/script_manager.hpp"
 
 namespace muon {
 
     Application::Application(const ApplicationSpecification &spec) {
+        MU_CORE_ASSERT(!s_instance, "application already exists");
+        s_instance = this;
+
         MU_CORE_INFO("creating application");
 
         YAML::Node config = YAML::LoadFile("Muon.yaml");
@@ -24,8 +24,7 @@ namespace muon {
         };
 
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
-        m_device = std::make_unique<Device>(m_window.get());
-        m_frameHandler = std::make_unique<FrameHandler>(*m_window, *m_device);
+        m_graphicsContext = std::make_unique<gfx::Context>();
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
@@ -47,7 +46,7 @@ namespace muon {
 
             if (data.action != Action::Press) { return; }
             if (data.mods & (GLFW_MOD_CONTROL) && data.key == GLFW_KEY_V) {
-                MU_CORE_INFO(m_window->clipboardContents());
+                MU_CORE_INFO(m_window->ClipboardContents());
             }
         });
     }
@@ -67,22 +66,22 @@ namespace muon {
     void Application::run() {
         MU_CORE_INFO("running application");
 
-        m_frameHandler->beginFrameTiming();
-        while (m_running) {
-            m_window->pollEvents();
+        // m_frameHandler->beginFrameTiming();
+        // while (m_running) {
+        //     m_window->pollEvents();
 
-            auto cmd = m_frameHandler->beginFrame();
-
-
+        //     auto cmd = m_frameHandler->beginFrame();
 
 
-            m_frameHandler->prepareToPresent();
 
-            m_frameHandler->endFrame();
-            m_frameHandler->updateFrameTiming();
-        }
 
-        m_device->device().waitIdle();
+        //     m_frameHandler->prepareToPresent();
+
+        //     m_frameHandler->endFrame();
+        //     m_frameHandler->updateFrameTiming();
+        // }
+
+        // m_device->device().waitIdle();
     }
 
 }
