@@ -30,8 +30,7 @@ namespace muon {
     }
 
     VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) {
-        auto result = glfwCreateWindowSurface(instance, m_window, nullptr, surface);
-        return static_cast<VkResult>(result);
+        return glfwCreateWindowSurface(instance, m_window, nullptr, surface);
     }
 
     std::vector<const char *> Window::RequiredExtensions() const {
