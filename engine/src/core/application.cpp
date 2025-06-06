@@ -56,6 +56,14 @@ namespace muon {
         MU_CORE_INFO("destroying application");
     }
 
+    Window &Application::GetWindow() {
+        return *m_window;
+    }
+
+    Application &Application::Get() {
+        return *s_instance;
+    }
+
     void Application::run() {
         MU_CORE_INFO("running application");
 

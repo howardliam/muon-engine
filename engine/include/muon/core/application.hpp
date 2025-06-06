@@ -35,6 +35,10 @@ namespace muon {
         Application(const ApplicationSpecification &spec);
         virtual ~Application();
 
+        [[nodiscard]] Window &GetWindow();
+
+        [[nodiscard]] static Application &Get();
+
     private:
         void run();
 
@@ -49,6 +53,8 @@ namespace muon {
         std::unique_ptr<ScriptManager> m_scriptManager;
 
         bool m_running{true};
+
+        static inline Application *s_instance{nullptr};
     };
 
     Application *createApplication(ApplicationCommandLineArgs args);
