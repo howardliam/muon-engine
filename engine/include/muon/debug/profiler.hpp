@@ -1,20 +1,24 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_core.h>
 #include <tracy/TracyVulkan.hpp>
+
+namespace muon::gfx {
+    class Context;
+}
 
 namespace muon {
 
     class Profiler {
     public:
-        static void collect(vk::CommandBuffer cmd);
-        static tracy::VkCtx *context();
+        static void Collect(VkCommandBuffer cmd);
+        static tracy::VkCtx *Context();
 
     private:
-        static void createContext(vk::PhysicalDevice pd, vk::Device d, vk::Queue gq, vk::CommandBuffer cmd);
-        static void destroyContext();
+        static void CreateContext(VkPhysicalDevice pd, VkDevice d, VkQueue gq, VkCommandBuffer cmd);
+        static void DestroyContext();
 
-        friend class Device;
+        friend class gfx::Context;
 
     private:
         static inline tracy::VkCtx *s_tracyContext{nullptr};
