@@ -6,7 +6,7 @@
 #include "muon/core/event/dispatcher.hpp"
 #include "muon/core/window.hpp"
 #include "muon/graphics/context.hpp"
-#include "muon/graphics/swapchain.hpp"
+#include "muon/graphics/frame_manager.hpp"
 #include "muon/scripting/script_manager.hpp"
 
 int main(int argc, char **argv);
@@ -49,7 +49,7 @@ namespace muon {
 
         std::unique_ptr<Window> m_window;
         std::unique_ptr<gfx::Context> m_graphicsContext;
-        std::unique_ptr<gfx::Swapchain> m_swapchain;
+        std::unique_ptr<gfx::FrameManager> m_frameManager;
 
         std::unique_ptr<ScriptManager> m_scriptManager;
 

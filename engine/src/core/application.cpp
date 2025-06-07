@@ -7,6 +7,7 @@
 #include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
+#include "muon/graphics/frame_manager.hpp"
 #include "muon/graphics/swapchain.hpp"
 
 namespace muon {
@@ -37,7 +38,7 @@ namespace muon {
 
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
         m_graphicsContext = std::make_unique<gfx::Context>();
-        m_swapchain = std::make_unique<gfx::Swapchain>(m_window->GetExtent());
+        m_frameManager = std::make_unique<gfx::FrameManager>();
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
@@ -83,10 +84,14 @@ namespace muon {
     void Application::Run() {
         MU_CORE_INFO("running application");
 
-        m_running = false;
-
         while (m_running) {
             m_window->PollEvents();
+
+            if (auto cmd = m_frameManager->BeginFrame()) {
+
+
+                m_frameManager->EndFrame();
+            }
         }
 
         vkDeviceWaitIdle(m_graphicsContext->GetDevice());
