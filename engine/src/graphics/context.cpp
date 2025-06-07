@@ -1,10 +1,12 @@
 #include "muon/graphics/context.hpp"
 
 #include "muon/core/application.hpp"
+#include "muon/core/assert.hpp"
 #include "muon/core/window.hpp"
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
 #include "muon/graphics/gpu.hpp"
+#include <array>
 #include <cstdint>
 #include <vulkan/vulkan_core.h>
 #define VMA_IMPLEMENTATION
@@ -93,7 +95,6 @@ namespace muon::gfx {
         SelectPhysicalDevice();
         CreateLogicalDevice();
         CreateAllocator();
-        CreateCommandPool();
         CreateProfiler();
 
         MU_CORE_DEBUG("created device");
@@ -103,8 +104,11 @@ namespace muon::gfx {
         #ifdef MU_DEBUG_ENABLED
         Profiler::DestroyContext();
         #endif
-        vkDestroyCommandPool(m_device, m_commandPool, nullptr);
         vmaDestroyAllocator(m_allocator);
+        m_graphicsQueue.reset();
+        m_presentQueue.reset();
+        m_computeQueue.reset();
+        m_transferQueue.reset();
         vkDestroyDevice(m_device, nullptr);
         vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
         #ifdef MU_DEBUG_ENABLED
@@ -131,28 +135,28 @@ namespace muon::gfx {
         return m_device;
     }
 
-    VkQueue Context::GetGraphicsQueue() const {
-        return m_graphicsQueue;
+    Queue &Context::GetGraphicsQueue() const {
+        return *m_graphicsQueue;
     }
 
-    VkQueue Context::GetComputeQueue() const {
-        return m_computeQueue;
+    Queue &Context::GetPresentQueue() const {
+        return *m_presentQueue;
     }
 
-    VkQueue Context::GetPresentQueue() const {
-        return m_presentQueue;
+    Queue &Context::GetComputeQueue() const {
+        return *m_computeQueue;
+    }
+
+    Queue &Context::GetTransferQueue() const {
+        return *m_transferQueue;
     }
 
     VmaAllocator Context::GetAllocator() const {
         return m_allocator;
     }
 
-    VkCommandPool Context::GetCommandPool() const {
-        return m_commandPool;
-    }
-
     void Context::CreateInstance() {
-        auto extensions = Application::Get().GetWindow().RequiredExtensions();
+        auto extensions = Application::Get().GetWindow().GetRequiredExtensions();
 
         #ifdef MU_DEBUG_ENABLED
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -189,10 +193,7 @@ namespace muon::gfx {
                 }
             }
 
-            if (!layerFound) {
-                return false;
-            }
-
+            if (!layerFound) { return false; }
             return true;
         };
 
@@ -223,13 +224,11 @@ namespace muon::gfx {
 
         auto result = CreateDebugUtilsMessenger(m_instance, &createInfo, nullptr, &m_debugMessenger);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
-        MU_CORE_TRACE("created debug messenger");
     }
 
     void Context::CreateSurface() {
         auto result = Application::Get().GetWindow().CreateSurface(m_instance, &m_surface);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create window surface");
-        MU_CORE_TRACE("created surface");
     }
 
     void Context::SelectPhysicalDevice() {
@@ -249,20 +248,55 @@ namespace muon::gfx {
         }
 
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
-
-        VkPhysicalDeviceProperties2 deviceProperties{};
-        deviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        vkGetPhysicalDeviceProperties2(m_physicalDevice, &deviceProperties);
     }
 
     void Context::CreateLogicalDevice() {
-        float queuePriority = 1.0;
+        struct QueueFamilyIndices {
+            uint32_t graphics;
+            uint32_t compute;
+            uint32_t transfer;
+        };
 
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = 0;
-        queueCreateInfo.queueCount = 1;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
+        QueueFamilyIndices indices{};
+
+        uint32_t queueFamilyPropertyCount{0};
+        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyPropertyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
+        MU_CORE_ASSERT(queueFamilyPropertyCount >= 3, "there must be at least three queue families");
+
+        if (queueFamilyProperties[0].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            indices.graphics = 0;
+        }
+
+        if (queueFamilyProperties[1].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+            indices.compute = 1;
+        }
+
+        if (queueFamilyProperties[2].queueFlags & VK_QUEUE_TRANSFER_BIT) {
+            indices.transfer = 2;
+        }
+
+
+        float queuePriorities[] = {1.0, 1.0};
+        std::array<VkDeviceQueueCreateInfo, 3> queueCreateInfos;
+        queueCreateInfos[0] = VkDeviceQueueCreateInfo{};
+        queueCreateInfos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfos[0].queueFamilyIndex = indices.graphics;
+        queueCreateInfos[0].queueCount = 2;
+        queueCreateInfos[0].pQueuePriorities = queuePriorities;
+
+        queueCreateInfos[1] = VkDeviceQueueCreateInfo{};
+        queueCreateInfos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfos[1].queueFamilyIndex = indices.compute;
+        queueCreateInfos[1].queueCount = 1;
+        queueCreateInfos[1].pQueuePriorities = queuePriorities;
+
+        queueCreateInfos[2] = VkDeviceQueueCreateInfo{};
+        queueCreateInfos[2].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfos[2].queueFamilyIndex = indices.transfer;
+        queueCreateInfos[2].queueCount = 1;
+        queueCreateInfos[2].pQueuePriorities = queuePriorities;
 
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
@@ -285,8 +319,8 @@ namespace muon::gfx {
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = 1;
-        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.queueCreateInfoCount = queueCreateInfos.size();
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
         createInfo.pNext = &deviceFeatures;
@@ -294,7 +328,10 @@ namespace muon::gfx {
         auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a logical device");
 
-        vkGetDeviceQueue(m_device, 0, 0, &m_graphicsQueue);
+        m_graphicsQueue = std::make_unique<Queue>(QueueType::Graphics, m_device, indices.graphics, 0);
+        m_presentQueue = std::make_unique<Queue>(QueueType::Present, m_device, indices.graphics, 1);
+        m_computeQueue = std::make_unique<Queue>(QueueType::Compute, m_device, indices.compute, 0);
+        m_transferQueue = std::make_unique<Queue>(QueueType::Transfer, m_device, indices.transfer, 0);
     }
 
     void Context::CreateAllocator() {
@@ -307,28 +344,18 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create allocator");
     }
 
-    void Context::CreateCommandPool() {
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = 0;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-        auto result = vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create command pool");
-    }
-
     void Context::CreateProfiler() {
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocateInfo.commandPool = m_commandPool;
+        allocateInfo.commandPool = m_graphicsQueue->GetCommandPool();
         allocateInfo.commandBufferCount = 1;
 
         VkCommandBuffer cmd;
         auto result = vkAllocateCommandBuffers(m_device, &allocateInfo, &cmd);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate profiler creation command buffer");
 
-        Profiler::CreateContext(m_physicalDevice, m_device, m_graphicsQueue, cmd);
+        Profiler::CreateContext(m_physicalDevice, m_device, m_graphicsQueue->Get(), cmd);
     }
 
 }

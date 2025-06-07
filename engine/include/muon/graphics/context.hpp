@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/graphics/queue.hpp"
+#include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
@@ -11,13 +13,15 @@ namespace muon::gfx {
         Context();
         ~Context();
 
+    public:
         [[nodiscard]] VkInstance GetInstance() const;
         [[nodiscard]] VkSurfaceKHR GetSurface() const;
         [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
         [[nodiscard]] VkDevice GetDevice() const;
-        [[nodiscard]] VkQueue GetGraphicsQueue() const;
-        [[nodiscard]] VkQueue GetComputeQueue() const;
-        [[nodiscard]] VkQueue GetPresentQueue() const;
+        [[nodiscard]] Queue &GetGraphicsQueue() const;
+        [[nodiscard]] Queue &GetPresentQueue() const;
+        [[nodiscard]] Queue &GetComputeQueue() const;
+        [[nodiscard]] Queue &GetTransferQueue() const;
         [[nodiscard]] VmaAllocator GetAllocator() const;
         [[nodiscard]] VkCommandPool GetCommandPool() const;
 
@@ -28,7 +32,6 @@ namespace muon::gfx {
         void SelectPhysicalDevice();
         void CreateLogicalDevice();
         void CreateAllocator();
-        void CreateCommandPool();
         void CreateProfiler();
 
     private:
@@ -49,13 +52,12 @@ namespace muon::gfx {
         VkPhysicalDevice m_physicalDevice;
         VkDevice m_device;
 
-        VkQueue m_graphicsQueue;
-        VkQueue m_computeQueue;
-        VkQueue m_presentQueue;
+        std::unique_ptr<Queue> m_graphicsQueue;
+        std::unique_ptr<Queue> m_presentQueue;
+        std::unique_ptr<Queue> m_computeQueue;
+        std::unique_ptr<Queue> m_transferQueue;
 
         VmaAllocator m_allocator;
-
-        VkCommandPool m_commandPool;
     };
 
 }

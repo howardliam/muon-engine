@@ -46,27 +46,8 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/graphics/context.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
-
-    # ${INCLUDE_DIR}/muon/renderer/descriptor/pool.hpp
-    # ${INCLUDE_DIR}/muon/renderer/descriptor/set_layout.hpp
-    # ${INCLUDE_DIR}/muon/renderer/descriptor/writer.hpp
-
-    # ${INCLUDE_DIR}/muon/renderer/pipeline/compute.hpp
-    # ${INCLUDE_DIR}/muon/renderer/pipeline/graphics.hpp
-    # ${INCLUDE_DIR}/muon/renderer/pipeline/layout.hpp
-
-    # ${INCLUDE_DIR}/muon/renderer/buffer.hpp
-    # ${INCLUDE_DIR}/muon/renderer/debug_ui.hpp
-    # ${INCLUDE_DIR}/muon/renderer/device.hpp
-    # ${INCLUDE_DIR}/muon/renderer/frame_handler.hpp
-    # ${INCLUDE_DIR}/muon/renderer/image.hpp
-    # ${INCLUDE_DIR}/muon/renderer/material.hpp
-    # ${INCLUDE_DIR}/muon/renderer/mesh.hpp
-    # ${INCLUDE_DIR}/muon/renderer/mesh.inl
-    # ${INCLUDE_DIR}/muon/renderer/model.hpp
-    # ${INCLUDE_DIR}/muon/renderer/shader.hpp
-    # ${INCLUDE_DIR}/muon/renderer/swapchain.hpp
-    # ${INCLUDE_DIR}/muon/renderer/texture.hpp
+    ${INCLUDE_DIR}/muon/graphics/queue.hpp
+    ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
@@ -85,25 +66,8 @@ set(SRC_FILES
 
     ${SRC_DIR}/graphics/context.cpp
     ${SRC_DIR}/graphics/gpu.cpp
-
-    # ${SRC_DIR}/renderer/descriptor/pool.cpp
-    # ${SRC_DIR}/renderer/descriptor/set_layout.cpp
-    # ${SRC_DIR}/renderer/descriptor/writer.cpp
-
-    # ${SRC_DIR}/renderer/pipeline/compute.cpp
-    # ${SRC_DIR}/renderer/pipeline/graphics.cpp
-    # ${SRC_DIR}/renderer/pipeline/layout.cpp
-
-    # ${SRC_DIR}/renderer/buffer.cpp
-    # ${SRC_DIR}/renderer/debug_ui.cpp
-    # ${SRC_DIR}/renderer/device.cpp
-    # ${SRC_DIR}/renderer/frame_handler.cpp
-    # ${SRC_DIR}/renderer/image.cpp
-    # ${SRC_DIR}/renderer/mesh.cpp
-    # ${SRC_DIR}/renderer/model.cpp
-    # ${SRC_DIR}/renderer/shader.cpp
-    # ${SRC_DIR}/renderer/swapchain.cpp
-    # ${SRC_DIR}/renderer/texture.cpp
+    ${SRC_DIR}/graphics/queue.cpp
+    ${SRC_DIR}/graphics/swapchain.cpp
 
     ${SRC_DIR}/scripting/script_manager.cpp
 

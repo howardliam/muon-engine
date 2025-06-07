@@ -7,6 +7,7 @@
 #include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
+#include "muon/graphics/swapchain.hpp"
 
 namespace muon {
 
@@ -26,6 +27,7 @@ namespace muon {
 
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
         m_graphicsContext = std::make_unique<gfx::Context>();
+        m_swapchain = std::make_unique<gfx::Swapchain>(m_window->GetExtent());
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
@@ -47,7 +49,7 @@ namespace muon {
 
             if (data.action != Action::Press) { return; }
             if (data.mods & (GLFW_MOD_CONTROL) && data.key == GLFW_KEY_V) {
-                MU_CORE_INFO(m_window->ClipboardContents());
+                MU_CORE_INFO(m_window->GetClipboardContents());
             }
         });
     }
@@ -71,20 +73,11 @@ namespace muon {
     void Application::run() {
         MU_CORE_INFO("running application");
 
-        // m_frameHandler->beginFrameTiming();
-        // while (m_running) {
-        //     m_window->pollEvents();
+        m_running = false;
 
-        //     auto cmd = m_frameHandler->beginFrame();
-
-
-
-
-        //     m_frameHandler->prepareToPresent();
-
-        //     m_frameHandler->endFrame();
-        //     m_frameHandler->updateFrameTiming();
-        // }
+        while (m_running) {
+            m_window->PollEvents();
+        }
 
         vkDeviceWaitIdle(m_graphicsContext->GetDevice());
     }

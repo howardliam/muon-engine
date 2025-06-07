@@ -33,7 +33,7 @@ namespace muon {
         return glfwCreateWindowSurface(instance, m_window, nullptr, surface);
     }
 
-    std::vector<const char *> Window::RequiredExtensions() const {
+    std::vector<const char *> Window::GetRequiredExtensions() const {
         uint32_t count{0};
         const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&count);
 
@@ -45,22 +45,22 @@ namespace muon {
         return m_window;
     }
 
-    const char *Window::ClipboardContents() const {
+    const char *Window::GetClipboardContents() const {
         return glfwGetClipboardString(m_window);
     }
 
-    VkExtent2D Window::Extent() const {
+    VkExtent2D Window::GetExtent() const {
         return {
             m_data.width,
             m_data.height
         };
     }
 
-    uint32_t Window::Width() const {
+    uint32_t Window::GetWidth() const {
         return m_data.width;
     }
 
-    uint32_t Window::Height() const {
+    uint32_t Window::GetHeight() const {
         return m_data.height;
     }
 
