@@ -140,6 +140,10 @@ namespace muon::gfx {
         return m_device;
     }
 
+    QueueFamilyIndices &Context::GetQueueIndices() const {
+        return *m_queueFamilyIndices;
+    }
+
     Queue &Context::GetGraphicsQueue() const {
         return *m_graphicsQueue;
     }

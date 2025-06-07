@@ -17,11 +17,15 @@ namespace muon::gfx {
         [[nodiscard]] VkSurfaceKHR GetSurface() const;
         [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
         [[nodiscard]] VkDevice GetDevice() const;
+
+        [[nodiscard]] QueueFamilyIndices &GetQueueIndices() const;
         [[nodiscard]] Queue &GetGraphicsQueue() const;
         [[nodiscard]] Queue &GetPresentQueue() const;
         [[nodiscard]] Queue &GetComputeQueue() const;
         [[nodiscard]] Queue &GetTransferQueue() const;
+
         [[nodiscard]] VmaAllocator GetAllocator() const;
+
         [[nodiscard]] VkCommandPool GetCommandPool() const;
 
     private:
