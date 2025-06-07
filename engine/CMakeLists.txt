@@ -45,6 +45,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/debug/profiler.hpp
 
     ${INCLUDE_DIR}/muon/graphics/context.hpp
+    ${INCLUDE_DIR}/muon/graphics/device.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
