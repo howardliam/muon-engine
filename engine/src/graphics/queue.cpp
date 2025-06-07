@@ -121,6 +121,43 @@ namespace muon::gfx {
         MU_CORE_DEBUG("destroyed {} queue", ToString(m_type));
     }
 
+    VkCommandBuffer Queue::BeginCommands() {
+        VkCommandBufferAllocateInfo allocateInfo{};
+        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocateInfo.commandPool = m_commandPool;
+        allocateInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        auto result = vkAllocateCommandBuffers(Application::Get().GetGraphicsContext().GetDevice(), &allocateInfo, &commandBuffer);
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate single time command buffer");
+
+        VkCommandBufferBeginInfo beginInfo{};
+        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to begin command buffer recording");
+
+        return commandBuffer;
+    }
+
+    void Queue::EndCommands(VkCommandBuffer cmd) {
+        vkEndCommandBuffer(cmd);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmd;
+
+        auto result = vkQueueSubmit(m_queue, 1, &submitInfo, nullptr);
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit command buffer to graphics queue");
+
+        vkQueueWaitIdle(m_queue);
+
+        vkFreeCommandBuffers(Application::Get().GetGraphicsContext().GetDevice(), m_commandPool, 1, &cmd);
+    }
+
     QueueType Queue::GetType() const {
         return m_type;
     }

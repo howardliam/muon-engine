@@ -33,6 +33,10 @@ namespace muon::gfx {
         ~Queue();
 
     public:
+    [[nodiscard]] VkCommandBuffer BeginCommands();
+    void EndCommands(VkCommandBuffer cmd);
+
+    public:
         [[nodiscard]] QueueType GetType() const;
 
         [[nodiscard]] VkQueue Get() const;
