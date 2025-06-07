@@ -2,7 +2,6 @@
 
 #include "muon/graphics/queue.hpp"
 #include <memory>
-#include <vector>
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
 
@@ -31,17 +30,11 @@ namespace muon::gfx {
         void CreateSurface();
         void SelectPhysicalDevice();
         void CreateLogicalDevice();
+        void CreateQueues();
         void CreateAllocator();
         void CreateProfiler();
 
     private:
-        const std::vector<const char *> m_deviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-            VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-        };
-
         VkInstance m_instance;
 
         #ifdef MU_DEBUG_ENABLED
@@ -52,6 +45,7 @@ namespace muon::gfx {
         VkPhysicalDevice m_physicalDevice;
         VkDevice m_device;
 
+        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
         std::unique_ptr<Queue> m_graphicsQueue;
         std::unique_ptr<Queue> m_presentQueue;
         std::unique_ptr<Queue> m_computeQueue;

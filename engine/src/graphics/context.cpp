@@ -5,9 +5,13 @@
 #include "muon/core/window.hpp"
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
+#include "muon/graphics/device.hpp"
 #include "muon/graphics/gpu.hpp"
+#include "muon/graphics/queue.hpp"
 #include <array>
 #include <cstdint>
+#include <memory>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
@@ -94,6 +98,7 @@ namespace muon::gfx {
         CreateSurface();
         SelectPhysicalDevice();
         CreateLogicalDevice();
+        CreateQueues();
         CreateAllocator();
         CreateProfiler();
 
@@ -239,7 +244,11 @@ namespace muon::gfx {
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
         for (const auto &physicalDevice : physicalDevices) {
-            auto suitability = GpuSuitability::DetermineSuitability(physicalDevice, m_surface, m_deviceExtensions);
+            auto suitability = GpuSuitability::DetermineSuitability(
+                physicalDevice,
+                m_surface,
+                { requiredDeviceExtensions.begin(), requiredDeviceExtensions.end() }
+            );
 
             if (suitability.IsSuitable()) {
                 m_physicalDevice = physicalDevice;
@@ -251,52 +260,9 @@ namespace muon::gfx {
     }
 
     void Context::CreateLogicalDevice() {
-        struct QueueFamilyIndices {
-            uint32_t graphics;
-            uint32_t compute;
-            uint32_t transfer;
-        };
+        m_queueFamilyIndices = std::make_unique<QueueFamilyIndices>(QueueFamilyIndices::DetermineIndices(m_physicalDevice, m_surface));
 
-        QueueFamilyIndices indices{};
-
-        uint32_t queueFamilyPropertyCount{0};
-        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertyCount, nullptr);
-        std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyPropertyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
-        MU_CORE_ASSERT(queueFamilyPropertyCount >= 3, "there must be at least three queue families");
-
-        if (queueFamilyProperties[0].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            indices.graphics = 0;
-        }
-
-        if (queueFamilyProperties[1].queueFlags & VK_QUEUE_COMPUTE_BIT) {
-            indices.compute = 1;
-        }
-
-        if (queueFamilyProperties[2].queueFlags & VK_QUEUE_TRANSFER_BIT) {
-            indices.transfer = 2;
-        }
-
-
-        float queuePriorities[] = {1.0, 1.0};
-        std::array<VkDeviceQueueCreateInfo, 3> queueCreateInfos;
-        queueCreateInfos[0] = VkDeviceQueueCreateInfo{};
-        queueCreateInfos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfos[0].queueFamilyIndex = indices.graphics;
-        queueCreateInfos[0].queueCount = 2;
-        queueCreateInfos[0].pQueuePriorities = queuePriorities;
-
-        queueCreateInfos[1] = VkDeviceQueueCreateInfo{};
-        queueCreateInfos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfos[1].queueFamilyIndex = indices.compute;
-        queueCreateInfos[1].queueCount = 1;
-        queueCreateInfos[1].pQueuePriorities = queuePriorities;
-
-        queueCreateInfos[2] = VkDeviceQueueCreateInfo{};
-        queueCreateInfos[2].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfos[2].queueFamilyIndex = indices.transfer;
-        queueCreateInfos[2].queueCount = 1;
-        queueCreateInfos[2].pQueuePriorities = queuePriorities;
+        auto queueCreateInfos = m_queueFamilyIndices->GenerateQueueCreateInfos();
 
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
@@ -321,17 +287,19 @@ namespace muon::gfx {
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount = queueCreateInfos.size();
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
         createInfo.pNext = &deviceFeatures;
 
         auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a logical device");
+    }
 
-        m_graphicsQueue = std::make_unique<Queue>(QueueType::Graphics, m_device, indices.graphics, 0);
-        m_presentQueue = std::make_unique<Queue>(QueueType::Present, m_device, indices.graphics, 1);
-        m_computeQueue = std::make_unique<Queue>(QueueType::Compute, m_device, indices.compute, 0);
-        m_transferQueue = std::make_unique<Queue>(QueueType::Transfer, m_device, indices.transfer, 0);
+    void Context::CreateQueues() {
+        m_graphicsQueue = std::make_unique<Queue>(QueueType::Graphics, m_device, m_queueFamilyIndices->graphics, 0);
+        m_presentQueue = std::make_unique<Queue>(QueueType::Present, m_device, m_queueFamilyIndices->present, 1);
+        m_computeQueue = std::make_unique<Queue>(QueueType::Compute, m_device, m_queueFamilyIndices->compute, 0);
+        m_transferQueue = std::make_unique<Queue>(QueueType::Transfer, m_device, m_queueFamilyIndices->transfer, 0);
     }
 
     void Context::CreateAllocator() {

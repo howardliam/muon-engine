@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+#include <unordered_set>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
@@ -9,6 +11,20 @@ namespace muon::gfx {
         Present,
         Compute,
         Transfer,
+    };
+
+    struct QueueFamilyIndices {
+        uint32_t graphics;
+        uint32_t compute;
+        uint32_t transfer;
+
+        uint32_t present; // will usually be the same as graphics on desktop discrete GPUs.
+        QueueType presentQueueType;
+
+        std::unordered_set<uint32_t> UniqueQueues() const;
+        std::vector<VkDeviceQueueCreateInfo> GenerateQueueCreateInfos();
+
+        static QueueFamilyIndices DetermineIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     };
 
     class Queue {
