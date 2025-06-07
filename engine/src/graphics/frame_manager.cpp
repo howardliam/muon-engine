@@ -22,6 +22,8 @@ namespace muon::gfx {
     }
 
     VkCommandBuffer FrameManager::BeginFrame() {
+        MU_CORE_ASSERT(!m_frameInProgress, "cannot begin frame while frame is in progress");
+
         auto result = m_swapchain->AcquireNextImage(&m_currentImageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             CreateSwapchain();
@@ -43,6 +45,8 @@ namespace muon::gfx {
     }
 
     void FrameManager::EndFrame() {
+        MU_CORE_ASSERT(m_frameInProgress, "cannot end frame if a frame has not been started");
+
         const auto cmd = m_commandBuffers[m_currentFrameIndex];
         vkEndCommandBuffer(cmd);
 
