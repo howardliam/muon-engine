@@ -69,6 +69,7 @@ namespace muon::gfx {
         m_imagesInFlight[*imageIndex] = m_inFlightFences[m_currentFrame];
 
         VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = buffers;
 
@@ -79,7 +80,7 @@ namespace muon::gfx {
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
 
-        VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[*imageIndex] };
+        VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -90,12 +91,12 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit draw command buffer");
 
         VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapchains[] = { m_swapchain };
         presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapchains;
+        presentInfo.pSwapchains = &m_swapchain;
 
         presentInfo.pImageIndices = imageIndex;
 
