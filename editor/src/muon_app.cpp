@@ -10,7 +10,7 @@ namespace muon {
         }
     };
 
-    Application *createApplication(ApplicationCommandLineArgs args) {
+    Application *CreateApplication(ApplicationCommandLineArgs args) {
         ApplicationSpecification spec{};
         spec.name = "Muon Editor";
         spec.cliArgs = args;

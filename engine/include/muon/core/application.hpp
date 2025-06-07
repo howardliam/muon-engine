@@ -40,7 +40,7 @@ namespace muon {
         [[nodiscard]] static Application &Get();
 
     private:
-        void run();
+        void Run();
 
         friend int ::main(int argc, char **argv);
 
@@ -58,6 +58,6 @@ namespace muon {
         static inline Application *s_instance{nullptr};
     };
 
-    Application *createApplication(ApplicationCommandLineArgs args);
+    Application *CreateApplication(ApplicationCommandLineArgs args);
 
 }

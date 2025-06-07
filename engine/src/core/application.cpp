@@ -70,7 +70,7 @@ namespace muon {
         return *s_instance;
     }
 
-    void Application::run() {
+    void Application::Run() {
         MU_CORE_INFO("running application");
 
         m_running = false;
