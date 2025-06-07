@@ -21,8 +21,9 @@ Add as a git submodule and link to the required libraries.
 | item | convention |
 | ---- | ---- |
 | integers | use `cstdint`/`stdint.h` integer types: `int32_t`, `int64_t`, etc. |
-| classes, structs | named in PascelCase: `FileManager`, `MaterialInfo` |
-| functions, methods, variables | named in camelCase: `renderModel()` |
+| classes, structs | named in PascalCase: `FileManager`, `MaterialInfo` |
+| functions, methods | named in PascalCase: `RenderModel()` |
+| variables, lambdas | named in camelCase: `fileIndex` |
 | static variables | name begins with `s_`, e.g.: `static tracy::VkCtx *s_tracyContext;` |
 | member variables | name begins with `m_`, e.g.: `Device &m_device;` |
 | pointers, references | `*` and `&` must be on the variable name, e.g.: `const std::vector<uint8_t> &data;` |
