@@ -1,13 +1,15 @@
 #pragma once
 
 #include "muon/graphics/queue.hpp"
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <memory>
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
 
 namespace muon::gfx {
 
-    class Context {
+    class Context : NoCopy, NoMove {
     public:
         Context();
         ~Context();

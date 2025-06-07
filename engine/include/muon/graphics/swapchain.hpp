@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -10,7 +12,7 @@ namespace muon::gfx {
         constexpr uint32_t maxFramesInFlight = 2;
     }
 
-    class Swapchain {
+    class Swapchain : NoCopy, NoMove {
     public:
         Swapchain(VkExtent2D windowExtent);
         Swapchain(VkExtent2D windowExtent, std::shared_ptr<Swapchain> previous);

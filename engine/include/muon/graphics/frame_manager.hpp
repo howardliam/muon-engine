@@ -1,13 +1,15 @@
 #pragma once
 
 #include "muon/graphics/swapchain.hpp"
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
 
-    class FrameManager {
+    class FrameManager : NoCopy, NoMove {
     public:
         FrameManager();
         ~FrameManager();

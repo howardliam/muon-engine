@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <vector>
 #include <unordered_set>
 #include <vulkan/vulkan_core.h>
@@ -27,7 +29,7 @@ namespace muon::gfx {
         static QueueFamilyIndices DetermineIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     };
 
-    class Queue {
+    class Queue : NoCopy, NoMove {
     public:
         Queue(QueueType type, VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex);
         ~Queue();
