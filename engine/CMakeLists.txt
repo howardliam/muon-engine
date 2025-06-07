@@ -92,7 +92,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     spirv-reflect-static glslang SPIRV
     glfw
     vulkan
-    VulkanMemoryAllocator-Hpp VulkanMemoryAllocator
+    VulkanMemoryAllocator
     glm
     Tracy::TracyClient
     muon::imgui
