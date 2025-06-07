@@ -1,14 +1,15 @@
 #pragma once
 
+#include <bitset>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
 
-    class GpuSuitability {
-    public:
-        GpuSuitability() = default;
-        ~GpuSuitability() = default;
+    struct GpuSuitability {
+        std::bitset<4> coreRequirements;
+
+        uint64_t memorySize = 0;
 
         bool IsSuitable() const;
 
@@ -17,17 +18,6 @@ namespace muon::gfx {
             VkSurfaceKHR surface,
             const std::vector<const char *> &deviceExtensions
         );
-
-    private:
-        bool m_minimumApiSupport;
-        bool m_discreteGpu;
-        bool m_minimumPushConstantSize;
-        bool m_requiredExtensions;
-
-        bool m_adequateQueues;
-        bool m_bindlessSupport;
-        bool m_adequatePresentSupport;
-        bool m_extraShaders;
     };
 
 }
