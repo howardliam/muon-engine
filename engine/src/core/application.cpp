@@ -17,13 +17,23 @@ namespace muon {
 
         MU_CORE_INFO("creating application");
 
-        YAML::Node config = YAML::LoadFile("Muon.yaml");
+        WindowProperties properties{};
+        properties.title = spec.name;
 
-        WindowProperties properties{
-            .title = spec.name,
-            .width = config["window"]["dimensions"]["width"].as<uint32_t>(),
-            .height = config["window"]["dimensions"]["height"].as<uint32_t>()
-        };
+        try {
+            YAML::Node config = YAML::LoadFile("Muon.yaml");
+
+            properties.width = config["window"]["dimensions"]["width"].as<uint32_t>();
+            properties.height = config["window"]["dimensions"]["height"].as<uint32_t>();
+        } catch (const std::exception &e) {
+            MU_CORE_ERROR("cannot find Muon.yaml config file!");
+
+            GLFWmonitor *primary = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(primary);
+
+            properties.width = (mode->width / 1.3333333333333334);
+            properties.height = (mode->height / 1.3333333333333334);
+        }
 
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
         m_graphicsContext = std::make_unique<gfx::Context>();
