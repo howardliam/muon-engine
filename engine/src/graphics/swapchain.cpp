@@ -310,13 +310,13 @@ namespace muon::gfx {
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create in flight fences");
         }
 
-        m_renderFinishedSemaphores.resize(m_swapchainImages.size());
-        for (uint32_t i = 0; i < m_swapchainImages.size(); i++) {
+        m_renderFinishedSemaphores.resize(m_imageCount);
+        for (uint32_t i = 0; i < m_imageCount; i++) {
             auto result = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
         }
 
-        m_imagesInFlight.resize(m_swapchainImages.size(), nullptr);
+        m_imagesInFlight.resize(m_imageCount, nullptr);
     }
 
 }
