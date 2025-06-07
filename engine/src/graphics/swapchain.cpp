@@ -222,9 +222,17 @@ namespace muon::gfx {
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0;
-        createInfo.pQueueFamilyIndices = nullptr;
+        const auto &indices = context.GetQueueIndices();
+        const uint32_t queueFamilyIndices[] = { indices.graphics, indices.present };
+        if (indices.graphics != indices.present) {
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        } else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.queueFamilyIndexCount = 0;
+            createInfo.pQueueFamilyIndices = nullptr;
+        }
 
         createInfo.preTransform = capabilities.currentTransform;
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -288,13 +296,16 @@ namespace muon::gfx {
 
         auto &context = Application::Get().GetGraphicsContext();
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
-            auto imgAvaRes = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
-            auto rdrFinRes = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
-            auto fenceRes = vkCreateFence(context.GetDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
+            VkResult result;
 
-            MU_CORE_ASSERT(imgAvaRes == VK_SUCCESS, "failed to create image available semaphores");
-            MU_CORE_ASSERT(rdrFinRes == VK_SUCCESS, "failed to create render finished semaphores");
-            MU_CORE_ASSERT(fenceRes == VK_SUCCESS, "failed to create in flight fences");
+            result = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image available semaphores");
+
+            result = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
+
+            result = vkCreateFence(context.GetDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
+            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create in flight fences");
         }
 
         m_imagesInFlight.resize(m_swapchainImages.size(), nullptr);
