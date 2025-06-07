@@ -51,9 +51,9 @@ namespace muon::gfx {
         std::vector<VkImageView> m_swapchainImageViews{};
 
         std::vector<VkSemaphore> m_imageAvailableSemaphores{};
-        std::vector<VkSemaphore> m_renderFinishedSemaphores{};
         std::vector<VkFence> m_inFlightFences{};
 
+        std::vector<VkSemaphore> m_renderFinishedSemaphores{};
         std::vector<VkFence> m_imagesInFlight{};
 
         uint32_t m_currentFrame = 0;

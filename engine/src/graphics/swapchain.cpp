@@ -25,16 +25,21 @@ namespace muon::gfx {
     Swapchain::~Swapchain() {
         auto &context = Application::Get().GetGraphicsContext();
 
-        for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
-            vkDestroySemaphore(context.GetDevice(), m_imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(context.GetDevice(), m_inFlightFences[i], nullptr);
-            vkDestroySemaphore(context.GetDevice(), m_renderFinishedSemaphores[i], nullptr);
+        for (auto &semaphore : m_imageAvailableSemaphores) {
+            vkDestroySemaphore(context.GetDevice(), semaphore, nullptr);
+        }
+
+        for (auto &fence : m_inFlightFences) {
+            vkDestroyFence(context.GetDevice(), fence, nullptr);
+        }
+
+        for (auto &semaphore : m_renderFinishedSemaphores) {
+            vkDestroySemaphore(context.GetDevice(), semaphore, nullptr);
         }
 
         for (auto imageView : m_swapchainImageViews) {
             vkDestroyImageView(context.GetDevice(), imageView, nullptr);
         }
-        m_swapchainImageViews.clear();
 
         vkDestroySwapchainKHR(context.GetDevice(), m_swapchain, nullptr);
 
@@ -80,7 +85,7 @@ namespace muon::gfx {
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
 
-        VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
+        VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[*imageIndex] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -284,10 +289,6 @@ namespace muon::gfx {
     }
 
     void Swapchain::CreateSyncObjects() {
-        m_imageAvailableSemaphores.resize(constants::maxFramesInFlight);
-        m_renderFinishedSemaphores.resize(constants::maxFramesInFlight);
-        m_inFlightFences.resize(constants::maxFramesInFlight);
-
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -296,17 +297,23 @@ namespace muon::gfx {
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         auto &context = Application::Get().GetGraphicsContext();
+
+        m_imageAvailableSemaphores.resize(constants::maxFramesInFlight);
+        m_inFlightFences.resize(constants::maxFramesInFlight);
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
             VkResult result;
 
             result = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image available semaphores");
 
-            result = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
-            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
-
             result = vkCreateFence(context.GetDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create in flight fences");
+        }
+
+        m_renderFinishedSemaphores.resize(m_swapchainImages.size());
+        for (uint32_t i = 0; i < m_swapchainImages.size(); i++) {
+            auto result = vkCreateSemaphore(context.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
         }
 
         m_imagesInFlight.resize(m_swapchainImages.size(), nullptr);
