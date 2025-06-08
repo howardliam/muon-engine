@@ -8,6 +8,7 @@
 #include "muon/graphics/device.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -247,17 +248,40 @@ namespace muon::gfx {
         vkEnumeratePhysicalDevices(m_instance, &deviceCount, physicalDevices.data());
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
-        for (const auto &physicalDevice : physicalDevices) {
+        if (physicalDevices.size() == 1) {
             auto suitability = GpuSuitability::DetermineSuitability(
-                physicalDevice,
+                physicalDevices[0],
                 m_surface,
                 { requiredDeviceExtensions.begin(), requiredDeviceExtensions.end() }
             );
 
             if (suitability.IsSuitable()) {
-                m_physicalDevice = physicalDevice;
-                break;
+                m_physicalDevice = physicalDevices[0];
             }
+        } else {
+            std::vector<std::pair<GpuSuitability, VkPhysicalDevice>> suitabilities{};
+
+            for (const auto &physicalDevice : physicalDevices) {
+                auto suitability = GpuSuitability::DetermineSuitability(
+                    physicalDevice,
+                    m_surface,
+                    { requiredDeviceExtensions.begin(), requiredDeviceExtensions.end() }
+                );
+
+                if (suitability.IsSuitable()) {
+                    suitabilities.push_back({ suitability, physicalDevice });
+                }
+            }
+
+            MU_CORE_ASSERT(suitabilities.size() > 0, "there must be at least one suitable GPU");
+
+            auto sort = [](const std::pair<GpuSuitability, VkPhysicalDevice> &a, const std::pair<GpuSuitability, VkPhysicalDevice> &b) {
+                return a.first.memorySize > b.first.memorySize;
+            };
+            std::sort(suitabilities.begin(), suitabilities.end(), sort);
+
+            auto &[_, physicalDevice] = suitabilities.front();
+            m_physicalDevice = physicalDevice;
         }
 
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
@@ -301,7 +325,8 @@ namespace muon::gfx {
 
     void Context::CreateQueues() {
         m_graphicsQueue = std::make_unique<Queue>(QueueType::Graphics, m_device, m_queueFamilyIndices->graphics, 0);
-        m_presentQueue = std::make_unique<Queue>(QueueType::Present, m_device, m_queueFamilyIndices->present, 1);
+        uint32_t index = m_queueFamilyIndices->presentQueueType == QueueType::Present ? 0 : 1;
+        m_presentQueue = std::make_unique<Queue>(QueueType::Present, m_device, m_queueFamilyIndices->present, index);
         m_computeQueue = std::make_unique<Queue>(QueueType::Compute, m_device, m_queueFamilyIndices->compute, 0);
         m_transferQueue = std::make_unique<Queue>(QueueType::Transfer, m_device, m_queueFamilyIndices->transfer, 0);
     }
