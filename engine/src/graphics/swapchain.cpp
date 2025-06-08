@@ -6,20 +6,15 @@
 
 namespace muon::gfx {
 
-    Swapchain::Swapchain(
-        VkExtent2D windowExtent
-    ) : m_swapchainExtent(windowExtent) {
+    Swapchain::Swapchain() {
         Init();
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", windowExtent.width, windowExtent.height);
+        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", m_swapchainExtent.width, m_swapchainExtent.height);
     }
 
-    Swapchain::Swapchain(
-        VkExtent2D windowExtent,
-        std::shared_ptr<Swapchain> previous
-    ) : m_swapchainExtent(windowExtent), m_oldSwapchain(previous) {
+    Swapchain::Swapchain(std::shared_ptr<Swapchain> previous) : m_oldSwapchain(previous) {
         Init();
         m_oldSwapchain = nullptr;
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", windowExtent.width, windowExtent.height);
+        MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", m_swapchainExtent.width, m_swapchainExtent.height);
     }
 
     Swapchain::~Swapchain() {
@@ -189,6 +184,7 @@ namespace muon::gfx {
         };
 
         auto &context = Application::Get().GetGraphicsContext();
+        auto &window = Application::Get().GetWindow();
         VkResult result;
 
         VkSurfaceCapabilitiesKHR capabilities{};
@@ -209,19 +205,19 @@ namespace muon::gfx {
         result = vkGetPhysicalDeviceSurfacePresentModesKHR(context.GetPhysicalDevice(), context.GetSurface(), &presentModeCount, presentModes.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
 
-        auto extent = selectExtent(capabilities, m_swapchainExtent);
+        auto extent = selectExtent(capabilities, window.GetExtent());
         auto surfaceFormat = selectSurfaceFormat(surfaceFormats);
         auto presentMode = selectPresentMode(presentModes);
 
-        m_imageCount = capabilities.minImageCount + 1;
-        if (capabilities.maxImageCount > 0 && m_imageCount > capabilities.maxImageCount) {
-            m_imageCount = capabilities.maxImageCount;
+        uint32_t minImageCount = capabilities.minImageCount + 1;
+        if (capabilities.maxImageCount > 0 && minImageCount > capabilities.maxImageCount) {
+            minImageCount = capabilities.maxImageCount;
         }
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = context.GetSurface();
-        createInfo.minImageCount = m_imageCount;
+        createInfo.minImageCount = minImageCount;
         createInfo.imageFormat = surfaceFormat.format;
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
         createInfo.imageExtent = extent;
@@ -252,7 +248,6 @@ namespace muon::gfx {
 
         result = vkGetSwapchainImagesKHR(context.GetDevice(), m_swapchain, &m_imageCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
-
         m_swapchainImages.resize(m_imageCount);
         result = vkGetSwapchainImagesKHR(context.GetDevice(), m_swapchain, &m_imageCount, m_swapchainImages.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");

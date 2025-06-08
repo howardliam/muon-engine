@@ -14,8 +14,8 @@ namespace muon::gfx {
 
     class Swapchain : NoCopy, NoMove {
     public:
-        Swapchain(VkExtent2D windowExtent);
-        Swapchain(VkExtent2D windowExtent, std::shared_ptr<Swapchain> previous);
+        Swapchain();
+        Swapchain(std::shared_ptr<Swapchain> previous);
         ~Swapchain();
 
         [[nodiscard]] VkResult AcquireNextImage(uint32_t *imageIndex);
