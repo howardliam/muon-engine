@@ -273,15 +273,15 @@ namespace muon::gfx {
                 }
             }
 
-            MU_CORE_ASSERT(suitabilities.size() > 0, "there must be at least one suitable GPU");
-
             auto sort = [](const std::pair<GpuSuitability, VkPhysicalDevice> &a, const std::pair<GpuSuitability, VkPhysicalDevice> &b) {
                 return a.first.memorySize > b.first.memorySize;
             };
             std::sort(suitabilities.begin(), suitabilities.end(), sort);
 
-            auto &[_, physicalDevice] = suitabilities.front();
-            m_physicalDevice = physicalDevice;
+            if (suitabilities.size() >= 1) {
+                auto &[_, physicalDevice] = suitabilities.front();
+                m_physicalDevice = physicalDevice;
+            }
         }
 
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
