@@ -66,13 +66,11 @@ namespace muon::gfx {
     }
 
     void FrameManager::CreateSwapchain() {
-        auto extent = Application::Get().GetWindow().GetExtent();
-
         if (m_swapchain == nullptr) {
-            m_swapchain = std::make_unique<Swapchain>(extent);
+            m_swapchain = std::make_unique<Swapchain>();
         } else {
             std::shared_ptr oldSwapChain = std::move(m_swapchain);
-            m_swapchain = std::make_unique<Swapchain>(extent, oldSwapChain);
+            m_swapchain = std::make_unique<Swapchain>(oldSwapChain);
 
             if (!m_swapchain->CompareSwapFormats(*oldSwapChain)) {
                 MU_CORE_DEBUG("new and old swapchain formats do not match");
