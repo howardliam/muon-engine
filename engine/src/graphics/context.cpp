@@ -5,7 +5,6 @@
 #include "muon/core/window.hpp"
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
-#include "muon/graphics/device.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
 #include <algorithm>
@@ -252,7 +251,7 @@ namespace muon::gfx {
             auto suitability = GpuSuitability::DetermineSuitability(
                 physicalDevices[0],
                 m_surface,
-                { requiredDeviceExtensions.begin(), requiredDeviceExtensions.end() }
+                { constants::requiredDeviceExtensions.begin(), constants::requiredDeviceExtensions.end() }
             );
 
             if (suitability.IsSuitable()) {
@@ -265,7 +264,7 @@ namespace muon::gfx {
                 auto suitability = GpuSuitability::DetermineSuitability(
                     physicalDevice,
                     m_surface,
-                    { requiredDeviceExtensions.begin(), requiredDeviceExtensions.end() }
+                    { constants::requiredDeviceExtensions.begin(), constants::requiredDeviceExtensions.end() }
                 );
 
                 if (suitability.IsSuitable()) {
@@ -315,8 +314,8 @@ namespace muon::gfx {
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount = queueCreateInfos.size();
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+        createInfo.enabledExtensionCount = constants::requiredDeviceExtensions.size();
+        createInfo.ppEnabledExtensionNames = constants::requiredDeviceExtensions.data();
         createInfo.pNext = &deviceFeatures;
 
         auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);
