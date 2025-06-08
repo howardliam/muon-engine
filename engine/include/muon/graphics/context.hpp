@@ -40,8 +40,6 @@ namespace muon::gfx {
 
         [[nodiscard]] VmaAllocator GetAllocator() const;
 
-        [[nodiscard]] VkCommandPool GetCommandPool() const;
-
     private:
         void CreateInstance();
         void CreateDebugMessenger();
