@@ -8,7 +8,6 @@
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/frame_manager.hpp"
-#include "muon/graphics/swapchain.hpp"
 
 namespace muon {
 
