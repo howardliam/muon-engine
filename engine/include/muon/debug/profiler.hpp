@@ -4,7 +4,7 @@
 #include <tracy/TracyVulkan.hpp>
 
 namespace muon::gfx {
-    class Context;
+    class DeviceContext;
 }
 
 namespace muon {
@@ -18,7 +18,7 @@ namespace muon {
         static void CreateContext(VkPhysicalDevice pd, VkDevice d, VkQueue gq, VkCommandBuffer cmd);
         static void DestroyContext();
 
-        friend class gfx::Context;
+        friend class gfx::DeviceContext;
 
     private:
         static inline tracy::VkCtx *s_tracyContext{nullptr};

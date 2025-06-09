@@ -18,7 +18,7 @@ namespace muon::gfx {
     }
 
     Swapchain::~Swapchain() {
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
 
         for (auto &semaphore : m_imageAvailableSemaphores) {
             vkDestroySemaphore(context.GetDevice(), semaphore, nullptr);
@@ -42,7 +42,7 @@ namespace muon::gfx {
     }
 
     VkResult Swapchain::AcquireNextImage(uint32_t *imageIndex) {
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
 
         auto result = vkWaitForFences(context.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, std::numeric_limits<uint64_t>::max());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
@@ -60,7 +60,7 @@ namespace muon::gfx {
     }
 
     VkResult Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
 
         if (m_imagesInFlight[*imageIndex] != nullptr) {
             auto result = vkWaitForFences(context.GetDevice(), 1, &m_imagesInFlight[*imageIndex], true, std::numeric_limits<uint64_t>::max());
@@ -183,7 +183,7 @@ namespace muon::gfx {
             return VK_PRESENT_MODE_FIFO_KHR;
         };
 
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
         auto &window = Application::Get().GetWindow();
         VkResult result;
 
@@ -259,7 +259,7 @@ namespace muon::gfx {
     void Swapchain::CreateImageViews() {
         m_swapchainImageViews.resize(m_imageCount);
 
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
         for (size_t i = 0; i < m_imageCount; i++) {
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -291,7 +291,7 @@ namespace muon::gfx {
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
 
         m_imageAvailableSemaphores.resize(constants::maxFramesInFlight);
         m_inFlightFences.resize(constants::maxFramesInFlight);

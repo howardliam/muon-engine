@@ -7,7 +7,6 @@
 #include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
-#include "muon/graphics/frame_manager.hpp"
 
 namespace muon {
 
@@ -36,7 +35,7 @@ namespace muon {
         }
 
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
-        m_graphicsContext = std::make_unique<gfx::Context>();
+        m_deviceContext = std::make_unique<gfx::DeviceContext>();
         m_frameManager = std::make_unique<gfx::FrameManager>();
 
         m_scriptManager = std::make_unique<ScriptManager>();
@@ -72,8 +71,8 @@ namespace muon {
         return *m_window;
     }
 
-    gfx::Context &Application::GetGraphicsContext() {
-        return *m_graphicsContext;
+    gfx::DeviceContext &Application::GetDeviceContext() {
+        return *m_deviceContext;
     }
 
     Application &Application::Get() {
@@ -93,7 +92,7 @@ namespace muon {
             }
         }
 
-        vkDeviceWaitIdle(m_graphicsContext->GetDevice());
+        vkDeviceWaitIdle(m_deviceContext->GetDevice());
     }
 
 }

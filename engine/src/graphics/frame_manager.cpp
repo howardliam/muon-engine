@@ -11,7 +11,7 @@ namespace muon::gfx {
     }
 
     FrameManager::~FrameManager() {
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
         vkFreeCommandBuffers(
             context.GetDevice(),
             context.GetGraphicsQueue().GetCommandPool(),
@@ -79,7 +79,7 @@ namespace muon::gfx {
     }
 
     void FrameManager::CreateCommandBuffers() {
-        auto &context = Application::Get().GetGraphicsContext();
+        auto &context = Application::Get().GetDeviceContext();
 
         m_commandBuffers.resize(constants::maxFramesInFlight);
 

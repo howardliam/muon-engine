@@ -44,7 +44,7 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/debug/profiler.hpp
 
-    ${INCLUDE_DIR}/muon/graphics/context.hpp
+    ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/frame_manager.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
@@ -65,7 +65,7 @@ set(SRC_FILES
 
     ${SRC_DIR}/debug/profiler.cpp
 
-    ${SRC_DIR}/graphics/context.cpp
+    ${SRC_DIR}/graphics/device_context.cpp
     ${SRC_DIR}/graphics/frame_manager.cpp
     ${SRC_DIR}/graphics/gpu.cpp
     ${SRC_DIR}/graphics/queue.cpp

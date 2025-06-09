@@ -5,7 +5,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/event/dispatcher.hpp"
 #include "muon/core/window.hpp"
-#include "muon/graphics/context.hpp"
+#include "muon/graphics/device_context.hpp"
 #include "muon/graphics/frame_manager.hpp"
 #include "muon/scripting/script_manager.hpp"
 
@@ -35,7 +35,7 @@ namespace muon {
         virtual ~Application();
 
         [[nodiscard]] Window &GetWindow();
-        [[nodiscard]] gfx::Context &GetGraphicsContext();
+        [[nodiscard]] gfx::DeviceContext &GetDeviceContext();
 
         [[nodiscard]] static Application &Get();
 
@@ -48,7 +48,7 @@ namespace muon {
         EventDispatcher m_dispatcher;
 
         std::unique_ptr<Window> m_window;
-        std::unique_ptr<gfx::Context> m_graphicsContext;
+        std::unique_ptr<gfx::DeviceContext> m_deviceContext;
         std::unique_ptr<gfx::FrameManager> m_frameManager;
 
         std::unique_ptr<ScriptManager> m_scriptManager;

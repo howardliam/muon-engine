@@ -21,10 +21,10 @@ namespace muon::gfx {
 
     }
 
-    class Context : NoCopy, NoMove {
+    class DeviceContext : NoCopy, NoMove {
     public:
-        Context();
-        ~Context();
+        DeviceContext();
+        ~DeviceContext();
 
     public:
         [[nodiscard]] VkInstance GetInstance() const;

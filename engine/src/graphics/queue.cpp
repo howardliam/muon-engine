@@ -117,7 +117,7 @@ namespace muon::gfx {
     }
 
     Queue::~Queue() {
-        vkDestroyCommandPool(Application::Get().GetGraphicsContext().GetDevice(), m_commandPool, nullptr);
+        vkDestroyCommandPool(Application::Get().GetDeviceContext().GetDevice(), m_commandPool, nullptr);
         MU_CORE_DEBUG("destroyed {} queue", ToString(m_type));
     }
 
@@ -129,7 +129,7 @@ namespace muon::gfx {
         allocateInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        auto result = vkAllocateCommandBuffers(Application::Get().GetGraphicsContext().GetDevice(), &allocateInfo, &commandBuffer);
+        auto result = vkAllocateCommandBuffers(Application::Get().GetDeviceContext().GetDevice(), &allocateInfo, &commandBuffer);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate single time command buffer");
 
         VkCommandBufferBeginInfo beginInfo{};
@@ -155,7 +155,7 @@ namespace muon::gfx {
 
         vkQueueWaitIdle(m_queue);
 
-        vkFreeCommandBuffers(Application::Get().GetGraphicsContext().GetDevice(), m_commandPool, 1, &cmd);
+        vkFreeCommandBuffers(Application::Get().GetDeviceContext().GetDevice(), m_commandPool, 1, &cmd);
     }
 
     QueueType Queue::GetType() const {
