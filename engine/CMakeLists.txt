@@ -48,6 +48,9 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/frame_manager.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
+    ${INCLUDE_DIR}/muon/graphics/queue_context.hpp
+    ${INCLUDE_DIR}/muon/graphics/queue_index_helper.hpp
+    ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
@@ -69,6 +72,9 @@ set(SRC_FILES
     ${SRC_DIR}/graphics/frame_manager.cpp
     ${SRC_DIR}/graphics/gpu.cpp
     ${SRC_DIR}/graphics/queue.cpp
+    ${SRC_DIR}/graphics/queue_context.cpp
+    ${SRC_DIR}/graphics/queue_index_helper.cpp
+    ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
 
     ${SRC_DIR}/scripting/script_manager.cpp

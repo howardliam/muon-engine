@@ -1,12 +1,14 @@
 #include "muon/core/application.hpp"
 
 #include <GLFW/glfw3.h>
+#include <memory>
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
 #include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
+#include "muon/graphics/queue_context.hpp"
 
 namespace muon {
 
@@ -36,6 +38,7 @@ namespace muon {
 
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
         m_deviceContext = std::make_unique<gfx::DeviceContext>();
+        m_queueContext = std::make_unique<gfx::QueueContext>();
         m_frameManager = std::make_unique<gfx::FrameManager>();
 
         m_scriptManager = std::make_unique<ScriptManager>();
@@ -67,12 +70,16 @@ namespace muon {
         MU_CORE_INFO("destroying application");
     }
 
-    Window &Application::GetWindow() {
+    Window &Application::GetWindow() const {
         return *m_window;
     }
 
-    gfx::DeviceContext &Application::GetDeviceContext() {
+    gfx::DeviceContext &Application::GetDeviceContext() const {
         return *m_deviceContext;
+    }
+
+    gfx::QueueContext &Application::GetQueueContext() const {
+        return *m_queueContext;
     }
 
     Application &Application::Get() {

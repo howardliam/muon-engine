@@ -11,14 +11,15 @@ namespace muon::gfx {
     }
 
     FrameManager::~FrameManager() {
-        auto &context = Application::Get().GetDeviceContext();
+        auto &deviceContext = Application::Get().GetDeviceContext();
+        auto &queueContext = Application::Get().GetQueueContext();
+
         vkFreeCommandBuffers(
-            context.GetDevice(),
-            context.GetGraphicsQueue().GetCommandPool(),
+            deviceContext.GetDevice(),
+            queueContext.GetRenderQueue().GetCommandPool(),
             m_commandBuffers.size(),
             m_commandBuffers.data()
         );
-        m_commandBuffers.clear();
     }
 
     VkCommandBuffer FrameManager::BeginFrame() {
@@ -79,17 +80,18 @@ namespace muon::gfx {
     }
 
     void FrameManager::CreateCommandBuffers() {
-        auto &context = Application::Get().GetDeviceContext();
+        auto &deviceContext = Application::Get().GetDeviceContext();
+        auto &queueContext = Application::Get().GetQueueContext();
 
         m_commandBuffers.resize(constants::maxFramesInFlight);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level =  VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = context.GetGraphicsQueue().GetCommandPool();
+        allocInfo.commandPool = queueContext.GetRenderQueue().GetCommandPool();
         allocInfo.commandBufferCount = m_commandBuffers.size();
 
-        auto result = vkAllocateCommandBuffers(context.GetDevice(), &allocInfo, m_commandBuffers.data());
+        auto result = vkAllocateCommandBuffers(deviceContext.GetDevice(), &allocInfo, m_commandBuffers.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate command buffers");
     }
 

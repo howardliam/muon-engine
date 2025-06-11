@@ -6,7 +6,8 @@
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
 #include "muon/graphics/gpu.hpp"
-#include "muon/graphics/queue.hpp"
+#include "muon/graphics/queue_context.hpp"
+#include "muon/graphics/queue_info.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -98,22 +99,13 @@ namespace muon::gfx {
         CreateSurface();
         SelectPhysicalDevice();
         CreateLogicalDevice();
-        CreateQueues();
         CreateAllocator();
-        CreateProfiler();
 
         MU_CORE_DEBUG("created device");
     }
 
     DeviceContext::~DeviceContext() {
-        #ifdef MU_DEBUG_ENABLED
-        Profiler::DestroyContext();
-        #endif
         vmaDestroyAllocator(m_allocator);
-        m_graphicsQueue.reset();
-        m_presentQueue.reset();
-        m_computeQueue.reset();
-        m_transferQueue.reset();
         vkDestroyDevice(m_device, nullptr);
         vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
         #ifdef MU_DEBUG_ENABLED
@@ -140,24 +132,8 @@ namespace muon::gfx {
         return m_device;
     }
 
-    QueueFamilyIndices &DeviceContext::GetQueueIndices() const {
-        return *m_queueFamilyIndices;
-    }
-
-    Queue &DeviceContext::GetGraphicsQueue() const {
-        return *m_graphicsQueue;
-    }
-
-    Queue &DeviceContext::GetPresentQueue() const {
-        return *m_presentQueue;
-    }
-
-    Queue &DeviceContext::GetComputeQueue() const {
-        return *m_computeQueue;
-    }
-
-    Queue &DeviceContext::GetTransferQueue() const {
-        return *m_transferQueue;
+    QueueIndexHelper &DeviceContext::GetQueueIndexHelper() const {
+        return *m_queueIndexHelper;
     }
 
     VmaAllocator DeviceContext::GetAllocator() const {
@@ -287,9 +263,9 @@ namespace muon::gfx {
     }
 
     void DeviceContext::CreateLogicalDevice() {
-        m_queueFamilyIndices = std::make_unique<QueueFamilyIndices>(QueueFamilyIndices::DetermineIndices(m_physicalDevice, m_surface));
-
-        auto queueCreateInfos = m_queueFamilyIndices->GenerateQueueCreateInfos();
+        auto queueInfo = QueueInfo(m_physicalDevice, m_surface);
+        m_queueIndexHelper = std::make_unique<QueueIndexHelper>(queueInfo, QueueContext::GetRequestInfo());
+        auto queueCreateInfos = m_queueIndexHelper->GenerateCreateInfos();
 
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
@@ -322,14 +298,6 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a logical device");
     }
 
-    void DeviceContext::CreateQueues() {
-        m_graphicsQueue = std::make_unique<Queue>(QueueType::Graphics, m_device, m_queueFamilyIndices->graphics, 0);
-        uint32_t index = m_queueFamilyIndices->presentQueueType == QueueType::Present ? 0 : 1;
-        m_presentQueue = std::make_unique<Queue>(QueueType::Present, m_device, m_queueFamilyIndices->present, index);
-        m_computeQueue = std::make_unique<Queue>(QueueType::Compute, m_device, m_queueFamilyIndices->compute, 0);
-        m_transferQueue = std::make_unique<Queue>(QueueType::Transfer, m_device, m_queueFamilyIndices->transfer, 0);
-    }
-
     void DeviceContext::CreateAllocator() {
         VmaAllocatorCreateInfo createInfo{};
         createInfo.instance = m_instance;
@@ -338,20 +306,6 @@ namespace muon::gfx {
 
         auto result = vmaCreateAllocator(&createInfo, &m_allocator);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create allocator");
-    }
-
-    void DeviceContext::CreateProfiler() {
-        VkCommandBufferAllocateInfo allocateInfo{};
-        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocateInfo.commandPool = m_graphicsQueue->GetCommandPool();
-        allocateInfo.commandBufferCount = 1;
-
-        VkCommandBuffer cmd;
-        auto result = vkAllocateCommandBuffers(m_device, &allocateInfo, &cmd);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate profiler creation command buffer");
-
-        Profiler::CreateContext(m_physicalDevice, m_device, m_graphicsQueue->Get(), cmd);
     }
 
 }

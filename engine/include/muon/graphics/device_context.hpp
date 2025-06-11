@@ -1,6 +1,6 @@
 #pragma once
 
-#include "muon/graphics/queue.hpp"
+#include "muon/graphics/queue_index_helper.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <array>
@@ -32,11 +32,7 @@ namespace muon::gfx {
         [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
         [[nodiscard]] VkDevice GetDevice() const;
 
-        [[nodiscard]] QueueFamilyIndices &GetQueueIndices() const;
-        [[nodiscard]] Queue &GetGraphicsQueue() const;
-        [[nodiscard]] Queue &GetPresentQueue() const;
-        [[nodiscard]] Queue &GetComputeQueue() const;
-        [[nodiscard]] Queue &GetTransferQueue() const;
+        [[nodiscard]] QueueIndexHelper &GetQueueIndexHelper() const;
 
         [[nodiscard]] VmaAllocator GetAllocator() const;
 
@@ -46,9 +42,7 @@ namespace muon::gfx {
         void CreateSurface();
         void SelectPhysicalDevice();
         void CreateLogicalDevice();
-        void CreateQueues();
         void CreateAllocator();
-        void CreateProfiler();
 
     private:
         VkInstance m_instance;
@@ -61,11 +55,7 @@ namespace muon::gfx {
         VkPhysicalDevice m_physicalDevice;
         VkDevice m_device;
 
-        std::unique_ptr<QueueFamilyIndices> m_queueFamilyIndices;
-        std::unique_ptr<Queue> m_graphicsQueue;
-        std::unique_ptr<Queue> m_presentQueue;
-        std::unique_ptr<Queue> m_computeQueue;
-        std::unique_ptr<Queue> m_transferQueue;
+        std::unique_ptr<QueueIndexHelper> m_queueIndexHelper;
 
         VmaAllocator m_allocator;
     };
