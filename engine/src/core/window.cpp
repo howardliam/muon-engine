@@ -16,7 +16,7 @@ namespace muon {
         m_data.dispatcher = dispatcher;
 
         Init();
-        ConfigureDispatcher();
+        ConfigureDispatchers();
     }
 
     Window::~Window() {
@@ -88,7 +88,7 @@ namespace muon {
         }
     }
 
-    void Window::ConfigureDispatcher() {
+    void Window::ConfigureDispatchers() {
         using namespace event;
 
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {

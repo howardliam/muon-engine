@@ -35,7 +35,7 @@ namespace muon {
 
     private:
         void Init();
-        void ConfigureDispatcher();
+        void ConfigureDispatchers();
 
     private:
         GLFWwindow *m_window;
