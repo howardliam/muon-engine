@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <filesystem>
 #include "muon/core/assert.hpp"
-#include "muon/core/event/dispatcher.hpp"
 #include "muon/core/window.hpp"
+#include "muon/event/dispatcher.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/frame_manager.hpp"
 #include "muon/graphics/queue_context.hpp"
@@ -47,7 +47,7 @@ namespace muon {
         friend int ::main(int argc, char **argv);
 
     private:
-        EventDispatcher m_dispatcher;
+        event::EventDispatcher m_dispatcher;
 
         std::unique_ptr<Window> m_window;
         std::unique_ptr<gfx::DeviceContext> m_deviceContext;

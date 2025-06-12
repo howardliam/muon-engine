@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
-#include "muon/core/event/dispatcher.hpp"
+#include "muon/event/dispatcher.hpp"
 
 namespace muon {
 
@@ -17,7 +17,7 @@ namespace muon {
 
     class Window {
     public:
-        Window(const WindowProperties &props, EventDispatcher *dispatcher);
+        Window(const WindowProperties &props, event::EventDispatcher *dispatcher);
         ~Window();
 
         void PollEvents() const;
@@ -46,7 +46,7 @@ namespace muon {
             uint32_t height;
             bool rawMouseMotion;
 
-            EventDispatcher *dispatcher;
+            event::EventDispatcher *dispatcher;
         };
         WindowData m_data;
     };

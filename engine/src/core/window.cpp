@@ -1,15 +1,15 @@
 #include "muon/core/window.hpp"
 
 #include "GLFW/glfw3.h"
-#include "muon/core/event/event.hpp"
-#include "muon/core/event/data.hpp"
+#include "muon/event/event.hpp"
+#include "muon/event/data.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 
 namespace muon {
 
-    Window::Window(const WindowProperties &props, EventDispatcher *dispatcher) {
+    Window::Window(const WindowProperties &props, event::EventDispatcher *dispatcher) {
         m_data.title = props.title;
         m_data.width = props.width;
         m_data.height = props.height;
@@ -21,7 +21,6 @@ namespace muon {
 
     Window::~Window() {
         glfwDestroyWindow(m_window);
-
         glfwTerminate();
     }
 
@@ -90,11 +89,13 @@ namespace muon {
     }
 
     void Window::ConfigureDispatcher() {
+        using namespace event;
+
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(Event{
+            data.dispatcher->dispatch(event::Event{
                 .type = EventType::WindowClose,
-                .data = WindowCloseEventData {}
+                .data = WindowCloseData {}
             });
         });
 
@@ -102,7 +103,7 @@ namespace muon {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::WindowResize,
-                .data = WindowResizeEventData {
+                .data = WindowResizeData {
                     .width = static_cast<uint32_t>(width),
                     .height = static_cast<uint32_t>(height),
                 }
@@ -113,7 +114,7 @@ namespace muon {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::MouseScroll,
-                .data = MouseScrollEventData {
+                .data = MouseScrollData {
                     .xOffset = xOffset,
                     .yOffset = yOffset,
                 }
@@ -124,7 +125,7 @@ namespace muon {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::Key,
-                .data = KeyEventData {
+                .data = KeyData {
                     .key = key,
                     .scancode = scancode,
                     .action = static_cast<Action>(action),
@@ -137,7 +138,7 @@ namespace muon {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::MouseButton,
-                .data = MouseButtonEventData {
+                .data = MouseButtonData {
                     .button = button,
                     .action = static_cast<Action>(action),
                     .mods = mods,
@@ -149,7 +150,7 @@ namespace muon {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(Event{
                 .type = EventType::CursorPosition,
-                .data = CursorPositionEventData {
+                .data = CursorPositionData {
                     .x = x,
                     .y = y,
                 }

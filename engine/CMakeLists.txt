@@ -29,10 +29,6 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(HEADER_FILES
-    ${INCLUDE_DIR}/muon/core/event/event.hpp
-    ${INCLUDE_DIR}/muon/core/event/data.hpp
-    ${INCLUDE_DIR}/muon/core/event/dispatcher.hpp
-
     ${INCLUDE_DIR}/muon/core/application.hpp
     ${INCLUDE_DIR}/muon/core/assert.hpp
     ${INCLUDE_DIR}/muon/core/base.hpp
@@ -43,6 +39,10 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/core/window.hpp
 
     ${INCLUDE_DIR}/muon/debug/profiler.hpp
+
+    ${INCLUDE_DIR}/muon/event/data.hpp
+    ${INCLUDE_DIR}/muon/event/dispatcher.hpp
+    ${INCLUDE_DIR}/muon/event/event.hpp
 
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/frame_manager.hpp

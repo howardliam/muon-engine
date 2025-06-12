@@ -1,9 +1,9 @@
 #pragma once
 
+#include "muon/event/event.hpp"
 #include <eventpp/eventdispatcher.h>
-#include "muon/core/event/event.hpp"
 
-namespace muon {
+namespace muon::event {
 
     using EventDispatcher = eventpp::EventDispatcher<EventType, void (const Event &), EventPolicies>;
 

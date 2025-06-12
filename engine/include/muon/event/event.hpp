@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include "muon/core/assert.hpp"
-#include "muon/core/event/data.hpp"
+#include "muon/event/data.hpp"
+#include <cstdint>
 
-namespace muon {
+namespace muon::event {
 
     enum class EventType : uint32_t {
         WindowClose,
@@ -20,11 +20,11 @@ namespace muon {
         EventData data;
 
         template<typename T>
-        const T &get() const;
+        const T &Get() const;
     };
 
     template<typename T>
-    const T &Event::get() const {
+    const T &Event::Get() const {
         MU_CORE_ASSERT(std::holds_alternative<T>(data), "bad variant cast");
         return std::get<T>(data);
     }

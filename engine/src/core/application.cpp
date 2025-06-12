@@ -5,9 +5,9 @@
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
-#include "muon/core/event/data.hpp"
 #include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
+#include "muon/event/data.hpp"
 #include "muon/graphics/queue_context.hpp"
 
 namespace muon {
@@ -43,21 +43,21 @@ namespace muon {
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
-        m_dispatcher.appendListener(EventType::WindowClose, [&](const Event &event) {
+        m_dispatcher.appendListener(event::EventType::WindowClose, [&](const event::Event &event) {
             MU_CORE_INFO("window closed received");
             m_running = false;
         });
 
-        m_dispatcher.appendListener(EventType::MouseButton, [&](const Event &event) {
-            auto data = event.get<MouseButtonEventData>();
+        m_dispatcher.appendListener(event::EventType::MouseButton, [&](const event::Event &event) {
+            auto data = event.Get<event::MouseButtonData>();
 
             if (data.action == Action::Press) {
                 m_scriptManager->run();
             }
         });
 
-        m_dispatcher.appendListener(EventType::Key, [&](const Event &event) {
-            auto data = event.get<KeyEventData>();
+        m_dispatcher.appendListener(event::EventType::Key, [&](const event::Event &event) {
+            auto data = event.Get<event::KeyData>();
 
             if (data.action != Action::Press) { return; }
             if (data.mods & (GLFW_MOD_CONTROL) && data.key == GLFW_KEY_V) {

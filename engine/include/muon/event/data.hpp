@@ -1,48 +1,48 @@
 #pragma once
 
+#include "muon/core/input.hpp"
 #include <variant>
 #include <cstdint>
-#include "muon/core/input.hpp"
 
-namespace muon {
+namespace muon::event {
 
-    struct WindowCloseEventData {};
+    struct WindowCloseData {};
 
-    struct WindowResizeEventData {
+    struct WindowResizeData {
         uint32_t width;
         uint32_t height;
     };
 
-    struct MouseButtonEventData {
+    struct MouseButtonData {
         int32_t button;
         Action action;
         int32_t mods;
     };
 
-    struct MouseScrollEventData {
+    struct MouseScrollData {
         double xOffset;
         double yOffset;
     };
 
-    struct KeyEventData {
+    struct KeyData {
         int32_t key;
         int32_t scancode;
         Action action;
         int32_t mods;
     };
 
-    struct CursorPositionEventData {
+    struct CursorPositionData {
         double x;
         double y;
     };
 
     using EventData = std::variant<
-        WindowCloseEventData,
-        WindowResizeEventData,
-        MouseButtonEventData,
-        MouseScrollEventData,
-        KeyEventData,
-        CursorPositionEventData
+        WindowCloseData,
+        WindowResizeData,
+        MouseButtonData,
+        MouseScrollData,
+        KeyData,
+        CursorPositionData
     >;
 
 }
