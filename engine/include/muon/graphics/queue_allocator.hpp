@@ -8,10 +8,10 @@
 
 namespace muon::gfx {
 
-    class QueueIndexHelper {
+    class QueueAllocator {
     public:
-        QueueIndexHelper(const QueueInfo &queueInfo, const QueueRequestInfo &requestInfo);
-        ~QueueIndexHelper() = default;
+        QueueAllocator(const QueueInfo &queueInfo, const QueueRequestInfo &requestInfo);
+        ~QueueAllocator() = default;
 
         [[nodiscard]] std::vector<VkDeviceQueueCreateInfo> GenerateCreateInfos();
 

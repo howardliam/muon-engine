@@ -8,45 +8,45 @@ namespace muon::gfx {
     QueueContext::QueueContext() {
         auto &context = Application::Get().GetDeviceContext();
         auto device = context.GetDevice();
-        auto indexHelper = context.GetQueueIndexHelper();
+        auto queueAllocator = context.GetQueueAllocator();
 
         m_renderQueue = std::make_unique<Queue>(QueueSpecification{
             QueueType::Graphics,
             device,
-            indexHelper.GetQueueFamilyIndex(QueueType::Graphics),
-            indexHelper.GetNextQueueIndex(QueueType::Graphics),
+            queueAllocator.GetQueueFamilyIndex(QueueType::Graphics),
+            queueAllocator.GetNextQueueIndex(QueueType::Graphics),
             "render"
         });
 
         m_postFxQueue = std::make_unique<Queue>(QueueSpecification{
             QueueType::Compute,
             device,
-            indexHelper.GetQueueFamilyIndex(QueueType::Compute),
-            indexHelper.GetNextQueueIndex(QueueType::Compute),
+            queueAllocator.GetQueueFamilyIndex(QueueType::Compute),
+            queueAllocator.GetNextQueueIndex(QueueType::Compute),
             "post-processing fx"
         });
 
         m_presentQueue = std::make_unique<Queue>(QueueSpecification{
             QueueType::Present,
             device,
-            indexHelper.GetQueueFamilyIndex(QueueType::Present),
-            indexHelper.GetNextQueueIndex(QueueType::Present),
+            queueAllocator.GetQueueFamilyIndex(QueueType::Present),
+            queueAllocator.GetNextQueueIndex(QueueType::Present),
             "present"
         });
 
         m_computeQueue = std::make_unique<Queue>(QueueSpecification{
             QueueType::Compute,
             device,
-            indexHelper.GetQueueFamilyIndex(QueueType::Compute),
-            indexHelper.GetNextQueueIndex(QueueType::Compute),
+            queueAllocator.GetQueueFamilyIndex(QueueType::Compute),
+            queueAllocator.GetNextQueueIndex(QueueType::Compute),
             "compute"
         });
 
         m_transferQueue = std::make_unique<Queue>(QueueSpecification{
             QueueType::Transfer,
             device,
-            indexHelper.GetQueueFamilyIndex(QueueType::Transfer),
-            indexHelper.GetNextQueueIndex(QueueType::Transfer),
+            queueAllocator.GetQueueFamilyIndex(QueueType::Transfer),
+            queueAllocator.GetNextQueueIndex(QueueType::Transfer),
             "transfer"
         });
     }

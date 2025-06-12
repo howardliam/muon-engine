@@ -6,6 +6,7 @@
 #include "muon/core/log.hpp"
 #include "muon/debug/profiler.hpp"
 #include "muon/graphics/gpu.hpp"
+#include "muon/graphics/queue_allocator.hpp"
 #include "muon/graphics/queue_context.hpp"
 #include "muon/graphics/queue_info.hpp"
 #include <algorithm>
@@ -132,8 +133,8 @@ namespace muon::gfx {
         return m_device;
     }
 
-    QueueIndexHelper &DeviceContext::GetQueueIndexHelper() const {
-        return *m_queueIndexHelper;
+    QueueAllocator &DeviceContext::GetQueueAllocator() const {
+        return *m_queueAllocator;
     }
 
     VmaAllocator DeviceContext::GetAllocator() const {
@@ -264,8 +265,8 @@ namespace muon::gfx {
 
     void DeviceContext::CreateLogicalDevice() {
         auto queueInfo = QueueInfo(m_physicalDevice, m_surface);
-        m_queueIndexHelper = std::make_unique<QueueIndexHelper>(queueInfo, QueueContext::GetRequestInfo());
-        auto queueCreateInfos = m_queueIndexHelper->GenerateCreateInfos();
+        m_queueAllocator = std::make_unique<QueueAllocator>(queueInfo, QueueContext::GetRequestInfo());
+        auto queueCreateInfos = m_queueAllocator->GenerateCreateInfos();
 
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;

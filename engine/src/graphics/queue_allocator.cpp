@@ -1,11 +1,11 @@
-#include "muon/graphics/queue_index_helper.hpp"
+#include "muon/graphics/queue_allocator.hpp"
 
 #include "muon/core/assert.hpp"
 #include <optional>
 
 namespace muon::gfx {
 
-    QueueIndexHelper::QueueIndexHelper(const QueueInfo &queueInfo, const QueueRequestInfo &requestInfo) {
+    QueueAllocator::QueueAllocator(const QueueInfo &queueInfo, const QueueRequestInfo &requestInfo) {
         const auto families = queueInfo.GetFamilyInfo();
 
         auto presentIt = std::ranges::find_if(families, [](const QueueFamilyInfo &el) { return el.IsPresentCapable(); });
@@ -75,7 +75,7 @@ namespace muon::gfx {
         m_maxQueues[m_aliases[QueueType::Present]] += requestInfo.presentCount;
     }
 
-    std::vector<VkDeviceQueueCreateInfo> QueueIndexHelper::GenerateCreateInfos() {
+    std::vector<VkDeviceQueueCreateInfo> QueueAllocator::GenerateCreateInfos() {
         std::vector<VkDeviceQueueCreateInfo> createInfos{};
 
         createInfos.reserve(m_familyIndices.size());
@@ -93,7 +93,7 @@ namespace muon::gfx {
         return createInfos;
     }
 
-    uint32_t QueueIndexHelper::GetQueueFamilyIndex(const QueueType &queueType) const {
+    uint32_t QueueAllocator::GetQueueFamilyIndex(const QueueType &queueType) const {
         auto real = m_aliases.find(queueType);
         MU_CORE_ASSERT(real != m_aliases.end(), "there must be an alias");
 
@@ -103,7 +103,7 @@ namespace muon::gfx {
         return index->second;
     }
 
-    uint32_t QueueIndexHelper::GetNextQueueIndex(const QueueType &queueType) {
+    uint32_t QueueAllocator::GetNextQueueIndex(const QueueType &queueType) {
         auto real = m_aliases.find(queueType);
         MU_CORE_ASSERT(real != m_aliases.end(), "there must be an alias");
 

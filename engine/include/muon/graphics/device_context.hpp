@@ -1,6 +1,6 @@
 #pragma once
 
-#include "muon/graphics/queue_index_helper.hpp"
+#include "muon/graphics/queue_allocator.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <array>
@@ -32,7 +32,7 @@ namespace muon::gfx {
         [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
         [[nodiscard]] VkDevice GetDevice() const;
 
-        [[nodiscard]] QueueIndexHelper &GetQueueIndexHelper() const;
+        [[nodiscard]] QueueAllocator &GetQueueAllocator() const;
 
         [[nodiscard]] VmaAllocator GetAllocator() const;
 
@@ -55,7 +55,7 @@ namespace muon::gfx {
         VkPhysicalDevice m_physicalDevice;
         VkDevice m_device;
 
-        std::unique_ptr<QueueIndexHelper> m_queueIndexHelper;
+        std::unique_ptr<QueueAllocator> m_queueAllocator;
 
         VmaAllocator m_allocator;
     };
