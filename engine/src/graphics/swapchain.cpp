@@ -225,10 +225,10 @@ namespace muon::gfx {
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        const auto &indexHelper = deviceContext.GetQueueIndexHelper();
+        const auto &queueAllocator = deviceContext.GetQueueAllocator();
 
-        const auto graphicsIndex = indexHelper.GetQueueFamilyIndex(QueueType::Graphics);
-        const auto presentIndex = indexHelper.GetQueueFamilyIndex(QueueType::Present);
+        const auto graphicsIndex = queueAllocator.GetQueueFamilyIndex(QueueType::Graphics);
+        const auto presentIndex = queueAllocator.GetQueueFamilyIndex(QueueType::Present);
 
         const uint32_t queueFamilyIndices[] = { graphicsIndex, presentIndex };
         if (graphicsIndex != presentIndex) {
@@ -296,23 +296,24 @@ namespace muon::gfx {
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        auto &deviceContext = Application::Get().GetDeviceContext();
+        const auto &deviceContext = Application::Get().GetDeviceContext();
+        const auto device = deviceContext.GetDevice();
 
         m_imageAvailableSemaphores.resize(constants::maxFramesInFlight);
         m_inFlightFences.resize(constants::maxFramesInFlight);
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
             VkResult result;
 
-            result = vkCreateSemaphore(deviceContext.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+            result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image available semaphores");
 
-            result = vkCreateFence(deviceContext.GetDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
+            result = vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create in flight fences");
         }
 
         m_renderFinishedSemaphores.resize(m_imageCount);
         for (uint32_t i = 0; i < m_imageCount; i++) {
-            auto result = vkCreateSemaphore(deviceContext.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+            auto result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
         }
 
