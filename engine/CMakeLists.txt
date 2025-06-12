@@ -33,7 +33,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/core/assert.hpp
     ${INCLUDE_DIR}/muon/core/base.hpp
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
-    ${INCLUDE_DIR}/muon/core/input.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
     ${INCLUDE_DIR}/muon/core/window.hpp
@@ -52,6 +51,11 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/queue_context.hpp
     ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
+
+    ${INCLUDE_DIR}/muon/input/action.hpp
+    ${INCLUDE_DIR}/muon/input/key.hpp
+    ${INCLUDE_DIR}/muon/input/modifier.hpp
+    ${INCLUDE_DIR}/muon/input/mouse.hpp
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
@@ -77,6 +81,8 @@ set(SRC_FILES
     ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
 
+    ${SRC_DIR}/input/modifier.cpp
+
     ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
@@ -96,18 +102,18 @@ target_link_libraries(${LIB_NAME} PRIVATE
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
-    spirv-reflect-static glslang SPIRV
+    # spirv-reflect-static glslang SPIRV
     glfw
     vulkan
     VulkanMemoryAllocator
     glm
     Tracy::TracyClient
-    muon::imgui
+    # muon::imgui
     spdlog::spdlog_header_only
     eventpp::eventpp
     lua sol2::sol2
     yaml-cpp::yaml-cpp
-    EnTT
+    # EnTT
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

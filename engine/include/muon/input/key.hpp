@@ -1,34 +1,6 @@
 #pragma once
 
-namespace muon {
-
-    enum class Action {
-        Press,
-        Release,
-        Repeat,
-    };
-
-    enum class MouseButton {
-        Button0,
-        Button1,
-        Button2,
-        Button3,
-        Button4,
-        Button5,
-        Button6,
-        Button7,
-
-        Left = Button0,
-        Right = Button1,
-        Middle = Button2,
-    };
-
-    enum class ModifierKey {
-        Shift = 0x01,
-        Ctrl = 0x02,
-        Alt = 0x04,
-        Super = 0x08,
-    };
+namespace muon::input {
 
     enum class Key {
         Space = 32,

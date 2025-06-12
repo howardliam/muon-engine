@@ -1,6 +1,7 @@
 #pragma once
 
-#include "muon/core/input.hpp"
+#include "muon/input/action.hpp"
+#include "muon/input/modifier.hpp"
 #include <variant>
 #include <cstdint>
 
@@ -15,8 +16,8 @@ namespace muon::event {
 
     struct MouseButtonData {
         int32_t button;
-        Action action;
-        int32_t mods;
+        input::Action action;
+        input::Modifier mods;
     };
 
     struct MouseScrollData {
@@ -27,8 +28,8 @@ namespace muon::event {
     struct KeyData {
         int32_t key;
         int32_t scancode;
-        Action action;
-        int32_t mods;
+        input::Action action;
+        input::Modifier mods;
     };
 
     struct CursorPositionData {

@@ -4,7 +4,8 @@
 #include "muon/event/event.hpp"
 #include "muon/event/data.hpp"
 #include "muon/core/assert.hpp"
-#include "muon/core/input.hpp"
+#include "muon/input/action.hpp"
+#include "muon/input/modifier.hpp"
 #include "muon/core/log.hpp"
 
 namespace muon {
@@ -90,6 +91,7 @@ namespace muon {
 
     void Window::ConfigureDispatchers() {
         using namespace event;
+        using namespace input;
 
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));

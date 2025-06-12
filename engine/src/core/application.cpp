@@ -5,7 +5,6 @@
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
-#include "muon/core/input.hpp"
 #include "muon/core/log.hpp"
 #include "muon/event/data.hpp"
 #include "muon/graphics/queue_context.hpp"
@@ -51,7 +50,7 @@ namespace muon {
         m_dispatcher.appendListener(event::EventType::MouseButton, [&](const event::Event &event) {
             auto data = event.Get<event::MouseButtonData>();
 
-            if (data.action == Action::Press) {
+            if (data.action == input::Action::Press) {
                 m_scriptManager->run();
             }
         });
@@ -59,8 +58,8 @@ namespace muon {
         m_dispatcher.appendListener(event::EventType::Key, [&](const event::Event &event) {
             auto data = event.Get<event::KeyData>();
 
-            if (data.action != Action::Press) { return; }
-            if (data.mods & (GLFW_MOD_CONTROL) && data.key == GLFW_KEY_V) {
+            if (data.action != input::Action::Press) { return; }
+            if (data.mods.IsCtrlDown() && data.key == GLFW_KEY_V) {
                 MU_CORE_INFO(m_window->GetClipboardContents());
             }
         });
