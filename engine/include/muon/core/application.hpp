@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <filesystem>
 #include "muon/core/assert.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
@@ -9,6 +7,8 @@
 #include "muon/graphics/frame_manager.hpp"
 #include "muon/graphics/queue_context.hpp"
 #include "muon/scripting/script_manager.hpp"
+#include <cstdint>
+#include <filesystem>
 
 int main(int argc, char **argv);
 

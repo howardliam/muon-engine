@@ -81,6 +81,7 @@ set(SRC_FILES
     ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
 
+    ${SRC_DIR}/input/action.cpp
     ${SRC_DIR}/input/modifier.cpp
 
     ${SRC_DIR}/scripting/script_manager.cpp

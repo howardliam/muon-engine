@@ -4,8 +4,6 @@
 #include "muon/event/event.hpp"
 #include "muon/event/data.hpp"
 #include "muon/core/assert.hpp"
-#include "muon/input/action.hpp"
-#include "muon/input/modifier.hpp"
 #include "muon/core/log.hpp"
 
 namespace muon {
@@ -33,20 +31,8 @@ namespace muon {
         return glfwCreateWindowSurface(instance, m_window, nullptr, surface);
     }
 
-    std::vector<const char *> Window::GetRequiredExtensions() const {
-        uint32_t count{0};
-        const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&count);
-
-        std::vector<const char *> extensions(glfwExtensions, glfwExtensions + count);
-        return extensions;
-    }
-
-    void *Window::Get() const {
+    GLFWwindow *Window::Get() const {
         return m_window;
-    }
-
-    const char *Window::GetClipboardContents() const {
-        return glfwGetClipboardString(m_window);
     }
 
     VkExtent2D Window::GetExtent() const {
@@ -62,6 +48,17 @@ namespace muon {
 
     uint32_t Window::GetHeight() const {
         return m_data.height;
+    }
+
+    const char *Window::GetClipboardContents() const {
+        return glfwGetClipboardString(m_window);
+    }
+
+    std::vector<const char *> Window::GetRequiredExtensions() const {
+        uint32_t count = 0;
+        const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&count);
+        std::vector<const char *> extensions(glfwExtensions, glfwExtensions + count);
+        return extensions;
     }
 
     void Window::Init() {
@@ -90,22 +87,20 @@ namespace muon {
     }
 
     void Window::ConfigureDispatchers() {
-        using namespace event;
-        using namespace input;
 
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->dispatch(event::Event{
-                .type = EventType::WindowClose,
-                .data = WindowCloseData {}
+                .type = event::EventType::WindowClose,
+                .data = event::WindowCloseData {}
             });
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(Event{
-                .type = EventType::WindowResize,
-                .data = WindowResizeData {
+            data.dispatcher->dispatch(event::Event{
+                .type = event::EventType::WindowResize,
+                .data = event::WindowResizeData {
                     .width = static_cast<uint32_t>(width),
                     .height = static_cast<uint32_t>(height),
                 }
@@ -114,9 +109,9 @@ namespace muon {
 
         glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(Event{
-                .type = EventType::MouseScroll,
-                .data = MouseScrollData {
+            data.dispatcher->dispatch(event::Event{
+                .type = event::EventType::MouseScroll,
+                .data = event::MouseScrollData {
                     .xOffset = xOffset,
                     .yOffset = yOffset,
                 }
@@ -125,12 +120,12 @@ namespace muon {
 
         glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(Event{
-                .type = EventType::Key,
-                .data = KeyData {
+            data.dispatcher->dispatch(event::Event{
+                .type = event::EventType::Key,
+                .data = event::KeyData {
                     .key = key,
                     .scancode = scancode,
-                    .action = static_cast<Action>(action),
+                    .action = action,
                     .mods = mods,
                 }
             });
@@ -138,11 +133,11 @@ namespace muon {
 
         glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(Event{
-                .type = EventType::MouseButton,
-                .data = MouseButtonData {
+            data.dispatcher->dispatch(event::Event{
+                .type = event::EventType::MouseButton,
+                .data = event::MouseButtonData {
                     .button = button,
-                    .action = static_cast<Action>(action),
+                    .action = action,
                     .mods = mods,
                 }
             });
@@ -150,9 +145,9 @@ namespace muon {
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
             WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(Event{
-                .type = EventType::CursorPosition,
-                .data = CursorPositionData {
+            data.dispatcher->dispatch(event::Event{
+                .type = event::EventType::CursorPosition,
+                .data = event::CursorPositionData {
                     .x = x,
                     .y = y,
                 }

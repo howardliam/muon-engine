@@ -1,11 +1,11 @@
 #pragma once
 
+#include "muon/event/dispatcher.hpp"
 #include <string>
 #include <cstdint>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
-#include "muon/event/dispatcher.hpp"
 
 namespace muon {
 
@@ -23,15 +23,17 @@ namespace muon {
         void PollEvents() const;
 
         [[nodiscard]] VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface);
-        [[nodiscard]] std::vector<const char *> GetRequiredExtensions() const;
 
-        [[nodiscard]] void *Get() const;
-
-        [[nodiscard]] const char *GetClipboardContents() const;
+    public:
+        [[nodiscard]] GLFWwindow *Get() const;
 
         [[nodiscard]] VkExtent2D GetExtent() const;
         [[nodiscard]] uint32_t GetWidth() const;
         [[nodiscard]] uint32_t GetHeight() const;
+
+        [[nodiscard]] const char *GetClipboardContents() const;
+
+        [[nodiscard]] std::vector<const char *> GetRequiredExtensions() const;
 
     private:
         void Init();

@@ -50,7 +50,7 @@ namespace muon {
         m_dispatcher.appendListener(event::EventType::MouseButton, [&](const event::Event &event) {
             auto data = event.Get<event::MouseButtonData>();
 
-            if (data.action == input::Action::Press) {
+            if (data.action.IsPress()) {
                 m_scriptManager->run();
             }
         });
@@ -58,7 +58,7 @@ namespace muon {
         m_dispatcher.appendListener(event::EventType::Key, [&](const event::Event &event) {
             auto data = event.Get<event::KeyData>();
 
-            if (data.action != input::Action::Press) { return; }
+            if (!data.action.IsPress()) { return; }
             if (data.mods.IsCtrlDown() && data.key == GLFW_KEY_V) {
                 MU_CORE_INFO(m_window->GetClipboardContents());
             }
