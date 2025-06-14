@@ -14,7 +14,29 @@ namespace muon {
         m_data.height = props.height;
         m_data.dispatcher = dispatcher;
 
-        Init();
+        glfwSetErrorCallback([](int32_t code, const char *message) {
+            MU_CORE_ERROR(message);
+        });
+
+        auto initialized = glfwInit();
+        MU_CORE_ASSERT(initialized == true, "GLFW must be initialised");
+
+        auto vkSupported = glfwVulkanSupported();
+        MU_CORE_ASSERT(vkSupported == true, "GLFW must support Vulkan");
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+        MU_CORE_ASSERT(m_window, "window must exist");
+
+        glfwSetWindowUserPointer(m_window, &m_data);
+
+        if (glfwRawMouseMotionSupported()) {
+            glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, true);
+            m_data.rawMouseMotion = true;
+        } else {
+            m_data.rawMouseMotion = false;
+        }
+
         ConfigureDispatchers();
     }
 
@@ -59,31 +81,6 @@ namespace muon {
         const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&count);
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + count);
         return extensions;
-    }
-
-    void Window::Init() {
-        glfwSetErrorCallback([](int32_t code, const char *message) {
-            MU_CORE_ERROR(message);
-        });
-
-        auto initialized = glfwInit();
-        MU_CORE_ASSERT(initialized == GLFW_TRUE, "GLFW must be initialised");
-
-        auto vkSupported = glfwVulkanSupported();
-        MU_CORE_ASSERT(vkSupported == GLFW_TRUE, "GLFW must support Vulkan");
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
-        MU_CORE_ASSERT(m_window, "window must exist");
-
-        glfwSetWindowUserPointer(m_window, &m_data);
-
-        if (glfwRawMouseMotionSupported()) {
-            glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-            m_data.rawMouseMotion = true;
-        } else {
-            m_data.rawMouseMotion = false;
-        }
     }
 
     void Window::ConfigureDispatchers() {

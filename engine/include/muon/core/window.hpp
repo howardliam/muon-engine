@@ -36,7 +36,6 @@ namespace muon {
         [[nodiscard]] std::vector<const char *> GetRequiredExtensions() const;
 
     private:
-        void Init();
         void ConfigureDispatchers();
 
     private:
