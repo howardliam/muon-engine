@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "muon/debug/profiler.hpp"
 #include "muon/event/data.hpp"
 #include "muon/graphics/queue_context.hpp"
 
@@ -38,6 +39,7 @@ namespace muon {
         m_window = std::make_unique<Window>(properties, &m_dispatcher);
         m_deviceContext = std::make_unique<gfx::DeviceContext>();
         m_queueContext = std::make_unique<gfx::QueueContext>();
+        Profiler::CreateContext(*m_deviceContext, *m_queueContext);
         m_frameManager = std::make_unique<gfx::FrameManager>();
 
         m_scriptManager = std::make_unique<ScriptManager>();
@@ -67,6 +69,7 @@ namespace muon {
 
     Application::~Application() {
         MU_CORE_INFO("destroying application");
+        Profiler::DestroyContext();
     }
 
     Window &Application::GetWindow() const {
