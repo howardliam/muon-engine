@@ -9,15 +9,16 @@
 
 namespace muon {
 
-    struct WindowProperties {
+    struct WindowSpecification {
         std::string title;
         uint32_t width;
         uint32_t height;
+        event::EventDispatcher *dispatcher;
     };
 
     class Window {
     public:
-        Window(const WindowProperties &props, event::EventDispatcher *dispatcher);
+        Window(const WindowSpecification &props);
         ~Window();
 
         void PollEvents() const;
@@ -45,9 +46,8 @@ namespace muon {
             std::string title;
             uint32_t width;
             uint32_t height;
-            bool rawMouseMotion;
 
-            event::EventDispatcher *dispatcher;
+            const event::EventDispatcher *dispatcher;
         };
         WindowData m_data;
     };

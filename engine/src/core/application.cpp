@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "muon/core/window.hpp"
 #include "muon/debug/profiler.hpp"
 #include "muon/event/data.hpp"
 #include "muon/graphics/queue_context.hpp"
@@ -18,8 +19,9 @@ namespace muon {
 
         MU_CORE_INFO("creating application");
 
-        WindowProperties properties{};
+        WindowSpecification properties;
         properties.title = spec.name;
+        properties.dispatcher = &m_dispatcher;
 
         try {
             YAML::Node config = YAML::LoadFile("Muon.yaml");
@@ -36,7 +38,7 @@ namespace muon {
             properties.height = (mode->height / 1.3333333333333334);
         }
 
-        m_window = std::make_unique<Window>(properties, &m_dispatcher);
+        m_window = std::make_unique<Window>(properties);
         m_deviceContext = std::make_unique<gfx::DeviceContext>();
         m_queueContext = std::make_unique<gfx::QueueContext>();
         Profiler::CreateContext(*m_deviceContext, *m_queueContext);

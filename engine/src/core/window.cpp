@@ -8,11 +8,13 @@
 
 namespace muon {
 
-    Window::Window(const WindowProperties &props, event::EventDispatcher *dispatcher) {
-        m_data.title = props.title;
-        m_data.width = props.width;
-        m_data.height = props.height;
-        m_data.dispatcher = dispatcher;
+    Window::Window(const WindowSpecification &props) {
+        m_data = WindowData{
+            props.title,
+            props.width,
+            props.height,
+            props.dispatcher,
+        };
 
         glfwSetErrorCallback([](int32_t code, const char *message) {
             MU_CORE_ERROR(message);
@@ -30,12 +32,10 @@ namespace muon {
 
         glfwSetWindowUserPointer(m_window, &m_data);
 
-        if (glfwRawMouseMotionSupported()) {
-            glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, true);
-            m_data.rawMouseMotion = true;
-        } else {
-            m_data.rawMouseMotion = false;
-        }
+        // if (glfwRawMouseMotionSupported()) {
+        //     glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, true);
+        //     m_data.rawMouseMotion = true;
+        // }
 
         ConfigureDispatchers();
     }
@@ -84,18 +84,18 @@ namespace muon {
     }
 
     void Window::ConfigureDispatchers() {
-
+        /* window events */
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
-            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(event::Event{
+            const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data->dispatcher->dispatch(event::Event{
                 .type = event::EventType::WindowClose,
                 .data = event::WindowCloseData {}
             });
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
-            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(event::Event{
+            const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data->dispatcher->dispatch(event::Event{
                 .type = event::EventType::WindowResize,
                 .data = event::WindowResizeData {
                     .width = static_cast<uint32_t>(width),
@@ -104,20 +104,10 @@ namespace muon {
             });
         });
 
-        glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
-            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(event::Event{
-                .type = event::EventType::MouseScroll,
-                .data = event::MouseScrollData {
-                    .xOffset = xOffset,
-                    .yOffset = yOffset,
-                }
-            });
-        });
-
+        /* keyboard events */
         glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
-            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(event::Event{
+            const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data->dispatcher->dispatch(event::Event{
                 .type = event::EventType::Key,
                 .data = event::KeyData {
                     .key = key,
@@ -128,9 +118,10 @@ namespace muon {
             });
         });
 
+        /* mouse events */
         glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
-            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(event::Event{
+            const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data->dispatcher->dispatch(event::Event{
                 .type = event::EventType::MouseButton,
                 .data = event::MouseButtonData {
                     .button = button,
@@ -141,8 +132,8 @@ namespace muon {
         });
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
-            WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data.dispatcher->dispatch(event::Event{
+            const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data->dispatcher->dispatch(event::Event{
                 .type = event::EventType::CursorPosition,
                 .data = event::CursorPositionData {
                     .x = x,
@@ -150,6 +141,18 @@ namespace muon {
                 }
             });
         });
+
+        glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
+            const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            data->dispatcher->dispatch(event::Event{
+                .type = event::EventType::MouseScroll,
+                .data = event::MouseScrollData {
+                    .xOffset = xOffset,
+                    .yOffset = yOffset,
+                }
+            });
+        });
+
     }
 
 }
