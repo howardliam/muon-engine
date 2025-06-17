@@ -52,7 +52,6 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
 
-    ${INCLUDE_DIR}/muon/input/action.hpp
     ${INCLUDE_DIR}/muon/input/key.hpp
     ${INCLUDE_DIR}/muon/input/modifier.hpp
     ${INCLUDE_DIR}/muon/input/mouse.hpp
@@ -81,7 +80,6 @@ set(SRC_FILES
     ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
 
-    ${SRC_DIR}/input/action.cpp
     ${SRC_DIR}/input/modifier.cpp
 
     ${SRC_DIR}/scripting/script_manager.cpp
