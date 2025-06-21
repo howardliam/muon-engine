@@ -10,7 +10,7 @@
 namespace muon {
 
     struct WindowSpecification {
-        std::string title;
+        std::string_view title;
         uint32_t width;
         uint32_t height;
         event::Dispatcher *dispatcher;
@@ -43,13 +43,14 @@ namespace muon {
         GLFWwindow *m_window;
 
         struct WindowData {
+            const event::Dispatcher *dispatcher;
+
             std::string title;
             uint32_t width;
             uint32_t height;
-
-            const event::Dispatcher *dispatcher;
+            bool rawMouseMotion = false;
         };
-        WindowData m_data;
+        WindowData m_data{};
     };
 
 }

@@ -9,22 +9,20 @@
 namespace muon {
 
     Window::Window(const WindowSpecification &props) {
-        m_data = WindowData{
-            props.title,
-            props.width,
-            props.height,
-            props.dispatcher,
-        };
+        m_data.dispatcher = props.dispatcher;
+        m_data.title = props.title;
+        m_data.width = props.width;
+        m_data.height = props.height;
 
         glfwSetErrorCallback([](int32_t code, const char *message) {
             MU_CORE_ERROR(message);
         });
 
         auto initialized = glfwInit();
-        MU_CORE_ASSERT(initialized == true, "GLFW must be initialised");
+        MU_CORE_ASSERT(initialized, "GLFW must be initialised");
 
         auto vkSupported = glfwVulkanSupported();
-        MU_CORE_ASSERT(vkSupported == true, "GLFW must support Vulkan");
+        MU_CORE_ASSERT(vkSupported, "GLFW must support Vulkan");
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
@@ -32,10 +30,10 @@ namespace muon {
 
         glfwSetWindowUserPointer(m_window, &m_data);
 
-        // if (glfwRawMouseMotionSupported()) {
-        //     glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, true);
-        //     m_data.rawMouseMotion = true;
-        // }
+        if (glfwRawMouseMotionSupported()) {
+            glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, true);
+            m_data.rawMouseMotion = true;
+        }
 
         ConfigureDispatchers();
     }
@@ -87,13 +85,12 @@ namespace muon {
         /* window events */
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->Dispatch(event::WindowCloseEvent{});
+            data->dispatcher->Dispatch<event::WindowCloseEvent>({});
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-
-            data->dispatcher->Dispatch(event::WindowResizeEvent {
+            data->dispatcher->Dispatch<event::WindowResizeEvent>({
                 .width = static_cast<uint32_t>(width),
                 .height = static_cast<uint32_t>(height),
             });
@@ -102,7 +99,7 @@ namespace muon {
         /* keyboard events */
         glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->Dispatch(event::KeyEvent {
+            data->dispatcher->Dispatch<event::KeyEvent>({
                 .key = key,
                 .scancode = scancode,
                 .action = action,
@@ -113,7 +110,7 @@ namespace muon {
         /* mouse events */
         glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->Dispatch(event::MouseButtonEvent {
+            data->dispatcher->Dispatch<event::MouseButtonEvent>({
                 .button = button,
                 .action = action,
                 .mods = mods,
@@ -122,7 +119,7 @@ namespace muon {
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->Dispatch(event::CursorPositionEvent {
+            data->dispatcher->Dispatch<event::CursorPositionEvent>({
                 .x = x,
                 .y = y,
             });
@@ -130,7 +127,7 @@ namespace muon {
 
         glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->Dispatch(event::MouseScrollEvent {
+            data->dispatcher->Dispatch<event::MouseScrollEvent>({
                 .xOffset = xOffset,
                 .yOffset = yOffset,
             });
