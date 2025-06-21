@@ -1,5 +1,6 @@
 #include "muon/graphics/swapchain.hpp"
 
+#include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include <vulkan/vulkan_core.h>
 

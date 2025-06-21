@@ -1,6 +1,7 @@
 #include "muon/graphics/frame_manager.hpp"
-#include "muon/graphics/swapchain.hpp"
 
+#include "muon/core/assert.hpp"
+#include "muon/graphics/swapchain.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
