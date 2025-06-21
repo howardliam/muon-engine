@@ -4,7 +4,7 @@
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/debug/profiler.hpp"
-#include "muon/event/data.hpp"
+#include "muon/event/event.hpp"
 #include "muon/graphics/device_context.hpp"
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -55,25 +55,14 @@ namespace muon {
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
-        m_dispatcher.appendListener(event::EventType::WindowClose, [&](const event::Event &event) {
+        m_dispatcher.Subscribe<event::WindowCloseEvent>([&](const auto &event) {
             MU_CORE_INFO("window closed received");
             m_running = false;
         });
 
-        m_dispatcher.appendListener(event::EventType::MouseButton, [&](const event::Event &event) {
-            auto data = event.Get<event::MouseButtonData>();
-
-            if (data.action == GLFW_PRESS) {
+        m_dispatcher.Subscribe<event::MouseButtonEvent>([&](const auto &event) {
+            if (event.action == GLFW_PRESS) {
                 m_scriptManager->run();
-            }
-        });
-
-        m_dispatcher.appendListener(event::EventType::Key, [&](const event::Event &event) {
-            auto data = event.Get<event::KeyData>();
-
-            if (data.action != GLFW_PRESS) { return; }
-            if (data.mods.IsCtrlDown() && data.key == GLFW_KEY_V) {
-                MU_CORE_INFO(m_window->GetClipboardContents());
             }
         });
     }

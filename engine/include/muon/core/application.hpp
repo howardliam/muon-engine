@@ -45,7 +45,7 @@ namespace muon {
         friend int ::main(int argc, char **argv);
 
     private:
-        event::EventDispatcher m_dispatcher;
+        event::Dispatcher m_dispatcher;
 
         std::unique_ptr<Window> m_window;
         std::unique_ptr<gfx::DeviceContext> m_deviceContext;

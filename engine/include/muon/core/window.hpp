@@ -13,7 +13,7 @@ namespace muon {
         std::string title;
         uint32_t width;
         uint32_t height;
-        event::EventDispatcher *dispatcher;
+        event::Dispatcher *dispatcher;
     };
 
     class Window {
@@ -47,7 +47,7 @@ namespace muon {
             uint32_t width;
             uint32_t height;
 
-            const event::EventDispatcher *dispatcher;
+            const event::Dispatcher *dispatcher;
         };
         WindowData m_data;
     };

@@ -1,38 +1,38 @@
 #pragma once
 
-#include "muon/core/assert.hpp"
-#include "muon/event/data.hpp"
+#include "muon/input/modifier.hpp"
 #include <cstdint>
 
 namespace muon::event {
 
-    enum class EventType : uint32_t {
-        WindowClose,
-        WindowResize,
-        MouseButton,
-        MouseScroll,
-        Key,
-        CursorPosition,
+    struct WindowCloseEvent {};
+
+    struct WindowResizeEvent {
+        uint32_t width;
+        uint32_t height;
     };
 
-    struct Event {
-        EventType type;
-        EventData data;
-
-        template<typename T>
-        const T &Get() const;
+    struct MouseButtonEvent {
+        int32_t button;
+        int32_t action;
+        input::Modifier mods;
     };
 
-    template<typename T>
-    const T &Event::Get() const {
-        MU_CORE_ASSERT(std::holds_alternative<T>(data), "bad variant cast");
-        return std::get<T>(data);
-    }
+    struct MouseScrollEvent {
+        double xOffset;
+        double yOffset;
+    };
 
-    struct EventPolicies {
-        static EventType getEvent(const Event &e) {
-            return e.type;
-        }
+    struct KeyEvent {
+        int32_t key;
+        int32_t scancode;
+        int32_t action;
+        input::Modifier mods;
+    };
+
+    struct CursorPositionEvent {
+        double x;
+        double y;
     };
 
 }

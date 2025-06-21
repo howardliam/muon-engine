@@ -39,7 +39,6 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/debug/profiler.hpp
 
-    ${INCLUDE_DIR}/muon/event/data.hpp
     ${INCLUDE_DIR}/muon/event/dispatcher.hpp
     ${INCLUDE_DIR}/muon/event/event.hpp
 

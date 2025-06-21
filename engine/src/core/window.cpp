@@ -1,8 +1,8 @@
 #include "muon/core/window.hpp"
 
 #include "GLFW/glfw3.h"
+#include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "muon/event/data.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
@@ -87,69 +87,52 @@ namespace muon {
         /* window events */
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->dispatch(event::Event{
-                .type = event::EventType::WindowClose,
-                .data = event::WindowCloseData {}
-            });
+            data->dispatcher->Dispatch(event::WindowCloseEvent{});
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->dispatch(event::Event{
-                .type = event::EventType::WindowResize,
-                .data = event::WindowResizeData {
-                    .width = static_cast<uint32_t>(width),
-                    .height = static_cast<uint32_t>(height),
-                }
+
+            data->dispatcher->Dispatch(event::WindowResizeEvent {
+                .width = static_cast<uint32_t>(width),
+                .height = static_cast<uint32_t>(height),
             });
         });
 
         /* keyboard events */
         glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->dispatch(event::Event{
-                .type = event::EventType::Key,
-                .data = event::KeyData {
-                    .key = key,
-                    .scancode = scancode,
-                    .action = action,
-                    .mods = mods,
-                }
+            data->dispatcher->Dispatch(event::KeyEvent {
+                .key = key,
+                .scancode = scancode,
+                .action = action,
+                .mods = mods,
             });
         });
 
         /* mouse events */
         glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->dispatch(event::Event{
-                .type = event::EventType::MouseButton,
-                .data = event::MouseButtonData {
-                    .button = button,
-                    .action = action,
-                    .mods = mods,
-                }
+            data->dispatcher->Dispatch(event::MouseButtonEvent {
+                .button = button,
+                .action = action,
+                .mods = mods,
             });
         });
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->dispatch(event::Event{
-                .type = event::EventType::CursorPosition,
-                .data = event::CursorPositionData {
-                    .x = x,
-                    .y = y,
-                }
+            data->dispatcher->Dispatch(event::CursorPositionEvent {
+                .x = x,
+                .y = y,
             });
         });
 
         glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
             const auto &data = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-            data->dispatcher->dispatch(event::Event{
-                .type = event::EventType::MouseScroll,
-                .data = event::MouseScrollData {
-                    .xOffset = xOffset,
-                    .yOffset = yOffset,
-                }
+            data->dispatcher->Dispatch(event::MouseScrollEvent {
+                .xOffset = xOffset,
+                .yOffset = yOffset,
             });
         });
 
