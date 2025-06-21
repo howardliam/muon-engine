@@ -305,11 +305,11 @@ namespace muon::gfx {
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
         uint32_t index = 0;
         for (const auto family : uniqueQueueFamilies) {
-            queueCreateInfos[index].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueCreateInfos[index].queueFamilyIndex = family;
-            queueCreateInfos[index].queueCount = queueCounts[family];
-            queueCreateInfos[index].pQueuePriorities = queuePriorities.data();
-
+            auto &createInfo = queueCreateInfos[index];
+            createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            createInfo.queueFamilyIndex = family;
+            createInfo.queueCount = queueCounts[family];
+            createInfo.pQueuePriorities = queuePriorities.data();
             index += 1;
         }
 
