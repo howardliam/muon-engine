@@ -9,16 +9,16 @@ namespace muon::color {
     }
 
     template<>
-    std::array<float, 3> rgbFromHex<std::array<float, 3>>(uint32_t hex) {
+    std::array<float, 3> RgbFromHex<std::array<float, 3>>(uint32_t hex) {
         uint8_t r = (hex >> 0x10) & constants::ubyteMax;
         uint8_t g = (hex >> 0x08) & constants::ubyteMax;
         uint8_t b = (hex >> 0x00) & constants::ubyteMax;
 
-        return rgbFromHex<std::array<float, 3>>(r, g, b);
+        return RgbFromHex<std::array<float, 3>>(r, g, b);
     }
 
     template<>
-    std::array<float, 3> rgbFromHex<std::array<float, 3>>(uint8_t r, uint8_t g, uint8_t b) {
+    std::array<float, 3> RgbFromHex<std::array<float, 3>>(uint8_t r, uint8_t g, uint8_t b) {
         return {
             static_cast<float>(r) / constants::ubyteMax,
             static_cast<float>(g) / constants::ubyteMax,
@@ -27,17 +27,17 @@ namespace muon::color {
     }
 
     template<>
-    std::array<float, 4> rgbaFromHex<std::array<float, 4>>(uint32_t hex) {
+    std::array<float, 4> RgbaFromHex<std::array<float, 4>>(uint32_t hex) {
         uint8_t r = (hex >> 0x18) & constants::ubyteMax;
         uint8_t g = (hex >> 0x10) & constants::ubyteMax;
         uint8_t b = (hex >> 0x08) & constants::ubyteMax;
         uint8_t a = (hex >> 0x00) & constants::ubyteMax;
 
-        return rgbaFromHex<std::array<float, 4>>(r, g, b, a);
+        return RgbaFromHex<std::array<float, 4>>(r, g, b, a);
     }
 
     template<>
-    std::array<float, 4> rgbaFromHex<std::array<float, 4>>(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    std::array<float, 4> RgbaFromHex<std::array<float, 4>>(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
         return {
             static_cast<float>(r) / constants::ubyteMax,
             static_cast<float>(g) / constants::ubyteMax,

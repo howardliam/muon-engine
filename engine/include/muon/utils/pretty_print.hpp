@@ -5,6 +5,6 @@
 
 namespace muon::pp {
 
-    std::string parseBytes(uint64_t numBytes);
+    std::string ParseBytes(uint64_t numBytes);
 
 }

@@ -62,7 +62,7 @@ namespace muon {
 
         m_dispatcher.Subscribe<event::MouseButtonEvent>([&](const auto &event) {
             if (event.action == GLFW_PRESS) {
-                m_scriptManager->run();
+                m_scriptManager->Run();
             }
         });
     }

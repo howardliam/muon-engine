@@ -19,7 +19,7 @@ namespace muon {
     ScriptManager::~ScriptManager() {
     }
 
-    void ScriptManager::run() {
+    void ScriptManager::Run() {
         m_script();
     }
 

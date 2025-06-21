@@ -9,7 +9,7 @@ namespace muon {
         ScriptManager();
         ~ScriptManager();
 
-        void run();
+        void Run();
 
     private:
         sol::state m_lua;
