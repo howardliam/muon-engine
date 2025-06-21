@@ -5,7 +5,7 @@
 namespace muon::gfx {
 
     bool QueueFamilyInfo::operator==(const QueueFamilyInfo &other) const {
-        return familyIndex == other.familyIndex && maxQueues == other.maxQueues && capabilities == other.capabilities;
+        return index == other.index && queueCount == other.queueCount && capabilities == other.capabilities;
     }
 
     bool QueueFamilyInfo::IsPresentCapable() const {
@@ -55,7 +55,12 @@ namespace muon::gfx {
             if (properties.queueFlags & VK_QUEUE_TRANSFER_BIT) { capabilities.set(0); }
 
             m_families.emplace(m_families.begin() + i, i, properties.queueCount, capabilities);
+            m_totalQueueCount += properties.queueCount;
         }
+    }
+
+    uint32_t QueueInfo::GetTotalQueueCount() const {
+        return m_totalQueueCount;
     }
 
     const std::vector<QueueFamilyInfo> &QueueInfo::GetFamilyInfo() const {

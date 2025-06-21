@@ -7,16 +7,9 @@
 
 namespace muon::gfx {
 
-    enum class QueueType {
-        Graphics,
-        Compute,
-        Transfer,
-        Present,
-    };
-
     struct QueueFamilyInfo {
-        uint32_t familyIndex;
-        uint32_t maxQueues;
+        uint32_t index;
+        uint32_t queueCount;
         std::bitset<4> capabilities;
 
         bool operator==(const QueueFamilyInfo &other) const;
@@ -30,22 +23,17 @@ namespace muon::gfx {
         bool IsTransferDedicated() const;
     };
 
-    struct QueueRequestInfo {
-        uint32_t graphicsCount = 0;
-        uint32_t computeCount = 0;
-        uint32_t transferCount = 0;
-        uint32_t presentCount = 0;
-    };
-
     class QueueInfo {
     public:
         QueueInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
         ~QueueInfo() = default;
 
     public:
+        [[nodiscard]] uint32_t GetTotalQueueCount() const;
         [[nodiscard]] const std::vector<QueueFamilyInfo> &GetFamilyInfo() const;
 
     private:
+        uint32_t m_totalQueueCount = 0;
         std::vector<QueueFamilyInfo> m_families;
     };
 

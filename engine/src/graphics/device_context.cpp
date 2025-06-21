@@ -5,6 +5,7 @@
 #include "muon/core/log.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
+#include "muon/graphics/queue_info.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -272,45 +273,42 @@ namespace muon::gfx {
     }
 
     void DeviceContext::CreateLogicalDevice() {
-        uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
-        MU_CORE_ASSERT(queueFamilyCount >= 1, "there must be at least one queue family");
+        const QueueInfo queueInfo(m_physicalDevice, m_surface);
+        MU_CORE_ASSERT(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
+        MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
 
-        uint32_t queueCount = 0;
-        for (const auto &family : queueFamilies) {
-            queueCount += family.queueCount;
+        const auto queueFamilies = queueInfo.GetFamilyInfo();
+
+        auto graphicsFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsGraphicsCapable(); });
+        MU_CORE_ASSERT(graphicsFamily != queueFamilies.end(), "there must be a graphics capable queue family");
+        MU_CORE_ASSERT(graphicsFamily->IsPresentCapable(), "the graphics capable queue family must support presentation");
+
+        auto computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeDedicated(); });
+        if (computeFamily == queueFamilies.end()) {
+            computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeCapable(); });
         }
-        MU_CORE_ASSERT(queueCount >= 3, "there must be at least three queues available");
-        MU_CORE_INFO("there are {} available queues", queueCount);
+        MU_CORE_ASSERT(computeFamily != queueFamilies.end(), "there must be a compute capable queue family");
 
-        uint32_t graphicsFamily = 0;
-        uint32_t computeFamily = 0;
-        uint32_t transferFamily = 0;
-        for (uint32_t i = 0; i < queueFamilies.size(); i++) {
-            const auto &family = queueFamilies[i];
-            if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                graphicsFamily = i;
-            }
-            if (family.queueFlags & VK_QUEUE_COMPUTE_BIT) {
-                computeFamily = i;
-            }
-            if (family.queueFlags & VK_QUEUE_TRANSFER_BIT) {
-                transferFamily = i;
-            }
+        auto transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferDedicated(); });
+        if (transferFamily == queueFamilies.end()) {
+            transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferCapable(); });
         }
+        MU_CORE_ASSERT(transferFamily != queueFamilies.end(), "there must be a transfer capable queue family");
 
-        std::set<uint32_t> uniqueQueueFamilies = { graphicsFamily, computeFamily, transferFamily };
+        std::map<uint32_t, uint32_t> queueCounts;
+        queueCounts[graphicsFamily->index] += 1;
+        queueCounts[computeFamily->index] += 1;
+        queueCounts[transferFamily->index] += 1;
+        std::set<uint32_t> uniqueQueueFamilies = { graphicsFamily->index, computeFamily->index, transferFamily->index };
 
-        float queuePriority = 1.0;
+        std::vector<float> queuePriorities(uniqueQueueFamilies.size(), 1.0);
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
         uint32_t index = 0;
         for (const auto family : uniqueQueueFamilies) {
             queueCreateInfos[index].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueCreateInfos[index].queueFamilyIndex = family;
-            queueCreateInfos[index].queueCount = 1;
-            queueCreateInfos[index].pQueuePriorities = &queuePriority;
+            queueCreateInfos[index].queueCount = queueCounts[family];
+            queueCreateInfos[index].pQueuePriorities = queuePriorities.data();
 
             index += 1;
         }
@@ -363,26 +361,31 @@ namespace muon::gfx {
         auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a logical device");
 
+        std::map<uint32_t, uint32_t> nextQueueIndices;
+        nextQueueIndices[graphicsFamily->index] = 0;
+        nextQueueIndices[computeFamily->index] = 0;
+        nextQueueIndices[transferFamily->index] = 0;
+
         QueueSpecification graphicsSpec{};
         graphicsSpec.device = m_device;
-        graphicsSpec.queueFamilyIndex = graphicsFamily;
-        graphicsSpec.queueIndex = 0;
+        graphicsSpec.queueFamilyIndex = graphicsFamily->index;
+        graphicsSpec.queueIndex = nextQueueIndices[graphicsFamily->index]++;
         graphicsSpec.name = "graphics";
         m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
         MU_CORE_ASSERT(m_graphicsQueue, "graphics queue must not be null");
 
         QueueSpecification computeSpec{};
         computeSpec.device = m_device;
-        computeSpec.queueFamilyIndex = computeFamily;
-        computeSpec.queueIndex = 0;
+        computeSpec.queueFamilyIndex = computeFamily->index;
+        computeSpec.queueIndex = nextQueueIndices[computeFamily->index]++;
         computeSpec.name = "compute";
         m_computeQueue = std::make_unique<Queue>(computeSpec);
         MU_CORE_ASSERT(m_computeQueue, "compute queue must not be null");
 
         QueueSpecification transferSpec{};
         transferSpec.device = m_device;
-        transferSpec.queueFamilyIndex = transferFamily;
-        transferSpec.queueIndex = 0;
+        transferSpec.queueFamilyIndex = transferFamily->index;
+        transferSpec.queueIndex = nextQueueIndices[transferFamily->index]++;
         transferSpec.name = "transfer";
         m_transferQueue = std::make_unique<Queue>(transferSpec);
         MU_CORE_ASSERT(m_transferQueue, "transfer queue must not be null");
