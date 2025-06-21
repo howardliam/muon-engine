@@ -315,24 +315,42 @@ namespace muon::gfx {
             index += 1;
         }
 
+        VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures{};
+        meshShaderFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+        meshShaderFeatures.meshShader = true;
+        meshShaderFeatures.taskShader = true;
+
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
         syncFeatures.synchronization2 = true;
+        syncFeatures.pNext = &meshShaderFeatures;
 
         VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
         dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-        dynamicRenderingFeatures.pNext = &syncFeatures;
         dynamicRenderingFeatures.dynamicRendering = true;
+        dynamicRenderingFeatures.pNext = &syncFeatures;
 
         VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
         indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+        indexingFeatures.descriptorBindingPartiallyBound = true;
+        indexingFeatures.shaderSampledImageArrayNonUniformIndexing = true;
+        indexingFeatures.runtimeDescriptorArray = true;
+        indexingFeatures.descriptorBindingVariableDescriptorCount = true;
+        indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
+        indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = true;
+        indexingFeatures.descriptorBindingStorageImageUpdateAfterBind = true;
+        indexingFeatures.descriptorBindingStorageTexelBufferUpdateAfterBind = true;
+        indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
+        indexingFeatures.descriptorBindingUniformTexelBufferUpdateAfterBind = true;
+        indexingFeatures.shaderUniformBufferArrayNonUniformIndexing = true;
+        indexingFeatures.shaderStorageBufferArrayNonUniformIndexing = true;
+        indexingFeatures.shaderStorageImageArrayNonUniformIndexing = true;
         indexingFeatures.pNext = &dynamicRenderingFeatures;
 
         VkPhysicalDeviceFeatures2 deviceFeatures{};
         deviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        deviceFeatures.pNext = &indexingFeatures;
-
         vkGetPhysicalDeviceFeatures2(m_physicalDevice, &deviceFeatures);
+        deviceFeatures.pNext = &indexingFeatures;
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
