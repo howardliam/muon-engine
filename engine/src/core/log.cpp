@@ -12,7 +12,7 @@ namespace muon {
         sinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
         sinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Muon.log", true));
 
-        sinks[0]->set_pattern("%^[%T] %n: %v%$");
+        sinks[0]->set_pattern("%^[%T] %4n: %v%$");
         sinks[1]->set_pattern("[%T] [%l] %n: %v");
 
         s_coreLogger = std::make_shared<spdlog::logger>("MUON", sinks.begin(), sinks.end());
@@ -25,7 +25,7 @@ namespace muon {
         s_clientLogger->set_level(spdlog::level::trace);
         s_clientLogger->flush_on(spdlog::level::trace);
 
-        s_vulkanLogger = std::make_shared<spdlog::logger>("VK", sinks.begin(), sinks.end());
+        s_vulkanLogger = std::make_shared<spdlog::logger>("VULK", sinks.begin(), sinks.end());
         spdlog::register_logger(s_vulkanLogger);
         s_vulkanLogger->set_level(spdlog::level::trace);
         s_vulkanLogger->flush_on(spdlog::level::trace);
