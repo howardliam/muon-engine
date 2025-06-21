@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/graphics/queue_info.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <vulkan/vulkan_core.h>
@@ -8,7 +7,6 @@
 namespace muon::gfx {
 
     struct QueueSpecification {
-        QueueType type;
         VkDevice device;
         uint32_t queueFamilyIndex;
         uint32_t queueIndex;
@@ -25,13 +23,11 @@ namespace muon::gfx {
         void EndCommands(VkCommandBuffer cmd);
 
     public:
-        [[nodiscard]] QueueType GetType() const;
-
         [[nodiscard]] VkQueue Get() const;
         [[nodiscard]] VkCommandPool GetCommandPool() const;
 
     private:
-        QueueType m_type;
+        VkDevice m_device;
         const char *m_name;
 
         VkQueue m_queue;

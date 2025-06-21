@@ -23,7 +23,7 @@ namespace muon {
 
         void PollEvents() const;
 
-        [[nodiscard]] VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface);
+        [[nodiscard]] VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const;
 
     public:
         [[nodiscard]] GLFWwindow *Get() const;

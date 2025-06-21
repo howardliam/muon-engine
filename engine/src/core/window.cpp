@@ -49,7 +49,7 @@ namespace muon {
         glfwPollEvents();
     }
 
-    VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) {
+    VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const {
         return glfwCreateWindowSurface(instance, m_window, nullptr, surface);
     }
 

@@ -1,22 +1,19 @@
 #include "muon/graphics/frame_manager.hpp"
+#include "muon/graphics/swapchain.hpp"
 
-#include "muon/core/application.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
 
-    FrameManager::FrameManager() {
+    FrameManager::FrameManager(const FrameManagerSpecification &spec) : m_window (*spec.window), m_deviceContext(*spec.deviceContext) {
         CreateSwapchain();
         CreateCommandBuffers();
     }
 
     FrameManager::~FrameManager() {
-        auto &deviceContext = Application::Get().GetDeviceContext();
-        auto &queueContext = Application::Get().GetQueueContext();
-
         vkFreeCommandBuffers(
-            deviceContext.GetDevice(),
-            queueContext.GetRenderQueue().GetCommandPool(),
+            m_deviceContext.GetDevice(),
+            m_deviceContext.GetGraphicsQueue().GetCommandPool(),
             m_commandBuffers.size(),
             m_commandBuffers.data()
         );
@@ -67,11 +64,17 @@ namespace muon::gfx {
     }
 
     void FrameManager::CreateSwapchain() {
+        SwapchainSpecification swapchainSpec{};
+        swapchainSpec.deviceContext = &m_deviceContext;
+        swapchainSpec.windowExtent = m_window.GetExtent();
+
         if (m_swapchain == nullptr) {
-            m_swapchain = std::make_unique<Swapchain>();
+            swapchainSpec.oldSwapchain = nullptr;
+            m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
         } else {
-            std::shared_ptr oldSwapChain = std::move(m_swapchain);
-            m_swapchain = std::make_unique<Swapchain>(oldSwapChain);
+            std::unique_ptr oldSwapChain = std::move(m_swapchain);
+            swapchainSpec.oldSwapchain = oldSwapChain->GetSwapchain();
+            m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
 
             if (!m_swapchain->CompareSwapFormats(*oldSwapChain)) {
                 MU_CORE_DEBUG("new and old swapchain formats do not match");
@@ -80,18 +83,15 @@ namespace muon::gfx {
     }
 
     void FrameManager::CreateCommandBuffers() {
-        auto &deviceContext = Application::Get().GetDeviceContext();
-        auto &queueContext = Application::Get().GetQueueContext();
-
         m_commandBuffers.resize(constants::maxFramesInFlight);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level =  VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = queueContext.GetRenderQueue().GetCommandPool();
+        allocInfo.commandPool = m_deviceContext.GetGraphicsQueue().GetCommandPool();
         allocInfo.commandBufferCount = m_commandBuffers.size();
 
-        auto result = vkAllocateCommandBuffers(deviceContext.GetDevice(), &allocInfo, m_commandBuffers.data());
+        auto result = vkAllocateCommandBuffers(m_deviceContext.GetDevice(), &allocInfo, m_commandBuffers.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate command buffers");
     }
 

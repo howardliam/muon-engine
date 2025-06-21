@@ -1,54 +1,50 @@
 #include "muon/graphics/swapchain.hpp"
 
-#include "muon/core/application.hpp"
 #include "muon/core/log.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
 
-    Swapchain::Swapchain() {
-        Init();
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", m_swapchainExtent.width, m_swapchainExtent.height);
-    }
+    Swapchain::Swapchain(const SwapchainSpecification &spec) : m_deviceContext(*spec.deviceContext) {
+        CreateSwapchain(spec.windowExtent, spec.oldSwapchain);
+        CreateImageViews();
+        CreateSyncObjects();
 
-    Swapchain::Swapchain(std::shared_ptr<Swapchain> previous) : m_oldSwapchain(previous) {
-        Init();
-        m_oldSwapchain = nullptr;
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", m_swapchainExtent.width, m_swapchainExtent.height);
+        if (spec.oldSwapchain) {
+            MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", m_swapchainExtent.width, m_swapchainExtent.height);
+        } else {
+            MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", m_swapchainExtent.width, m_swapchainExtent.height);
+        }
     }
 
     Swapchain::~Swapchain() {
-        auto &deviceContext = Application::Get().GetDeviceContext();
-
         for (auto &semaphore : m_imageAvailableSemaphores) {
-            vkDestroySemaphore(deviceContext.GetDevice(), semaphore, nullptr);
+            vkDestroySemaphore(m_deviceContext.GetDevice(), semaphore, nullptr);
         }
 
         for (auto &fence : m_inFlightFences) {
-            vkDestroyFence(deviceContext.GetDevice(), fence, nullptr);
+            vkDestroyFence(m_deviceContext.GetDevice(), fence, nullptr);
         }
 
         for (auto &semaphore : m_renderFinishedSemaphores) {
-            vkDestroySemaphore(deviceContext.GetDevice(), semaphore, nullptr);
+            vkDestroySemaphore(m_deviceContext.GetDevice(), semaphore, nullptr);
         }
 
         for (auto imageView : m_swapchainImageViews) {
-            vkDestroyImageView(deviceContext.GetDevice(), imageView, nullptr);
+            vkDestroyImageView(m_deviceContext.GetDevice(), imageView, nullptr);
         }
 
-        vkDestroySwapchainKHR(deviceContext.GetDevice(), m_swapchain, nullptr);
+        vkDestroySwapchainKHR(m_deviceContext.GetDevice(), m_swapchain, nullptr);
 
         MU_CORE_DEBUG("destroyed swapchain");
     }
 
     VkResult Swapchain::AcquireNextImage(uint32_t *imageIndex) {
-        auto &deviceContext = Application::Get().GetDeviceContext();
-
-        auto result = vkWaitForFences(deviceContext.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, std::numeric_limits<uint64_t>::max());
+        auto result = vkWaitForFences(m_deviceContext.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, std::numeric_limits<uint64_t>::max());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
 
         result = vkAcquireNextImageKHR(
-            deviceContext.GetDevice(),
+            m_deviceContext.GetDevice(),
             m_swapchain,
             std::numeric_limits<uint64_t>::max(),
             m_imageAvailableSemaphores[m_currentFrame],
@@ -60,11 +56,8 @@ namespace muon::gfx {
     }
 
     VkResult Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
-        auto &deviceContext = Application::Get().GetDeviceContext();
-        auto &queueContext = Application::Get().GetQueueContext();
-
         if (m_imagesInFlight[*imageIndex] != nullptr) {
-            auto result = vkWaitForFences(deviceContext.GetDevice(), 1, &m_imagesInFlight[*imageIndex], true, std::numeric_limits<uint64_t>::max());
+            auto result = vkWaitForFences(m_deviceContext.GetDevice(), 1, &m_imagesInFlight[*imageIndex], true, std::numeric_limits<uint64_t>::max());
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
         }
         m_imagesInFlight[*imageIndex] = m_inFlightFences[m_currentFrame];
@@ -85,10 +78,10 @@ namespace muon::gfx {
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        auto result = vkResetFences(deviceContext.GetDevice(), 1, &m_inFlightFences[m_currentFrame]);
+        auto result = vkResetFences(m_deviceContext.GetDevice(), 1, &m_inFlightFences[m_currentFrame]);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to reset fences");
 
-        result = vkQueueSubmit(queueContext.GetRenderQueue().Get(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
+        result = vkQueueSubmit(m_deviceContext.GetGraphicsQueue().Get(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit draw command buffer");
 
         VkPresentInfoKHR presentInfo{};
@@ -101,7 +94,7 @@ namespace muon::gfx {
 
         presentInfo.pImageIndices = imageIndex;
 
-        result = vkQueuePresentKHR(queueContext.GetPresentQueue().Get(), &presentInfo);
+        result = vkQueuePresentKHR(m_deviceContext.GetGraphicsQueue().Get(), &presentInfo);
 
         m_currentFrame = (m_currentFrame + 1) % constants::maxFramesInFlight;
 
@@ -148,13 +141,7 @@ namespace muon::gfx {
         return static_cast<float>(m_swapchainExtent.width) / m_swapchainExtent.height;
     }
 
-    void Swapchain::Init() {
-        CreateSwapchain();
-        CreateImageViews();
-        CreateSyncObjects();
-    }
-
-    void Swapchain::CreateSwapchain() {
+    void Swapchain::CreateSwapchain(const VkExtent2D windowExtent, VkSwapchainKHR oldSwapchain) {
         auto selectExtent = [](const VkSurfaceCapabilitiesKHR &capabilities, VkExtent2D windowExtent) -> VkExtent2D {
             if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
                 return capabilities.currentExtent;
@@ -184,29 +171,27 @@ namespace muon::gfx {
             return VK_PRESENT_MODE_FIFO_KHR;
         };
 
-        auto &deviceContext = Application::Get().GetDeviceContext();
-        auto &window = Application::Get().GetWindow();
         VkResult result;
 
         VkSurfaceCapabilitiesKHR capabilities{};
-        result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(deviceContext.GetPhysicalDevice(), deviceContext.GetSurface(), &capabilities);
+        result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &capabilities);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface capabilities");
 
         uint32_t surfaceFormatCount = 0;
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(deviceContext.GetPhysicalDevice(), deviceContext.GetSurface(), &surfaceFormatCount, nullptr);
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
         std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(deviceContext.GetPhysicalDevice(), deviceContext.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
 
         uint32_t presentModeCount = 0;
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(deviceContext.GetPhysicalDevice(), deviceContext.GetSurface(), &presentModeCount, nullptr);
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
         std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(deviceContext.GetPhysicalDevice(), deviceContext.GetSurface(), &presentModeCount, presentModes.data());
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, presentModes.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
 
-        auto extent = selectExtent(capabilities, window.GetExtent());
+        auto extent = selectExtent(capabilities, windowExtent);
         auto surfaceFormat = selectSurfaceFormat(surfaceFormats);
         auto presentMode = selectPresentMode(presentModes);
 
@@ -217,44 +202,30 @@ namespace muon::gfx {
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = deviceContext.GetSurface();
+        createInfo.surface = m_deviceContext.GetSurface();
         createInfo.minImageCount = minImageCount;
         createInfo.imageFormat = surfaceFormat.format;
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-        const auto &queueAllocator = deviceContext.GetQueueAllocator();
-
-        const auto graphicsIndex = queueAllocator.GetQueueFamilyIndex(QueueType::Graphics);
-        const auto presentIndex = queueAllocator.GetQueueFamilyIndex(QueueType::Present);
-
-        const uint32_t queueFamilyIndices[] = { graphicsIndex, presentIndex };
-        if (graphicsIndex != presentIndex) {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        } else {
-            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.queueFamilyIndexCount = 0;
-            createInfo.pQueueFamilyIndices = nullptr;
-        }
-
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0;
+        createInfo.pQueueFamilyIndices = nullptr;
         createInfo.preTransform = capabilities.currentTransform;
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         createInfo.presentMode = presentMode;
         createInfo.clipped = true;
 
-        createInfo.oldSwapchain = m_oldSwapchain == nullptr ? nullptr : m_oldSwapchain->m_swapchain;
+        createInfo.oldSwapchain = oldSwapchain;
 
-        result = vkCreateSwapchainKHR(deviceContext.GetDevice(), &createInfo, nullptr, &m_swapchain);
+        result = vkCreateSwapchainKHR(m_deviceContext.GetDevice(), &createInfo, nullptr, &m_swapchain);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create the swapchain");
 
-        result = vkGetSwapchainImagesKHR(deviceContext.GetDevice(), m_swapchain, &m_imageCount, nullptr);
+        result = vkGetSwapchainImagesKHR(m_deviceContext.GetDevice(), m_swapchain, &m_imageCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
         m_swapchainImages.resize(m_imageCount);
-        result = vkGetSwapchainImagesKHR(deviceContext.GetDevice(), m_swapchain, &m_imageCount, m_swapchainImages.data());
+        result = vkGetSwapchainImagesKHR(m_deviceContext.GetDevice(), m_swapchain, &m_imageCount, m_swapchainImages.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
 
         m_swapchainImageFormat = surfaceFormat.format;
@@ -264,7 +235,6 @@ namespace muon::gfx {
     void Swapchain::CreateImageViews() {
         m_swapchainImageViews.resize(m_imageCount);
 
-        auto &deviceContext = Application::Get().GetDeviceContext();
         for (size_t i = 0; i < m_imageCount; i++) {
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -283,7 +253,7 @@ namespace muon::gfx {
             createInfo.subresourceRange.baseArrayLayer = 0;
             createInfo.subresourceRange.layerCount = 1;
 
-            auto result = vkCreateImageView(deviceContext.GetDevice(), &createInfo, nullptr, &m_swapchainImageViews[i]);
+            auto result = vkCreateImageView(m_deviceContext.GetDevice(), &createInfo, nullptr, &m_swapchainImageViews[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a swapchain image view");
         }
     }
@@ -296,24 +266,21 @@ namespace muon::gfx {
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        const auto &deviceContext = Application::Get().GetDeviceContext();
-        const auto device = deviceContext.GetDevice();
-
         m_imageAvailableSemaphores.resize(constants::maxFramesInFlight);
         m_inFlightFences.resize(constants::maxFramesInFlight);
         for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
             VkResult result;
 
-            result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+            result = vkCreateSemaphore(m_deviceContext.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image available semaphores");
 
-            result = vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]);
+            result = vkCreateFence(m_deviceContext.GetDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create in flight fences");
         }
 
         m_renderFinishedSemaphores.resize(m_imageCount);
         for (uint32_t i = 0; i < m_imageCount; i++) {
-            auto result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+            auto result = vkCreateSemaphore(m_deviceContext.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
         }
 

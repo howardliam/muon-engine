@@ -1,28 +1,27 @@
 #include "muon/graphics/queue.hpp"
 
 #include <vulkan/vulkan_core.h>
-#include "muon/core/application.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
 namespace muon::gfx {
 
-    Queue::Queue(const QueueSpecification &spec) : m_type(spec.type), m_name(spec.name) {
-        vkGetDeviceQueue(spec.device, spec.queueFamilyIndex, spec.queueIndex, &m_queue);
+    Queue::Queue(const QueueSpecification &spec) : m_device(spec.device), m_name(spec.name) {
+        vkGetDeviceQueue(m_device, spec.queueFamilyIndex, spec.queueIndex, &m_queue);
 
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = spec.queueFamilyIndex;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        auto result = vkCreateCommandPool(spec.device, &poolInfo, nullptr, &m_commandPool);
+        auto result = vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create command pool");
 
         MU_CORE_DEBUG("created {} queue", m_name);
     }
 
     Queue::~Queue() {
-        vkDestroyCommandPool(Application::Get().GetDeviceContext().GetDevice(), m_commandPool, nullptr);
+        vkDestroyCommandPool(m_device, m_commandPool, nullptr);
         MU_CORE_DEBUG("destroyed {} queue", m_name);
     }
 
@@ -34,7 +33,7 @@ namespace muon::gfx {
         allocateInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        auto result = vkAllocateCommandBuffers(Application::Get().GetDeviceContext().GetDevice(), &allocateInfo, &commandBuffer);
+        auto result = vkAllocateCommandBuffers(m_device, &allocateInfo, &commandBuffer);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate single time command buffer");
 
         VkCommandBufferBeginInfo beginInfo{};
@@ -60,11 +59,7 @@ namespace muon::gfx {
 
         vkQueueWaitIdle(m_queue);
 
-        vkFreeCommandBuffers(Application::Get().GetDeviceContext().GetDevice(), m_commandPool, 1, &cmd);
-    }
-
-    QueueType Queue::GetType() const {
-        return m_type;
+        vkFreeCommandBuffers(m_device, m_commandPool, 1, &cmd);
     }
 
     VkQueue Queue::Get() const {

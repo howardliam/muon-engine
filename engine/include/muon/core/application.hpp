@@ -5,7 +5,6 @@
 #include "muon/event/dispatcher.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/frame_manager.hpp"
-#include "muon/graphics/queue_context.hpp"
 #include "muon/scripting/script_manager.hpp"
 #include <cstdint>
 #include <filesystem>
@@ -37,7 +36,6 @@ namespace muon {
 
         [[nodiscard]] Window &GetWindow() const;
         [[nodiscard]] gfx::DeviceContext &GetDeviceContext() const;
-        [[nodiscard]] gfx::QueueContext &GetQueueContext() const;
 
         [[nodiscard]] static Application &Get();
 
@@ -51,7 +49,6 @@ namespace muon {
 
         std::unique_ptr<Window> m_window;
         std::unique_ptr<gfx::DeviceContext> m_deviceContext;
-        std::unique_ptr<gfx::QueueContext> m_queueContext;
         std::unique_ptr<gfx::FrameManager> m_frameManager;
 
         std::unique_ptr<ScriptManager> m_scriptManager;

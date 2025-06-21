@@ -6,20 +6,20 @@
 
 namespace muon {
 
-    void Profiler::CreateContext(const gfx::DeviceContext &deviceContext, const gfx::QueueContext &queueContext) {
+    void Profiler::CreateContext(const ProfilerSpecification &spec) {
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocateInfo.commandPool = queueContext.GetRenderQueue().GetCommandPool();
+        allocateInfo.commandPool = spec.deviceContext->GetGraphicsQueue().GetCommandPool();
         allocateInfo.commandBufferCount = 1;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
         VkCommandBuffer cmd;
-        vkAllocateCommandBuffers(deviceContext.GetDevice(), &allocateInfo, &cmd);
+        vkAllocateCommandBuffers(spec.deviceContext->GetDevice(), &allocateInfo, &cmd);
 
         s_tracyContext = TracyVkContext(
-            deviceContext.GetPhysicalDevice(),
-            deviceContext.GetDevice(),
-            queueContext.GetRenderQueue().Get(),
+            spec.deviceContext->GetPhysicalDevice(),
+            spec.deviceContext->GetDevice(),
+            spec.deviceContext->GetGraphicsQueue().Get(),
             cmd
         );
         MU_CORE_DEBUG("created profiler context");

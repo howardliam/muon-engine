@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/core/window.hpp"
+#include "muon/graphics/device_context.hpp"
 #include "muon/graphics/swapchain.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
@@ -9,9 +11,14 @@
 
 namespace muon::gfx {
 
+    struct FrameManagerSpecification {
+        const Window *window;
+        const DeviceContext *deviceContext;
+    };
+
     class FrameManager : NoCopy, NoMove {
     public:
-        FrameManager();
+        FrameManager(const FrameManagerSpecification &spec);
         ~FrameManager();
 
         [[nodiscard]] VkCommandBuffer BeginFrame();
@@ -24,6 +31,9 @@ namespace muon::gfx {
         void CreateCommandBuffers();
 
     private:
+        const Window &m_window;
+        const DeviceContext &m_deviceContext;
+
         std::unique_ptr<Swapchain> m_swapchain;
         std::vector<VkCommandBuffer> m_commandBuffers;
 

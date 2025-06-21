@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/graphics/device_context.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <memory>
@@ -12,10 +13,15 @@ namespace muon::gfx {
         constexpr uint32_t maxFramesInFlight = 2;
     }
 
+    struct SwapchainSpecification {
+        const DeviceContext *deviceContext;
+        VkExtent2D windowExtent;
+        VkSwapchainKHR oldSwapchain;
+    };
+
     class Swapchain : NoCopy, NoMove {
     public:
-        Swapchain();
-        Swapchain(std::shared_ptr<Swapchain> previous);
+        Swapchain(const SwapchainSpecification &spec);
         ~Swapchain();
 
         [[nodiscard]] VkResult AcquireNextImage(uint32_t *imageIndex);
@@ -36,12 +42,13 @@ namespace muon::gfx {
         [[nodiscard]] float GetExtentAspectRatio() const;
 
     private:
-        void Init();
-        void CreateSwapchain();
+        void CreateSwapchain(const VkExtent2D windowExtent, VkSwapchainKHR oldSwapchain);
         void CreateImageViews();
         void CreateSyncObjects();
 
     private:
+        const DeviceContext &m_deviceContext;
+
         VkSwapchainKHR m_swapchain;
         std::shared_ptr<Swapchain> m_oldSwapchain = nullptr;
         VkExtent2D m_swapchainExtent;

@@ -1,27 +1,23 @@
 #include "muon/graphics/device_context.hpp"
 
-#include "muon/core/application.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/window.hpp"
 #include "muon/core/log.hpp"
-#include "muon/debug/profiler.hpp"
 #include "muon/graphics/gpu.hpp"
-#include "muon/graphics/queue_allocator.hpp"
-#include "muon/graphics/queue_context.hpp"
-#include "muon/graphics/queue_info.hpp"
+#include "muon/graphics/queue.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
-
-#ifdef MU_DEBUG_ENABLED
+#include <vulkan/vulkan_core.h>
 
 namespace {
 
+    #ifdef MU_DEBUG_ENABLED
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -85,19 +81,20 @@ namespace {
 
         return vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, allocator);
     }
+    #endif
 
 }
 
-#endif
-
 namespace muon::gfx {
 
-    DeviceContext::DeviceContext() {
-        CreateInstance();
+    DeviceContext::DeviceContext(const DeviceContextSpecification &spec) {
+        MU_CORE_ASSERT(spec.window, "a window must be present");
+
+        CreateInstance(*spec.window);
         #ifdef MU_DEBUG_ENABLED
         CreateDebugMessenger();
         #endif
-        CreateSurface();
+        CreateSurface(*spec.window);
         SelectPhysicalDevice();
         CreateLogicalDevice();
         CreateAllocator();
@@ -107,6 +104,9 @@ namespace muon::gfx {
 
     DeviceContext::~DeviceContext() {
         vmaDestroyAllocator(m_allocator);
+        m_graphicsQueue.reset();
+        m_computeQueue.reset();
+        m_transferQueue.reset();
         vkDestroyDevice(m_device, nullptr);
         vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
         #ifdef MU_DEBUG_ENABLED
@@ -133,16 +133,24 @@ namespace muon::gfx {
         return m_device;
     }
 
-    QueueAllocator &DeviceContext::GetQueueAllocator() const {
-        return *m_queueAllocator;
+    Queue &DeviceContext::GetGraphicsQueue() const {
+        return *m_graphicsQueue;
+    }
+
+    Queue &DeviceContext::GetComputeQueue() const {
+        return *m_computeQueue;
+    }
+
+    Queue &DeviceContext::GetTransferQueue() const {
+        return *m_transferQueue;
     }
 
     VmaAllocator DeviceContext::GetAllocator() const {
         return m_allocator;
     }
 
-    void DeviceContext::CreateInstance() {
-        auto extensions = Application::Get().GetWindow().GetRequiredExtensions();
+    void DeviceContext::CreateInstance(const Window &window) {
+        auto extensions = window.GetRequiredExtensions();
 
         #ifdef MU_DEBUG_ENABLED
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -212,8 +220,8 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
     }
 
-    void DeviceContext::CreateSurface() {
-        auto result = Application::Get().GetWindow().CreateSurface(m_instance, &m_surface);
+    void DeviceContext::CreateSurface(const Window &window) {
+        auto result = window.CreateSurface(m_instance, &m_surface);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create window surface");
     }
 
@@ -264,9 +272,48 @@ namespace muon::gfx {
     }
 
     void DeviceContext::CreateLogicalDevice() {
-        auto queueInfo = QueueInfo(m_physicalDevice, m_surface);
-        m_queueAllocator = std::make_unique<QueueAllocator>(queueInfo, QueueContext::GetRequestInfo());
-        auto queueCreateInfos = m_queueAllocator->GenerateCreateInfos();
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
+        MU_CORE_ASSERT(queueFamilyCount >= 1, "there must be at least one queue family");
+
+        uint32_t queueCount = 0;
+        for (const auto &family : queueFamilies) {
+            queueCount += family.queueCount;
+        }
+        MU_CORE_ASSERT(queueCount >= 3, "there must be at least three queues available");
+        MU_CORE_INFO("there are {} available queues", queueCount);
+
+        uint32_t graphicsFamily = 0;
+        uint32_t computeFamily = 0;
+        uint32_t transferFamily = 0;
+        for (uint32_t i = 0; i < queueFamilies.size(); i++) {
+            const auto &family = queueFamilies[i];
+            if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                graphicsFamily = i;
+            }
+            if (family.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                computeFamily = i;
+            }
+            if (family.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                transferFamily = i;
+            }
+        }
+
+        std::set<uint32_t> uniqueQueueFamilies = { graphicsFamily, computeFamily, transferFamily };
+
+        float queuePriority = 1.0;
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
+        uint32_t index = 0;
+        for (const auto family : uniqueQueueFamilies) {
+            queueCreateInfos[index].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfos[index].queueFamilyIndex = family;
+            queueCreateInfos[index].queueCount = 1;
+            queueCreateInfos[index].pQueuePriorities = &queuePriority;
+
+            index += 1;
+        }
 
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
@@ -297,6 +344,30 @@ namespace muon::gfx {
 
         auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a logical device");
+
+        QueueSpecification graphicsSpec{};
+        graphicsSpec.device = m_device;
+        graphicsSpec.queueFamilyIndex = graphicsFamily;
+        graphicsSpec.queueIndex = 0;
+        graphicsSpec.name = "graphics";
+        m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
+        MU_CORE_ASSERT(m_graphicsQueue, "graphics queue must not be null");
+
+        QueueSpecification computeSpec{};
+        computeSpec.device = m_device;
+        computeSpec.queueFamilyIndex = computeFamily;
+        computeSpec.queueIndex = 0;
+        computeSpec.name = "compute";
+        m_computeQueue = std::make_unique<Queue>(computeSpec);
+        MU_CORE_ASSERT(m_computeQueue, "compute queue must not be null");
+
+        QueueSpecification transferSpec{};
+        transferSpec.device = m_device;
+        transferSpec.queueFamilyIndex = transferFamily;
+        transferSpec.queueIndex = 0;
+        transferSpec.name = "transfer";
+        m_transferQueue = std::make_unique<Queue>(transferSpec);
+        MU_CORE_ASSERT(m_transferQueue, "transfer queue must not be null");
     }
 
     void DeviceContext::CreateAllocator() {

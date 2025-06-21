@@ -1,7 +1,8 @@
+.cache
+.zed
+
 build
 build_gcc
-
-.cache
 
 *.spv
 screenshot.png

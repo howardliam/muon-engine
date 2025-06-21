@@ -1,15 +1,15 @@
 #include "muon/core/application.hpp"
 
-#include <GLFW/glfw3.h>
-#include <memory>
-#include <vulkan/vulkan_core.h>
-#include <yaml-cpp/yaml.h>
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/debug/profiler.hpp"
 #include "muon/event/data.hpp"
-#include "muon/graphics/queue_context.hpp"
+#include "muon/graphics/device_context.hpp"
+#include <GLFW/glfw3.h>
+#include <memory>
+#include <vulkan/vulkan_core.h>
+#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
@@ -19,30 +19,39 @@ namespace muon {
 
         MU_CORE_INFO("creating application");
 
-        WindowSpecification properties;
-        properties.title = spec.name;
-        properties.dispatcher = &m_dispatcher;
+        WindowSpecification windowSpec;
+        windowSpec.title = spec.name;
+        windowSpec.dispatcher = &m_dispatcher;
 
         try {
             YAML::Node config = YAML::LoadFile("Muon.yaml");
 
-            properties.width = config["window"]["dimensions"]["width"].as<uint32_t>();
-            properties.height = config["window"]["dimensions"]["height"].as<uint32_t>();
+            windowSpec.width = config["window"]["dimensions"]["width"].as<uint32_t>();
+            windowSpec.height = config["window"]["dimensions"]["height"].as<uint32_t>();
         } catch (const std::exception &e) {
             MU_CORE_ERROR("cannot find Muon.yaml config file!");
 
             GLFWmonitor *primary = glfwGetPrimaryMonitor();
             const GLFWvidmode *mode = glfwGetVideoMode(primary);
 
-            properties.width = (mode->width / 1.3333333333333334);
-            properties.height = (mode->height / 1.3333333333333334);
+            windowSpec.width = mode->width;
+            windowSpec.height = mode->height;
         }
 
-        m_window = std::make_unique<Window>(properties);
-        m_deviceContext = std::make_unique<gfx::DeviceContext>();
-        m_queueContext = std::make_unique<gfx::QueueContext>();
-        Profiler::CreateContext(*m_deviceContext, *m_queueContext);
-        m_frameManager = std::make_unique<gfx::FrameManager>();
+        m_window = std::make_unique<Window>(windowSpec);
+
+        gfx::DeviceContextSpecification deviceContextSpec{};
+        deviceContextSpec.window = m_window.get();
+        m_deviceContext = std::make_unique<gfx::DeviceContext>(deviceContextSpec);
+
+        ProfilerSpecification profilerSpec{};
+        profilerSpec.deviceContext = m_deviceContext.get();
+        Profiler::CreateContext(profilerSpec);
+
+        gfx::FrameManagerSpecification frameManagerSpec{};
+        frameManagerSpec.window = m_window.get();
+        frameManagerSpec.deviceContext = m_deviceContext.get();
+        m_frameManager = std::make_unique<gfx::FrameManager>(frameManagerSpec);
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
@@ -80,10 +89,6 @@ namespace muon {
 
     gfx::DeviceContext &Application::GetDeviceContext() const {
         return *m_deviceContext;
-    }
-
-    gfx::QueueContext &Application::GetQueueContext() const {
-        return *m_queueContext;
     }
 
     Application &Application::Get() {
