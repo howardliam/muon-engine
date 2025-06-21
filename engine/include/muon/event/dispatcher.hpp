@@ -12,18 +12,18 @@ namespace muon::event {
 
         template<typename T>
         void Subscribe(std::function<void(const T &)> listener) {
-            m_disaptcher.appendListener(typeid(T), [listener](const void *event) {
+            m_dispatcher.appendListener(typeid(T), [listener](const void *event) {
                 listener(*static_cast<const T *>(event));
             });
         }
 
         template<typename T>
         void Dispatch(const T &event) const {
-            m_disaptcher.dispatch(typeid(T), &event);
+            m_dispatcher.dispatch(typeid(T), &event);
         }
 
     private:
-        eventpp::EventDispatcher<std::type_index, void(const void *)> m_disaptcher;
+        eventpp::EventDispatcher<std::type_index, void(const void *)> m_dispatcher;
     };
 
 }
