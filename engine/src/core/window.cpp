@@ -1,10 +1,9 @@
 #include "muon/core/window.hpp"
 
-#include "GLFW/glfw3.h"
-#include "muon/event/dispatcher.hpp"
-#include "muon/event/event.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "muon/event/dispatcher.hpp"
+#include "muon/event/event.hpp"
 
 namespace muon {
 

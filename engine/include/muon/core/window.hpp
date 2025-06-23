@@ -1,8 +1,8 @@
 #pragma once
 
 #include "muon/event/dispatcher.hpp"
-#include <string>
 #include <cstdint>
+#include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
