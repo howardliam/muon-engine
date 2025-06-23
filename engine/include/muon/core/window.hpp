@@ -10,31 +10,29 @@
 namespace muon {
 
     struct WindowSpecification {
-        std::string_view title;
+        event::Dispatcher *dispatcher;
         uint32_t width;
         uint32_t height;
-        event::Dispatcher *dispatcher;
+        std::string_view title;
     };
 
     class Window {
     public:
-        Window(const WindowSpecification &props);
+        Window(const WindowSpecification &spec);
         ~Window();
 
         void PollEvents() const;
 
         [[nodiscard]] VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const;
+        [[nodiscard]] const char *GetClipboardContents() const;
+        void RequestAttention() const;
 
     public:
         [[nodiscard]] GLFWwindow *Get() const;
-
         [[nodiscard]] VkExtent2D GetExtent() const;
         [[nodiscard]] uint32_t GetWidth() const;
         [[nodiscard]] uint32_t GetHeight() const;
         [[nodiscard]] uint32_t GetRefreshRate() const;
-
-        [[nodiscard]] const char *GetClipboardContents() const;
-
         [[nodiscard]] std::vector<const char *> GetRequiredExtensions() const;
 
     private:
