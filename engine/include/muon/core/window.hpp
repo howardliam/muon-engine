@@ -31,6 +31,7 @@ namespace muon {
         [[nodiscard]] VkExtent2D GetExtent() const;
         [[nodiscard]] uint32_t GetWidth() const;
         [[nodiscard]] uint32_t GetHeight() const;
+        [[nodiscard]] uint32_t GetRefreshRate() const;
 
         [[nodiscard]] const char *GetClipboardContents() const;
 
@@ -48,6 +49,7 @@ namespace muon {
             std::string title;
             uint32_t width;
             uint32_t height;
+            uint32_t refreshRate;
             bool rawMouseMotion = false;
         };
         WindowData m_data{};
