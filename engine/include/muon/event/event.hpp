@@ -2,6 +2,7 @@
 
 #include "muon/input/modifier.hpp"
 #include <cstdint>
+#include <vector>
 
 namespace muon::event {
 
@@ -12,15 +13,8 @@ namespace muon::event {
         uint32_t height;
     };
 
-    struct MouseButtonEvent {
-        int32_t button;
-        int32_t action;
-        input::Modifier mods;
-    };
-
-    struct MouseScrollEvent {
-        double xOffset;
-        double yOffset;
+    struct WindowFocusEvent {
+        bool focused;
     };
 
     struct KeyEvent {
@@ -30,9 +24,28 @@ namespace muon::event {
         input::Modifier mods;
     };
 
+    struct MouseButtonEvent {
+        int32_t button;
+        int32_t action;
+        input::Modifier mods;
+    };
+
     struct CursorPositionEvent {
         double x;
         double y;
+    };
+
+    struct CursorEnterEvent {
+        bool entered;
+    };
+
+    struct MouseScrollEvent {
+        double xOffset;
+        double yOffset;
+    };
+
+    struct FileDropEvent {
+        std::vector<const char *> paths;
     };
 
 }

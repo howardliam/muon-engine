@@ -62,6 +62,16 @@ namespace muon {
                 m_scriptManager->Run();
             }
         });
+
+        m_dispatcher.Subscribe<event::WindowFocusEvent>([&](const auto &event) {
+            if (!event.focused) {
+                m_window->RequestAttention();
+            }
+        });
+
+        m_dispatcher.Subscribe<event::FileDropEvent>([](const auto &event) {
+            MU_CORE_INFO("{}", event.paths);
+        });
     }
 
     Application::~Application() {
