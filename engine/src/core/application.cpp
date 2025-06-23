@@ -7,6 +7,7 @@
 #include "muon/event/event.hpp"
 #include "muon/graphics/device_context.hpp"
 #include <GLFW/glfw3.h>
+#include <limits>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
@@ -19,23 +20,19 @@ namespace muon {
 
         MU_CORE_INFO("creating application");
 
-        WindowSpecification windowSpec;
+        WindowSpecification windowSpec{};
         windowSpec.title = spec.name;
         windowSpec.dispatcher = &m_dispatcher;
 
         try {
             YAML::Node config = YAML::LoadFile("Muon.yaml");
-
             windowSpec.width = config["window"]["dimensions"]["width"].as<uint32_t>();
             windowSpec.height = config["window"]["dimensions"]["height"].as<uint32_t>();
         } catch (const std::exception &e) {
-            MU_CORE_ERROR("cannot find Muon.yaml config file!");
-
-            GLFWmonitor *primary = glfwGetPrimaryMonitor();
-            const GLFWvidmode *mode = glfwGetVideoMode(primary);
-
-            windowSpec.width = mode->width;
-            windowSpec.height = mode->height;
+            MU_CORE_ERROR("{}, using default values", e.what());
+            // set to rubbish so the window class knows the dimensions are bad
+            windowSpec.width = std::numeric_limits<uint32_t>().max();
+            windowSpec.height = std::numeric_limits<uint32_t>().max();
         }
 
         m_window = std::make_unique<Window>(windowSpec);

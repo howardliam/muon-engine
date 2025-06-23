@@ -11,8 +11,6 @@ namespace muon {
     Window::Window(const WindowSpecification &props) {
         m_data.dispatcher = props.dispatcher;
         m_data.title = props.title;
-        m_data.width = props.width;
-        m_data.height = props.height;
 
         glfwSetErrorCallback([](int32_t code, const char *message) {
             MU_CORE_ERROR(message);
@@ -23,6 +21,16 @@ namespace muon {
 
         auto vkSupported = glfwVulkanSupported();
         MU_CORE_ASSERT(vkSupported, "GLFW must support Vulkan");
+
+        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        m_data.refreshRate = mode->refreshRate;
+        if (props.width == std::numeric_limits<uint32_t>().max() || props.height == std::numeric_limits<uint32_t>().max()) {
+            m_data.width = (mode->width * 0.75);
+            m_data.height = (mode->height * 0.75);
+        } else {
+            m_data.width = props.width;
+            m_data.height = props.height;
+        }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
@@ -36,11 +44,14 @@ namespace muon {
         }
 
         ConfigureDispatchers();
+
+        MU_CORE_DEBUG("created window with dimensions: {}x{}", m_data.width, m_data.height);
     }
 
     Window::~Window() {
         glfwDestroyWindow(m_window);
         glfwTerminate();
+        MU_CORE_DEBUG("destroyed window");
     }
 
     void Window::PollEvents() const {
@@ -68,6 +79,10 @@ namespace muon {
 
     uint32_t Window::GetHeight() const {
         return m_data.height;
+    }
+
+    uint32_t Window::GetRefreshRate() const {
+        return m_data.refreshRate;
     }
 
     const char *Window::GetClipboardContents() const {
