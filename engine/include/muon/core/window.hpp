@@ -2,6 +2,7 @@
 
 #include "muon/event/dispatcher.hpp"
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -14,6 +15,7 @@ namespace muon {
         uint32_t width;
         uint32_t height;
         std::string_view title;
+        std::filesystem::path icon;
     };
 
     class Window {
