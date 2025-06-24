@@ -6,6 +6,7 @@
 #include "muon/debug/profiler.hpp"
 #include "muon/event/event.hpp"
 #include "muon/graphics/device_context.hpp"
+#include <fmt/ranges.h>
 #include <GLFW/glfw3.h>
 #include <limits>
 #include <memory>
@@ -70,7 +71,7 @@ namespace muon {
         });
 
         m_dispatcher.Subscribe<event::FileDropEvent>([](const auto &event) {
-            MU_CORE_INFO("{}", event.paths);
+            MU_CORE_INFO("{}", fmt::join(event.paths, ", "));
         });
     }
 
