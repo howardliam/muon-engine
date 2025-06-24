@@ -96,7 +96,7 @@ target_link_libraries(${LIB_NAME} PRIVATE
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
-    spdlog::spdlog_header_only
+    fmt::fmt spdlog::spdlog_header_only
     yaml-cpp::yaml-cpp
     glfw eventpp::eventpp
     Tracy::TracyClient

@@ -10,9 +10,8 @@ add_subdirectory(engine)
 add_subdirectory(editor)
 
 # logging
-set(SPDLOG_USE_STD_FORMAT ON FORCE)
+add_subdirectory(external/fmt)
 add_subdirectory(external/spdlog)
-set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # config formats
 add_subdirectory(external/yaml-cpp)
