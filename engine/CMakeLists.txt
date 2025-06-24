@@ -96,15 +96,13 @@ target_link_libraries(${LIB_NAME} PRIVATE
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
-    glfw
-    vulkan
-    VulkanMemoryAllocator
-    glm
-    Tracy::TracyClient
     spdlog::spdlog_header_only
-    eventpp::eventpp
-    lua sol2::sol2
     yaml-cpp::yaml-cpp
+    glfw eventpp::eventpp
+    Tracy::TracyClient
+    vulkan VulkanMemoryAllocator
+    glm
+    lua_static sol2::sol2
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

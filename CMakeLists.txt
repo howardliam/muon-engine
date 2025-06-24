@@ -37,7 +37,6 @@ add_subdirectory(external/eventpp)
 find_package(Vulkan REQUIRED)
 find_package(SPIRV-Tools REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
-add_subdirectory(external/vulkan-memory-allocator-hpp)
 
 # set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
 # set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
