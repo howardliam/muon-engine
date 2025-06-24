@@ -46,3 +46,6 @@
 [submodule "external/zstd"]
 	path = external/zstd
 	url = https://github.com/facebook/zstd
+[submodule "external/lua/src"]
+	path = external/lua/src
+	url = https://github.com/lua/lua
