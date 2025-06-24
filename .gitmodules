@@ -46,3 +46,6 @@
 [submodule "external/lua/src"]
 	path = external/lua/src
 	url = https://github.com/lua/lua
+[submodule "external/fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt
