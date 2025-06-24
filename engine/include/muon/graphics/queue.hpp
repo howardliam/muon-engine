@@ -27,11 +27,11 @@ namespace muon::gfx {
         [[nodiscard]] VkCommandPool GetCommandPool() const;
 
     private:
-        VkDevice m_device;
-        const char *m_name;
+        VkDevice m_device = nullptr;
+        const char *m_name = nullptr;
 
-        VkQueue m_queue;
-        VkCommandPool m_commandPool;
+        VkQueue m_queue = nullptr;
+        VkCommandPool m_commandPool = nullptr;
     };
 
 }

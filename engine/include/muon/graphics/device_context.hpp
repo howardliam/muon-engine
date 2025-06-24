@@ -52,21 +52,21 @@ namespace muon::gfx {
         void CreateAllocator();
 
     private:
-        VkInstance m_instance;
+        VkInstance m_instance = nullptr;
 
         #ifdef MU_DEBUG_ENABLED
-        VkDebugUtilsMessengerEXT m_debugMessenger;
+        VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;
         #endif
 
-        VkSurfaceKHR m_surface;
-        VkPhysicalDevice m_physicalDevice;
-        VkDevice m_device;
+        VkSurfaceKHR m_surface = nullptr;
+        VkPhysicalDevice m_physicalDevice = nullptr;
+        VkDevice m_device = nullptr;
 
-        std::unique_ptr<Queue> m_graphicsQueue;
-        std::unique_ptr<Queue> m_computeQueue;
-        std::unique_ptr<Queue> m_transferQueue;
+        std::unique_ptr<Queue> m_graphicsQueue = nullptr;
+        std::unique_ptr<Queue> m_computeQueue = nullptr;
+        std::unique_ptr<Queue> m_transferQueue = nullptr;
 
-        VmaAllocator m_allocator;
+        VmaAllocator m_allocator = nullptr;
     };
 
 }

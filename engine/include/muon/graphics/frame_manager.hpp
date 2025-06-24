@@ -34,7 +34,7 @@ namespace muon::gfx {
         const Window &m_window;
         const DeviceContext &m_deviceContext;
 
-        std::unique_ptr<Swapchain> m_swapchain;
+        std::unique_ptr<Swapchain> m_swapchain = nullptr;
         std::vector<VkCommandBuffer> m_commandBuffers;
 
         uint32_t m_currentImageIndex = 0;

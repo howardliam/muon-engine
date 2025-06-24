@@ -49,7 +49,7 @@ namespace muon::gfx {
     private:
         const DeviceContext &m_deviceContext;
 
-        VkSwapchainKHR m_swapchain;
+        VkSwapchainKHR m_swapchain = nullptr;
         std::shared_ptr<Swapchain> m_oldSwapchain = nullptr;
         VkExtent2D m_swapchainExtent;
 
