@@ -1,10 +1,10 @@
 #include "muon/core/window.hpp"
 
-#include "GLFW/glfw3.h"
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
+#include <GLFW/glfw3.h>
 
 namespace muon {
 
@@ -22,7 +22,7 @@ namespace muon {
         auto vkSupported = glfwVulkanSupported();
         MU_CORE_ASSERT(vkSupported, "GLFW must support Vulkan");
 
-        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        const auto *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         m_data.refreshRate = mode->refreshRate;
         if (spec.width == std::numeric_limits<uint32_t>().max() || spec.height == std::numeric_limits<uint32_t>().max()) {
             m_data.width = (mode->width * 0.75);
@@ -168,10 +168,10 @@ namespace muon {
         });
 
         /* misc events */
-        glfwSetDropCallback(m_window, [](GLFWwindow *window, int32_t pathcount, const char **paths) {
+        glfwSetDropCallback(m_window, [](GLFWwindow *window, int32_t pathCount, const char **paths) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::FileDropEvent>({
-                .paths = std::vector<const char *>(paths, paths + pathcount),
+                .paths = std::vector<const char *>(paths, paths + pathCount),
             });
         });
     }
