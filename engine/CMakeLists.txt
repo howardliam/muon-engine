@@ -96,18 +96,15 @@ target_link_libraries(${LIB_NAME} PRIVATE
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
-    # spirv-reflect-static glslang SPIRV
     glfw
     vulkan
     VulkanMemoryAllocator
     glm
     Tracy::TracyClient
-    # muon::imgui
     spdlog::spdlog_header_only
     eventpp::eventpp
     lua sol2::sol2
     yaml-cpp::yaml-cpp
-    # EnTT
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
