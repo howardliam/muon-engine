@@ -16,9 +16,6 @@
 [submodule "external/glslang"]
 	path = external/glslang
 	url = https://github.com/KhronosGroup/glslang
-[submodule "external/vulkan-memory-allocator-hpp"]
-	path = external/vulkan-memory-allocator-hpp
-	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp
 [submodule "external/spirv-reflect"]
 	path = external/spirv-reflect
 	url = https://github.com/KhronosGroup/SPIRV-Reflect
