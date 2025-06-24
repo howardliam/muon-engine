@@ -43,3 +43,6 @@
 [submodule "external/entt"]
 	path = external/entt
 	url = https://github.com/skypjack/entt
+[submodule "external/zstd"]
+	path = external/zstd
+	url = https://github.com/facebook/zstd
