@@ -3,6 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/window.hpp"
 #include "muon/core/log.hpp"
+#include "muon/graphics/device_extensions.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
@@ -233,40 +234,45 @@ namespace muon::gfx {
         vkEnumeratePhysicalDevices(m_instance, &deviceCount, physicalDevices.data());
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
-        if (physicalDevices.size() == 1) {
-            auto suitability = GpuSuitability::DetermineSuitability(
-                physicalDevices[0],
-                m_surface,
-                { constants::requiredDeviceExtensions.begin(), constants::requiredDeviceExtensions.end() }
-            );
+        GpuSpecification gpuSpec{};
+        gpuSpec.surface = m_surface;
+        gpuSpec.requiredDeviceExtensions = std::unordered_set<const char *>(constants::k_requiredDeviceExtensions.begin(), constants::k_requiredDeviceExtensions.end());
+        gpuSpec.optionalDeviceExtensions = std::unordered_set<const char *>(constants::k_optionalDeviceExtensions.begin(), constants::k_optionalDeviceExtensions.end());
 
-            if (suitability.IsSuitable()) {
+        if (physicalDevices.size() == 1) {
+            gpuSpec.physicalDevice = physicalDevices[0];
+            Gpu gpu(gpuSpec);
+
+            if (gpu.IsSuitable()) {
                 m_physicalDevice = physicalDevices[0];
+                m_enabledExtensions = gpu.GetSupportedExtensions();
             }
         } else {
-            std::vector<std::pair<GpuSuitability, VkPhysicalDevice>> suitabilities{};
+            std::vector<std::pair<Gpu, VkPhysicalDevice>> gpus{};
 
             for (const auto &physicalDevice : physicalDevices) {
-                auto suitability = GpuSuitability::DetermineSuitability(
-                    physicalDevice,
-                    m_surface,
-                    { constants::requiredDeviceExtensions.begin(), constants::requiredDeviceExtensions.end() }
-                );
+                gpuSpec.physicalDevice = physicalDevice;
+                Gpu gpu(gpuSpec);
 
-                if (suitability.IsSuitable()) {
-                    suitabilities.push_back({ suitability, physicalDevice });
+                if (gpu.IsSuitable()) {
+                    gpus.push_back({ gpu, physicalDevice });
                 }
             }
 
-            auto sort = [](const std::pair<GpuSuitability, VkPhysicalDevice> &a, const std::pair<GpuSuitability, VkPhysicalDevice> &b) {
-                return a.first.memorySize > b.first.memorySize;
+            auto sort = [](const std::pair<Gpu, VkPhysicalDevice> &a, const std::pair<Gpu, VkPhysicalDevice> &b) {
+                return a.first.GetMemorySize() > b.first.GetMemorySize();
             };
-            std::sort(suitabilities.begin(), suitabilities.end(), sort);
+            std::sort(gpus.begin(), gpus.end(), sort);
 
-            if (suitabilities.size() >= 1) {
-                auto &[_, physicalDevice] = suitabilities.front();
+            if (gpus.size() >= 1) {
+                auto &[gpu, physicalDevice] = gpus.front();
                 m_physicalDevice = physicalDevice;
+                m_enabledExtensions = gpu.GetSupportedExtensions();
             }
+        }
+
+        for (const auto &extension : m_enabledExtensions) {
+            MU_CORE_TRACE("extension: `{}` enabled", extension);
         }
 
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
@@ -350,12 +356,14 @@ namespace muon::gfx {
         vkGetPhysicalDeviceFeatures2(m_physicalDevice, &deviceFeatures);
         deviceFeatures.pNext = &indexingFeatures;
 
+        std::vector<const char *> enabledExtensions(m_enabledExtensions.begin(), m_enabledExtensions.end());
+
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount = queueCreateInfos.size();
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = constants::requiredDeviceExtensions.size();
-        createInfo.ppEnabledExtensionNames = constants::requiredDeviceExtensions.data();
+        createInfo.enabledExtensionCount = enabledExtensions.size();
+        createInfo.ppEnabledExtensionNames = enabledExtensions.data();
         createInfo.pNext = &deviceFeatures;
 
         auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);

@@ -2,35 +2,52 @@
 
 #include <string_view>
 #include <unordered_set>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
 
-    bool GpuSuitability::IsSuitable() const {
-        return coreRequirements == 0b1111;
+    Gpu::Gpu(const GpuSpecification& spec) {
+        DetermineSuitability(
+            spec.physicalDevice,
+            spec.surface,
+            spec.requiredDeviceExtensions,
+            spec.optionalDeviceExtensions
+        );
     }
 
-    GpuSuitability GpuSuitability::DetermineSuitability(
+    bool Gpu::IsSuitable() const {
+        return m_coreSuitabilities == 0b1111;
+    }
+
+    uint64_t Gpu::GetMemorySize() const {
+        return m_memorySize;
+    }
+
+    const std::unordered_set<const char *> &Gpu::GetSupportedExtensions() const {
+        return m_supportedExtensions;
+    }
+
+    void Gpu::DetermineSuitability(
         VkPhysicalDevice physicalDevice,
         VkSurfaceKHR surface,
-        const std::vector<const char *> &deviceExtensions
+        const std::unordered_set<const char *> &requiredDeviceExtensions,
+        const std::unordered_set<const char *> &optionalDeviceExtensions
     ) {
-        GpuSuitability suitability;
-
         VkPhysicalDeviceProperties2 deviceProperties{};
         deviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         vkGetPhysicalDeviceProperties2(physicalDevice, &deviceProperties);
 
         if (deviceProperties.properties.apiVersion >= VK_API_VERSION_1_3) {
-            suitability.coreRequirements.set(3);
+            m_coreSuitabilities.set(3);
         }
 
         if (deviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-            suitability.coreRequirements.set(2);
+            m_coreSuitabilities.set(2);
         }
 
         if (deviceProperties.properties.limits.maxPushConstantsSize >= 128) {
-            suitability.coreRequirements.set(1);
+            m_coreSuitabilities.set(1);
         }
 
         uint32_t availableExtensionCount{0};
@@ -38,13 +55,22 @@ namespace muon::gfx {
         std::vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
         vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableExtensionCount, availableExtensions.data());
 
-        std::unordered_set<std::string_view> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+        std::unordered_set<std::string_view> requiredExtensions(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
+        std::unordered_set<std::string_view> optionalExtensions(optionalDeviceExtensions.begin(), optionalDeviceExtensions.end());
         for (const auto &extension : availableExtensions) {
-            requiredExtensions.erase(extension.extensionName);
+            if (requiredExtensions.contains(extension.extensionName)) {
+                m_supportedExtensions.insert(extension.extensionName);
+                requiredExtensions.erase(extension.extensionName);
+            }
+
+            if (optionalExtensions.contains(extension.extensionName)) {
+                m_supportedExtensions.insert(extension.extensionName);
+                requiredExtensions.erase(extension.extensionName);
+            }
         }
 
         if (requiredExtensions.empty()) {
-            suitability.coreRequirements.set(0);
+            m_coreSuitabilities.set(0);
         }
 
         VkPhysicalDeviceMemoryProperties memoryProperties{};
@@ -52,11 +78,9 @@ namespace muon::gfx {
 
         for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; i++) {
             if (memoryProperties.memoryHeaps[i].flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
-                suitability.memorySize += memoryProperties.memoryHeaps[i].size;
+                m_memorySize += memoryProperties.memoryHeaps[i].size;
             }
         }
-
-        return suitability;
     }
 
 }
