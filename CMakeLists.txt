@@ -18,6 +18,9 @@ add_subdirectory(external/yaml-cpp)
 add_subdirectory(external/json)
 
 # compression
+set(ZLIB_LIBRARY zlib)
+set(ZLIB_INCLUDE_DIR external/zlib)
+add_subdirectory(external/zlib)
 add_subdirectory(external/zstd/build/cmake zstd)
 target_include_directories(zstd PUBLIC external/zstd/lib/)
 
