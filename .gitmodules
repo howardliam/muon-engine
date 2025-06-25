@@ -58,3 +58,6 @@
 [submodule "external/zlib"]
 	path = external/zlib
 	url = https://github.com/madler/zlib
+[submodule "external/vulkan"]
+	path = external/vulkan-headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers

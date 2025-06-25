@@ -100,7 +100,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     yaml-cpp::yaml-cpp
     glfw eventpp::eventpp
     Tracy::TracyClient
-    vulkan VulkanMemoryAllocator
+    Vulkan::Headers VulkanMemoryAllocator
     glm
     lua_static sol2::sol2
 )

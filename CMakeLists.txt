@@ -36,7 +36,7 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/eventpp)
 
 # graphics
-find_package(Vulkan REQUIRED)
+add_subdirectory(external/vulkan-headers)
 find_package(SPIRV-Tools REQUIRED)
 add_subdirectory(external/vulkan-memory-allocator)
 
