@@ -102,7 +102,6 @@ target_link_libraries(${LIB_NAME} PUBLIC
     Tracy::TracyClient
     Vulkan::Loader VulkanMemoryAllocator
     glm
-    lua_static sol2::sol2
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

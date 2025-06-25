@@ -25,9 +25,6 @@
 [submodule "external/eventpp"]
 	path = external/eventpp
 	url = https://github.com/wqking/eventpp
-[submodule "external/sol2"]
-	path = external/sol2
-	url = https://github.com/ThePhD/sol2
 [submodule "external/uuid"]
 	path = external/uuid
 	url = https://github.com/boostorg/uuid
@@ -40,9 +37,6 @@
 [submodule "external/zstd"]
 	path = external/zstd
 	url = https://github.com/facebook/zstd
-[submodule "external/lua/src"]
-	path = external/lua/src
-	url = https://github.com/lua/lua
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt

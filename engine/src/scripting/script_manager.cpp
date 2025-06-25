@@ -4,23 +4,12 @@
 
 namespace muon {
 
-    ScriptManager::ScriptManager() {
-        m_lua.open_libraries(sol::lib::base, sol::lib::package);
+    ScriptManager::ScriptManager() {}
 
-        auto test = []() {
-            MU_INFO("hello from Lua");
-        };
-
-        m_lua.set_function("hello", test);
-
-        m_script = m_lua.load_file("assets/scripts/test.lua");
-    }
-
-    ScriptManager::~ScriptManager() {
-    }
+    ScriptManager::~ScriptManager() {}
 
     void ScriptManager::Run() {
-        m_script();
+        MU_INFO("hello");
     }
 
 }

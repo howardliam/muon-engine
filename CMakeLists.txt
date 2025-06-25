@@ -47,10 +47,6 @@ add_subdirectory(external/vulkan-memory-allocator)
 # set(ALLOW_EXTERNAL_SPIRV_TOOLS ON FORCE)
 # add_subdirectory(external/glslang)
 
-# scripting
-add_subdirectory(external/lua)
-add_subdirectory(external/sol2)
-
 # maths
 set(GLM_ENABLE_CXX_20 ON FORCE)
 set(GLM_ENABLE_SIMD_AVX2 ON FORCE)
