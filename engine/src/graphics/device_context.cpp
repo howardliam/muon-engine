@@ -245,7 +245,10 @@ namespace muon::gfx {
 
             if (gpu.IsSuitable()) {
                 m_physicalDevice = physicalDevices[0];
-                m_enabledExtensions = gpu.GetSupportedExtensions();
+                auto supportedExtensions = gpu.GetSupportedExtensions();
+                for (const auto &extension : supportedExtensions) {
+                    m_enabledExtensions.insert(std::string(extension));
+                }
             }
         } else {
             std::vector<std::pair<Gpu, VkPhysicalDevice>> gpus{};
@@ -267,7 +270,10 @@ namespace muon::gfx {
             if (gpus.size() >= 1) {
                 auto &[gpu, physicalDevice] = gpus.front();
                 m_physicalDevice = physicalDevice;
-                m_enabledExtensions = gpu.GetSupportedExtensions();
+                auto supportedExtensions = gpu.GetSupportedExtensions();
+                for (const auto &extension : supportedExtensions) {
+                    m_enabledExtensions.insert(std::string(extension));
+                }
             }
         }
 
@@ -356,7 +362,11 @@ namespace muon::gfx {
         vkGetPhysicalDeviceFeatures2(m_physicalDevice, &deviceFeatures);
         deviceFeatures.pNext = &indexingFeatures;
 
-        std::vector<const char *> enabledExtensions(m_enabledExtensions.begin(), m_enabledExtensions.end());
+        std::vector<const char *> enabledExtensions;
+        enabledExtensions.reserve((m_enabledExtensions.size()));
+        for (const auto &extension : m_enabledExtensions) {
+            enabledExtensions.push_back(extension.c_str());
+        }
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

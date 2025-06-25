@@ -4,6 +4,7 @@
 #include "muon/graphics/queue.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
+#include <string>
 #include <unordered_set>
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
@@ -49,7 +50,7 @@ namespace muon::gfx {
         VkSurfaceKHR m_surface = nullptr;
 
         VkPhysicalDevice m_physicalDevice = nullptr;
-        std::unordered_set<const char *> m_enabledExtensions{};
+        std::unordered_set<std::string> m_enabledExtensions{};
 
         VkDevice m_device = nullptr;
 
