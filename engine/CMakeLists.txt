@@ -43,6 +43,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/event/event.hpp
 
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
+    ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
     ${INCLUDE_DIR}/muon/graphics/frame_manager.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
     ${INCLUDE_DIR}/muon/graphics/queue.hpp

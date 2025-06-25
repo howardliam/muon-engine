@@ -4,23 +4,10 @@
 #include "muon/graphics/queue.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
-#include <array>
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
 
 namespace muon::gfx {
-
-    namespace constants {
-
-        constexpr std::array<const char *, 5> requiredDeviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-            VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-            VK_EXT_MESH_SHADER_EXTENSION_NAME,
-        };
-
-    }
 
     struct DeviceContextSpecification {
         const Window *window;
