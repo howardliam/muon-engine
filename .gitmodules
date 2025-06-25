@@ -61,3 +61,6 @@
 [submodule "external/vulkan"]
 	path = external/vulkan-headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers
+[submodule "external/vulkan-loader"]
+	path = external/vulkan-loader
+	url = https://github.com/KhronosGroup/Vulkan-Loader

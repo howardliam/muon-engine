@@ -37,7 +37,7 @@ add_subdirectory(external/eventpp)
 
 # graphics
 add_subdirectory(external/vulkan-headers)
-find_package(SPIRV-Tools REQUIRED)
+add_subdirectory(external/vulkan-loader)
 add_subdirectory(external/vulkan-memory-allocator)
 
 # set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
