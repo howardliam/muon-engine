@@ -55,8 +55,7 @@ set(GLM_ENABLE_SIMD_AVX2 ON FORCE)
 add_subdirectory(external/glm)
 
 # assets
-# pkg_check_modules(SPNG REQUIRED spng)
-find_package(libjpeg-turbo REQUIRED)
+add_subdirectory(external/libspng)
 
 # misc
 add_subdirectory(external/entt)
