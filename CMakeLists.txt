@@ -46,7 +46,6 @@ add_subdirectory(external/vulkan-memory-allocator)
 
 # scripting
 add_subdirectory(external/lua)
-# pkg_check_modules(LuaJIT REQUIRED luajit)
 add_subdirectory(external/sol2)
 
 # maths
@@ -56,6 +55,10 @@ add_subdirectory(external/glm)
 
 # assets
 add_subdirectory(external/libspng)
+set(KTX_FEATURE_TESTS OFF CACHE BOOL "" FORCE)
+set(KTX_FEATURE_TOOLS OFF CACHE BOOL "" FORCE)
+set(KTX_FEATURE_GL_UPLOAD OFF FORCE)
+add_subdirectory(external/libktx)
 
 # misc
 add_subdirectory(external/entt)
