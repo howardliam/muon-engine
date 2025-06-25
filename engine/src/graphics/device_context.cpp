@@ -239,41 +239,29 @@ namespace muon::gfx {
         gpuSpec.requiredDeviceExtensions = std::unordered_set<const char *>(constants::k_requiredDeviceExtensions.begin(), constants::k_requiredDeviceExtensions.end());
         gpuSpec.optionalDeviceExtensions = std::unordered_set<const char *>(constants::k_optionalDeviceExtensions.begin(), constants::k_optionalDeviceExtensions.end());
 
-        if (physicalDevices.size() == 1) {
-            gpuSpec.physicalDevice = physicalDevices[0];
+        std::vector<std::pair<Gpu, VkPhysicalDevice>> gpus{};
+
+        for (const auto &physicalDevice : physicalDevices) {
+            gpuSpec.physicalDevice = physicalDevice;
             Gpu gpu(gpuSpec);
 
             if (gpu.IsSuitable()) {
-                m_physicalDevice = physicalDevices[0];
-                auto supportedExtensions = gpu.GetSupportedExtensions();
-                for (const auto &extension : supportedExtensions) {
-                    m_enabledExtensions.insert(std::string(extension));
-                }
+                gpus.push_back({ gpu, physicalDevice });
             }
-        } else {
-            std::vector<std::pair<Gpu, VkPhysicalDevice>> gpus{};
+        }
 
-            for (const auto &physicalDevice : physicalDevices) {
-                gpuSpec.physicalDevice = physicalDevice;
-                Gpu gpu(gpuSpec);
+        auto sort = [](const std::pair<Gpu, VkPhysicalDevice> &a, const std::pair<Gpu, VkPhysicalDevice> &b) {
+            // add system to determine how many optional extensions each device supports and sort by that too
+            return a.first.GetMemorySize() > b.first.GetMemorySize();
+        };
+        std::sort(gpus.begin(), gpus.end(), sort);
 
-                if (gpu.IsSuitable()) {
-                    gpus.push_back({ gpu, physicalDevice });
-                }
-            }
-
-            auto sort = [](const std::pair<Gpu, VkPhysicalDevice> &a, const std::pair<Gpu, VkPhysicalDevice> &b) {
-                return a.first.GetMemorySize() > b.first.GetMemorySize();
-            };
-            std::sort(gpus.begin(), gpus.end(), sort);
-
-            if (gpus.size() >= 1) {
-                auto &[gpu, physicalDevice] = gpus.front();
-                m_physicalDevice = physicalDevice;
-                auto supportedExtensions = gpu.GetSupportedExtensions();
-                for (const auto &extension : supportedExtensions) {
-                    m_enabledExtensions.insert(std::string(extension));
-                }
+        if (gpus.size() >= 1) {
+            auto &[gpu, physicalDevice] = gpus.front();
+            m_physicalDevice = physicalDevice;
+            auto supportedExtensions = gpu.GetSupportedExtensions();
+            for (const auto &extension : supportedExtensions) {
+                m_enabledExtensions.insert(std::string(extension));
             }
         }
 
