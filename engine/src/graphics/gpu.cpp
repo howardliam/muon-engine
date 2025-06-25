@@ -34,19 +34,18 @@ namespace muon::gfx {
         const std::unordered_set<const char *> &requiredDeviceExtensions,
         const std::unordered_set<const char *> &optionalDeviceExtensions
     ) {
-        VkPhysicalDeviceProperties2 deviceProperties{};
-        deviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        vkGetPhysicalDeviceProperties2(physicalDevice, &deviceProperties);
+        VkPhysicalDeviceProperties deviceProperties{};
+        vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
-        if (deviceProperties.properties.apiVersion >= VK_API_VERSION_1_3) {
+        if (deviceProperties.apiVersion >= VK_API_VERSION_1_3) {
             m_coreSuitabilities.set(3);
         }
 
-        if (deviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
             m_coreSuitabilities.set(2);
         }
 
-        if (deviceProperties.properties.limits.maxPushConstantsSize >= 128) {
+        if (deviceProperties.limits.maxPushConstantsSize >= 128) {
             m_coreSuitabilities.set(1);
         }
 
