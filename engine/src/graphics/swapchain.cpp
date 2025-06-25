@@ -180,7 +180,7 @@ namespace muon::gfx {
 
         uint32_t surfaceFormatCount = 0;
         result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, nullptr);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
         std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
         result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
@@ -190,7 +190,7 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
         std::vector<VkPresentModeKHR> presentModes(presentModeCount);
         result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, presentModes.data());
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present mode count");
 
         auto extent = selectExtent(capabilities, windowExtent);
         auto surfaceFormat = selectSurfaceFormat(surfaceFormats);
@@ -224,7 +224,7 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create the swapchain");
 
         result = vkGetSwapchainImagesKHR(m_deviceContext.GetDevice(), m_swapchain, &m_imageCount, nullptr);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain image count");
         m_swapchainImages.resize(m_imageCount);
         result = vkGetSwapchainImagesKHR(m_deviceContext.GetDevice(), m_swapchain, &m_imageCount, m_swapchainImages.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
