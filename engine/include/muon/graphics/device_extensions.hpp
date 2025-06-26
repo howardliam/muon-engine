@@ -13,8 +13,9 @@ namespace muon::gfx::constants {
         VK_EXT_MESH_SHADER_EXTENSION_NAME,
     };
 
-    constexpr std::array<const char *, 1> k_optionalDeviceExtensions = {
+    constexpr std::array<const char *, 2> k_optionalDeviceExtensions = {
         VK_AMD_DISPLAY_NATIVE_HDR_EXTENSION_NAME,
+        VK_EXT_HDR_METADATA_EXTENSION_NAME,
     };
 
 }
