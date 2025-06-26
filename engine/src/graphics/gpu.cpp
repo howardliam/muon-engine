@@ -65,7 +65,6 @@ namespace muon::gfx {
 
             if (optionalExtensions.contains(extension.extensionName)) {
                 m_supportedExtensions.insert(std::string(extension.extensionName));
-                requiredExtensions.erase(extension.extensionName);
             }
         }
 
