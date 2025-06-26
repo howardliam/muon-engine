@@ -1,7 +1,10 @@
 #include "muon/graphics/swapchain.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/base.hpp"
 #include "muon/core/log.hpp"
+#include <algorithm>
+#include <utility>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
@@ -159,16 +162,53 @@ namespace muon::gfx {
             }
         };
 
-        auto selectSurfaceFormat = [](const std::vector<VkSurfaceFormatKHR> &formats) -> VkSurfaceFormatKHR {
-            for (const auto& format : formats) {
-                if (format.format ==  VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                    return format;
+        auto selectSurfaceFormat = [](const std::vector<VkSurfaceFormat2KHR> &formats) -> VkSurfaceFormatKHR {
+            // order matters here, prefer HDR and A2R10G10B10 before falling back to R8G8B8A8 sRGB
+            const std::vector<std::pair<VkFormat, VkColorSpaceKHR>> preferredSurfaceFormats = {
+                { VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT },
+                { VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_BT2020_LINEAR_EXT },
+                { VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR },
+            };
+
+            uint32_t matchIndex = preferredSurfaceFormats.size(); // start at end of preferences vector
+            const VkSurfaceFormatKHR *surfaceFormatMatch = nullptr;
+
+            for (const auto &format : formats) {
+                for (uint32_t i = 0; i < preferredSurfaceFormats.size(); i++) {
+                    const auto &surfaceFormat = preferredSurfaceFormats[i];
+                    if (format.surfaceFormat.format == surfaceFormat.first && format.surfaceFormat.colorSpace == surfaceFormat.second) {
+                        if (i < matchIndex) {
+                            matchIndex = i;
+                            surfaceFormatMatch = &format.surfaceFormat;
+                        }
+                        break;
+                    }
                 }
             }
-            return formats[0];
+
+            MU_CORE_ASSERT(surfaceFormatMatch, "there must be a surface format match");
+
+            if (surfaceFormatMatch->format == VK_FORMAT_A2R10G10B10_UNORM_PACK32) {
+                MU_CORE_TRACE("format selected: A2R10G10B10");
+            } else {
+                MU_CORE_TRACE("format selected: R8G8B8A8");
+            }
+
+            if (surfaceFormatMatch->colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT) {
+                MU_CORE_TRACE("colour space selected: HDR10 ST2084");
+            } else if (surfaceFormatMatch->colorSpace == VK_COLOR_SPACE_BT2020_LINEAR_EXT) {
+                MU_CORE_TRACE("colour space selected: BT2020 Linear");
+            } else {
+                MU_CORE_TRACE("colour space selected: sRGB Nonlinear");
+            }
+
+            return *surfaceFormatMatch;
         };
 
         auto selectPresentMode = [](const std::vector<VkPresentModeKHR> &presentModes) -> VkPresentModeKHR {
+            auto it = std::ranges::find_if(presentModes, [](const VkPresentModeKHR &mode) { return mode == VK_PRESENT_MODE_IMMEDIATE_KHR; });
+            if (it != presentModes.end()) { return *it; }
+
             return VK_PRESENT_MODE_FIFO_KHR;
         };
 
@@ -178,11 +218,18 @@ namespace muon::gfx {
         result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &capabilities);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface capabilities");
 
+        VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
+        surfaceInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
+        surfaceInfo.surface = m_deviceContext.GetSurface();
+
         uint32_t surfaceFormatCount = 0;
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, nullptr);
+        result = vkGetPhysicalDeviceSurfaceFormats2KHR(m_deviceContext.GetPhysicalDevice(), &surfaceInfo, &surfaceFormatCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
-        std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
+        std::vector<VkSurfaceFormat2KHR> surfaceFormats(surfaceFormatCount);
+        for (auto &format : surfaceFormats) {
+            format.sType = VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR;
+        }
+        result = vkGetPhysicalDeviceSurfaceFormats2KHR(m_deviceContext.GetPhysicalDevice(), &surfaceInfo, &surfaceFormatCount, surfaceFormats.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
 
         uint32_t presentModeCount = 0;
