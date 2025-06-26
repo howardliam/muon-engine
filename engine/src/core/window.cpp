@@ -130,7 +130,7 @@ namespace muon {
                 .key = key,
                 .scancode = scancode,
                 .action = action,
-                .mods = mods,
+                .mods = input::Modifier(mods),
             });
         });
 
@@ -140,7 +140,7 @@ namespace muon {
             data.dispatcher->Dispatch<event::MouseButtonEvent>({
                 .button = button,
                 .action = action,
-                .mods = mods,
+                .mods = input::Modifier(mods),
             });
         });
 
