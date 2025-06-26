@@ -43,9 +43,7 @@ namespace muon::gfx {
     private:
         VkInstance m_instance = nullptr;
 
-        #ifdef MU_DEBUG_ENABLED
         VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;
-        #endif
 
         VkSurfaceKHR m_surface = nullptr;
 

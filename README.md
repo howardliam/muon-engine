@@ -24,6 +24,7 @@ Add as a git submodule and link to the required libraries.
 | classes, structs | named in PascalCase: `FileManager`, `MaterialInfo` |
 | functions, methods | named in PascalCase: `RenderModel()` |
 | variables, lambdas | named in camelCase: `fileIndex` |
+| global constants | name begins with `k_`, e.g.: `constexpr uint64_t k_version = 3.14;` |
 | static variables | name begins with `s_`, e.g.: `static tracy::VkCtx *s_tracyContext;` |
 | member variables | name begins with `m_`, e.g.: `Device &m_device;` |
 | pointers, references | `*` and `&` must be on the variable name, e.g.: `const std::vector<uint8_t> &data;` |
@@ -36,20 +37,19 @@ Add as a git submodule and link to the required libraries.
 | commits | commits should follow the [Conventional Commits Spec](https://www.conventionalcommits.org/en/v1.0.0/), post 2025-05-24 |
 
 ## Attributions
-- SPIRV-Reflect
-- glslang
-- SPIRV-Tools
-- GLFW
-- Vulkan
-- Vulkan Memory Allocator
-- Vulkan Memory Allocator Hpp
-- GLM
-- Tracy
-- spdlog
-- ImGui
-- eventpp
-- Lua
-- sol2
-- yaml-cpp
-- libspng
-- libjpeg-turbo
+- fmtlib/fmt
+- gabime/spdlog
+- jbeder/yaml-cpp
+- nlohmann/json
+- madler/zlib
+- facebook/zstd
+- wolfpld/tracy
+- glfw/glfw
+- wqking/eventpp
+- KhronosGroup/Vulkan-Headers
+- KhronosGroup/Vulkan-Loader
+- GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+- g-truc/glm
+- randy408/libspng
+- KhronosGroup/KTX-Software
+- skypjack/entt
