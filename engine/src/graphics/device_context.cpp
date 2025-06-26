@@ -10,8 +10,10 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <ios>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <vector>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
@@ -229,9 +231,11 @@ namespace muon::gfx {
 
     void DeviceContext::SelectPhysicalDevice() {
         uint32_t deviceCount;
-        vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+        auto result = vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get available GPU count");
         std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-        vkEnumeratePhysicalDevices(m_instance, &deviceCount, physicalDevices.data());
+        result = vkEnumeratePhysicalDevices(m_instance, &deviceCount, physicalDevices.data());
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to available get GPUs");
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
         GpuSpecification gpuSpec{};
@@ -274,6 +278,13 @@ namespace muon::gfx {
         MU_CORE_ASSERT(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
         MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
 
+        for (const auto &family : queueInfo.GetFamilyInfo()) {
+            MU_CORE_TRACE("queue count: {}", family.queueCount);
+            MU_CORE_TRACE("present capable: {}", (std::stringstream() << std::boolalpha << family.IsPresentCapable()).str());
+            MU_CORE_TRACE("graphics capable: {}", (std::stringstream() << std::boolalpha << family.IsGraphicsCapable()).str());
+            MU_CORE_TRACE("compute capable: {}", (std::stringstream() << std::boolalpha << family.IsComputeCapable()).str());
+            MU_CORE_TRACE("transfer capable: {}", (std::stringstream() << std::boolalpha << family.IsTransferCapable()).str());
+        }
         const auto queueFamilies = queueInfo.GetFamilyInfo();
 
         auto graphicsFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsGraphicsCapable(); });
