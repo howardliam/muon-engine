@@ -39,7 +39,7 @@ Add as a git submodule and link to the required libraries.
 ## Attributions
 - fmtlib/fmt
 - gabime/spdlog
-- yaml-cpp
+- jbeder/yaml-cpp
 - nlohmann/json
 - madler/zlib
 - facebook/zstd
