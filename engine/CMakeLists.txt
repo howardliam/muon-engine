@@ -93,7 +93,7 @@ add_library(muon::engine ALIAS ${LIB_NAME})
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE
-    Vulkan::Headers
+    
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
@@ -101,7 +101,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     yaml-cpp::yaml-cpp
     glfw eventpp::eventpp
     Tracy::TracyClient
-    Vulkan::Loader VulkanMemoryAllocator
+    Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator
     glm
 )
 
