@@ -32,14 +32,15 @@ namespace muon::gfx {
         [[nodiscard]] size_t GetImageCount() const;
 
         [[nodiscard]] VkSwapchainKHR GetSwapchain() const;
-        [[nodiscard]] VkFormat GetSwapchainImageFormat() const;
+        [[nodiscard]] VkFormat GetImageFormat() const;
+        [[nodiscard]] bool IsImageHdr() const;
         [[nodiscard]] VkImage GetImage(int32_t index) const;
         [[nodiscard]] VkImageView GetImageView(int32_t index) const;
 
         [[nodiscard]] VkExtent2D GetExtent() const;
         [[nodiscard]] uint32_t GetWidth() const;
         [[nodiscard]] uint32_t GetHeight() const;
-        [[nodiscard]] float GetExtentAspectRatio() const;
+        [[nodiscard]] float GetAspectRatio() const;
 
     private:
         void CreateSwapchain(const VkExtent2D windowExtent, VkSwapchainKHR oldSwapchain);
@@ -56,6 +57,7 @@ namespace muon::gfx {
         uint32_t m_imageCount;
 
         VkFormat m_swapchainImageFormat;
+        VkColorSpaceKHR m_swapchainColorSpace;
         std::vector<VkImage> m_swapchainImages{};
         std::vector<VkImageView> m_swapchainImageViews{};
 

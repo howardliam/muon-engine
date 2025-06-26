@@ -116,8 +116,22 @@ namespace muon::gfx {
         return m_swapchain;
     }
 
-    VkFormat Swapchain::GetSwapchainImageFormat() const {
+    VkFormat Swapchain::GetImageFormat() const {
         return m_swapchainImageFormat;
+    }
+
+    bool Swapchain::IsImageHdr() const {
+        switch (m_swapchainColorSpace) {
+            case VK_COLOR_SPACE_BT2020_LINEAR_EXT:
+            case VK_COLOR_SPACE_HDR10_ST2084_EXT:
+            case VK_COLOR_SPACE_DISPLAY_NATIVE_AMD: {
+                return true;
+            }
+
+            default: {
+                return false;
+            }
+        }
     }
 
     VkImage Swapchain::GetImage(int32_t index) const {
@@ -140,7 +154,7 @@ namespace muon::gfx {
         return m_swapchainExtent.height;
     }
 
-    float Swapchain::GetExtentAspectRatio() const {
+    float Swapchain::GetAspectRatio() const {
         return static_cast<float>(m_swapchainExtent.width) / m_swapchainExtent.height;
     }
 
@@ -276,6 +290,7 @@ namespace muon::gfx {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
 
         m_swapchainImageFormat = surfaceFormat.format;
+        m_swapchainColorSpace = surfaceFormat.colorSpace;
         m_swapchainExtent = extent;
     }
 
