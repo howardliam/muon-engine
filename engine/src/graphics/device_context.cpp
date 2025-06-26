@@ -5,6 +5,7 @@
 #include "muon/core/log.hpp"
 #include "muon/graphics/device_extensions.hpp"
 #include "muon/graphics/gpu.hpp"
+#include "muon/graphics/instance_extensions.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
 #include <algorithm>
@@ -153,6 +154,7 @@ namespace muon::gfx {
 
     void DeviceContext::CreateInstance(const Window &window) {
         auto extensions = window.GetRequiredExtensions();
+        extensions.insert(extensions.end(), constants::k_requiredInstanceExtensions.begin(), constants::k_requiredInstanceExtensions.end());
 
         #ifdef MU_DEBUG_ENABLED
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -203,6 +205,10 @@ namespace muon::gfx {
 
         auto result = vkCreateInstance(&createInfo, nullptr, &m_instance);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create instance");
+
+        for (const auto& extension : extensions) {
+            MU_CORE_TRACE("instance extension: `{}` enabled", extension);
+        }
     }
 
     void DeviceContext::CreateDebugMessenger() {
@@ -263,7 +269,7 @@ namespace muon::gfx {
         }
 
         for (const auto &extension : m_enabledExtensions) {
-            MU_CORE_TRACE("extension: `{}` enabled", extension);
+            MU_CORE_TRACE("device extension: `{}` enabled", extension);
         }
 
         MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
