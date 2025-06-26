@@ -285,6 +285,7 @@ namespace muon::gfx {
         MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
 
         for (const auto &family : queueInfo.GetFamilyInfo()) {
+            if (family.queueCount < 1) { continue; }
             MU_CORE_TRACE("queue count: {}", family.queueCount);
             MU_CORE_TRACE("present capable: {}", (std::stringstream() << std::boolalpha << family.IsPresentCapable()).str());
             MU_CORE_TRACE("graphics capable: {}", (std::stringstream() << std::boolalpha << family.IsGraphicsCapable()).str());
@@ -299,13 +300,13 @@ namespace muon::gfx {
 
         auto computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeDedicated(); });
         if (computeFamily == queueFamilies.end()) {
-            computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeCapable(); });
+            computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeCapable() && info.queueCount > 1; });
         }
         MU_CORE_ASSERT(computeFamily != queueFamilies.end(), "there must be a compute capable queue family");
 
         auto transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferDedicated(); });
         if (transferFamily == queueFamilies.end()) {
-            transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferCapable(); });
+            transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferCapable() && info.queueCount > 1; });
         }
         MU_CORE_ASSERT(transferFamily != queueFamilies.end(), "there must be a transfer capable queue family");
 
