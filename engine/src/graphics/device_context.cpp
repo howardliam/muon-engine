@@ -259,10 +259,7 @@ namespace muon::gfx {
         if (gpus.size() >= 1) {
             auto &[gpu, physicalDevice] = gpus.front();
             m_physicalDevice = physicalDevice;
-            auto supportedExtensions = gpu.GetSupportedExtensions();
-            for (const auto &extension : supportedExtensions) {
-                m_enabledExtensions.insert(std::string(extension));
-            }
+            m_enabledExtensions = gpu.GetSupportedExtensions();
         }
 
         for (const auto &extension : m_enabledExtensions) {

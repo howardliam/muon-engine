@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <string>
 #include <unordered_set>
 #include <vulkan/vulkan_core.h>
 
@@ -21,7 +22,7 @@ namespace muon::gfx {
     public:
         [[nodiscard]] bool IsSuitable() const;
         [[nodiscard]] uint64_t GetMemorySize() const;
-        [[nodiscard]] const std::unordered_set<const char *> &GetSupportedExtensions() const;
+        [[nodiscard]] const std::unordered_set<std::string> &GetSupportedExtensions() const;
 
     private:
         void DetermineSuitability(
@@ -34,7 +35,7 @@ namespace muon::gfx {
     private:
         std::bitset<4> m_coreSuitabilities = 0;
         uint64_t m_memorySize = 0;
-        std::unordered_set<const char *> m_supportedExtensions{};
+        std::unordered_set<std::string> m_supportedExtensions{};
     };
 
 }

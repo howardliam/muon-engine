@@ -1,5 +1,6 @@
 #include "muon/graphics/gpu.hpp"
 
+#include "muon/core/log.hpp"
 #include <string_view>
 #include <unordered_set>
 #include <vector>
@@ -24,7 +25,7 @@ namespace muon::gfx {
         return m_memorySize;
     }
 
-    const std::unordered_set<const char *> &Gpu::GetSupportedExtensions() const {
+    const std::unordered_set<std::string> &Gpu::GetSupportedExtensions() const {
         return m_supportedExtensions;
     }
 
@@ -58,12 +59,12 @@ namespace muon::gfx {
         std::unordered_set<std::string_view> optionalExtensions(optionalDeviceExtensions.begin(), optionalDeviceExtensions.end());
         for (const auto &extension : availableExtensions) {
             if (requiredExtensions.contains(extension.extensionName)) {
-                m_supportedExtensions.insert(extension.extensionName);
+                m_supportedExtensions.insert(std::string(extension.extensionName));
                 requiredExtensions.erase(extension.extensionName);
             }
 
             if (optionalExtensions.contains(extension.extensionName)) {
-                m_supportedExtensions.insert(extension.extensionName);
+                m_supportedExtensions.insert(std::string(extension.extensionName));
                 requiredExtensions.erase(extension.extensionName);
             }
         }
