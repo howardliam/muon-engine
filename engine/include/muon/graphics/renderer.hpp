@@ -23,6 +23,8 @@ namespace muon::gfx {
         void EndFrame();
         void PresentFrame();
 
+        void RebuildSwapchain();
+
     public:
         [[nodiscard]] bool HasHdrSupport() const;
         [[nodiscard]] const std::unordered_set<VkColorSpaceKHR> &GetAvailableHdrColorSpaces() const;

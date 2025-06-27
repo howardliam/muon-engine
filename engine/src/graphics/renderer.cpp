@@ -71,6 +71,11 @@ namespace muon::gfx {
         m_currentFrameIndex = (m_currentFrameIndex + 1) % constants::maxFramesInFlight;
     }
 
+    void Renderer::RebuildSwapchain() {
+        MU_CORE_ASSERT(!m_frameInProgress, "cannot rebuild swapchain while frame is in progress");
+        CreateSwapchain();
+    }
+
     bool Renderer::HasHdrSupport() const {
         return m_hdrSupport;
     }
