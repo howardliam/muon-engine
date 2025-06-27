@@ -80,32 +80,24 @@ namespace muon::gfx {
         return m_hdrSupport;
     }
 
-    const std::unordered_set<VkColorSpaceKHR> &Renderer::GetAvailableHdrColorSpaces() const {
-        return m_availableHdrColorSpaces;
+    const std::vector<VkSurfaceFormatKHR> &Renderer::GetAvailableHdrSurfaceFormats() const {
+        return m_availableHdrSurfaceFormats;
     }
 
-    const std::unordered_set<VkColorSpaceKHR> &Renderer::GetAvailableSdrColorSpaces() const {
-        return m_availableSdrColorSpaces;
+    const std::vector<VkSurfaceFormatKHR> &Renderer::GetAvailableSdrSurfaceFormats() const {
+        return m_availableSdrSurfaceFormats;
     }
 
-    void Renderer::SetColorSpace(VkColorSpaceKHR colorSpace) {
-        MU_CORE_ASSERT(m_availableHdrColorSpaces.contains(colorSpace) || m_availableSdrColorSpaces.contains(colorSpace), "the color space must be available");
+    bool Renderer::IsHdrEnabled() const {
+        return m_hdrEnabled;
+    }
 
-        if (m_availableHdrColorSpaces.contains(colorSpace)) {
-            if (m_availableHdrFormats.contains(VK_FORMAT_A2R10G10B10_UNORM_PACK32)) {
-                m_selectedFormat = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
-            } else {
-                m_selectedFormat = *m_availableHdrFormats.begin();
-            }
-        } else if (m_availableSdrColorSpaces.contains(colorSpace)) {
-            if (m_availableSdrFormats.contains(VK_FORMAT_R8G8B8A8_SRGB)) {
-                m_selectedFormat = VK_FORMAT_R8G8B8A8_SRGB;
-            } else {
-                m_selectedFormat = *m_availableSdrFormats.begin();
-            }
+    VkSurfaceFormatKHR Renderer::GetActiveSurfaceFormat() const {
+        if (m_hdrEnabled) {
+            return m_availableHdrSurfaceFormats[m_activeSurfaceFormat];
+        } else {
+            return m_availableSdrSurfaceFormats[m_activeSurfaceFormat];
         }
-
-        m_selectedColorSpace = colorSpace;
     }
 
     const std::unordered_set<VkPresentModeKHR> &Renderer::GetAvailablePresentModes() const {
@@ -125,24 +117,25 @@ namespace muon::gfx {
         result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
 
-        bool hdrColorSpace = false;
-        bool hdrFormat = false;
 
         for (const auto &surfaceFormat : surfaceFormats) {
+            bool candidateColorSpace = false;
+            bool hdrColorSpace = false;
+
             switch (surfaceFormat.colorSpace) {
                 case VK_COLOR_SPACE_BT2020_LINEAR_EXT:
                 case VK_COLOR_SPACE_HDR10_ST2084_EXT:
                 case VK_COLOR_SPACE_HDR10_HLG_EXT:
                 case VK_COLOR_SPACE_DISPLAY_NATIVE_AMD: {
                     hdrColorSpace = true;
-                    m_availableHdrColorSpaces.insert(surfaceFormat.colorSpace);
+                    candidateColorSpace = true;
                     break;
                 }
 
                 case VK_COLOR_SPACE_BT709_NONLINEAR_EXT:
                 case VK_COLOR_SPACE_BT709_LINEAR_EXT:
                 case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: {
-                    m_availableSdrColorSpaces.insert(surfaceFormat.colorSpace);
+                    candidateColorSpace = true;
                     break;
                 }
 
@@ -151,33 +144,40 @@ namespace muon::gfx {
                 }
             }
 
-            switch (surfaceFormat.format) {
-                case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-                case VK_FORMAT_R16G16B16A16_SFLOAT: {
-                    hdrFormat = true;
-                    m_availableHdrFormats.insert(surfaceFormat.format);
-                    break;
-                }
+            if (candidateColorSpace) {
+                if (hdrColorSpace) {
+                    switch (surfaceFormat.format) {
+                        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+                        case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+                        case VK_FORMAT_R16G16B16A16_UNORM:
+                        case VK_FORMAT_R16G16B16A16_SFLOAT: {
+                            m_availableHdrSurfaceFormats.push_back(surfaceFormat);
+                            break;
+                        }
 
-                case VK_FORMAT_R8G8B8A8_UNORM: {
-                    m_availableSdrFormats.insert(surfaceFormat.format);
-                    break;
-                }
+                        default: {
+                            break;
+                        }
+                    }
+                } else {
+                    switch (surfaceFormat.format) {
+                        case VK_FORMAT_R8G8B8A8_SRGB:
+                        case VK_FORMAT_B8G8R8A8_SRGB: {
+                            m_availableSdrSurfaceFormats.push_back(surfaceFormat);
+                            break;
+                        }
 
-                default: {
-                    break;
+                        default: {
+                            break;
+                        }
+                    }
                 }
             }
         }
 
-        if (hdrColorSpace && hdrFormat) {
+        if (!m_availableHdrSurfaceFormats.empty()) {
             m_hdrSupport = true;
-        }
-
-        if (m_hdrSupport) {
-            SetColorSpace(*m_availableHdrColorSpaces.begin());
-        } else {
-            SetColorSpace(*m_availableSdrColorSpaces.begin());
+            m_hdrEnabled = true;
         }
     }
 
@@ -213,12 +213,14 @@ namespace muon::gfx {
     }
 
     void Renderer::CreateSwapchain() {
+        const auto &surfaceFormat = GetActiveSurfaceFormat();
+
         SwapchainSpecification swapchainSpec{};
         swapchainSpec.deviceContext = &m_deviceContext;
         swapchainSpec.windowExtent = m_window.GetExtent();
-        swapchainSpec.colorSpace = m_selectedColorSpace;
+        swapchainSpec.colorSpace = surfaceFormat.colorSpace;
+        swapchainSpec.format = surfaceFormat.format;
         swapchainSpec.presentMode = m_selectedPresentMode;
-        swapchainSpec.format = m_selectedFormat;
 
         if (m_swapchain == nullptr) {
             swapchainSpec.oldSwapchain = nullptr;

@@ -27,9 +27,10 @@ namespace muon::gfx {
 
     public:
         [[nodiscard]] bool HasHdrSupport() const;
-        [[nodiscard]] const std::unordered_set<VkColorSpaceKHR> &GetAvailableHdrColorSpaces() const;
-        [[nodiscard]] const std::unordered_set<VkColorSpaceKHR> &GetAvailableSdrColorSpaces() const;
-        void SetColorSpace(VkColorSpaceKHR colorSpace);
+        [[nodiscard]] const std::vector<VkSurfaceFormatKHR> &GetAvailableHdrSurfaceFormats() const;
+        [[nodiscard]] const std::vector<VkSurfaceFormatKHR> &GetAvailableSdrSurfaceFormats() const;
+        [[nodiscard]] bool IsHdrEnabled() const;
+        [[nodiscard]] VkSurfaceFormatKHR GetActiveSurfaceFormat() const;
 
         [[nodiscard]] const std::unordered_set<VkPresentModeKHR> &GetAvailablePresentModes() const;
         void SetPresentMode(VkPresentModeKHR presentMode);
@@ -45,12 +46,10 @@ namespace muon::gfx {
         const DeviceContext &m_deviceContext;
 
         bool m_hdrSupport = false;
-        std::unordered_set<VkColorSpaceKHR> m_availableHdrColorSpaces{};
-        std::unordered_set<VkColorSpaceKHR> m_availableSdrColorSpaces{};
-        VkColorSpaceKHR m_selectedColorSpace;
-        std::unordered_set<VkFormat> m_availableHdrFormats{};
-        std::unordered_set<VkFormat> m_availableSdrFormats{};
-        VkFormat m_selectedFormat;
+        std::vector<VkSurfaceFormatKHR> m_availableHdrSurfaceFormats{};
+        std::vector<VkSurfaceFormatKHR> m_availableSdrSurfaceFormats{};
+        bool m_hdrEnabled = false;
+        uint32_t m_activeSurfaceFormat = 0;
 
         std::unordered_set<VkPresentModeKHR> m_availablePresentModes{};
         VkPresentModeKHR m_selectedPresentMode;
