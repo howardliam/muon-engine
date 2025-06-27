@@ -64,10 +64,9 @@ namespace muon {
             }
         });
 
-        m_dispatcher.Subscribe<event::WindowFocusEvent>([&](const auto &event) {
-            if (!event.focused) {
-                m_window->RequestAttention();
-            }
+        m_dispatcher.Subscribe<event::WindowResizeEvent>([&](const auto &event) {
+            vkQueueWaitIdle(m_deviceContext->GetGraphicsQueue().Get());
+            m_renderer->RebuildSwapchain();
         });
 
         m_dispatcher.Subscribe<event::FileDropEvent>([](const auto &event) {
