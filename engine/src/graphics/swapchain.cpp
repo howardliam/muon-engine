@@ -215,6 +215,11 @@ namespace muon::gfx {
     void Swapchain::CreateImageViews() {
         m_swapchainImageViews.resize(m_imageCount);
 
+        bool swizzleRB = false;
+        if (m_swapchainFormat == VK_FORMAT_B8G8R8A8_SRGB || m_swapchainFormat == VK_FORMAT_A2B10G10R10_UNORM_PACK32) {
+            swizzleRB = true;
+        }
+
         for (size_t i = 0; i < m_imageCount; i++) {
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -222,9 +227,9 @@ namespace muon::gfx {
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             createInfo.format = m_swapchainFormat;
 
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+            createInfo.components.r = swizzleRB ? VK_COMPONENT_SWIZZLE_B : VK_COMPONENT_SWIZZLE_R;
             createInfo.components.g = VK_COMPONENT_SWIZZLE_G;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+            createInfo.components.b = swizzleRB ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_B;
             createInfo.components.a = VK_COMPONENT_SWIZZLE_A;
 
             createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
