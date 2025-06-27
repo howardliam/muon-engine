@@ -148,9 +148,7 @@ namespace muon::gfx {
                 if (hdrColorSpace) {
                     switch (surfaceFormat.format) {
                         case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-                        case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-                        case VK_FORMAT_R16G16B16A16_UNORM:
-                        case VK_FORMAT_R16G16B16A16_SFLOAT: {
+                        case VK_FORMAT_A2R10G10B10_UNORM_PACK32: {
                             m_availableHdrSurfaceFormats.push_back(surfaceFormat);
                             break;
                         }
