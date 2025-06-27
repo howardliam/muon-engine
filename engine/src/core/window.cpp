@@ -109,7 +109,11 @@ namespace muon {
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
-            const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+            auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+
+            data.width = static_cast<uint32_t>(width);
+            data.height = static_cast<uint32_t>(height);
+
             data.dispatcher->Dispatch<event::WindowResizeEvent>({
                 .width = static_cast<uint32_t>(width),
                 .height = static_cast<uint32_t>(height),
