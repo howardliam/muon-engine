@@ -44,11 +44,11 @@ set(HEADER_FILES
 
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
-    ${INCLUDE_DIR}/muon/graphics/frame_manager.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
     ${INCLUDE_DIR}/muon/graphics/instance_extensions.hpp
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
     ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
+    ${INCLUDE_DIR}/muon/graphics/renderer.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
 
     ${INCLUDE_DIR}/muon/input/key.hpp
@@ -71,10 +71,10 @@ set(SRC_FILES
     ${SRC_DIR}/debug/profiler.cpp
 
     ${SRC_DIR}/graphics/device_context.cpp
-    ${SRC_DIR}/graphics/frame_manager.cpp
     ${SRC_DIR}/graphics/gpu.cpp
     ${SRC_DIR}/graphics/queue.cpp
     ${SRC_DIR}/graphics/queue_info.cpp
+    ${SRC_DIR}/graphics/renderer.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
 
     ${SRC_DIR}/input/modifier.cpp
@@ -94,7 +94,7 @@ add_library(muon::engine ALIAS ${LIB_NAME})
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PRIVATE
-    
+
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC

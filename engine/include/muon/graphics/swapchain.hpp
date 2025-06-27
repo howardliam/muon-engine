@@ -16,6 +16,9 @@ namespace muon::gfx {
     struct SwapchainSpecification {
         const DeviceContext *deviceContext;
         VkExtent2D windowExtent;
+        VkColorSpaceKHR colorSpace;
+        VkFormat format;
+        VkPresentModeKHR presentMode;
         VkSwapchainKHR oldSwapchain;
     };
 
@@ -26,13 +29,12 @@ namespace muon::gfx {
 
         [[nodiscard]] VkResult AcquireNextImage(uint32_t *imageIndex);
         [[nodiscard]] VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
-        [[nodiscard]] bool CompareSwapFormats(const Swapchain &other) const;
 
     public:
         [[nodiscard]] size_t GetImageCount() const;
 
         [[nodiscard]] VkSwapchainKHR GetSwapchain() const;
-        [[nodiscard]] VkFormat GetImageFormat() const;
+        [[nodiscard]] VkFormat GetFormat() const;
         [[nodiscard]] bool IsImageHdr() const;
         [[nodiscard]] VkImage GetImage(int32_t index) const;
         [[nodiscard]] VkImageView GetImageView(int32_t index) const;
@@ -43,7 +45,7 @@ namespace muon::gfx {
         [[nodiscard]] float GetAspectRatio() const;
 
     private:
-        void CreateSwapchain(const VkExtent2D windowExtent, VkSwapchainKHR oldSwapchain);
+        void CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presentMode, VkSwapchainKHR oldSwapchain);
         void CreateImageViews();
         void CreateSyncObjects();
 
@@ -56,7 +58,7 @@ namespace muon::gfx {
 
         uint32_t m_imageCount;
 
-        VkFormat m_swapchainImageFormat;
+        VkFormat m_swapchainFormat;
         VkColorSpaceKHR m_swapchainColorSpace;
         std::vector<VkImage> m_swapchainImages{};
         std::vector<VkImageView> m_swapchainImageViews{};

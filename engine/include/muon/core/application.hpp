@@ -4,7 +4,7 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/graphics/device_context.hpp"
-#include "muon/graphics/frame_manager.hpp"
+#include "muon/graphics/renderer.hpp"
 #include "muon/scripting/script_manager.hpp"
 #include <cstdint>
 #include <filesystem>
@@ -47,15 +47,15 @@ namespace muon {
     private:
         event::Dispatcher m_dispatcher;
 
-        std::unique_ptr<Window> m_window;
-        std::unique_ptr<gfx::DeviceContext> m_deviceContext;
-        std::unique_ptr<gfx::FrameManager> m_frameManager;
+        std::unique_ptr<Window> m_window = nullptr;
+        std::unique_ptr<gfx::DeviceContext> m_deviceContext = nullptr;
+        std::unique_ptr<gfx::Renderer> m_renderer = nullptr;
 
-        std::unique_ptr<ScriptManager> m_scriptManager;
+        std::unique_ptr<ScriptManager> m_scriptManager = nullptr;
 
-        bool m_running{true};
+        bool m_running = true;
 
-        static inline Application *s_instance{nullptr};
+        static inline Application *s_instance = nullptr;
     };
 
     Application *CreateApplication(ApplicationCommandLineArgs args);

@@ -3,13 +3,14 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include <algorithm>
-#include <utility>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::gfx {
 
     Swapchain::Swapchain(const SwapchainSpecification &spec) : m_deviceContext(*spec.deviceContext) {
-        CreateSwapchain(spec.windowExtent, spec.oldSwapchain);
+        m_swapchainColorSpace = spec.colorSpace;
+        m_swapchainFormat = spec.format;
+        CreateSwapchain(spec.windowExtent, spec.presentMode, spec.oldSwapchain);
         CreateImageViews();
         CreateSyncObjects();
 
@@ -104,10 +105,6 @@ namespace muon::gfx {
         return result;
     }
 
-    bool Swapchain::CompareSwapFormats(const Swapchain &other) const {
-        return m_swapchainImageFormat == other.m_swapchainImageFormat;
-    }
-
     size_t Swapchain::GetImageCount() const {
         return m_imageCount;
     }
@@ -116,14 +113,15 @@ namespace muon::gfx {
         return m_swapchain;
     }
 
-    VkFormat Swapchain::GetImageFormat() const {
-        return m_swapchainImageFormat;
+    VkFormat Swapchain::GetFormat() const {
+        return m_swapchainFormat;
     }
 
     bool Swapchain::IsImageHdr() const {
         switch (m_swapchainColorSpace) {
             case VK_COLOR_SPACE_BT2020_LINEAR_EXT:
             case VK_COLOR_SPACE_HDR10_ST2084_EXT:
+            case VK_COLOR_SPACE_HDR10_HLG_EXT:
             case VK_COLOR_SPACE_DISPLAY_NATIVE_AMD: {
                 return true;
             }
@@ -158,106 +156,28 @@ namespace muon::gfx {
         return static_cast<float>(m_swapchainExtent.width) / m_swapchainExtent.height;
     }
 
-    void Swapchain::CreateSwapchain(const VkExtent2D windowExtent, VkSwapchainKHR oldSwapchain) {
-        auto selectExtent = [](const VkSurfaceCapabilitiesKHR &capabilities, VkExtent2D windowExtent) -> VkExtent2D {
-            if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-                return capabilities.currentExtent;
-            } else {
-                VkExtent2D actualExtent = {
-                    static_cast<uint32_t>(windowExtent.width),
-                    static_cast<uint32_t>(windowExtent.height)
-                };
-
-                actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-                actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-                return actualExtent;
-            }
-        };
-
-        auto selectSurfaceFormat = [](const std::vector<VkSurfaceFormat2KHR> &formats) -> VkSurfaceFormatKHR {
-            // order matters here, prefer HDR and A2R10G10B10 before falling back to R8G8B8A8 sRGB
-            const std::vector<std::pair<VkFormat, VkColorSpaceKHR>> preferredSurfaceFormats = {
-                { VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT },
-                { VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_BT2020_LINEAR_EXT },
-                { VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR },
-            };
-
-            uint32_t matchIndex = preferredSurfaceFormats.size(); // start at end of preferences vector
-            const VkSurfaceFormatKHR *surfaceFormatMatch = nullptr;
-
-            for (const auto &format : formats) {
-                for (uint32_t i = 0; i < preferredSurfaceFormats.size(); i++) {
-                    const auto &surfaceFormat = preferredSurfaceFormats[i];
-                    if (format.surfaceFormat.format == surfaceFormat.first && format.surfaceFormat.colorSpace == surfaceFormat.second) {
-                        if (i < matchIndex) {
-                            matchIndex = i;
-                            surfaceFormatMatch = &format.surfaceFormat;
-                        }
-                        break;
-                    }
-                }
-            }
-
-            MU_CORE_ASSERT(surfaceFormatMatch, "there must be a surface format match");
-
-            if (surfaceFormatMatch->format == VK_FORMAT_A2R10G10B10_UNORM_PACK32) {
-                MU_CORE_TRACE("format selected: A2R10G10B10");
-            } else {
-                MU_CORE_TRACE("format selected: R8G8B8A8");
-            }
-
-            if (surfaceFormatMatch->colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT) {
-                MU_CORE_TRACE("colour space selected: HDR10 ST2084");
-            } else if (surfaceFormatMatch->colorSpace == VK_COLOR_SPACE_BT2020_LINEAR_EXT) {
-                MU_CORE_TRACE("colour space selected: BT2020 Linear");
-            } else {
-                MU_CORE_TRACE("colour space selected: sRGB Nonlinear");
-            }
-
-            return *surfaceFormatMatch;
-        };
-
-        auto selectPresentMode = [](const std::vector<VkPresentModeKHR> &presentModes) -> VkPresentModeKHR {
-            auto it = std::ranges::find_if(presentModes, [](const VkPresentModeKHR &mode) { return mode == VK_PRESENT_MODE_IMMEDIATE_KHR; });
-            if (it != presentModes.end()) { return *it; }
-
-            return VK_PRESENT_MODE_FIFO_KHR;
-        };
-
-        VkResult result;
-
+    void Swapchain::CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presentMode, VkSwapchainKHR oldSwapchain) {
         VkSurfaceCapabilitiesKHR capabilities{};
-        result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &capabilities);
+        auto result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &capabilities);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface capabilities");
 
-        VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
-        surfaceInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
-        surfaceInfo.surface = m_deviceContext.GetSurface();
+        VkExtent2D extent{};
+        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+            extent = capabilities.currentExtent;
+        } else {
+            VkExtent2D actualExtent = {
+                static_cast<uint32_t>(windowExtent.width),
+                static_cast<uint32_t>(windowExtent.height)
+            };
 
-        uint32_t surfaceFormatCount = 0;
-        result = vkGetPhysicalDeviceSurfaceFormats2KHR(m_deviceContext.GetPhysicalDevice(), &surfaceInfo, &surfaceFormatCount, nullptr);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
-        std::vector<VkSurfaceFormat2KHR> surfaceFormats(surfaceFormatCount);
-        for (auto &format : surfaceFormats) {
-            format.sType = VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR;
+            actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+            actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+            extent = actualExtent;
         }
-        result = vkGetPhysicalDeviceSurfaceFormats2KHR(m_deviceContext.GetPhysicalDevice(), &surfaceInfo, &surfaceFormatCount, surfaceFormats.data());
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
-
-        uint32_t presentModeCount = 0;
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, nullptr);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
-        std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, presentModes.data());
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present mode count");
-
-        auto extent = selectExtent(capabilities, windowExtent);
-        auto surfaceFormat = selectSurfaceFormat(surfaceFormats);
-        auto presentMode = selectPresentMode(presentModes);
 
         uint32_t minImageCount = capabilities.minImageCount + 1;
-        if (capabilities.maxImageCount > 0 && minImageCount > capabilities.maxImageCount) {
+        if (capabilities.maxImageCount > 0 && minImageCount > capabilities.maxImageCount) { // prevent too many images
             minImageCount = capabilities.maxImageCount;
         }
 
@@ -265,8 +185,8 @@ namespace muon::gfx {
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = m_deviceContext.GetSurface();
         createInfo.minImageCount = minImageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageFormat = m_swapchainFormat;
+        createInfo.imageColorSpace = m_swapchainColorSpace;
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -289,8 +209,6 @@ namespace muon::gfx {
         result = vkGetSwapchainImagesKHR(m_deviceContext.GetDevice(), m_swapchain, &m_imageCount, m_swapchainImages.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
 
-        m_swapchainImageFormat = surfaceFormat.format;
-        m_swapchainColorSpace = surfaceFormat.colorSpace;
         m_swapchainExtent = extent;
     }
 
@@ -302,7 +220,7 @@ namespace muon::gfx {
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.image = m_swapchainImages[i];
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = m_swapchainImageFormat;
+            createInfo.format = m_swapchainFormat;
 
             createInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             createInfo.components.g = VK_COMPONENT_SWIZZLE_G;

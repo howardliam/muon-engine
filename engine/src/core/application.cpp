@@ -46,10 +46,10 @@ namespace muon {
         profilerSpec.deviceContext = m_deviceContext.get();
         Profiler::CreateContext(profilerSpec);
 
-        gfx::FrameManagerSpecification frameManagerSpec{};
-        frameManagerSpec.window = m_window.get();
-        frameManagerSpec.deviceContext = m_deviceContext.get();
-        m_frameManager = std::make_unique<gfx::FrameManager>(frameManagerSpec);
+        gfx::RendererSpecification rendererSpec{};
+        rendererSpec.window = m_window.get();
+        rendererSpec.deviceContext = m_deviceContext.get();
+        m_renderer = std::make_unique<gfx::Renderer>(rendererSpec);
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
@@ -98,10 +98,11 @@ namespace muon {
         while (m_running) {
             m_window->PollEvents();
 
-            if (auto cmd = m_frameManager->BeginFrame()) {
+            if (auto cmd = m_renderer->BeginFrame()) {
 
 
-                m_frameManager->EndFrame();
+                m_renderer->EndFrame();
+                m_renderer->PresentFrame();
             }
         }
 
