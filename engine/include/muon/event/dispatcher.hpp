@@ -1,11 +1,13 @@
 #pragma once
 
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <eventpp/eventdispatcher.h>
 #include <typeindex>
 
 namespace muon::event {
 
-    class Dispatcher {
+    class Dispatcher : NoCopy, NoMove {
     public:
         Dispatcher() = default;
         ~Dispatcher() = default;
