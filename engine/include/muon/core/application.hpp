@@ -8,6 +8,7 @@
 #include "muon/scripting/script_manager.hpp"
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 
 int main(int argc, char **argv);
 
@@ -24,7 +25,7 @@ namespace muon {
     };
 
     struct ApplicationSpecification {
-        std::string name{"Muon Application"};
+        std::string name = "Muon Application";
         std::filesystem::path workingDirectory;
         ApplicationCommandLineArgs cliArgs;
     };
@@ -45,7 +46,7 @@ namespace muon {
         friend int ::main(int argc, char **argv);
 
     private:
-        event::Dispatcher m_dispatcher;
+        std::unique_ptr<event::Dispatcher> m_dispatcher = nullptr;
 
         std::unique_ptr<Window> m_window = nullptr;
         std::unique_ptr<gfx::DeviceContext> m_deviceContext = nullptr;
