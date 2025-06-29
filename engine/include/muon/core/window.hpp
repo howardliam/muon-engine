@@ -71,6 +71,10 @@ namespace YAML {
         }
 
         static bool decode(const Node &node, muon::WindowSpecification &spec) {
+            if (!node.IsMap()) {
+                return false;
+            }
+
             spec.width = node["dimensions"][0].as<uint32_t>();
             spec.height = node["dimensions"][1].as<uint32_t>();
             return true;
