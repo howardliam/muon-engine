@@ -7,7 +7,7 @@
 namespace muon {
 
     struct ProfilerSpecification {
-        const gfx::DeviceContext *deviceContext;
+        const gfx::DeviceContext *deviceContext = nullptr;
     };
 
     class Profiler {
@@ -15,12 +15,11 @@ namespace muon {
         static void CreateContext(const ProfilerSpecification &spec);
         static void DestroyContext();
 
-
         static void Collect(VkCommandBuffer cmd);
         static tracy::VkCtx *GetContext();
 
     private:
-        static inline tracy::VkCtx *s_tracyContext{nullptr};
+        static inline tracy::VkCtx *s_tracyContext = nullptr;
     };
 
 }

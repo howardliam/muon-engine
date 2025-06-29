@@ -7,6 +7,8 @@
 namespace muon {
 
     void Profiler::CreateContext(const ProfilerSpecification &spec) {
+        MU_CORE_ASSERT(!s_tracyContext, "tracy context must not exist");
+
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.commandPool = spec.deviceContext->GetGraphicsQueue().GetCommandPool();
