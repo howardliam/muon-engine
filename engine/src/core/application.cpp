@@ -4,6 +4,7 @@
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/debug/profiler.hpp"
+#include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
 #include "muon/graphics/device_context.hpp"
 #include <fmt/ranges.h>
@@ -21,21 +22,20 @@ namespace muon {
 
         MU_CORE_INFO("creating application");
 
-        WindowSpecification windowSpec{};
-        windowSpec.title = spec.name;
-        windowSpec.dispatcher = &m_dispatcher;
+        m_dispatcher = std::make_unique<event::Dispatcher>();
 
+        WindowSpecification windowSpec{};
         try {
             YAML::Node config = YAML::LoadFile("Muon.yaml");
-            windowSpec.width = config["window"]["dimensions"]["width"].as<uint32_t>();
-            windowSpec.height = config["window"]["dimensions"]["height"].as<uint32_t>();
+            windowSpec = config["window"].as<WindowSpecification>();
         } catch (const std::exception &e) {
             MU_CORE_ERROR("{}, using default values", e.what());
             // set to rubbish so the window class knows the dimensions are bad
             windowSpec.width = std::numeric_limits<uint32_t>().max();
             windowSpec.height = std::numeric_limits<uint32_t>().max();
         }
-
+        windowSpec.title = spec.name;
+        windowSpec.dispatcher = m_dispatcher.get();
         m_window = std::make_unique<Window>(windowSpec);
 
         gfx::DeviceContextSpecification deviceContextSpec{};
@@ -53,23 +53,23 @@ namespace muon {
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
-        m_dispatcher.Subscribe<event::WindowCloseEvent>([&](const auto &event) {
+        m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
             MU_CORE_INFO("window closed received");
             m_running = false;
         });
 
-        m_dispatcher.Subscribe<event::MouseButtonEvent>([&](const auto &event) {
+        m_dispatcher->Subscribe<event::MouseButtonEvent>([&](const auto &event) {
             if (event.action == GLFW_PRESS) {
                 m_scriptManager->Run();
             }
         });
 
-        m_dispatcher.Subscribe<event::WindowResizeEvent>([&](const auto &event) {
+        m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
             vkQueueWaitIdle(m_deviceContext->GetGraphicsQueue().Get());
             m_renderer->RebuildSwapchain();
         });
 
-        m_dispatcher.Subscribe<event::FileDropEvent>([](const auto &event) {
+        m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) {
             MU_CORE_INFO("{}", fmt::join(event.paths, ", "));
         });
     }
@@ -98,10 +98,7 @@ namespace muon {
             m_window->PollEvents();
 
             if (auto cmd = m_renderer->BeginFrame()) {
-
-
                 m_renderer->EndFrame();
-                m_renderer->PresentFrame();
             }
         }
 
