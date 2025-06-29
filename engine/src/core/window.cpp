@@ -8,7 +8,11 @@
 
 namespace muon {
 
-    Window::Window(const WindowSpecification &spec) {
+    struct Window::WindowHandle {
+        GLFWwindow *window;
+    };
+
+    Window::Window(const WindowSpecification &spec) : m_handle(std::make_unique<WindowHandle>()) {
         m_data.dispatcher = spec.dispatcher;
         m_data.title = spec.title;
 
@@ -33,14 +37,14 @@ namespace muon {
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
-        MU_CORE_ASSERT(m_window, "window must exist");
-        glfwSetWindowSizeLimits(m_window, 1280, 720, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+        MU_CORE_ASSERT(m_handle->window, "window must exist");
+        glfwSetWindowSizeLimits(m_handle->window, 1280, 720, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
-        glfwSetWindowUserPointer(m_window, &m_data);
+        glfwSetWindowUserPointer(m_handle->window, &m_data);
 
         if (glfwRawMouseMotionSupported()) {
-            glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, true);
+            glfwSetInputMode(m_handle->window, GLFW_RAW_MOUSE_MOTION, true);
             m_data.rawMouseMotion = true;
         }
 
@@ -50,7 +54,7 @@ namespace muon {
     }
 
     Window::~Window() {
-        glfwDestroyWindow(m_window);
+        glfwDestroyWindow(m_handle->window);
         glfwTerminate();
         MU_CORE_DEBUG("destroyed window");
     }
@@ -60,19 +64,15 @@ namespace muon {
     }
 
     VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const {
-        return glfwCreateWindowSurface(instance, m_window, nullptr, surface);
+        return glfwCreateWindowSurface(instance, m_handle->window, nullptr, surface);
     }
 
     const char *Window::GetClipboardContents() const {
-        return glfwGetClipboardString(m_window);
+        return glfwGetClipboardString(m_handle->window);
     }
 
     void Window::RequestAttention() const {
-        glfwRequestWindowAttention(m_window);
-    }
-
-    GLFWwindow *Window::Get() const {
-        return m_window;
+        glfwRequestWindowAttention(m_handle->window);
     }
 
     VkExtent2D Window::GetExtent() const {
@@ -103,12 +103,12 @@ namespace muon {
 
     void Window::ConfigureDispatchers() {
         /* window events */
-        glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
+        glfwSetWindowCloseCallback(m_handle->window, [](GLFWwindow *window) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::WindowCloseEvent>({});
         });
 
-        glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
+        glfwSetWindowSizeCallback(m_handle->window, [](GLFWwindow *window, int width, int height) {
             auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
 
             data.width = static_cast<uint32_t>(width);
@@ -120,7 +120,7 @@ namespace muon {
             });
         });
 
-        glfwSetWindowFocusCallback(m_window, [](GLFWwindow *window, int32_t focused) {
+        glfwSetWindowFocusCallback(m_handle->window, [](GLFWwindow *window, int32_t focused) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::WindowFocusEvent>({
                 .focused = focused > 0,
@@ -128,7 +128,7 @@ namespace muon {
         });
 
         /* keyboard events */
-        glfwSetKeyCallback(m_window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
+        glfwSetKeyCallback(m_handle->window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::KeyEvent>({
                 .key = key,
@@ -139,7 +139,7 @@ namespace muon {
         });
 
         /* mouse events */
-        glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
+        glfwSetMouseButtonCallback(m_handle->window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::MouseButtonEvent>({
                 .button = button,
@@ -148,7 +148,7 @@ namespace muon {
             });
         });
 
-        glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, double x, double y) {
+        glfwSetCursorPosCallback(m_handle->window, [](GLFWwindow *window, double x, double y) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::CursorPositionEvent>({
                 .x = x,
@@ -156,14 +156,14 @@ namespace muon {
             });
         });
 
-        glfwSetCursorEnterCallback(m_window, [](GLFWwindow *window, int32_t entered) {
+        glfwSetCursorEnterCallback(m_handle->window, [](GLFWwindow *window, int32_t entered) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::CursorEnterEvent>({
                 .entered = entered > 0,
             });
         });
 
-        glfwSetScrollCallback(m_window, [](GLFWwindow *window, double xOffset, double yOffset) {
+        glfwSetScrollCallback(m_handle->window, [](GLFWwindow *window, double xOffset, double yOffset) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::MouseScrollEvent>({
                 .xOffset = xOffset,
@@ -172,7 +172,7 @@ namespace muon {
         });
 
         /* misc events */
-        glfwSetDropCallback(m_window, [](GLFWwindow *window, int32_t pathCount, const char **paths) {
+        glfwSetDropCallback(m_handle->window, [](GLFWwindow *window, int32_t pathCount, const char **paths) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::FileDropEvent>({
                 .paths = std::vector<const char *>(paths, paths + pathCount),

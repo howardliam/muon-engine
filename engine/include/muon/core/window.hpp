@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
-#include <GLFW/glfw3.h>
 #include <yaml-cpp/yaml.h>
 
 namespace muon {
@@ -31,7 +30,6 @@ namespace muon {
         void RequestAttention() const;
 
     public:
-        [[nodiscard]] GLFWwindow *Get() const;
         [[nodiscard]] VkExtent2D GetExtent() const;
         [[nodiscard]] uint32_t GetWidth() const;
         [[nodiscard]] uint32_t GetHeight() const;
@@ -42,7 +40,8 @@ namespace muon {
         void ConfigureDispatchers();
 
     private:
-        GLFWwindow *m_window;
+        struct WindowHandle;
+        std::unique_ptr<WindowHandle> m_handle;
 
         struct WindowData {
             const event::Dispatcher *dispatcher;
