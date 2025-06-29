@@ -21,7 +21,6 @@ namespace muon::gfx {
 
         [[nodiscard]] VkCommandBuffer BeginFrame();
         void EndFrame();
-        void PresentFrame();
 
         void RebuildSwapchain();
 

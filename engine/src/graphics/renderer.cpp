@@ -50,12 +50,7 @@ namespace muon::gfx {
 
         const auto cmd = m_commandBuffers[m_currentFrameIndex];
         vkEndCommandBuffer(cmd);
-    }
 
-    void Renderer::PresentFrame() {
-        MU_CORE_ASSERT(m_frameInProgress, "cannot present frame if a frame has not been started");
-
-        const auto cmd = m_commandBuffers[m_currentFrameIndex];
         auto result = m_swapchain->SubmitCommandBuffers(&cmd, &m_currentImageIndex);
         MU_CORE_ASSERT(
             result == VK_ERROR_OUT_OF_DATE_KHR ||
