@@ -3,6 +3,8 @@
 #include "muon/core/window.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/swapchain.hpp"
+#include "muon/utils/nocopy.hpp"
+#include "muon/utils/nomove.hpp"
 #include <unordered_set>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -14,7 +16,7 @@ namespace muon::graphics {
         const DeviceContext *deviceContext;
     };
 
-    class Renderer {
+    class Renderer : NoCopy, NoMove {
     public:
         Renderer(const RendererSpecification &spec);
         ~Renderer();
