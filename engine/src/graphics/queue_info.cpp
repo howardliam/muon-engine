@@ -2,7 +2,7 @@
 
 #include "muon/core/assert.hpp"
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     bool QueueFamilyInfo::operator==(const QueueFamilyInfo &other) const {
         return index == other.index && queueCount == other.queueCount && capabilities == other.capabilities;

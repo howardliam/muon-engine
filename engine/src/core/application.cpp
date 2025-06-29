@@ -38,18 +38,18 @@ namespace muon {
         windowSpec.dispatcher = m_dispatcher.get();
         m_window = std::make_unique<Window>(windowSpec);
 
-        gfx::DeviceContextSpecification deviceContextSpec{};
+        graphics::DeviceContextSpecification deviceContextSpec{};
         deviceContextSpec.window = m_window.get();
-        m_deviceContext = std::make_unique<gfx::DeviceContext>(deviceContextSpec);
+        m_deviceContext = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
 
-        ProfilerSpecification profilerSpec{};
+        debug::ProfilerSpecification profilerSpec{};
         profilerSpec.deviceContext = m_deviceContext.get();
-        Profiler::CreateContext(profilerSpec);
+        debug::Profiler::CreateContext(profilerSpec);
 
-        gfx::RendererSpecification rendererSpec{};
+        graphics::RendererSpecification rendererSpec{};
         rendererSpec.window = m_window.get();
         rendererSpec.deviceContext = m_deviceContext.get();
-        m_renderer = std::make_unique<gfx::Renderer>(rendererSpec);
+        m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
@@ -76,14 +76,14 @@ namespace muon {
 
     Application::~Application() {
         MU_CORE_INFO("destroying application");
-        Profiler::DestroyContext();
+        debug::Profiler::DestroyContext();
     }
 
     Window &Application::GetWindow() const {
         return *m_window;
     }
 
-    gfx::DeviceContext &Application::GetDeviceContext() const {
+    graphics::DeviceContext &Application::GetDeviceContext() const {
         return *m_deviceContext;
     }
 

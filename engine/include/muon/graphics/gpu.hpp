@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <vulkan/vulkan_core.h>
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     struct GpuSpecification {
         VkPhysicalDevice physicalDevice;

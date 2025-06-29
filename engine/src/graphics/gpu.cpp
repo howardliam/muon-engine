@@ -6,7 +6,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     Gpu::Gpu(const GpuSpecification& spec) {
         DetermineSuitability(

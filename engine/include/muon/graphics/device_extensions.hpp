@@ -3,7 +3,7 @@
 #include <array>
 #include <vulkan/vulkan_core.h>
 
-namespace muon::gfx::constants {
+namespace muon::graphics::constants {
 
     constexpr std::array<const char *, 5> k_requiredDeviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,

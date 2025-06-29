@@ -4,7 +4,7 @@
 #include "muon/utils/nomove.hpp"
 #include <vulkan/vulkan_core.h>
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     struct QueueSpecification {
         VkDevice device;

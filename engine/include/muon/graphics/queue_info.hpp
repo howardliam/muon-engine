@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     struct QueueFamilyInfo {
         uint32_t index;

@@ -36,7 +36,7 @@ namespace muon {
         virtual ~Application();
 
         [[nodiscard]] Window &GetWindow() const;
-        [[nodiscard]] gfx::DeviceContext &GetDeviceContext() const;
+        [[nodiscard]] graphics::DeviceContext &GetDeviceContext() const;
 
         [[nodiscard]] static Application &Get();
 
@@ -49,8 +49,8 @@ namespace muon {
         std::unique_ptr<event::Dispatcher> m_dispatcher = nullptr;
 
         std::unique_ptr<Window> m_window = nullptr;
-        std::unique_ptr<gfx::DeviceContext> m_deviceContext = nullptr;
-        std::unique_ptr<gfx::Renderer> m_renderer = nullptr;
+        std::unique_ptr<graphics::DeviceContext> m_deviceContext = nullptr;
+        std::unique_ptr<graphics::Renderer> m_renderer = nullptr;
 
         std::unique_ptr<ScriptManager> m_scriptManager = nullptr;
 

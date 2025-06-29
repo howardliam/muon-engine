@@ -4,7 +4,7 @@
 #include "muon/core/log.hpp"
 #include <vulkan/vulkan_core.h>
 
-namespace muon {
+namespace muon::debug {
 
     void Profiler::CreateContext(const ProfilerSpecification &spec) {
         MU_CORE_ASSERT(!s_tracyContext, "tracy context must not exist");

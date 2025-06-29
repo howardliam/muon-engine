@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vulkan/vulkan_core.h>
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     Swapchain::Swapchain(const SwapchainSpecification &spec) : m_deviceContext(*spec.deviceContext) {
         m_swapchainColorSpace = spec.colorSpace;

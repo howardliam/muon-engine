@@ -3,7 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "vulkan/vulkan_core.h"
 
-namespace muon::gfx {
+namespace muon::graphics {
 
     Renderer::Renderer(const RendererSpecification &spec) : m_window(*spec.window), m_deviceContext(*spec.deviceContext) {
         ProbeSurfaceFormats();

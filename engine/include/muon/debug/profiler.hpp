@@ -4,10 +4,10 @@
 #include <vulkan/vulkan_core.h>
 #include <tracy/TracyVulkan.hpp>
 
-namespace muon {
+namespace muon::debug {
 
     struct ProfilerSpecification {
-        const gfx::DeviceContext *deviceContext = nullptr;
+        const graphics::DeviceContext *deviceContext = nullptr;
     };
 
     class Profiler {
