@@ -7,11 +7,12 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
+#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
     struct WindowSpecification {
-        event::Dispatcher *dispatcher;
+        event::Dispatcher *dispatcher = nullptr;
         uint32_t width;
         uint32_t height;
         std::string_view title;
@@ -53,6 +54,27 @@ namespace muon {
             bool rawMouseMotion = false;
         };
         WindowData m_data{};
+    };
+
+}
+
+namespace YAML {
+
+    template <>
+    struct convert<muon::WindowSpecification> {
+        static Node encode(const muon::WindowSpecification &spec) {
+            Node node;
+            node["title"] = spec.title;
+            node["dimensions"].push_back(spec.width);
+            node["dimensions"].push_back(spec.height);
+            return node;
+        }
+
+        static bool decode(const Node &node, muon::WindowSpecification &spec) {
+            spec.width = node["dimensions"][0].as<uint32_t>();
+            spec.height = node["dimensions"][1].as<uint32_t>();
+            return true;
+        }
     };
 
 }
