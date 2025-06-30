@@ -49,6 +49,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/pipeline_compute.hpp
     ${INCLUDE_DIR}/muon/graphics/pipeline_graphics.hpp
     ${INCLUDE_DIR}/muon/graphics/pipeline_layout.hpp
+    ${INCLUDE_DIR}/muon/graphics/pipeline_mesh.hpp
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
     ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
     ${INCLUDE_DIR}/muon/graphics/renderer.hpp
@@ -81,6 +82,7 @@ set(SRC_FILES
     ${SRC_DIR}/graphics/pipeline_compute.cpp
     ${SRC_DIR}/graphics/pipeline_graphics.cpp
     ${SRC_DIR}/graphics/pipeline_layout.cpp
+    ${SRC_DIR}/graphics/pipeline_mesh.cpp
     ${SRC_DIR}/graphics/queue.cpp
     ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/renderer.cpp
