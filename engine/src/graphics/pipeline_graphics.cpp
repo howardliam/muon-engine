@@ -84,6 +84,28 @@ namespace muon::graphics {
         vkDestroyPipelineCache(m_device, m_cache, nullptr);
     }
 
+    void PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
+        if (m_pipeline) {
+            vkDestroyPipeline(m_device, m_pipeline, nullptr);
+        }
+
+        CreatePipeline(renderingCreateInfo);
+    }
+
+    void PipelineGraphics::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) {
+        vkCmdBindDescriptorSets(
+            cmd,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_layout->Get(),
+            0,
+            sets.size(),
+            sets.data(),
+            0,
+            nullptr
+        );
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+    }
+
     void PipelineGraphics::CreateCache() {
         VkPipelineCacheCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;

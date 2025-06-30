@@ -44,6 +44,9 @@ namespace muon::graphics {
         PipelineGraphics(const PipelineGraphicsSpecification &spec);
         ~PipelineGraphics();
 
+        void Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo);
+        void Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets);
+
     private:
         void CreateCache();
         void CreateShaderModules(const PipelineGraphicsShaderPaths &paths);
