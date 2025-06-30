@@ -1,0 +1,11 @@
+{
+  "type": 1,
+  "shaders": [
+    {
+      "stage": 5,
+      "entryPoint": "main",
+      "path": "foo",
+      "workGroupSize": [32, 32, 1]
+    }
+  ]
+}

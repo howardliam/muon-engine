@@ -61,6 +61,9 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/input/modifier.hpp
     ${INCLUDE_DIR}/muon/input/mouse.hpp
 
+    ${INCLUDE_DIR}/muon/schematic/pipeline.hpp
+    ${INCLUDE_DIR}/muon/schematic/shader.hpp
+
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
     ${INCLUDE_DIR}/muon/utils/color.hpp
@@ -91,6 +94,8 @@ set(SRC_FILES
 
     ${SRC_DIR}/input/modifier.cpp
 
+    ${SRC_DIR}/schematic/shader.cpp
+
     ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
@@ -112,7 +117,7 @@ target_link_libraries(${LIB_NAME} PRIVATE
 
 target_link_libraries(${LIB_NAME} PUBLIC
     fmt::fmt spdlog::spdlog_header_only
-    yaml-cpp::yaml-cpp
+    yaml-cpp::yaml-cpp nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
     Tracy::TracyClient
     Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator

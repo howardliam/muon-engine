@@ -1,0 +1,15 @@
+{
+  "type": 0,
+  "shaders": [
+    {
+      "stage": 0,
+      "entryPoint": "main",
+      "path": "foo"
+    },
+    {
+      "stage": 4,
+      "entryPoint": "main",
+      "path": "foo"
+    }
+  ]
+}
