@@ -55,3 +55,6 @@
 [submodule "external/vulkan-loader"]
 	path = external/vulkan-loader
 	url = https://github.com/KhronosGroup/Vulkan-Loader
+[submodule "external/catch2"]
+	path = external/catch2
+	url = https://github.com/catchorg/Catch2

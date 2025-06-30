@@ -62,6 +62,9 @@ add_subdirectory(external/libktx)
 # misc
 add_subdirectory(external/entt)
 
+# testing
+add_subdirectory(external/catch2)
+
 if (MSVC)
     #add_compile_options(/W4)
 else()
