@@ -7,6 +7,9 @@
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
 #include "muon/graphics/device_context.hpp"
+#include "muon/input/input_state.hpp"
+#include "muon/input/key_code.hpp"
+#include "muon/input/mouse.hpp"
 #include <fmt/ranges.h>
 #include <GLFW/glfw3.h>
 #include <limits>
@@ -58,15 +61,21 @@ namespace muon {
             m_running = false;
         });
 
+        m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
+            vkQueueWaitIdle(m_deviceContext->GetGraphicsQueue().Get());
+            m_renderer->RebuildSwapchain();
+        });
+
         m_dispatcher->Subscribe<event::MouseButtonEvent>([&](const auto &event) {
-            if (event.action == GLFW_PRESS) {
+            if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
                 m_scriptManager->Run();
             }
         });
 
-        m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
-            vkQueueWaitIdle(m_deviceContext->GetGraphicsQueue().Get());
-            m_renderer->RebuildSwapchain();
+        m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
+            if (event.keycode == input::KeyCode::V && event.mods.IsCtrlDown()) {
+                MU_CORE_INFO("{}", m_window->GetClipboardContents());
+            }
         });
 
         m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) {

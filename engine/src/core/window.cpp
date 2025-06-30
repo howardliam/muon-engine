@@ -4,6 +4,9 @@
 #include "muon/core/log.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
+#include "muon/input/input_state.hpp"
+#include "muon/input/key_code.hpp"
+#include "muon/input/mouse.hpp"
 #include <GLFW/glfw3.h>
 
 namespace muon {
@@ -131,9 +134,9 @@ namespace muon {
         glfwSetKeyCallback(m_handle->window, [](GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::KeyEvent>({
-                .key = key,
-                .scancode = scancode,
-                .action = action,
+                .keycode = input::KeyCode(key),
+                .scancode = input::KeyCode(scancode),
+                .inputState = input::InputState(action),
                 .mods = input::Modifier(mods),
             });
         });
@@ -142,8 +145,8 @@ namespace muon {
         glfwSetMouseButtonCallback(m_handle->window, [](GLFWwindow *window, int32_t button, int32_t action, int32_t mods) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
             data.dispatcher->Dispatch<event::MouseButtonEvent>({
-                .button = button,
-                .action = action,
+                .button = input::MouseButton(button),
+                .inputState = input::InputState(action),
                 .mods = input::Modifier(mods),
             });
         });

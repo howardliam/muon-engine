@@ -51,7 +51,8 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/renderer.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
 
-    ${INCLUDE_DIR}/muon/input/key.hpp
+    ${INCLUDE_DIR}/muon/input/input_state.hpp
+    ${INCLUDE_DIR}/muon/input/key_code.hpp
     ${INCLUDE_DIR}/muon/input/modifier.hpp
     ${INCLUDE_DIR}/muon/input/mouse.hpp
 

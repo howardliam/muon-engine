@@ -1,6 +1,9 @@
 #pragma once
 
+#include "muon/input/input_state.hpp"
+#include "muon/input/key_code.hpp"
 #include "muon/input/modifier.hpp"
+#include "muon/input/mouse.hpp"
 #include <cstdint>
 #include <vector>
 
@@ -18,15 +21,15 @@ namespace muon::event {
     };
 
     struct KeyEvent {
-        int32_t key;
-        int32_t scancode;
-        int32_t action;
+        input::KeyCode keycode;
+        input::KeyCode scancode;
+        input::InputState inputState;
         input::Modifier mods;
     };
 
     struct MouseButtonEvent {
-        int32_t button;
-        int32_t action;
+        input::MouseButton button;
+        input::InputState inputState;
         input::Modifier mods;
     };
 
