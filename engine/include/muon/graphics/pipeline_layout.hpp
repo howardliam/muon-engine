@@ -23,6 +23,7 @@ namespace muon::graphics {
         [[nodiscard]] VkPipelineLayout Get() const;
 
     private:
+        VkDevice m_device{nullptr};
         VkPipelineLayout m_layout{nullptr};
     };
 

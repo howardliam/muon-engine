@@ -52,6 +52,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
     ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
     ${INCLUDE_DIR}/muon/graphics/renderer.hpp
+    ${INCLUDE_DIR}/muon/graphics/shader_reflection.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
 
     ${INCLUDE_DIR}/muon/input/input_state.hpp
@@ -62,6 +63,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
     ${INCLUDE_DIR}/muon/utils/color.hpp
+    ${INCLUDE_DIR}/muon/utils/fs.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
     ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
@@ -76,9 +78,13 @@ set(SRC_FILES
 
     ${SRC_DIR}/graphics/device_context.cpp
     ${SRC_DIR}/graphics/gpu.cpp
+    ${SRC_DIR}/graphics/pipeline_compute.cpp
+    ${SRC_DIR}/graphics/pipeline_graphics.cpp
+    ${SRC_DIR}/graphics/pipeline_layout.cpp
     ${SRC_DIR}/graphics/queue.cpp
     ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/renderer.cpp
+    ${SRC_DIR}/graphics/shader_reflection.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
 
     ${SRC_DIR}/input/modifier.cpp
@@ -86,6 +92,7 @@ set(SRC_FILES
     ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
+    ${SRC_DIR}/utils/fs.cpp
     ${SRC_DIR}/utils/pretty_print.cpp
 )
 
@@ -107,6 +114,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     glfw eventpp::eventpp
     Tracy::TracyClient
     Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator
+    spirv-reflect-static
     glm
 )
 

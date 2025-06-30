@@ -4,7 +4,6 @@
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <filesystem>
-#include <map>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 
@@ -22,13 +21,22 @@ namespace muon::graphics {
         VkPipelineDynamicStateCreateInfo dynamicState{};
 
         PipelineGraphicsState();
+        ~PipelineGraphicsState() = default;
+    };
+
+    struct PipelineGraphicsShaderPaths {
+        std::filesystem::path vertPath{};
+        std::optional<std::filesystem::path> tescPath{std::nullopt};
+        std::optional<std::filesystem::path> tesePath{std::nullopt};
+        std::optional<std::filesystem::path> geomPath{std::nullopt};
+        std::filesystem::path fragPath{};
     };
 
     struct PipelineGraphicsSpecification {
         VkDevice device{nullptr};
         std::shared_ptr<PipelineLayout> layout{nullptr};
         PipelineGraphicsState state{};
-        std::map<VkShaderStageFlags, std::filesystem::path> paths{};
+        PipelineGraphicsShaderPaths paths{};
     };
 
     class PipelineGraphics : NoCopy, NoMove {
@@ -38,14 +46,15 @@ namespace muon::graphics {
 
     private:
         void CreateCache();
-        void CreateShaderModules(const std::map<VkShaderStageFlags, std::filesystem::path> &paths);
+        void CreateShaderModules(const PipelineGraphicsShaderPaths &paths);
         void CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo);
 
     private:
         VkDevice m_device{nullptr};
-
         std::shared_ptr<PipelineLayout> m_layout{nullptr};
         VkPipelineCache m_cache{nullptr};
+
+        PipelineGraphicsState m_state{};
 
         std::vector<VkShaderModule> m_shaders{};
         std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};

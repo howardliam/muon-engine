@@ -40,9 +40,9 @@ add_subdirectory(external/vulkan-headers)
 add_subdirectory(external/vulkan-loader)
 add_subdirectory(external/vulkan-memory-allocator)
 
-# set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
-# set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
-# add_subdirectory(external/spirv-reflect)
+set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
+set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
+add_subdirectory(external/spirv-reflect)
 
 # set(ALLOW_EXTERNAL_SPIRV_TOOLS ON FORCE)
 # add_subdirectory(external/glslang)

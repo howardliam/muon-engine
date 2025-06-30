@@ -20,7 +20,24 @@ namespace muon::graphics {
         PipelineCompute(const PipelineComputeSpecification &spec);
         ~PipelineCompute();
 
+        void Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const;
+        void Dispatch(VkCommandBuffer cmd, const VkExtent2D &extent) const;
+
+    public:
+        [[nodiscard]] VkPipeline Get() const;
+
     private:
+        void CreateCache();
+        void CreateShaderModule(const std::filesystem::path &path);
+        void CreatePipeline();
+
+    private:
+        VkDevice m_device{nullptr};
+        std::shared_ptr<PipelineLayout> m_layout{nullptr};
+        VkPipelineCache m_cache{nullptr};
+
+        VkShaderModule m_shader;
+
         VkPipeline m_pipeline{nullptr};
     };
 
