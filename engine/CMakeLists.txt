@@ -28,7 +28,7 @@ set(LIB_NAME ${CMAKE_PROJECT_NAME}-engine)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-set(HEADER_FILES
+set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/application.hpp
     ${INCLUDE_DIR}/muon/core/assert.hpp
     ${INCLUDE_DIR}/muon/core/base.hpp
@@ -73,7 +73,7 @@ set(HEADER_FILES
     ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
 )
 
-set(SRC_FILES
+set(ENGINE_SRC_FILES
     ${SRC_DIR}/core/application.cpp
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/window.cpp
@@ -104,16 +104,12 @@ set(SRC_FILES
 )
 
 add_library(${LIB_NAME} STATIC
-    ${HEADER_FILES}
-    ${SRC_FILES}
+    ${ENGINE_HEADER_FILES}
+    ${ENGINE_SRC_FILES}
 )
 add_library(muon::engine ALIAS ${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
-
-target_link_libraries(${LIB_NAME} PRIVATE
-
-)
 
 target_link_libraries(${LIB_NAME} PUBLIC
     fmt::fmt spdlog::spdlog_header_only
@@ -127,4 +123,20 @@ target_link_libraries(${LIB_NAME} PUBLIC
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(MU_DEBUG_ENABLED)
+endif()
+
+option(MUON_ENGINE_TESTS "Enable Muon Engine tests" ON)
+if(MUON_ENGINE_TESTS)
+
+    set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    set(TEST_FILES
+        ${TEST_DIR}/schematic/shader.cpp
+    )
+
+    add_executable(muon-tests ${TEST_FILES})
+    target_link_libraries(muon-tests PRIVATE
+        Catch2WithMain
+        muon::engine
+    )
+
 endif()
