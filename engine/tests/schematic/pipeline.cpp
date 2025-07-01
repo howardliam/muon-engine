@@ -10,45 +10,38 @@ namespace muon::schematic {
 
     const json pipelineJson = R"({
       "type": 2,
-      "shaders": [
-        {
-          "stage": 6,
+      "shaders": {
+        "6": {
           "entryPoint": "main",
           "path": "foo"
         },
-        {
-          "stage": 7,
+        "7": {
           "entryPoint": "main",
           "path": "foo",
           "workGroupSize": [32, 32, 1]
         },
-        {
-          "stage": 4,
+        "4": {
           "entryPoint": "main",
           "path": "foo"
         }
-      ]
+      }
     })"_json;
 
     TEST_CASE("pipeline serialization", "[schematic]") {
         Pipeline pipeline{};
         pipeline.type = PipelineType::Meshlet;
-        pipeline.shaders.resize(3);
 
-        pipeline.shaders[0].stage = ShaderStage::Task;
-        pipeline.shaders[0].entryPoint = "main";
-        pipeline.shaders[0].path = "foo";
-        pipeline.shaders[0].workGroupSize = std::nullopt;
+        pipeline.shaders[ShaderStage::Task].entryPoint = "main";
+        pipeline.shaders[ShaderStage::Task].path = "foo";
+        pipeline.shaders[ShaderStage::Task].workGroupSize = std::nullopt;
 
-        pipeline.shaders[1].stage = ShaderStage::Mesh;
-        pipeline.shaders[1].entryPoint = "main";
-        pipeline.shaders[1].path = "foo";
-        pipeline.shaders[1].workGroupSize = {32, 32, 1};
+        pipeline.shaders[ShaderStage::Mesh].entryPoint = "main";
+        pipeline.shaders[ShaderStage::Mesh].path = "foo";
+        pipeline.shaders[ShaderStage::Mesh].workGroupSize = {32, 32, 1};
 
-        pipeline.shaders[2].stage = ShaderStage::Fragment;
-        pipeline.shaders[2].entryPoint = "main";
-        pipeline.shaders[2].path = "foo";
-        pipeline.shaders[2].workGroupSize = std::nullopt;
+        pipeline.shaders[ShaderStage::Fragment].entryPoint = "main";
+        pipeline.shaders[ShaderStage::Fragment].path = "foo";
+        pipeline.shaders[ShaderStage::Fragment].workGroupSize = std::nullopt;
 
         const json j = pipeline;
         REQUIRE(j == pipelineJson);

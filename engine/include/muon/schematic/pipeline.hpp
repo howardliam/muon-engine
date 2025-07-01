@@ -3,9 +3,11 @@
 #include "muon/core/assert.hpp"
 #include "muon/schematic/shader.hpp"
 #include <cstdint>
+#include <fmt/format.h>
+#include <map>
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
-#include <vector>
+#include <string>
 
 namespace muon::schematic {
 
@@ -17,7 +19,9 @@ namespace muon::schematic {
 
     struct Pipeline {
         PipelineType type;
-        std::vector<Shader> shaders{};
+        std::map<ShaderStage, Shader> shaders{};
+
+        [[nodiscard]] auto IsValid() const -> bool;
     };
 
 }
@@ -31,18 +35,21 @@ namespace nlohmann {
         static auto to_json(json &j, const Pipeline &pipeline) {
             j["type"] = static_cast<uint32_t>(pipeline.type);
 
-            for (const auto &shader : pipeline.shaders) {
-                j["shaders"].push_back(shader);
+            for (const auto &[stage, shader] : pipeline.shaders) {
+                j["shaders"][fmt::format("{}", static_cast<uint32_t>(stage))] = shader;
             }
         }
 
         static auto from_json(const json &j, Pipeline &pipeline) {
             pipeline.type = j["type"].get<PipelineType>();
 
-            MU_CORE_ASSERT(j["shaders"].is_array(), "shaders must be an array");
-            pipeline.shaders.resize(j["shaders"].size());
-            for (uint32_t i = 0; i < j["shaders"].size(); i++) {
-                pipeline.shaders[i] = j["shaders"][i].get<Shader>();
+            MU_CORE_ASSERT(j["shaders"].is_object(), "shaders must be a map");
+            for (const auto &[stage, shader] : j["shaders"].items()) {
+                try {
+                    pipeline.shaders[static_cast<ShaderStage>(std::stoi(stage))] = shader.get<Shader>();
+                } catch (const std::exception &e) {
+                    MU_CORE_ERROR("failed to parse {} to shader stage key");
+                }
             }
         }
     };

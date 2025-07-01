@@ -8,7 +8,6 @@ namespace muon::schematic {
     using namespace nlohmann::literals;
 
     const json shaderJsonWithPath = R"({
-      "stage": 5,
       "entryPoint": "main",
       "path": "foo",
       "workGroupSize": [32, 32, 1]
@@ -16,7 +15,6 @@ namespace muon::schematic {
 
     TEST_CASE("shader with path serialization", "[schematic]") {
         Shader shader{};
-        shader.stage = ShaderStage::Compute;
         shader.entryPoint = "main";
         shader.path = "foo";
         shader.workGroupSize = {32, 32, 1};
@@ -28,14 +26,12 @@ namespace muon::schematic {
     TEST_CASE("shader with path deserialization", "[schematic]") {
         const auto shader = shaderJsonWithPath.get<Shader>();
         REQUIRE(shader.IsValid());
-        REQUIRE(shader.stage == ShaderStage::Compute);
         REQUIRE(shader.entryPoint == "main");
         REQUIRE(shader.path == "foo");
         REQUIRE(shader.workGroupSize == glm::uvec3{32, 32, 1});
     }
 
     const json shaderJsonWithBinaryBlob = R"({
-      "stage": 5,
       "entryPoint": "main",
       "byteOffset": 0,
       "byteLength": 120,
@@ -44,7 +40,6 @@ namespace muon::schematic {
 
     TEST_CASE("shader with binary blob serialization", "[schematic]") {
         Shader shader{};
-        shader.stage = ShaderStage::Compute;
         shader.entryPoint = "main";
         shader.byteOffset = 0;
         shader.byteLength = 120;
@@ -57,7 +52,6 @@ namespace muon::schematic {
     TEST_CASE("shader with binary blob deserialization", "[schematic]") {
         const auto shader = shaderJsonWithBinaryBlob.get<Shader>();
         REQUIRE(shader.IsValid());
-        REQUIRE(shader.stage == ShaderStage::Compute);
         REQUIRE(shader.entryPoint == "main");
         REQUIRE(shader.byteOffset == 0);
         REQUIRE(shader.byteLength == 120);

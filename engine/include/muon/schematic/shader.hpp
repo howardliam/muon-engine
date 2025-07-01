@@ -23,7 +23,6 @@ namespace muon::schematic {
     };
 
     struct Shader final {
-        ShaderStage stage;
         std::optional<std::filesystem::path> path{std::nullopt};
         std::optional<uint64_t> byteOffset{std::nullopt};
         std::optional<uint64_t> byteLength{std::nullopt};
@@ -46,8 +45,6 @@ namespace nlohmann {
         static auto to_json(json &j, const Shader &shader) {
             MU_CORE_ASSERT(shader.IsValid(), "shader must be valid in order to serialise");
 
-            j["stage"] = static_cast<uint32_t>(shader.stage);
-
             if (shader.path) {
                 j["path"] = shader.path->string();
             } else if (shader.byteOffset && shader.byteLength) {
@@ -65,8 +62,6 @@ namespace nlohmann {
         }
 
         static auto from_json(const json &j, Shader &shader) {
-            shader.stage = j["stage"].get<ShaderStage>();
-
             if (j.contains("path")) {
                 shader.path = { j["path"].get<std::filesystem::path>() };
             } else if (j.contains("byteOffset") && j.contains("byteLength")) {
