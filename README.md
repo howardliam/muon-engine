@@ -4,18 +4,11 @@
 # Muon Engine
 Muon is an experimental game engine built for curiosity and learning graphics programming.
 
-![Progress 2025-05-19](./2025-05-19-progress.png)
-
 ## Features
-- Bindless textures
-- Dynamic rendering
-- In-progress render graph
 
 ## Usage
 > [!IMPORTANT]
-> Project uses CMake 4.0.0, C++23, and targets Vulkan 1.3.
-
-Add as a git submodule and link to the required libraries.
+> Project uses CMake 3.30.0, C++23, and targets Vulkan 1.3.
 
 ## Project Conventions
 | item | convention |
@@ -37,19 +30,40 @@ Add as a git submodule and link to the required libraries.
 | commits | commits should follow the [Conventional Commits Spec](https://www.conventionalcommits.org/en/v1.0.0/), post 2025-05-24 |
 
 ## Attributions
-- fmtlib/fmt
-- gabime/spdlog
-- jbeder/yaml-cpp
-- nlohmann/json
+### Compression
 - madler/zlib
 - facebook/zstd
-- wolfpld/tracy
-- glfw/glfw
+
+### Configuration
+- nlohmann/json
+- jbeder/yaml-cpp
+
+### Events
 - wqking/eventpp
+
+### Game
+- skypjack/entt
+
+### Graphics
+- g-truc/glm
+- KhronosGroup/SPIRV-Reflect
 - KhronosGroup/Vulkan-Headers
 - KhronosGroup/Vulkan-Loader
 - GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-- g-truc/glm
+
+### Images
 - randy408/libspng
 - KhronosGroup/KTX-Software
-- skypjack/entt
+
+### Logging
+- fmtlib/fmt
+- gabime/spdlog
+
+### Profiling
+- wolfpld/tracy
+
+### Testing
+- catchorg/catch2
+
+### Windowing
+- glfw/glfw
