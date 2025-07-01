@@ -4,7 +4,7 @@
 
 namespace muon::schematic {
 
-    bool Shader::IsValid() const {
+    auto Shader::IsValid() const -> bool {
         bool pathPresent = path.has_value();
         bool binaryPresent = byteOffset.has_value() && byteLength.has_value();
 

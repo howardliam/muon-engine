@@ -32,7 +32,7 @@ namespace muon::schematic {
 
         std::optional<glm::uvec3> workGroupSize{std::nullopt};
 
-        [[nodiscard]] bool IsValid() const;
+        [[nodiscard]] auto IsValid() const -> bool;
     };
 
 }
@@ -43,7 +43,7 @@ namespace nlohmann {
 
     template<>
     struct adl_serializer<Shader> {
-        static void to_json(json &j, const Shader &shader) {
+        static auto to_json(json &j, const Shader &shader) {
             MU_CORE_ASSERT(shader.IsValid(), "shader must be valid in order to serialise");
 
             j["stage"] = static_cast<uint32_t>(shader.stage);
@@ -64,7 +64,7 @@ namespace nlohmann {
             }
         }
 
-        static void from_json(const json &j, Shader &shader) {
+        static auto from_json(const json &j, Shader &shader) {
             shader.stage = j["stage"].get<ShaderStage>();
 
             if (j.contains("path")) {

@@ -28,7 +28,7 @@ namespace nlohmann {
 
     template<>
     struct adl_serializer<Pipeline> {
-        static void to_json(json &j, const Pipeline &pipeline) {
+        static auto to_json(json &j, const Pipeline &pipeline) {
             j["type"] = static_cast<uint32_t>(pipeline.type);
 
             for (const auto &shader : pipeline.shaders) {
@@ -36,7 +36,7 @@ namespace nlohmann {
             }
         }
 
-        static void from_json(const json &j, Pipeline &pipeline) {
+        static auto from_json(const json &j, Pipeline &pipeline) {
             pipeline.type = j["type"].get<PipelineType>();
 
             MU_CORE_ASSERT(j["shaders"].is_array(), "shaders must be an array");
