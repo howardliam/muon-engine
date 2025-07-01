@@ -11,16 +11,16 @@ namespace muon::schematic {
     const json pipelineJson = R"({
       "type": 2,
       "shaders": {
-        "6": {
+        "0": {
           "entryPoint": "main",
           "path": "foo"
         },
-        "7": {
+        "1": {
           "entryPoint": "main",
           "path": "foo",
           "workGroupSize": [32, 32, 1]
         },
-        "4": {
+        "6": {
           "entryPoint": "main",
           "path": "foo"
         }
@@ -51,6 +51,7 @@ namespace muon::schematic {
         const auto pipeline = pipelineJson.get<Pipeline>();
         REQUIRE(pipeline.type == PipelineType::Meshlet);
         REQUIRE(pipeline.shaders.size() == 3);
+        REQUIRE(pipeline.IsValid());
     }
 
 }
