@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 namespace muon::schematic {
+
     using json = nlohmann::json;
     using namespace nlohmann::literals;
 
@@ -27,6 +28,7 @@ namespace muon::schematic {
 
     TEST_CASE("shader with path deserialization", "[schematic]") {
         auto shader = testWithPath.get<Shader>();
+        REQUIRE(shader.IsValid());
         REQUIRE(shader.stage == ShaderStage::Compute);
         REQUIRE(shader.entryPoint == "main");
         REQUIRE(shader.path == "foo");

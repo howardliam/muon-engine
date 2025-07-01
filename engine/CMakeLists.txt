@@ -130,6 +130,7 @@ if(MUON_ENGINE_TESTS)
 
     set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     set(TEST_FILES
+        ${TEST_DIR}/schematic/pipeline.cpp
         ${TEST_DIR}/schematic/shader.cpp
     )
 
