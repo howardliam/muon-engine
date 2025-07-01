@@ -8,7 +8,7 @@ namespace muon::schematic {
     using json = nlohmann::json;
     using namespace nlohmann::literals;
 
-    const json test = R"({
+    const json pipelineJson = R"({
       "type": 2,
       "shaders": [
         {
@@ -51,11 +51,11 @@ namespace muon::schematic {
         pipeline.shaders[2].workGroupSize = std::nullopt;
 
         const json j = pipeline;
-        REQUIRE(j == test);
+        REQUIRE(j == pipelineJson);
     }
 
     TEST_CASE("pipeline deserialization", "[schematic]") {
-        const auto pipeline = test.get<Pipeline>();
+        const auto pipeline = pipelineJson.get<Pipeline>();
         REQUIRE(pipeline.type == PipelineType::Meshlet);
         REQUIRE(pipeline.shaders.size() == 3);
     }
