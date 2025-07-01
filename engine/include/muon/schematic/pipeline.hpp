@@ -9,6 +9,7 @@
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>
 #include <string>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -18,11 +19,21 @@ namespace muon::schematic {
         Meshlet,
     };
 
-    struct PipelineState {};
+    struct PipelineState {
+        std::optional<VkPipelineInputAssemblyStateCreateInfo> inputAssemblyState{}; // only used by graphics pipelines
+        VkPipelineViewportStateCreateInfo viewportState{};
+        VkPipelineRasterizationStateCreateInfo rasterizationState{};
+        VkPipelineMultisampleStateCreateInfo multisampleState{};
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        VkPipelineColorBlendStateCreateInfo colorBlendState{};
+        VkPipelineDepthStencilStateCreateInfo depthStencilState{};
+        std::vector<VkDynamicState> dynamicStateEnables{};
+        VkPipelineDynamicStateCreateInfo dynamicState{};
+    };
 
     struct Pipeline {
         PipelineType type;
-        std::optional<PipelineState> state{std::nullopt};
+        std::optional<PipelineState> state{std::nullopt}; // used by graphics and meshlet pipelines
         std::map<ShaderStage, Shader> shaders{};
 
         [[nodiscard]] auto IsValid() const -> bool;
