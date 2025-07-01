@@ -7,6 +7,7 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
+#include <optional>
 #include <string>
 
 namespace muon::schematic {
@@ -17,8 +18,11 @@ namespace muon::schematic {
         Meshlet,
     };
 
+    struct PipelineState {};
+
     struct Pipeline {
         PipelineType type;
+        std::optional<PipelineState> state{std::nullopt};
         std::map<ShaderStage, Shader> shaders{};
 
         [[nodiscard]] auto IsValid() const -> bool;

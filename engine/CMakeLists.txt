@@ -94,6 +94,7 @@ set(ENGINE_SRC_FILES
 
     ${SRC_DIR}/input/modifier.cpp
 
+    ${SRC_DIR}/schematic/pipeline.cpp
     ${SRC_DIR}/schematic/shader.cpp
 
     ${SRC_DIR}/scripting/script_manager.cpp
