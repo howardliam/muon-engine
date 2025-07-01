@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/core/assert.hpp"
+#include "muon/schematic/pipeline_state.hpp"
 #include "muon/schematic/shader.hpp"
 #include <cstdint>
 #include <fmt/format.h>
@@ -17,18 +18,6 @@ namespace muon::schematic {
         Graphics,
         Compute,
         Meshlet,
-    };
-
-    struct PipelineState {
-        std::optional<VkPipelineInputAssemblyStateCreateInfo> inputAssemblyState{}; // only used by graphics pipelines
-        VkPipelineViewportStateCreateInfo viewportState{};
-        VkPipelineRasterizationStateCreateInfo rasterizationState{};
-        VkPipelineMultisampleStateCreateInfo multisampleState{};
-        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        VkPipelineColorBlendStateCreateInfo colorBlendState{};
-        VkPipelineDepthStencilStateCreateInfo depthStencilState{};
-        std::vector<VkDynamicState> dynamicStateEnables{};
-        VkPipelineDynamicStateCreateInfo dynamicState{};
     };
 
     struct Pipeline {
@@ -66,6 +55,11 @@ namespace nlohmann {
                     MU_CORE_ERROR("failed to parse {} to shader stage key");
                 }
             }
+
+            if (pipeline.type == PipelineType::Compute) { return; }
+            MU_CORE_ASSERT(j.contains("state"), "state must exist on graphics and meshlet pipelines");
+
+            auto state = j["state"];
         }
     };
 

@@ -62,6 +62,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/input/mouse.hpp
 
     ${INCLUDE_DIR}/muon/schematic/pipeline.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline_state.hpp
     ${INCLUDE_DIR}/muon/schematic/shader.hpp
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
