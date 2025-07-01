@@ -12,14 +12,14 @@
 namespace muon::schematic {
 
     enum class ShaderStage : uint32_t {
+        Task,
+        Mesh,
         Vertex,
         TessellationControl,
         TessellationEvaluation,
         Geometry,
         Fragment,
         Compute,
-        Task,
-        Mesh,
     };
 
     struct Shader final {
