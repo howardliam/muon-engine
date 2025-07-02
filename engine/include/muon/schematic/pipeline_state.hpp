@@ -1,63 +1,17 @@
 #pragma once
 
-#include <bitset>
+#include "muon/schematic/color_blend_state.hpp"
+#include "muon/schematic/input_assembly_state.hpp"
+#include "muon/schematic/multisample_state.hpp"
+#include "muon/schematic/rasterization_state.hpp"
+#include "muon/schematic/viewport_state.hpp"
 #include <cstdint>
-#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
-
-    struct InputAssemblyState {
-        VkPrimitiveTopology topology;
-        bool primitiveRestartEnable{false};
-    };
-
-    struct ViewportState {
-        uint32_t viewportCount{1};
-        uint32_t scissorCount{1};
-    };
-
-    struct RasterizationState {
-        bool depthClampEnable{false};
-        bool rasterizerDiscardEnable{false};
-        VkPolygonMode polygonMode;
-        VkCullModeFlagBits cullMode;
-        VkFrontFace frontFace;
-        bool depthBiasEnable{false};
-        float depthBiasConstantFactor{0.0};
-        float depthBiasClamp{0.0};
-        float depthBiasSlopeFactor{0.0};
-        std::optional<float> lineWidth{std::nullopt};
-    };
-
-    struct MultisampleState {
-        std::bitset<7> rasterizationSamples{0};
-        bool sampleShadingEnable{false};
-        std::optional<float> minSampleShading{std::nullopt};
-        bool alphaToCoverageEnable{false};
-        bool alphaToOneEnable{false};
-    };
-
-    struct ColorBlendAttachment {
-        bool blendEnable{false};
-        VkBlendFactor srcColorBlendFactor;
-        VkBlendFactor dstColorBlendFactor;
-        VkBlendOp colorBlendOp;
-        VkBlendFactor srcAlphaBlendFactor;
-        VkBlendFactor dstAlphaBlendFactor;
-        VkBlendOp alphaBlendOp;
-        VkColorComponentFlags colorWriteMask;
-    };
-
-    struct ColorBlendState {
-        bool logicOpEnable{false};
-        std::optional<VkLogicOp> logicOp{std::nullopt};
-        std::vector<ColorBlendAttachment> attachments{};
-        std::array<float, 4> blendConstants{0.0};
-    };
 
     struct StencilOpState {
         VkStencilOp failOp;
@@ -102,25 +56,25 @@ namespace nlohmann {
     using namespace muon::schematic;
 
     template<>
-    struct adl_serializer<InputAssemblyState> {
-        static auto to_json(json &j, const InputAssemblyState &state) {
-
-        }
-
-        static auto from_json(const json &j, InputAssemblyState &state) {
-            state.topology = j["topology"].get<VkPrimitiveTopology>();
-            state.primitiveRestartEnable = j["primitiveRestartEnable"].get<bool>();
-        }
-    };
-
-    template<>
     struct adl_serializer<PipelineState> {
         static auto to_json(json &j, const PipelineState &state) {
-
+            if (state.inputAssembly.has_value()) {
+                j["inputAssembly"] = *state.inputAssembly;
+            }
+            j["viewport"] = state.viewport;
+            j["rasterization"] = state.rasterization;
+            j["multisample"] = state.multisample;
+            j["colorBlend"] = state.colorBlend;
         }
 
         static auto from_json(const json &j, PipelineState &state) {
-
+            if (j.contains("inputAssembly")) {
+                state.inputAssembly = j["inputAssembly"].get<InputAssemblyState>();
+            }
+            state.viewport = j["viewport"].get<ViewportState>();
+            state.rasterization = j["rasterization"].get<RasterizationState>();
+            state.multisample = j["multisample"].get<MultisampleState>();
+            state.colorBlend = j["colorBlend"].get<ColorBlendState>();
         }
     };
 
