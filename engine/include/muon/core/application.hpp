@@ -16,7 +16,7 @@ namespace muon {
 
     struct ApplicationCommandLineArgs {
         int32_t count;
-        char **args = nullptr;
+        char **args{nullptr};
 
         const char *operator[](int32_t index) const {
             MU_CORE_ASSERT(index < count);
@@ -45,18 +45,19 @@ namespace muon {
 
         friend int ::main(int argc, char **argv);
 
-    private:
-        std::unique_ptr<event::Dispatcher> m_dispatcher = nullptr;
+    protected:
+        std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
+        std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
 
-        std::unique_ptr<Window> m_window = nullptr;
-        std::unique_ptr<graphics::DeviceContext> m_deviceContext = nullptr;
-        std::unique_ptr<graphics::Renderer> m_renderer = nullptr;
+        std::unique_ptr<Window> m_window{nullptr};
+        std::unique_ptr<graphics::DeviceContext> m_deviceContext{nullptr};
+        std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
 
-        std::unique_ptr<ScriptManager> m_scriptManager = nullptr;
+        std::unique_ptr<ScriptManager> m_scriptManager{nullptr};
 
-        bool m_running = true;
+        bool m_running{true};
 
-        static inline Application *s_instance = nullptr;
+        static inline Application *s_instance{nullptr};
     };
 
     Application *CreateApplication(ApplicationCommandLineArgs args);

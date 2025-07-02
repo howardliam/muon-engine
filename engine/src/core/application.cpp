@@ -45,7 +45,6 @@ namespace muon {
         deviceContextSpec.window = m_window.get();
         m_deviceContext = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
 
-
         profiling::ProfilerSpecification profilerSpec{};
         profilerSpec.deviceContext = m_deviceContext.get();
         profiling::Profiler::CreateContext(profilerSpec);
@@ -57,29 +56,29 @@ namespace muon {
 
         m_scriptManager = std::make_unique<ScriptManager>();
 
-        m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
+        m_onWindowClose = m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
             MU_CORE_INFO("window closed received");
             m_running = false;
         });
 
-        m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
+        auto _ = m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
             vkQueueWaitIdle(m_deviceContext->GetGraphicsQueue().Get());
             m_renderer->RebuildSwapchain();
         });
 
-        m_dispatcher->Subscribe<event::MouseButtonEvent>([&](const auto &event) {
+        _ = m_dispatcher->Subscribe<event::MouseButtonEvent>([&](const auto &event) {
             if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
                 m_scriptManager->Run();
             }
         });
 
-        m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
+        _ = m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
             if (event.keycode == input::KeyCode::V && event.mods.IsCtrlDown()) {
                 MU_CORE_INFO("{}", m_window->GetClipboardContents());
             }
         });
 
-        m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) {
+        _ = m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) {
             MU_CORE_INFO("{}", fmt::join(event.paths, ", "));
         });
     }
