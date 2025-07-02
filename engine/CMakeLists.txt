@@ -14,8 +14,6 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
     ${INCLUDE_DIR}/muon/core/window.hpp
 
-    ${INCLUDE_DIR}/muon/debug/profiler.hpp
-
     ${INCLUDE_DIR}/muon/event/dispatcher.hpp
     ${INCLUDE_DIR}/muon/event/event.hpp
 
@@ -37,6 +35,8 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/input/key_code.hpp
     ${INCLUDE_DIR}/muon/input/modifier.hpp
     ${INCLUDE_DIR}/muon/input/mouse.hpp
+
+    ${INCLUDE_DIR}/muon/profiling/profiler.hpp
 
     ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_attachment_info.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_state_info.hpp
@@ -65,8 +65,6 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/window.cpp
 
-    ${SRC_DIR}/debug/profiler.cpp
-
     ${SRC_DIR}/graphics/device_context.cpp
     ${SRC_DIR}/graphics/gpu.cpp
     ${SRC_DIR}/graphics/pipeline_compute.cpp
@@ -80,6 +78,8 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/graphics/swapchain.cpp
 
     ${SRC_DIR}/input/modifier.cpp
+
+    ${SRC_DIR}/profiling/profiler.cpp
 
     ${SRC_DIR}/schematic/pipeline/pipeline_info.cpp
     ${SRC_DIR}/schematic/pipeline/shader_info.cpp

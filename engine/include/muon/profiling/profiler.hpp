@@ -4,7 +4,7 @@
 #include <vulkan/vulkan_core.h>
 #include <tracy/TracyVulkan.hpp>
 
-namespace muon::debug {
+namespace muon::profiling {
 
     struct ProfilerSpecification {
         const graphics::DeviceContext *deviceContext = nullptr;
@@ -16,7 +16,7 @@ namespace muon::debug {
         static void DestroyContext();
 
         static void Collect(VkCommandBuffer cmd);
-        static tracy::VkCtx *GetContext();
+        static const tracy::VkCtx *GetContext();
 
     private:
         static inline tracy::VkCtx *s_tracyContext = nullptr;

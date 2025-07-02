@@ -1,13 +1,13 @@
-#include "muon/debug/profiler.hpp"
+#include "muon/profiling/profiler.hpp"
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include <vulkan/vulkan_core.h>
 
-namespace muon::debug {
+namespace muon::profiling {
 
     void Profiler::CreateContext(const ProfilerSpecification &spec) {
-        MU_CORE_ASSERT(!s_tracyContext, "tracy context must not exist");
+        MU_CORE_ASSERT(s_tracyContext == nullptr, "tracy context must not exist");
 
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -28,7 +28,7 @@ namespace muon::debug {
     }
 
     void Profiler::DestroyContext() {
-        MU_CORE_ASSERT(s_tracyContext, "tracy context must exist");
+        MU_CORE_ASSERT(s_tracyContext != nullptr, "tracy context must exist");
         TracyVkDestroy(s_tracyContext);
         MU_CORE_DEBUG("destroyed profiler context");
     }
@@ -37,8 +37,8 @@ namespace muon::debug {
         TracyVkCollect(s_tracyContext, cmd);
     }
 
-    tracy::VkCtx *Profiler::GetContext() {
-        MU_CORE_ASSERT(s_tracyContext, "tracy context must exist");
+    const tracy::VkCtx *Profiler::GetContext() {
+        MU_CORE_ASSERT(s_tracyContext != nullptr, "tracy context must exist");
         return s_tracyContext;
     }
 

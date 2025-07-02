@@ -3,13 +3,13 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
-#include "muon/debug/profiler.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
+#include "muon/profiling/profiler.hpp"
 #include <fmt/ranges.h>
 #include <GLFW/glfw3.h>
 #include <limits>
@@ -45,9 +45,10 @@ namespace muon {
         deviceContextSpec.window = m_window.get();
         m_deviceContext = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
 
-        debug::ProfilerSpecification profilerSpec{};
+
+        profiling::ProfilerSpecification profilerSpec{};
         profilerSpec.deviceContext = m_deviceContext.get();
-        debug::Profiler::CreateContext(profilerSpec);
+        profiling::Profiler::CreateContext(profilerSpec);
 
         graphics::RendererSpecification rendererSpec{};
         rendererSpec.window = m_window.get();
@@ -85,7 +86,7 @@ namespace muon {
 
     Application::~Application() {
         MU_CORE_INFO("destroying application");
-        debug::Profiler::DestroyContext();
+        profiling::Profiler::DestroyContext();
     }
 
     Window &Application::GetWindow() const {
