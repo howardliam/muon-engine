@@ -58,3 +58,6 @@
 [submodule "external/catch2"]
 	path = external/catch2
 	url = https://github.com/catchorg/Catch2
+[submodule "external/magic-enum"]
+	path = external/magic-enum
+	url = https://github.com/Neargye/magic_enum
