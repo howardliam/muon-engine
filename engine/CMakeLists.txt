@@ -1,26 +1,3 @@
-# Engine ImGui Library
-
-set(IMGUI_DIR ../external/imgui)
-add_library(muon-imgui STATIC
-    ${IMGUI_DIR}/imconfig.h
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui.h
-    ${IMGUI_DIR}/imgui_demo.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_internal.h
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imstb_rectpack.h
-    ${IMGUI_DIR}/imstb_textedit.h
-    ${IMGUI_DIR}/imstb_truetype.h
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.h
-    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
-)
-add_library(muon::imgui ALIAS muon-imgui)
-target_include_directories(muon-imgui PUBLIC ${IMGUI_DIR})
-
 # Engine Library
 
 set(LIB_NAME ${CMAKE_PROJECT_NAME}-engine)
