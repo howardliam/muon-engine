@@ -61,17 +61,18 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/input/modifier.hpp
     ${INCLUDE_DIR}/muon/input/mouse.hpp
 
-    ${INCLUDE_DIR}/muon/schematic/color_blend_state.hpp
+    ${INCLUDE_DIR}/muon/schematic/color_blend_attachment_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/color_blend_state_info.hpp
     ${INCLUDE_DIR}/muon/schematic/common.hpp
-    ${INCLUDE_DIR}/muon/schematic/depth_stencil_state.hpp
-    ${INCLUDE_DIR}/muon/schematic/input_assembly_state.hpp
-    ${INCLUDE_DIR}/muon/schematic/multisample_state.hpp
+    ${INCLUDE_DIR}/muon/schematic/depth_stencil_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/input_assembly_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/multisample_state_info.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline_state.hpp
-    ${INCLUDE_DIR}/muon/schematic/rasterization_state.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/rasterization_state_info.hpp
     ${INCLUDE_DIR}/muon/schematic/shader.hpp
-    ${INCLUDE_DIR}/muon/schematic/stencil_op_state.hpp
-    ${INCLUDE_DIR}/muon/schematic/viewport_state.hpp
+    ${INCLUDE_DIR}/muon/schematic/stencil_op_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/viewport_state_info.hpp
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
