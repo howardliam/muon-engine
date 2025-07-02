@@ -1,12 +1,12 @@
 #pragma once
 
-#include "muon/schematic/color_blend_state_info.hpp"
-#include "muon/schematic/depth_stencil_state_info.hpp"
-#include "muon/schematic/dynamic_state_info.hpp"
-#include "muon/schematic/input_assembly_state_info.hpp"
-#include "muon/schematic/multisample_state_info.hpp"
-#include "muon/schematic/rasterization_state_info.hpp"
-#include "muon/schematic/viewport_state_info.hpp"
+#include "muon/schematic/pipeline/color_blend_state_info.hpp"
+#include "muon/schematic/pipeline/depth_stencil_state_info.hpp"
+#include "muon/schematic/pipeline/dynamic_state_info.hpp"
+#include "muon/schematic/pipeline/input_assembly_state_info.hpp"
+#include "muon/schematic/pipeline/multisample_state_info.hpp"
+#include "muon/schematic/pipeline/rasterization_state_info.hpp"
+#include "muon/schematic/pipeline/viewport_state_info.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>

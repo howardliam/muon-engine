@@ -1,4 +1,4 @@
-#include "muon/schematic/pipeline.hpp"
+#include "muon/schematic/pipeline/pipeline_info.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -73,7 +73,7 @@ namespace muon::schematic {
     })"_json;
 
     TEST_CASE("pipeline serialization", "[schematic]") {
-        Pipeline pipeline{};
+        PipelineInfo pipeline{};
         pipeline.type = PipelineType::Meshlet;
 
         pipeline.shaders[ShaderStage::Task].entryPoint = "main";

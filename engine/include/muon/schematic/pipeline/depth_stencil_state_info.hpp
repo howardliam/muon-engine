@@ -1,7 +1,7 @@
 #pragma once
 
-#include "muon/schematic/common.hpp"
-#include "muon/schematic/stencil_op_state_info.hpp"
+#include "muon/schematic/pipeline/common.hpp"
+#include "muon/schematic/pipeline/stencil_op_state_info.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>

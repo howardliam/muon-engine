@@ -1,4 +1,5 @@
-#include "muon/schematic/pipeline.hpp"
+#include "muon/schematic/pipeline/pipeline_info.hpp"
+
 #include <bitset>
 
 namespace muon::schematic {
@@ -12,7 +13,7 @@ namespace muon::schematic {
     constexpr std::bitset<8> k_meshletPipelineShaderStages{0b01000011};
     constexpr std::bitset<8> k_meshletPipelineRequiredStages{0b01000010};
 
-    auto Pipeline::IsValid() const -> bool {
+    auto PipelineInfo::IsValid() const -> bool {
         std::bitset<8> shaderOccupancy{0};
 
         for (const auto &[stage, _] : shaders) {

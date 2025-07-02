@@ -61,18 +61,18 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/input/modifier.hpp
     ${INCLUDE_DIR}/muon/input/mouse.hpp
 
-    ${INCLUDE_DIR}/muon/schematic/color_blend_attachment_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/color_blend_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/common.hpp
-    ${INCLUDE_DIR}/muon/schematic/depth_stencil_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/input_assembly_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/multisample_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/rasterization_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/shader.hpp
-    ${INCLUDE_DIR}/muon/schematic/stencil_op_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/viewport_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_attachment_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/common.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/depth_stencil_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/input_assembly_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/multisample_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/pipeline_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/pipeline_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/rasterization_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/shader_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/stencil_op_state_info.hpp
+    ${INCLUDE_DIR}/muon/schematic/pipeline/viewport_state_info.hpp
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
@@ -104,8 +104,8 @@ set(ENGINE_SRC_FILES
 
     ${SRC_DIR}/input/modifier.cpp
 
-    ${SRC_DIR}/schematic/pipeline.cpp
-    ${SRC_DIR}/schematic/shader.cpp
+    ${SRC_DIR}/schematic/pipeline/pipeline_info.cpp
+    ${SRC_DIR}/schematic/pipeline/shader_info.cpp
 
     ${SRC_DIR}/scripting/script_manager.cpp
 
@@ -142,8 +142,8 @@ if(MUON_ENGINE_TESTS)
 
     set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     set(TEST_FILES
-        ${TEST_DIR}/schematic/pipeline.cpp
-        ${TEST_DIR}/schematic/shader.cpp
+        ${TEST_DIR}/schematic/pipeline/pipeline_info.cpp
+        ${TEST_DIR}/schematic/pipeline/shader_info.cpp
     )
 
     add_executable(muon-tests ${TEST_FILES})

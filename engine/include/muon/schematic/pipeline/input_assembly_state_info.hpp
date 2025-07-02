@@ -1,6 +1,6 @@
 #pragma once
 
-#include "muon/schematic/common.hpp"
+#include "muon/schematic/pipeline/common.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 

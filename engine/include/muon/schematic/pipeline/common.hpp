@@ -119,4 +119,21 @@ namespace muon::schematic {
         Clockwise,
     };
 
+    enum class ShaderStage {
+        Task,
+        Mesh,
+        Vertex,
+        TessellationControl,
+        TessellationEvaluation,
+        Geometry,
+        Fragment,
+        Compute,
+    };
+
+    enum class PipelineType {
+        Graphics,
+        Compute,
+        Meshlet,
+    };
+
 }

@@ -1,4 +1,4 @@
-#include "muon/schematic/shader.hpp"
+#include "muon/schematic/pipeline/shader_info.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -14,7 +14,7 @@ namespace muon::schematic {
     })"_json;
 
     TEST_CASE("shader with path serialization", "[schematic]") {
-        Shader shader{};
+        ShaderInfo shader{};
         shader.entryPoint = "main";
         shader.path = "foo";
         shader.workGroupSize = {32, 32, 1};
@@ -24,7 +24,7 @@ namespace muon::schematic {
     }
 
     TEST_CASE("shader with path deserialization", "[schematic]") {
-        const auto shader = shaderJsonWithPath.get<Shader>();
+        const auto shader = shaderJsonWithPath.get<ShaderInfo>();
         REQUIRE(shader.IsValid());
         REQUIRE(shader.entryPoint == "main");
         REQUIRE(shader.path == "foo");
@@ -39,7 +39,7 @@ namespace muon::schematic {
     })"_json;
 
     TEST_CASE("shader with binary blob serialization", "[schematic]") {
-        Shader shader{};
+        ShaderInfo shader{};
         shader.entryPoint = "main";
         shader.byteOffset = 0;
         shader.byteLength = 120;
@@ -50,7 +50,7 @@ namespace muon::schematic {
     }
 
     TEST_CASE("shader with binary blob deserialization", "[schematic]") {
-        const auto shader = shaderJsonWithBinaryBlob.get<Shader>();
+        const auto shader = shaderJsonWithBinaryBlob.get<ShaderInfo>();
         REQUIRE(shader.IsValid());
         REQUIRE(shader.entryPoint == "main");
         REQUIRE(shader.byteOffset == 0);

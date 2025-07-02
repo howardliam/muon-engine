@@ -1,10 +1,10 @@
-#include "muon/schematic/shader.hpp"
+#include "muon/schematic/pipeline/shader_info.hpp"
 
 #include <optional>
 
 namespace muon::schematic {
 
-    auto Shader::IsValid() const -> bool {
+    auto ShaderInfo::IsValid() const -> bool {
         bool pathPresent = path.has_value();
         bool binaryPresent = byteOffset.has_value() && byteLength.has_value();
 

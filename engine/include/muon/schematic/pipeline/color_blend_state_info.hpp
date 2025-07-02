@@ -1,7 +1,7 @@
 #pragma once
 
-#include "muon/schematic/color_blend_attachment_info.hpp"
-#include "muon/schematic/common.hpp"
+#include "muon/schematic/pipeline/color_blend_attachment_info.hpp"
+#include "muon/schematic/pipeline/common.hpp"
 #include <array>
 #include <cstdint>
 #include <nlohmann/json.hpp>
