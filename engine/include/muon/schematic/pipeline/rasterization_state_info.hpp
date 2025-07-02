@@ -14,9 +14,9 @@ namespace muon::schematic {
         bool rasterizerDiscardEnable{false};
         bool depthClampEnable{false};
         bool depthBiasEnable{false};
-        float depthBiasConstantFactor{0.0};
-        float depthBiasClamp{0.0};
-        float depthBiasSlopeFactor{0.0};
+        std::optional<float> depthBiasConstantFactor{std::nullopt};
+        std::optional<float> depthBiasClamp{std::nullopt};
+        std::optional<float> depthBiasSlopeFactor{std::nullopt};
     };
 
 }
@@ -37,10 +37,13 @@ namespace nlohmann {
 
             j["rasterizerDiscardEnable"] = info.rasterizerDiscardEnable;
             j["depthClampEnable"] = info.depthClampEnable;
+
             j["depthBiasEnable"] = info.depthBiasEnable;
-            j["depthBiasConstantFactor"] = info.depthBiasConstantFactor;
-            j["depthBiasClamp"] = info.depthBiasClamp;
-            j["depthBiasSlopeFactor"] = info.depthBiasSlopeFactor;
+            if (info.depthBiasEnable) {
+                j["depthBiasConstantFactor"] = *info.depthBiasConstantFactor;
+                j["depthBiasClamp"] = *info.depthBiasClamp;
+                j["depthBiasSlopeFactor"] = *info.depthBiasSlopeFactor;
+            }
         }
 
         static auto from_json(const json &j, auto &info) {
@@ -53,10 +56,13 @@ namespace nlohmann {
 
             info.rasterizerDiscardEnable = j["rasterizerDiscardEnable"].get<bool>();
             info.depthClampEnable = j["depthClampEnable"].get<bool>();
+
             info.depthBiasEnable = j["depthBiasEnable"].get<bool>();
-            info.depthBiasConstantFactor = j["depthBiasConstantFactor"].get<float>();
-            info.depthBiasClamp = j["depthBiasClamp"].get<float>();
-            info.depthBiasSlopeFactor = j["depthBiasSlopeFactor"].get<float>();
+            if (info.depthBiasEnable) {
+                info.depthBiasConstantFactor = j["depthBiasConstantFactor"].get<float>();
+                info.depthBiasClamp = j["depthBiasClamp"].get<float>();
+                info.depthBiasSlopeFactor = j["depthBiasSlopeFactor"].get<float>();
+            }
         }
     };
 

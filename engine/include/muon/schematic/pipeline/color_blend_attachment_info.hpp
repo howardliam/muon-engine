@@ -11,13 +11,13 @@ namespace muon::schematic {
 
     struct ColorBlendAttachmentInfo {
         bool blendEnable{false};
-        std::optional<BlendFactor> srcColorBlendFactor;
-        std::optional<BlendFactor> dstColorBlendFactor;
-        std::optional<BlendOp> colorBlendOp;
-        std::optional<BlendFactor> srcAlphaBlendFactor;
-        std::optional<BlendFactor> dstAlphaBlendFactor;
-        std::optional<BlendOp> alphaBlendOp;
-        std::bitset<4> colorWriteMask;
+        std::optional<BlendFactor> srcColorBlendFactor{std::nullopt};
+        std::optional<BlendFactor> dstColorBlendFactor{std::nullopt};
+        std::optional<BlendOp> colorBlendOp{std::nullopt};
+        std::optional<BlendFactor> srcAlphaBlendFactor{std::nullopt};
+        std::optional<BlendFactor> dstAlphaBlendFactor{std::nullopt};
+        std::optional<BlendOp> alphaBlendOp{std::nullopt};
+        std::optional<std::bitset<4>> colorWriteMask{std::nullopt};
     };
 
 }
