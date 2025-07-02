@@ -9,8 +9,10 @@ namespace muon::event {
 
 
     class Dispatcher : NoCopy, NoMove {
-    public:
+    private:
         using EventDispatcher = eventpp::EventDispatcher<std::type_index, void(const void *)>;
+
+    public:
         using Handle = EventDispatcher::Handle;
 
     public:
