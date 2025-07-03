@@ -8,10 +8,10 @@
 namespace muon::graphics {
 
     struct GpuSpecification {
-        VkPhysicalDevice physicalDevice;
-        VkSurfaceKHR surface;
-        std::unordered_set<const char *> requiredDeviceExtensions;
-        std::unordered_set<const char *> optionalDeviceExtensions;
+        VkPhysicalDevice physicalDevice{nullptr};
+        VkSurfaceKHR surface{nullptr};
+        std::unordered_set<const char *> requiredDeviceExtensions{};
+        std::unordered_set<const char *> optionalDeviceExtensions{};
     };
 
     class Gpu {
@@ -33,8 +33,8 @@ namespace muon::graphics {
         );
 
     private:
-        std::bitset<4> m_coreSuitabilities = 0;
-        uint64_t m_memorySize = 0;
+        std::bitset<4> m_coreSuitabilities{0};
+        uint64_t m_memorySize{0};
         std::unordered_set<std::string> m_supportedExtensions{};
     };
 

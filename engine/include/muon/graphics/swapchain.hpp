@@ -14,7 +14,7 @@ namespace muon::graphics {
     }
 
     struct SwapchainSpecification {
-        const DeviceContext *deviceContext;
+        const DeviceContext *device;
         VkExtent2D windowExtent;
         VkColorSpaceKHR colorSpace;
         VkFormat format;
@@ -50,13 +50,13 @@ namespace muon::graphics {
         void CreateSyncObjects();
 
     private:
-        const DeviceContext &m_deviceContext;
+        const DeviceContext &m_device;
 
-        VkSwapchainKHR m_swapchain = nullptr;
-        std::shared_ptr<Swapchain> m_oldSwapchain = nullptr;
+        VkSwapchainKHR m_swapchain{nullptr};
+        std::shared_ptr<Swapchain> m_oldSwapchain{nullptr};
         VkExtent2D m_swapchainExtent;
 
-        uint32_t m_imageCount;
+        uint32_t m_imageCount{0};
 
         VkFormat m_swapchainFormat;
         VkColorSpaceKHR m_swapchainColorSpace;
@@ -69,7 +69,7 @@ namespace muon::graphics {
         std::vector<VkSemaphore> m_renderFinishedSemaphores{};
         std::vector<VkFence> m_imagesInFlight{};
 
-        uint32_t m_currentFrame = 0;
+        uint32_t m_currentFrame{0};
     };
 
 }

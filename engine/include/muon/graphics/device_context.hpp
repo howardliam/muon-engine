@@ -41,22 +41,22 @@ namespace muon::graphics {
         void CreateAllocator();
 
     private:
-        VkInstance m_instance = nullptr;
+        VkInstance m_instance{nullptr};
 
-        VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;
+        VkDebugUtilsMessengerEXT m_debugMessenger{nullptr};
 
-        VkSurfaceKHR m_surface = nullptr;
+        VkSurfaceKHR m_surface{nullptr};
 
-        VkPhysicalDevice m_physicalDevice = nullptr;
+        VkPhysicalDevice m_physicalDevice{nullptr};
         std::unordered_set<std::string> m_enabledExtensions{};
 
-        VkDevice m_device = nullptr;
+        VkDevice m_device{nullptr};
 
-        std::unique_ptr<Queue> m_graphicsQueue = nullptr;
-        std::unique_ptr<Queue> m_computeQueue = nullptr;
-        std::unique_ptr<Queue> m_transferQueue = nullptr;
+        std::unique_ptr<Queue> m_graphicsQueue{nullptr};
+        std::unique_ptr<Queue> m_computeQueue{nullptr};
+        std::unique_ptr<Queue> m_transferQueue{nullptr};
 
-        VmaAllocator m_allocator = nullptr;
+        VmaAllocator m_allocator{nullptr};
     };
 
 }

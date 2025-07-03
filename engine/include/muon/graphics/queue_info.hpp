@@ -33,8 +33,8 @@ namespace muon::graphics {
         [[nodiscard]] const std::vector<QueueFamilyInfo> &GetFamilyInfo() const;
 
     private:
-        uint32_t m_totalQueueCount = 0;
-        std::vector<QueueFamilyInfo> m_families;
+        uint32_t m_totalQueueCount{0};
+        std::vector<QueueFamilyInfo> m_families{};
     };
 
 }

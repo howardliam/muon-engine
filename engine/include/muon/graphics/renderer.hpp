@@ -13,7 +13,7 @@ namespace muon::graphics {
 
     struct RendererSpecification {
         const Window *window;
-        const DeviceContext *deviceContext;
+        const DeviceContext *device;
     };
 
     class Renderer : NoCopy, NoMove {
@@ -44,23 +44,23 @@ namespace muon::graphics {
 
     private:
         const Window &m_window;
-        const DeviceContext &m_deviceContext;
+        const DeviceContext &m_device;
 
-        bool m_hdrSupport = false;
+        bool m_hdrSupport{false};
         std::vector<VkSurfaceFormatKHR> m_availableHdrSurfaceFormats{};
         std::vector<VkSurfaceFormatKHR> m_availableSdrSurfaceFormats{};
-        bool m_hdrEnabled = false;
-        uint32_t m_activeSurfaceFormat = 0;
+        bool m_hdrEnabled{false};
+        uint32_t m_activeSurfaceFormat{0};
 
         std::unordered_set<VkPresentModeKHR> m_availablePresentModes{};
         VkPresentModeKHR m_selectedPresentMode;
 
-        std::unique_ptr<Swapchain> m_swapchain = nullptr;
+        std::unique_ptr<Swapchain> m_swapchain{nullptr};
         std::vector<VkCommandBuffer> m_commandBuffers{};
 
-        uint32_t m_currentImageIndex = 0;
-        uint32_t m_currentFrameIndex = 0;
-        bool m_frameInProgress = false;
+        uint32_t m_currentImageIndex{0};
+        uint32_t m_currentFrameIndex{0};
+        bool m_frameInProgress{false};
     };
 
 }

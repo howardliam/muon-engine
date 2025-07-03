@@ -5,7 +5,7 @@
 
 namespace muon::graphics {
 
-    Renderer::Renderer(const RendererSpecification &spec) : m_window(*spec.window), m_deviceContext(*spec.deviceContext) {
+    Renderer::Renderer(const RendererSpecification &spec) : m_window(*spec.window), m_device(*spec.device) {
         ProbeSurfaceFormats();
         ProbePresentModes();
 
@@ -15,8 +15,8 @@ namespace muon::graphics {
 
     Renderer::~Renderer() {
         vkFreeCommandBuffers(
-            m_deviceContext.GetDevice(),
-            m_deviceContext.GetGraphicsQueue().GetCommandPool(),
+            m_device.GetDevice(),
+            m_device.GetGraphicsQueue().GetCommandPool(),
             m_commandBuffers.size(),
             m_commandBuffers.data()
         );
@@ -106,10 +106,10 @@ namespace muon::graphics {
 
     void Renderer::ProbeSurfaceFormats() {
         uint32_t surfaceFormatCount = 0;
-        auto result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, nullptr);
+        auto result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &surfaceFormatCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
         std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
 
 
@@ -176,10 +176,10 @@ namespace muon::graphics {
 
     void Renderer::ProbePresentModes() {
         uint32_t presentModeCount = 0;
-        auto result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, nullptr);
+        auto result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &presentModeCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
         std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_deviceContext.GetPhysicalDevice(), m_deviceContext.GetSurface(), &presentModeCount, presentModes.data());
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &presentModeCount, presentModes.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present mode count");
 
         for (const auto &presentMode : presentModes) {
@@ -209,7 +209,7 @@ namespace muon::graphics {
         const auto &surfaceFormat = GetActiveSurfaceFormat();
 
         SwapchainSpecification swapchainSpec{};
-        swapchainSpec.deviceContext = &m_deviceContext;
+        swapchainSpec.device = &m_device;
         swapchainSpec.windowExtent = m_window.GetExtent();
         swapchainSpec.colorSpace = surfaceFormat.colorSpace;
         swapchainSpec.format = surfaceFormat.format;
@@ -231,10 +231,10 @@ namespace muon::graphics {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level =  VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = m_deviceContext.GetGraphicsQueue().GetCommandPool();
+        allocInfo.commandPool = m_device.GetGraphicsQueue().GetCommandPool();
         allocInfo.commandBufferCount = m_commandBuffers.size();
 
-        auto result = vkAllocateCommandBuffers(m_deviceContext.GetDevice(), &allocInfo, m_commandBuffers.data());
+        auto result = vkAllocateCommandBuffers(m_device.GetDevice(), &allocInfo, m_commandBuffers.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate command buffers");
     }
 
