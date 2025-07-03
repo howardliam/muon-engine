@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-    PipelineGraphics::PipelineGraphics(const PipelineGraphicsSpecification &spec) : m_device(spec.device), m_layout(spec.layout) {
+    PipelineGraphics::PipelineGraphics(const PipelineGraphicsSpecification &spec) : m_device(*spec.device), m_layout(spec.layout) {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Graphics, "must be graphics pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid graphics pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for graphics pipeline");
@@ -31,16 +31,16 @@ namespace muon::graphics {
     }
 
     PipelineGraphics::~PipelineGraphics() {
-        vkDestroyPipeline(m_device, m_pipeline, nullptr);
+        vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
         for (const auto shader : m_shaders) {
-            vkDestroyShaderModule(m_device, shader, nullptr);
+            vkDestroyShaderModule(m_device.GetDevice(), shader, nullptr);
         }
-        vkDestroyPipelineCache(m_device, m_cache, nullptr);
+        vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
     }
 
     void PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
         if (m_pipeline) {
-            vkDestroyPipeline(m_device, m_pipeline, nullptr);
+            vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
         }
 
         CreatePipeline(renderingCreateInfo);
@@ -67,7 +67,7 @@ namespace muon::graphics {
         createInfo.initialDataSize = 0;
         createInfo.pInitialData = nullptr;
 
-        auto result = vkCreatePipelineCache(m_device, &createInfo, nullptr, &m_cache);
+        auto result = vkCreatePipelineCache(m_device.GetDevice(), &createInfo, nullptr, &m_cache);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline cache");
     }
 
@@ -98,7 +98,7 @@ namespace muon::graphics {
             shaderCreateInfo.codeSize = byteCode.size();
             shaderCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
-            auto result = vkCreateShaderModule(m_device, &shaderCreateInfo, nullptr, &m_shaders[index]);
+            auto result = vkCreateShaderModule(m_device.GetDevice(), &shaderCreateInfo, nullptr, &m_shaders[index]);
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute shader module");
 
             VkPipelineShaderStageCreateInfo shaderStageCreateInfo{};
@@ -152,7 +152,7 @@ namespace muon::graphics {
         pipelineCreateInfo.basePipelineIndex = -1;
         pipelineCreateInfo.basePipelineHandle = nullptr;
 
-        auto result = vkCreateGraphicsPipelines(m_device, m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
+        auto result = vkCreateGraphicsPipelines(m_device.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline");
     }
 

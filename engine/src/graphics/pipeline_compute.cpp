@@ -6,7 +6,7 @@
 
 namespace muon::graphics {
 
-    PipelineCompute::PipelineCompute(const PipelineComputeSpecification &spec) : m_device(spec.device), m_layout(spec.layout) {
+    PipelineCompute::PipelineCompute(const PipelineComputeSpecification &spec) : m_device(*spec.device), m_layout(spec.layout) {
         MU_CORE_ASSERT(spec.device, "device must not be null");
         MU_CORE_ASSERT(spec.layout, "layout must not be null");
 
@@ -16,9 +16,9 @@ namespace muon::graphics {
     }
 
     PipelineCompute::~PipelineCompute() {
-        vkDestroyPipeline(m_device, m_pipeline, nullptr);
-        vkDestroyShaderModule(m_device, m_shader, nullptr);
-        vkDestroyPipelineCache(m_device, m_cache, nullptr);
+        vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
+        vkDestroyShaderModule(m_device.GetDevice(), m_shader, nullptr);
+        vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
     }
 
     void PipelineCompute::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const {
@@ -50,7 +50,7 @@ namespace muon::graphics {
         createInfo.initialDataSize = 0;
         createInfo.pInitialData = nullptr;
 
-        auto result = vkCreatePipelineCache(m_device, &createInfo, nullptr, &m_cache);
+        auto result = vkCreatePipelineCache(m_device.GetDevice(), &createInfo, nullptr, &m_cache);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute pipeline cache");
     }
 
@@ -62,7 +62,7 @@ namespace muon::graphics {
         createInfo.codeSize = byteCode.size();
         createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
-        auto result = vkCreateShaderModule(m_device, &createInfo, nullptr, &m_shader);
+        auto result = vkCreateShaderModule(m_device.GetDevice(), &createInfo, nullptr, &m_shader);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute shader module");
     }
 
@@ -81,7 +81,7 @@ namespace muon::graphics {
         pipelineCreateInfo.basePipelineIndex = -1;
         pipelineCreateInfo.basePipelineHandle = nullptr;
 
-        auto result = vkCreateComputePipelines(m_device, m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
+        auto result = vkCreateComputePipelines(m_device.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute pipeline");
     }
 

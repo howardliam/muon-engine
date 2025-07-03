@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/graphics/device_context.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <optional>
@@ -9,7 +10,7 @@
 namespace muon::graphics {
 
     struct PipelineLayoutSpecification {
-        VkDevice device{nullptr};
+        const DeviceContext *device{nullptr};
         std::vector<VkDescriptorSetLayout> setLayouts{};
         std::optional<VkPushConstantRange> pushConstant{std::nullopt};
     };
@@ -23,7 +24,8 @@ namespace muon::graphics {
         [[nodiscard]] VkPipelineLayout Get() const;
 
     private:
-        VkDevice m_device{nullptr};
+        const DeviceContext &m_device;
+
         VkPipelineLayout m_layout{nullptr};
     };
 

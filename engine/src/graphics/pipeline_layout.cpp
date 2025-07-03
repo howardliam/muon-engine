@@ -4,7 +4,7 @@
 
 namespace muon::graphics {
 
-    PipelineLayout::PipelineLayout(const PipelineLayoutSpecification &spec) : m_device(spec.device) {
+    PipelineLayout::PipelineLayout(const PipelineLayoutSpecification &spec) : m_device(*spec.device) {
         VkPipelineLayoutCreateInfo createInfo{};
         createInfo.setLayoutCount = spec.setLayouts.size();
         createInfo.pSetLayouts = spec.setLayouts.data();
@@ -18,12 +18,12 @@ namespace muon::graphics {
             createInfo.pPushConstantRanges = nullptr;
         }
 
-        auto result = vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_layout);
+        auto result = vkCreatePipelineLayout(m_device.GetDevice(), &createInfo, nullptr, &m_layout);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create pipeline layout");
     }
 
     PipelineLayout::~PipelineLayout() {
-        vkDestroyPipelineLayout(m_device, m_layout, nullptr);
+        vkDestroyPipelineLayout(m_device.GetDevice(), m_layout, nullptr);
     }
 
     VkPipelineLayout PipelineLayout::Get() const {

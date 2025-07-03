@@ -1,5 +1,6 @@
 #pragma once
 
+#include "muon/graphics/device_context.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
 #include "muon/schematic/pipeline/pipeline_info.hpp"
 #include "muon/utils/nocopy.hpp"
@@ -10,7 +11,7 @@
 namespace muon::graphics {
 
     struct PipelineGraphicsSpecification {
-        VkDevice device{nullptr};
+        const DeviceContext *device{nullptr};
         std::shared_ptr<PipelineLayout> layout{nullptr};
         schematic::PipelineInfo pipelineInfo{};
     };
@@ -29,7 +30,8 @@ namespace muon::graphics {
         void CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo);
 
     private:
-        VkDevice m_device{nullptr};
+        const DeviceContext &m_device;
+
         std::shared_ptr<PipelineLayout> m_layout{nullptr};
         VkPipelineCache m_cache{nullptr};
 
