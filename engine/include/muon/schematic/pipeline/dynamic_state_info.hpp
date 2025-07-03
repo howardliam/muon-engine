@@ -4,11 +4,27 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
     struct DynamicStateInfo {
         std::vector<DynamicState> states{};
+
+        constexpr auto ToVk() const -> std::tuple<VkPipelineDynamicStateCreateInfo, std::vector<VkDynamicState>> {
+            VkPipelineDynamicStateCreateInfo info{};
+            std::vector<VkDynamicState> dynamicStateEnables{};
+            dynamicStateEnables.reserve(states.size());
+
+            for (const auto &dynamic : states) {
+                dynamicStateEnables.push_back(static_cast<VkDynamicState>(dynamic));
+            }
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+            info.pDynamicStates = dynamicStateEnables.data();
+            info.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+
+            return { info, dynamicStateEnables };
+        }
     };
 
 }

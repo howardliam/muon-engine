@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -19,6 +20,28 @@ namespace muon::schematic {
         bool stencilTestEnable{false};
         std::optional<StencilOpStateInfo> front{std::nullopt};
         std::optional<StencilOpStateInfo> back{std::nullopt};
+
+        constexpr auto ToVk() const -> VkPipelineDepthStencilStateCreateInfo {
+            VkPipelineDepthStencilStateCreateInfo info{};
+
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            info.depthTestEnable = depthTestEnable;
+            if (depthTestEnable) {
+                info.depthWriteEnable = *depthWriteEnable;
+                info.depthCompareOp = static_cast<VkCompareOp>(*depthCompareOp);
+                info.depthBoundsTestEnable = *depthBoundsTestEnable;
+                info.minDepthBounds = *minDepthBounds;
+                info.maxDepthBounds = *maxDepthBounds;
+            }
+
+            info.stencilTestEnable = stencilTestEnable;
+            if (stencilTestEnable) {
+                info.front = front->ToVk();
+                info.back = back->ToVk();
+            }
+
+            return info;
+        }
     };
 
 }

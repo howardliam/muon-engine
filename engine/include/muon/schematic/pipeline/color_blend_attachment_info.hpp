@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -18,6 +19,23 @@ namespace muon::schematic {
         std::optional<BlendFactor> dstAlphaBlendFactor{std::nullopt};
         std::optional<BlendOp> alphaBlendOp{std::nullopt};
         std::optional<std::bitset<4>> colorWriteMask{std::nullopt};
+
+        constexpr auto ToVk() const -> VkPipelineColorBlendAttachmentState {
+            VkPipelineColorBlendAttachmentState state{};
+
+            state.blendEnable = blendEnable;
+            if (blendEnable) {
+                state.srcColorBlendFactor = static_cast<VkBlendFactor>(*srcColorBlendFactor);
+                state.dstColorBlendFactor = static_cast<VkBlendFactor>(*dstColorBlendFactor);
+                state.colorBlendOp = static_cast<VkBlendOp>(*colorBlendOp);
+                state.srcAlphaBlendFactor = static_cast<VkBlendFactor>(*srcAlphaBlendFactor);
+                state.dstAlphaBlendFactor = static_cast<VkBlendFactor>(*dstAlphaBlendFactor);
+                state.alphaBlendOp = static_cast<VkBlendOp>(*colorBlendOp);
+                state.colorWriteMask = colorWriteMask->to_ulong();
+            }
+
+            return state;
+        }
     };
 
 }
@@ -37,7 +55,7 @@ namespace nlohmann {
                 j["srcAlphaBlendFactor"] = static_cast<uint32_t>(*info.srcAlphaBlendFactor);
                 j["dstAlphaBlendFactor"] = static_cast<uint32_t>(*info.dstAlphaBlendFactor);
                 j["alphaBlendOp"] = static_cast<uint32_t>(*info.alphaBlendOp);
-                j["colorWriteMask"] = info.colorWriteMask.to_ulong();
+                j["colorWriteMask"] = info.colorWriteMask->to_ulong();
             }
         }
 

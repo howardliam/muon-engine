@@ -3,6 +3,7 @@
 #include "muon/schematic/pipeline/common.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -12,6 +13,22 @@ namespace muon::schematic {
         std::optional<float> minSampleShading{std::nullopt};
         bool alphaToCoverageEnable{false};
         bool alphaToOneEnable{false};
+
+        constexpr auto ToVk() const -> VkPipelineMultisampleStateCreateInfo {
+            VkPipelineMultisampleStateCreateInfo info{};
+
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+            info.rasterizationSamples = static_cast<VkSampleCountFlagBits>(rasterizationSamples);
+            info.sampleShadingEnable = sampleShadingEnable;
+            if (sampleShadingEnable) {
+                info.minSampleShading = *minSampleShading;
+            }
+            info.alphaToCoverageEnable = alphaToCoverageEnable;
+            info.alphaToOneEnable = alphaToOneEnable;
+            info.pSampleMask = nullptr;
+
+            return info;
+        }
     };
 
 }

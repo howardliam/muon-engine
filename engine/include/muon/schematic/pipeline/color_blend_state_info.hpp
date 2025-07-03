@@ -8,6 +8,7 @@
 #include <nlohmann/adl_serializer.hpp>
 #include <optional>
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -16,6 +17,29 @@ namespace muon::schematic {
         std::optional<LogicOp> logicOp{std::nullopt};
         std::vector<ColorBlendAttachmentInfo> attachments{};
         std::array<float, 4> blendConstants{0.0};
+
+        constexpr auto ToVk() const -> std::tuple<VkPipelineColorBlendStateCreateInfo, std::vector<VkPipelineColorBlendAttachmentState>> {
+            VkPipelineColorBlendStateCreateInfo info{};
+            std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
+            colorBlendAttachments.reserve(attachments.size());
+            for (const auto &attachment : attachments) {
+                colorBlendAttachments.push_back(attachment.ToVk());
+            }
+
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            info.logicOpEnable = logicOpEnable;
+            if (logicOpEnable) {
+                info.logicOp = static_cast<VkLogicOp>(*logicOp);
+            }
+            info.attachmentCount = colorBlendAttachments.size();
+            info.pAttachments = colorBlendAttachments.data();
+            info.blendConstants[0] = blendConstants[0];
+            info.blendConstants[1] = blendConstants[1];
+            info.blendConstants[2] = blendConstants[2];
+            info.blendConstants[3] = blendConstants[3];
+
+            return { info, colorBlendAttachments };
+        }
     };
 
 }

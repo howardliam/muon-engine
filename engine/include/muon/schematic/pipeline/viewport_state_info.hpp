@@ -2,12 +2,25 @@
 
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
     struct ViewportStateInfo {
         uint32_t viewportCount{1};
         uint32_t scissorCount{1};
+
+        constexpr auto ToVk() const -> VkPipelineViewportStateCreateInfo {
+            VkPipelineViewportStateCreateInfo info{};
+
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+            info.viewportCount = viewportCount;
+            info.pViewports = nullptr;
+            info.scissorCount = scissorCount;
+            info.pScissors = nullptr;
+
+            return info;
+        }
     };
 
 }

@@ -14,95 +14,17 @@ namespace muon::graphics {
         MU_CORE_ASSERT(spec.pipelineInfo.state->inputAssembly.has_value(), "pipeline state must have input assembly info for graphics pipeline");
 
         const auto &state = *spec.pipelineInfo.state;
-
-        m_state.inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        m_state.inputAssemblyState.topology = static_cast<VkPrimitiveTopology>(state.inputAssembly->topology);
-        m_state.inputAssemblyState.primitiveRestartEnable = state.inputAssembly->primitiveRestartEnable;
-
-        m_state.viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        m_state.viewportState.viewportCount = state.viewport.viewportCount;
-        m_state.viewportState.pViewports = nullptr;
-        m_state.viewportState.scissorCount = state.viewport.scissorCount;
-        m_state.viewportState.pScissors = nullptr;
-
-        m_state.rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        m_state.rasterizationState.polygonMode = static_cast<VkPolygonMode>(state.rasterization.polygonMode);
-        if (state.rasterization.polygonMode == schematic::PolygonMode::Line) {
-            m_state.rasterizationState.lineWidth = *state.rasterization.lineWidth;
-        }
-        m_state.rasterizationState.cullMode = static_cast<VkCullModeFlagBits>(state.rasterization.cullMode);
-        m_state.rasterizationState.frontFace = static_cast<VkFrontFace>(state.rasterization.frontFace);
-        m_state.rasterizationState.rasterizerDiscardEnable = state.rasterization.rasterizerDiscardEnable;
-        m_state.rasterizationState.depthClampEnable = state.rasterization.depthClampEnable;
-        m_state.rasterizationState.depthBiasEnable = state.rasterization.depthBiasEnable;
-        if (state.rasterization.depthBiasEnable) {
-            m_state.rasterizationState.depthBiasConstantFactor = *state.rasterization.depthBiasConstantFactor;
-            m_state.rasterizationState.depthBiasClamp = *state.rasterization.depthBiasClamp;
-            m_state.rasterizationState.depthBiasSlopeFactor = *state.rasterization.depthBiasSlopeFactor;
-        }
-
-        m_state.multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        m_state.multisampleState.rasterizationSamples = static_cast<VkSampleCountFlagBits>(state.multisample.rasterizationSamples);
-        m_state.multisampleState.sampleShadingEnable = state.multisample.sampleShadingEnable;
-        if (state.multisample.sampleShadingEnable) {
-            m_state.multisampleState.minSampleShading = *state.multisample.minSampleShading;
-        }
-        m_state.multisampleState.alphaToCoverageEnable = state.multisample.alphaToCoverageEnable;
-        m_state.multisampleState.alphaToOneEnable = state.multisample.alphaToOneEnable;
-        m_state.multisampleState.pSampleMask = nullptr;
-
-        m_state.colorBlendAttachments.reserve(state.colorBlend.attachments.size());
-        for (const auto &attachment : state.colorBlend.attachments) {
-            VkPipelineColorBlendAttachmentState att{};
-            att.blendEnable = attachment.blendEnable;
-            if (attachment.blendEnable) {
-                att.srcColorBlendFactor = static_cast<VkBlendFactor>(*attachment.srcColorBlendFactor);
-                att.dstColorBlendFactor = static_cast<VkBlendFactor>(*attachment.dstColorBlendFactor);
-                att.colorBlendOp = static_cast<VkBlendOp>(*attachment.colorBlendOp);
-                att.srcAlphaBlendFactor = static_cast<VkBlendFactor>(*attachment.srcAlphaBlendFactor);
-                att.dstAlphaBlendFactor = static_cast<VkBlendFactor>(*attachment.dstAlphaBlendFactor);
-                att.alphaBlendOp = static_cast<VkBlendOp>(*attachment.colorBlendOp);
-                att.colorWriteMask = attachment.colorWriteMask->to_ulong();
-            }
-
-            m_state.colorBlendAttachments.push_back(att);
-        }
-
-        m_state.colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        m_state.colorBlendState.logicOpEnable = state.colorBlend.logicOpEnable;
-        if (state.colorBlend.logicOpEnable) {
-            m_state.colorBlendState.logicOp = static_cast<VkLogicOp>(*state.colorBlend.logicOp);
-        }
-        m_state.colorBlendState.attachmentCount = m_state.colorBlendAttachments.size();
-        m_state.colorBlendState.pAttachments = m_state.colorBlendAttachments.data();
-        m_state.colorBlendState.blendConstants[0] = state.colorBlend.blendConstants[0];
-        m_state.colorBlendState.blendConstants[1] = state.colorBlend.blendConstants[1];
-        m_state.colorBlendState.blendConstants[2] = state.colorBlend.blendConstants[2];
-        m_state.colorBlendState.blendConstants[3] = state.colorBlend.blendConstants[3];
-
-        m_state.depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        m_state.depthStencilState.depthTestEnable = state.depthStencil.depthTestEnable;
-        if (state.depthStencil.depthTestEnable) {
-            m_state.depthStencilState.depthWriteEnable = *state.depthStencil.depthWriteEnable;
-            m_state.depthStencilState.depthCompareOp = static_cast<VkCompareOp>(*state.depthStencil.depthCompareOp);
-            m_state.depthStencilState.depthBoundsTestEnable = *state.depthStencil.depthBoundsTestEnable;
-            m_state.depthStencilState.minDepthBounds = *state.depthStencil.minDepthBounds;
-            m_state.depthStencilState.maxDepthBounds = *state.depthStencil.maxDepthBounds;
-        }
-
-        m_state.depthStencilState.stencilTestEnable = state.depthStencil.stencilTestEnable;
-        if (state.depthStencil.stencilTestEnable) {
-            m_state.depthStencilState.front = VkStencilOpState{};
-            m_state.depthStencilState.back = VkStencilOpState{};
-        }
-
-        m_state.dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        m_state.dynamicStateEnables.reserve(state.dynamic.states.size());
-        for (const auto &dynamic : state.dynamic.states) {
-            m_state.dynamicStateEnables.push_back(static_cast<VkDynamicState>(dynamic));
-        }
-        m_state.dynamicState.pDynamicStates = m_state.dynamicStateEnables.data();
-        m_state.dynamicState.dynamicStateCount = static_cast<uint32_t>(m_state.dynamicStateEnables.size());
+        m_state.inputAssemblyState = state.inputAssembly->ToVk();
+        m_state.viewportState = state.viewport.ToVk();
+        m_state.rasterizationState = state.rasterization.ToVk();
+        m_state.multisampleState = state.multisample.ToVk();
+        const auto [colorBlendState, colorBlendAttachments] = state.colorBlend.ToVk();
+        m_state.colorBlendAttachments = colorBlendAttachments;
+        m_state.colorBlendState = colorBlendState;
+        m_state.depthStencilState = state.depthStencil.ToVk();
+        const auto [dynamicState, dynamicStateEnables] = state.dynamic.ToVk();
+        m_state.dynamicStateEnables = dynamicStateEnables;
+        m_state.dynamicState = dynamicState;
 
         CreateCache();
         CreateShaderModules(spec.pipelineInfo.shaders);

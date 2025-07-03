@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -15,6 +16,20 @@ namespace muon::schematic {
         uint32_t compareMask{0};
         uint32_t writeMask{0};
         uint32_t reference{0};
+
+        constexpr auto ToVk() const -> VkStencilOpState {
+            VkStencilOpState state{};
+
+            state.failOp = static_cast<VkStencilOp>(failOp);
+            state.passOp = static_cast<VkStencilOp>(passOp);
+            state.depthFailOp = static_cast<VkStencilOp>(depthFailOp);
+            state.compareOp = static_cast<VkCompareOp>(compareOp);
+            state.compareMask = compareMask;
+            state.writeMask = writeMask;
+            state.reference = reference;
+
+            return state;
+        }
     };
 
 }

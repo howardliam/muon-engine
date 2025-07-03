@@ -3,6 +3,7 @@
 #include "muon/schematic/pipeline/common.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::schematic {
 
@@ -17,6 +18,28 @@ namespace muon::schematic {
         std::optional<float> depthBiasConstantFactor{std::nullopt};
         std::optional<float> depthBiasClamp{std::nullopt};
         std::optional<float> depthBiasSlopeFactor{std::nullopt};
+
+        constexpr auto ToVk() const -> VkPipelineRasterizationStateCreateInfo {
+            VkPipelineRasterizationStateCreateInfo info{};
+
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+            info.polygonMode = static_cast<VkPolygonMode>(polygonMode);
+            if (polygonMode == schematic::PolygonMode::Line) {
+                info.lineWidth = *lineWidth;
+            }
+            info.cullMode = static_cast<VkCullModeFlagBits>(cullMode);
+            info.frontFace = static_cast<VkFrontFace>(frontFace);
+            info.rasterizerDiscardEnable = rasterizerDiscardEnable;
+            info.depthClampEnable = depthClampEnable;
+            info.depthBiasEnable = depthBiasEnable;
+            if (depthBiasEnable) {
+                info.depthBiasConstantFactor = *depthBiasConstantFactor;
+                info.depthBiasClamp = *depthBiasClamp;
+                info.depthBiasSlopeFactor = *depthBiasSlopeFactor;
+            }
+
+            return info;
+        }
     };
 
 }
