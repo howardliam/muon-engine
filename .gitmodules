@@ -61,3 +61,6 @@
 [submodule "external/magic-enum"]
 	path = external/magic-enum
 	url = https://github.com/Neargye/magic_enum
+[submodule "external/slang"]
+	path = external/slang
+	url = https://github.com/shader-slang/slang
