@@ -1,23 +1,19 @@
-#include "muon/graphics/pipeline_graphics.hpp"
+#include "muon/graphics/pipeline_meshlet.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/schematic/pipeline/common.hpp"
 #include "muon/utils/fs.hpp"
 #include <map>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-    PipelineGraphics::PipelineGraphics(const PipelineGraphicsSpecification &spec) : m_device(spec.device), m_layout(spec.layout) {
-        MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Graphics, "must be graphics pipeline config");
-        MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid graphics pipeline config");
-        MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for graphics pipeline");
-        MU_CORE_ASSERT(spec.pipelineInfo.state->inputAssembly.has_value(), "pipeline state must have input assembly info for graphics pipeline");
+    PipelineMeshlet::PipelineMeshlet(const PipelineMeshletSpecification &spec) : m_device(spec.device), m_layout(spec.layout) {
+        MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Meshlet, "must be meshlet pipeline config");
+        MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid meshlet pipeline config");
+        MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for meshlet pipeline");
 
         const auto &state = *spec.pipelineInfo.state;
-
-        m_state.inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        m_state.inputAssemblyState.topology = static_cast<VkPrimitiveTopology>(state.inputAssembly->topology);
-        m_state.inputAssemblyState.primitiveRestartEnable = state.inputAssembly->primitiveRestartEnable;
 
         m_state.viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         m_state.viewportState.viewportCount = state.viewport.viewportCount;
@@ -108,7 +104,7 @@ namespace muon::graphics {
         CreateShaderModules(spec.pipelineInfo.shaders);
     }
 
-    PipelineGraphics::~PipelineGraphics() {
+    PipelineMeshlet::~PipelineMeshlet() {
         vkDestroyPipeline(m_device, m_pipeline, nullptr);
         for (const auto shader : m_shaders) {
             vkDestroyShaderModule(m_device, shader, nullptr);
@@ -116,7 +112,7 @@ namespace muon::graphics {
         vkDestroyPipelineCache(m_device, m_cache, nullptr);
     }
 
-    void PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
+    void PipelineMeshlet::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
         if (m_pipeline) {
             vkDestroyPipeline(m_device, m_pipeline, nullptr);
         }
@@ -124,7 +120,7 @@ namespace muon::graphics {
         CreatePipeline(renderingCreateInfo);
     }
 
-    void PipelineGraphics::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) {
+    void PipelineMeshlet::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) {
         vkCmdBindDescriptorSets(
             cmd,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -138,7 +134,7 @@ namespace muon::graphics {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
     }
 
-    void PipelineGraphics::CreateCache() {
+    void PipelineMeshlet::CreateCache() {
         VkPipelineCacheCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
         createInfo.flags = 0;
@@ -149,19 +145,13 @@ namespace muon::graphics {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline cache");
     }
 
-    void PipelineGraphics::CreateShaderModules(const std::unordered_map<schematic::ShaderStage, schematic::ShaderInfo> &shaders) {
+    void PipelineMeshlet::CreateShaderModules(const std::unordered_map<schematic::ShaderStage, schematic::ShaderInfo> &shaders) {
         std::map<VkShaderStageFlagBits, std::filesystem::path> shaderPaths;
 
-        shaderPaths[VK_SHADER_STAGE_VERTEX_BIT] = *shaders.find(schematic::ShaderStage::Vertex)->second.path;
-        if (shaders.contains(schematic::ShaderStage::TessellationControl)) {
-            shaderPaths[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = *shaders.find(schematic::ShaderStage::TessellationControl)->second.path;
+        if (shaders.contains(schematic::ShaderStage::Task)) {
+            shaderPaths[VK_SHADER_STAGE_TASK_BIT_EXT] = *shaders.find(schematic::ShaderStage::Task)->second.path;
         }
-        if (shaders.contains(schematic::ShaderStage::TessellationEvaluation)) {
-            shaderPaths[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = *shaders.find(schematic::ShaderStage::TessellationEvaluation)->second.path;
-        }
-        if (shaders.contains(schematic::ShaderStage::Geometry)) {
-            shaderPaths[VK_SHADER_STAGE_GEOMETRY_BIT] = *shaders.find(schematic::ShaderStage::Geometry)->second.path;
-        }
+        shaderPaths[VK_SHADER_STAGE_MESH_BIT_EXT] = *shaders.find(schematic::ShaderStage::Mesh)->second.path;
         shaderPaths[VK_SHADER_STAGE_FRAGMENT_BIT] = *shaders.find(schematic::ShaderStage::Fragment)->second.path;
 
         m_shaders.resize(shaderPaths.size());
@@ -194,28 +184,13 @@ namespace muon::graphics {
         }
     }
 
-    void PipelineGraphics::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
-        VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
-        vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-        if (m_bindingDescription) {
-            vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
-            vertexInputStateCreateInfo.pVertexBindingDescriptions = &m_bindingDescription.value();
-            vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(m_attributeDescriptions.size());
-            vertexInputStateCreateInfo.pVertexAttributeDescriptions = m_attributeDescriptions.data();
-        } else {
-            vertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
-            vertexInputStateCreateInfo.pVertexBindingDescriptions = nullptr;
-            vertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
-            vertexInputStateCreateInfo.pVertexAttributeDescriptions = nullptr;
-        }
-
+    void PipelineMeshlet::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
         VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
         pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineCreateInfo.stageCount = static_cast<uint32_t>(m_shaderStages.size());
         pipelineCreateInfo.pStages = m_shaderStages.data();
-        pipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
-        pipelineCreateInfo.pInputAssemblyState = &m_state.inputAssemblyState;
+        pipelineCreateInfo.pVertexInputState = nullptr;
+        pipelineCreateInfo.pInputAssemblyState = nullptr;
         pipelineCreateInfo.pViewportState = &m_state.viewportState;
         pipelineCreateInfo.pRasterizationState = &m_state.rasterizationState;
         pipelineCreateInfo.pMultisampleState = &m_state.multisampleState;

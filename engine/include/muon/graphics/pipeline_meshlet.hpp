@@ -9,16 +9,16 @@
 
 namespace muon::graphics {
 
-    struct PipelineGraphicsSpecification {
+    struct PipelineMeshletSpecification {
         VkDevice device{nullptr};
         std::shared_ptr<PipelineLayout> layout{nullptr};
         schematic::PipelineInfo pipelineInfo{};
     };
 
-    class PipelineGraphics : NoCopy, NoMove {
+    class PipelineMeshlet : NoCopy, NoMove {
     public:
-        PipelineGraphics(const PipelineGraphicsSpecification &spec);
-        ~PipelineGraphics();
+        PipelineMeshlet(const PipelineMeshletSpecification &spec);
+        ~PipelineMeshlet();
 
         void Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo);
         void Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets);
@@ -33,8 +33,7 @@ namespace muon::graphics {
         std::shared_ptr<PipelineLayout> m_layout{nullptr};
         VkPipelineCache m_cache{nullptr};
 
-        struct PipelineGraphicsState {
-            VkPipelineInputAssemblyStateCreateInfo inputAssemblyState{};
+        struct PipelineMeshletState {
             VkPipelineViewportStateCreateInfo viewportState{};
             VkPipelineRasterizationStateCreateInfo rasterizationState{};
             VkPipelineMultisampleStateCreateInfo multisampleState{};
@@ -44,12 +43,10 @@ namespace muon::graphics {
             std::vector<VkDynamicState> dynamicStateEnables{};
             VkPipelineDynamicStateCreateInfo dynamicState{};
         };
-        PipelineGraphicsState m_state{};
+        PipelineMeshletState m_state{};
 
         std::vector<VkShaderModule> m_shaders{};
         std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
-        std::vector<VkVertexInputAttributeDescription> m_attributeDescriptions{};
-        std::optional<VkVertexInputBindingDescription> m_bindingDescription{std::nullopt};
 
         VkPipeline m_pipeline{nullptr};
     };
