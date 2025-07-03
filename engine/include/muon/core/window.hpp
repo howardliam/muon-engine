@@ -11,11 +11,11 @@
 namespace muon {
 
     struct WindowSpecification {
-        event::Dispatcher *dispatcher = nullptr;
-        uint32_t width;
-        uint32_t height;
-        std::string_view title;
-        std::filesystem::path icon;
+        event::Dispatcher *dispatcher{nullptr};
+        uint32_t width{std::numeric_limits<uint32_t>().max()};
+        uint32_t height{std::numeric_limits<uint32_t>().max()};
+        std::string_view title{};
+        std::filesystem::path icon{};
     };
 
     class Window {
@@ -44,13 +44,13 @@ namespace muon {
         std::unique_ptr<WindowHandle> m_handle;
 
         struct WindowData {
-            const event::Dispatcher *dispatcher;
+            const event::Dispatcher *dispatcher{nullptr};
 
-            std::string title;
-            uint32_t width;
-            uint32_t height;
-            uint32_t refreshRate;
-            bool rawMouseMotion = false;
+            std::string title{};
+            uint32_t width{};
+            uint32_t height{};
+            uint32_t refreshRate{};
+            bool rawMouseMotion{false};
         };
         WindowData m_data{};
     };
@@ -59,9 +59,9 @@ namespace muon {
 
 namespace YAML {
 
-    template <>
+    template<>
     struct convert<muon::WindowSpecification> {
-        static Node encode(const muon::WindowSpecification &spec) {
+        static auto encode(const auto &spec) -> Node {
             Node node;
             node["title"] = spec.title;
             node["dimensions"].push_back(spec.width);
@@ -69,7 +69,7 @@ namespace YAML {
             return node;
         }
 
-        static bool decode(const Node &node, muon::WindowSpecification &spec) {
+        static auto decode(const Node &node, auto &spec) -> bool {
             if (!node.IsMap()) {
                 return false;
             }
