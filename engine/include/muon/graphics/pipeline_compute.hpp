@@ -39,7 +39,7 @@ namespace muon::graphics {
         std::shared_ptr<PipelineLayout> m_layout{nullptr};
         VkPipelineCache m_cache{nullptr};
 
-        VkShaderModule m_shader;
+        VkShaderModule m_shader{nullptr};
 
         VkPipeline m_pipeline{nullptr};
     };
