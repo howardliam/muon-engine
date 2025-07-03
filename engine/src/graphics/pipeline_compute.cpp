@@ -35,8 +35,8 @@ namespace muon::graphics {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
     }
 
-    void PipelineCompute::Dispatch(VkCommandBuffer cmd, const VkExtent2D &extent) const {
-        vkCmdDispatch(cmd, 32, 32, 1);
+    void PipelineCompute::Dispatch(VkCommandBuffer cmd, const VkExtent2D &extent, const glm::uvec3 &groupCount) const {
+        vkCmdDispatch(cmd, groupCount.x, groupCount.y, groupCount.z);
     }
 
     VkPipeline PipelineCompute::Get() const {

@@ -4,6 +4,7 @@
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <filesystem>
+#include <glm/vec3.hpp>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 
@@ -21,7 +22,7 @@ namespace muon::graphics {
         ~PipelineCompute();
 
         void Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const;
-        void Dispatch(VkCommandBuffer cmd, const VkExtent2D &extent) const;
+        void Dispatch(VkCommandBuffer cmd, const VkExtent2D &extent, const glm::uvec3 &groupCount) const;
 
     public:
         [[nodiscard]] VkPipeline Get() const;
