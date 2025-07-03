@@ -1,6 +1,7 @@
 #include "muon/graphics/pipeline_meshlet.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/log.hpp"
 #include "muon/schematic/pipeline/common.hpp"
 #include "muon/utils/fs.hpp"
 #include <map>
@@ -27,6 +28,8 @@ namespace muon::graphics {
 
         CreateCache();
         CreateShaderModules(spec.pipelineInfo.shaders);
+
+        MU_CORE_DEBUG("created meshlet pipeline");
     }
 
     PipelineMeshlet::~PipelineMeshlet() {
@@ -35,6 +38,7 @@ namespace muon::graphics {
             vkDestroyShaderModule(m_device.GetDevice(), shader, nullptr);
         }
         vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
+        MU_CORE_DEBUG("destroyed meshlet pipeline");
     }
 
     void PipelineMeshlet::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
@@ -67,7 +71,7 @@ namespace muon::graphics {
         createInfo.pInitialData = nullptr;
 
         auto result = vkCreatePipelineCache(m_device.GetDevice(), &createInfo, nullptr, &m_cache);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline cache");
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create meshlet pipeline cache");
     }
 
     void PipelineMeshlet::CreateShaderModules(const std::unordered_map<schematic::ShaderStage, schematic::ShaderInfo> &shaders) {
@@ -92,7 +96,7 @@ namespace muon::graphics {
             shaderCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
             auto result = vkCreateShaderModule(m_device.GetDevice(), &shaderCreateInfo, nullptr, &m_shaders[index]);
-            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute shader module");
+            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create meshlet shader module");
 
             VkPipelineShaderStageCreateInfo shaderStageCreateInfo{};
             shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -131,7 +135,7 @@ namespace muon::graphics {
         pipelineCreateInfo.basePipelineHandle = nullptr;
 
         auto result = vkCreateGraphicsPipelines(m_device.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline");
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create meshlet pipeline");
     }
 
 }

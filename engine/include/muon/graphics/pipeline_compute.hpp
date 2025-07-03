@@ -2,9 +2,9 @@
 
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
+#include "muon/schematic/pipeline/pipeline_info.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
-#include <filesystem>
 #include <glm/vec3.hpp>
 #include <memory>
 #include <vulkan/vulkan_core.h>
@@ -12,9 +12,9 @@
 namespace muon::graphics {
 
     struct PipelineComputeSpecification {
-        const DeviceContext *device;
+        const DeviceContext *device{nullptr};
         std::shared_ptr<PipelineLayout> layout{nullptr};
-        std::filesystem::path path{};
+        schematic::PipelineInfo pipelineInfo{};
     };
 
     class PipelineCompute : NoCopy, NoMove {
@@ -30,7 +30,7 @@ namespace muon::graphics {
 
     private:
         void CreateCache();
-        void CreateShaderModule(const std::filesystem::path &path);
+        void CreateShaderModule(const schematic::ShaderInfo &shader);
         void CreatePipeline();
 
     private:

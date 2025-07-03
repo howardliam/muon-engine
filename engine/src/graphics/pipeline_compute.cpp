@@ -7,18 +7,21 @@
 namespace muon::graphics {
 
     PipelineCompute::PipelineCompute(const PipelineComputeSpecification &spec) : m_device(*spec.device), m_layout(spec.layout) {
-        MU_CORE_ASSERT(spec.device, "device must not be null");
-        MU_CORE_ASSERT(spec.layout, "layout must not be null");
+        MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
+        MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid compute pipeline config");
 
         CreateCache();
-        CreateShaderModule(spec.path);
+        CreateShaderModule(spec.pipelineInfo.shaders.find(schematic::ShaderStage::Compute)->second);
         CreatePipeline();
+
+        MU_CORE_DEBUG("created compute pipeline");
     }
 
     PipelineCompute::~PipelineCompute() {
         vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
         vkDestroyShaderModule(m_device.GetDevice(), m_shader, nullptr);
         vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
+        MU_CORE_DEBUG("destroyed compute pipeline");
     }
 
     void PipelineCompute::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const {
@@ -54,8 +57,8 @@ namespace muon::graphics {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute pipeline cache");
     }
 
-    void PipelineCompute::CreateShaderModule(const std::filesystem::path &path) {
-        std::vector byteCode = fs::ReadFileBinary(path);
+    void PipelineCompute::CreateShaderModule(const schematic::ShaderInfo &shader) {
+        std::vector byteCode = fs::ReadFileBinary(*shader.path);
 
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

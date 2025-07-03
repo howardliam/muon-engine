@@ -28,6 +28,8 @@ namespace muon::graphics {
 
         CreateCache();
         CreateShaderModules(spec.pipelineInfo.shaders);
+
+        MU_CORE_DEBUG("created graphics pipeline");
     }
 
     PipelineGraphics::~PipelineGraphics() {
@@ -36,6 +38,7 @@ namespace muon::graphics {
             vkDestroyShaderModule(m_device.GetDevice(), shader, nullptr);
         }
         vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
+        MU_CORE_DEBUG("destroyed graphics pipeline");
     }
 
     void PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
@@ -99,7 +102,7 @@ namespace muon::graphics {
             shaderCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
 
             auto result = vkCreateShaderModule(m_device.GetDevice(), &shaderCreateInfo, nullptr, &m_shaders[index]);
-            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute shader module");
+            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics shader module");
 
             VkPipelineShaderStageCreateInfo shaderStageCreateInfo{};
             shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
