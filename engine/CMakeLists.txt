@@ -20,6 +20,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
+    ${INCLUDE_DIR}/muon/graphics/image.hpp
     ${INCLUDE_DIR}/muon/graphics/instance_extensions.hpp
     ${INCLUDE_DIR}/muon/graphics/pipeline_compute.hpp
     ${INCLUDE_DIR}/muon/graphics/pipeline_graphics.hpp
@@ -67,6 +68,7 @@ set(ENGINE_SRC_FILES
 
     ${SRC_DIR}/graphics/device_context.cpp
     ${SRC_DIR}/graphics/gpu.cpp
+    ${SRC_DIR}/graphics/image.cpp
     ${SRC_DIR}/graphics/pipeline_compute.cpp
     ${SRC_DIR}/graphics/pipeline_graphics.cpp
     ${SRC_DIR}/graphics/pipeline_layout.cpp
