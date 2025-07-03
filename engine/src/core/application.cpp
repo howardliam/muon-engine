@@ -12,7 +12,6 @@
 #include "muon/profiling/profiler.hpp"
 #include <fmt/ranges.h>
 #include <GLFW/glfw3.h>
-#include <limits>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
@@ -33,9 +32,6 @@ namespace muon {
             windowSpec = config["window"].as<WindowSpecification>();
         } catch (const std::exception &e) {
             MU_CORE_ERROR("{}, using default values", e.what());
-            // set to rubbish so the window class knows the dimensions are bad
-            windowSpec.width = std::numeric_limits<uint32_t>().max();
-            windowSpec.height = std::numeric_limits<uint32_t>().max();
         }
         windowSpec.title = spec.name;
         windowSpec.dispatcher = m_dispatcher.get();
@@ -51,7 +47,7 @@ namespace muon {
 
         graphics::RendererSpecification rendererSpec{};
         rendererSpec.window = m_window.get();
-        rendererSpec.deviceContext = m_deviceContext.get();
+        rendererSpec.device = m_deviceContext.get();
         m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
         m_scriptManager = std::make_unique<ScriptManager>();
