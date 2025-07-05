@@ -9,17 +9,15 @@
 
 namespace muon::graphics {
 
-    namespace constants {
-        constexpr uint32_t maxFramesInFlight = 2;
-    }
+    constexpr uint32_t k_maxFramesInFlight = 2;
 
     struct SwapchainSpecification {
-        const DeviceContext *device;
-        VkExtent2D windowExtent;
-        VkColorSpaceKHR colorSpace;
-        VkFormat format;
-        VkPresentModeKHR presentMode;
-        VkSwapchainKHR oldSwapchain;
+        const DeviceContext *device{nullptr};
+        VkExtent2D windowExtent{};
+        VkColorSpaceKHR colorSpace{};
+        VkFormat format{};
+        VkPresentModeKHR presentMode{};
+        VkSwapchainKHR oldSwapchain{nullptr};
     };
 
     class Swapchain : NoCopy, NoMove {
@@ -27,27 +25,31 @@ namespace muon::graphics {
         Swapchain(const SwapchainSpecification &spec);
         ~Swapchain();
 
-        [[nodiscard]] VkResult AcquireNextImage(uint32_t *imageIndex);
-        [[nodiscard]] VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
+        [[nodiscard]] auto AcquireNextImage(uint32_t *imageIndex) -> VkResult;
+        [[nodiscard]] auto SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) -> VkResult;
 
     public:
-        [[nodiscard]] size_t GetImageCount() const;
+        [[nodiscard]] auto GetImageCount() const -> size_t;
 
-        [[nodiscard]] VkSwapchainKHR GetSwapchain() const;
-        [[nodiscard]] VkFormat GetFormat() const;
-        [[nodiscard]] bool IsImageHdr() const;
-        [[nodiscard]] VkImage GetImage(int32_t index) const;
-        [[nodiscard]] VkImageView GetImageView(int32_t index) const;
+        [[nodiscard]] auto Get() const -> VkSwapchainKHR;
+        [[nodiscard]] auto GetFormat() const -> VkFormat;
+        [[nodiscard]] auto IsImageHdr() const -> bool;
+        [[nodiscard]] auto GetImage(int32_t index) const -> VkImage;
+        [[nodiscard]] auto GetImageView(int32_t index) const -> VkImageView;
 
-        [[nodiscard]] VkExtent2D GetExtent() const;
-        [[nodiscard]] uint32_t GetWidth() const;
-        [[nodiscard]] uint32_t GetHeight() const;
-        [[nodiscard]] float GetAspectRatio() const;
+        [[nodiscard]] auto GetExtent() const -> VkExtent2D;
+        [[nodiscard]] auto GetWidth() const -> uint32_t;
+        [[nodiscard]] auto GetHeight() const -> uint32_t;
+        [[nodiscard]] auto GetAspectRatio() const -> float;
 
     private:
-        void CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presentMode, VkSwapchainKHR oldSwapchain);
-        void CreateImageViews();
-        void CreateSyncObjects();
+        auto CreateSwapchain(
+            VkExtent2D windowExtent,
+            VkPresentModeKHR presentMode,
+            VkSwapchainKHR oldSwapchain
+        ) -> void;
+        auto CreateImageViews() -> void;
+        auto CreateSyncObjects() -> void;
 
     private:
         const DeviceContext &m_device;

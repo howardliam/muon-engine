@@ -43,7 +43,7 @@ namespace muon::graphics {
         MU_CORE_DEBUG("destroyed swapchain");
     }
 
-    VkResult Swapchain::AcquireNextImage(uint32_t *imageIndex) {
+    auto Swapchain::AcquireNextImage(uint32_t *imageIndex) -> VkResult {
         auto result = vkWaitForFences(m_device.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, std::numeric_limits<uint64_t>::max());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
 
@@ -59,7 +59,7 @@ namespace muon::graphics {
         return result;
     }
 
-    VkResult Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+    auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) -> VkResult {
         if (m_imagesInFlight[*imageIndex] != nullptr) {
             auto result = vkWaitForFences(m_device.GetDevice(), 1, &m_imagesInFlight[*imageIndex], true, std::numeric_limits<uint64_t>::max());
             MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
@@ -100,24 +100,24 @@ namespace muon::graphics {
 
         result = vkQueuePresentKHR(m_device.GetGraphicsQueue().Get(), &presentInfo);
 
-        m_currentFrame = (m_currentFrame + 1) % constants::maxFramesInFlight;
+        m_currentFrame = (m_currentFrame + 1) % k_maxFramesInFlight;
 
         return result;
     }
 
-    size_t Swapchain::GetImageCount() const {
+    auto Swapchain::GetImageCount() const -> size_t {
         return m_imageCount;
     }
 
-    VkSwapchainKHR Swapchain::GetSwapchain() const {
+    auto Swapchain::Get() const -> VkSwapchainKHR {
         return m_swapchain;
     }
 
-    VkFormat Swapchain::GetFormat() const {
+    auto Swapchain::GetFormat() const -> VkFormat {
         return m_swapchainFormat;
     }
 
-    bool Swapchain::IsImageHdr() const {
+    auto Swapchain::IsImageHdr() const -> bool {
         switch (m_swapchainColorSpace) {
             case VK_COLOR_SPACE_BT2020_LINEAR_EXT:
             case VK_COLOR_SPACE_HDR10_ST2084_EXT:
@@ -132,31 +132,35 @@ namespace muon::graphics {
         }
     }
 
-    VkImage Swapchain::GetImage(int32_t index) const {
+    auto Swapchain::GetImage(int32_t index) const -> VkImage{
         return m_swapchainImages[index];
     }
 
-    VkImageView Swapchain::GetImageView(int32_t index) const {
+    auto Swapchain::GetImageView(int32_t index) const -> VkImageView {
         return m_swapchainImageViews[index];
     }
 
-    VkExtent2D Swapchain::GetExtent() const {
+    auto Swapchain::GetExtent() const -> VkExtent2D {
         return m_swapchainExtent;
     }
 
-    uint32_t Swapchain::GetWidth() const {
+    auto Swapchain::GetWidth() const -> uint32_t {
         return m_swapchainExtent.width;
     }
 
-    uint32_t Swapchain::GetHeight() const {
+    auto Swapchain::GetHeight() const -> uint32_t {
         return m_swapchainExtent.height;
     }
 
-    float Swapchain::GetAspectRatio() const {
+    auto Swapchain::GetAspectRatio() const -> float {
         return static_cast<float>(m_swapchainExtent.width) / m_swapchainExtent.height;
     }
 
-    void Swapchain::CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presentMode, VkSwapchainKHR oldSwapchain) {
+    auto Swapchain::CreateSwapchain(
+        VkExtent2D windowExtent,
+        VkPresentModeKHR presentMode,
+        VkSwapchainKHR oldSwapchain
+    ) -> void {
         VkSurfaceCapabilitiesKHR capabilities{};
         auto result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &capabilities);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface capabilities");
@@ -212,7 +216,7 @@ namespace muon::graphics {
         m_swapchainExtent = extent;
     }
 
-    void Swapchain::CreateImageViews() {
+    auto Swapchain::CreateImageViews() -> void {
         m_swapchainImageViews.resize(m_imageCount);
 
         bool swizzleRB = false;
@@ -243,7 +247,7 @@ namespace muon::graphics {
         }
     }
 
-    void Swapchain::CreateSyncObjects() {
+    auto Swapchain::CreateSyncObjects() -> void {
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -251,9 +255,9 @@ namespace muon::graphics {
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        m_imageAvailableSemaphores.resize(constants::maxFramesInFlight);
-        m_inFlightFences.resize(constants::maxFramesInFlight);
-        for (uint32_t i = 0; i < constants::maxFramesInFlight; i++) {
+        m_imageAvailableSemaphores.resize(k_maxFramesInFlight);
+        m_inFlightFences.resize(k_maxFramesInFlight);
+        for (uint32_t i = 0; i < k_maxFramesInFlight; i++) {
             VkResult result;
 
             result = vkCreateSemaphore(m_device.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
