@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include "muon/schematic/pipeline/pipeline_state_info.hpp"
 #include "muon/schematic/pipeline/shader_info.hpp"
 #include <cstdint>
@@ -13,10 +12,16 @@
 
 namespace muon::schematic {
 
+    enum class PipelineType {
+        Graphics,
+        Compute,
+        Meshlet,
+    };
+
     struct PipelineInfo {
         PipelineType type;
         std::optional<PipelineStateInfo> state{std::nullopt}; // used by graphics and meshlet pipelines
-        std::unordered_map<ShaderStage, ShaderInfo> shaders{};
+        std::unordered_map<VkShaderStageFlagBits, ShaderInfo> shaders{};
 
         [[nodiscard]] auto IsValid() const -> bool;
     };
@@ -46,7 +51,7 @@ namespace nlohmann {
 
             if (j["shaders"].is_object()) {
                 for (const auto &[stage, shader] : j["shaders"].items()) {
-                    auto stageKey = magic_enum::enum_cast<ShaderStage>(stage);
+                    auto stageKey = magic_enum::enum_cast<VkShaderStageFlagBits>(stage);
                     if (!stageKey.has_value()) { continue; }
                     info.shaders[*stageKey] = shader.get<ShaderInfo>();
                 }

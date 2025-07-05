@@ -1,7 +1,6 @@
 #pragma once
 
 #include "muon/schematic/pipeline/color_blend_attachment_info.hpp"
-#include "muon/schematic/pipeline/common.hpp"
 #include <array>
 #include <cstdint>
 #include <nlohmann/json.hpp>
@@ -14,7 +13,7 @@ namespace muon::schematic {
 
     struct ColorBlendStateInfo {
         bool logicOpEnable{false};
-        std::optional<LogicOp> logicOp{std::nullopt};
+        std::optional<VkLogicOp> logicOp{std::nullopt};
         std::vector<ColorBlendAttachmentInfo> attachments{};
         std::array<float, 4> blendConstants{0.0};
 
@@ -29,7 +28,7 @@ namespace muon::schematic {
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
             info.logicOpEnable = logicOpEnable;
             if (logicOpEnable) {
-                info.logicOp = static_cast<VkLogicOp>(*logicOp);
+                info.logicOp = *logicOp;
             }
             info.attachmentCount = colorBlendAttachments.size();
             info.pAttachments = colorBlendAttachments.data();
@@ -66,7 +65,7 @@ namespace nlohmann {
         static auto from_json(const json &j, auto &info) {
             info.logicOpEnable = j["logicOpEnable"].get<bool>();
             if (info.logicOpEnable && j.contains("logicOp")) {
-                info.logicOp = j["logicOp"].get<LogicOp>();
+                info.logicOp = j["logicOp"].get<VkLogicOp>();
             }
 
             if (j.contains("attachments") && j["attachments"].is_array()) {

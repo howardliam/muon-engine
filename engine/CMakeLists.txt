@@ -42,7 +42,6 @@ set(ENGINE_HEADER_FILES
 
     ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_attachment_info.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/common.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline/depth_stencil_state_info.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline/input_assembly_state_info.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline/multisample_state_info.hpp

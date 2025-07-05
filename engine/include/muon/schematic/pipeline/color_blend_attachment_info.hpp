@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include <bitset>
 #include <cstdint>
 #include <nlohmann/json.hpp>
@@ -12,12 +11,12 @@ namespace muon::schematic {
 
     struct ColorBlendAttachmentInfo {
         bool blendEnable{false};
-        std::optional<BlendFactor> srcColorBlendFactor{std::nullopt};
-        std::optional<BlendFactor> dstColorBlendFactor{std::nullopt};
-        std::optional<BlendOp> colorBlendOp{std::nullopt};
-        std::optional<BlendFactor> srcAlphaBlendFactor{std::nullopt};
-        std::optional<BlendFactor> dstAlphaBlendFactor{std::nullopt};
-        std::optional<BlendOp> alphaBlendOp{std::nullopt};
+        std::optional<VkBlendFactor> srcColorBlendFactor{std::nullopt};
+        std::optional<VkBlendFactor> dstColorBlendFactor{std::nullopt};
+        std::optional<VkBlendOp> colorBlendOp{std::nullopt};
+        std::optional<VkBlendFactor> srcAlphaBlendFactor{std::nullopt};
+        std::optional<VkBlendFactor> dstAlphaBlendFactor{std::nullopt};
+        std::optional<VkBlendOp> alphaBlendOp{std::nullopt};
         std::optional<std::bitset<4>> colorWriteMask{std::nullopt};
 
         constexpr auto ToVk() const -> VkPipelineColorBlendAttachmentState {
@@ -25,12 +24,12 @@ namespace muon::schematic {
 
             state.blendEnable = blendEnable;
             if (blendEnable) {
-                state.srcColorBlendFactor = static_cast<VkBlendFactor>(*srcColorBlendFactor);
-                state.dstColorBlendFactor = static_cast<VkBlendFactor>(*dstColorBlendFactor);
-                state.colorBlendOp = static_cast<VkBlendOp>(*colorBlendOp);
-                state.srcAlphaBlendFactor = static_cast<VkBlendFactor>(*srcAlphaBlendFactor);
-                state.dstAlphaBlendFactor = static_cast<VkBlendFactor>(*dstAlphaBlendFactor);
-                state.alphaBlendOp = static_cast<VkBlendOp>(*colorBlendOp);
+                state.srcColorBlendFactor = *srcColorBlendFactor;
+                state.dstColorBlendFactor = *dstColorBlendFactor;
+                state.colorBlendOp = *colorBlendOp;
+                state.srcAlphaBlendFactor = *srcAlphaBlendFactor;
+                state.dstAlphaBlendFactor = *dstAlphaBlendFactor;
+                state.alphaBlendOp = *colorBlendOp;
                 state.colorWriteMask = colorWriteMask->to_ulong();
             }
 
@@ -62,12 +61,12 @@ namespace nlohmann {
         static auto from_json(const json &j, auto &info) {
             info.blendEnable = j["blendEnable"].get<bool>();
             if (info.blendEnable) {
-                info.srcColorBlendFactor = j["srcColorBlendFactor"].get<BlendFactor>();
-                info.dstColorBlendFactor = j["dstColorBlendFactor"].get<BlendFactor>();
-                info.colorBlendOp = j["colorBlendOp"].get<BlendOp>();
-                info.srcAlphaBlendFactor = j["srcAlphaBlendFactor"].get<BlendFactor>();
-                info.dstAlphaBlendFactor = j["dstAlphaBlendFactor"].get<BlendFactor>();
-                info.alphaBlendOp = j["alphaBlendOp"].get<BlendOp>();
+                info.srcColorBlendFactor = j["srcColorBlendFactor"].get<VkBlendFactor>();
+                info.dstColorBlendFactor = j["dstColorBlendFactor"].get<VkBlendFactor>();
+                info.colorBlendOp = j["colorBlendOp"].get<VkBlendOp>();
+                info.srcAlphaBlendFactor = j["srcAlphaBlendFactor"].get<VkBlendFactor>();
+                info.dstAlphaBlendFactor = j["dstAlphaBlendFactor"].get<VkBlendFactor>();
+                info.alphaBlendOp = j["alphaBlendOp"].get<VkBlendOp>();
                 info.colorWriteMask = j["colorWriteMask"].get<uint8_t>();
             }
         }

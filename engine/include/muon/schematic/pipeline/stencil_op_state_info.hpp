@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include <cstdint>
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
@@ -9,10 +8,10 @@
 namespace muon::schematic {
 
     struct StencilOpStateInfo {
-        StencilOp failOp;
-        StencilOp passOp;
-        StencilOp depthFailOp;
-        CompareOp compareOp;
+        VkStencilOp failOp;
+        VkStencilOp passOp;
+        VkStencilOp depthFailOp;
+        VkCompareOp compareOp;
         uint32_t compareMask{0};
         uint32_t writeMask{0};
         uint32_t reference{0};
@@ -20,10 +19,10 @@ namespace muon::schematic {
         constexpr auto ToVk() const -> VkStencilOpState {
             VkStencilOpState state{};
 
-            state.failOp = static_cast<VkStencilOp>(failOp);
-            state.passOp = static_cast<VkStencilOp>(passOp);
-            state.depthFailOp = static_cast<VkStencilOp>(depthFailOp);
-            state.compareOp = static_cast<VkCompareOp>(compareOp);
+            state.failOp = failOp;
+            state.passOp = passOp;
+            state.depthFailOp = depthFailOp;
+            state.compareOp = compareOp;
             state.compareMask = compareMask;
             state.writeMask = writeMask;
             state.reference = reference;
@@ -51,10 +50,10 @@ namespace nlohmann {
         }
 
         static auto from_json(const json &j, auto &info) {
-            info.failOp = j["failOp"].get<StencilOp>();
-            info.passOp = j["passOp"].get<StencilOp>();
-            info.depthFailOp = j["depthFailOp"].get<StencilOp>();
-            info.compareOp = j["compareOp"].get<CompareOp>();
+            info.failOp = j["failOp"].get<VkStencilOp>();
+            info.passOp = j["passOp"].get<VkStencilOp>();
+            info.depthFailOp = j["depthFailOp"].get<VkStencilOp>();
+            info.compareOp = j["compareOp"].get<VkCompareOp>();
             info.compareMask = j["compareMask"].get<uint32_t>();
             info.writeMask = j["writeMask"].get<uint32_t>();
             info.reference = j["reference"].get<uint32_t>();

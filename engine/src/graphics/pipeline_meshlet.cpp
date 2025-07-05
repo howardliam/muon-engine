@@ -2,7 +2,6 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
-#include "muon/schematic/pipeline/common.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <vulkan/vulkan_core.h>
@@ -8,10 +7,10 @@
 namespace muon::schematic {
 
     struct RasterizationStateInfo {
-        PolygonMode polygonMode;
+        VkPolygonMode polygonMode;
         std::optional<float> lineWidth{std::nullopt};
-        CullMode cullMode;
-        FrontFace frontFace;
+        VkCullModeFlagBits cullMode;
+        VkFrontFace frontFace;
         bool rasterizerDiscardEnable{false};
         bool depthClampEnable{false};
         bool depthBiasEnable{false};
@@ -23,12 +22,12 @@ namespace muon::schematic {
             VkPipelineRasterizationStateCreateInfo info{};
 
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-            info.polygonMode = static_cast<VkPolygonMode>(polygonMode);
-            if (polygonMode == schematic::PolygonMode::Line) {
+            info.polygonMode = polygonMode;
+            if (polygonMode == VK_POLYGON_MODE_LINE) {
                 info.lineWidth = *lineWidth;
             }
-            info.cullMode = static_cast<VkCullModeFlagBits>(cullMode);
-            info.frontFace = static_cast<VkFrontFace>(frontFace);
+            info.cullMode = cullMode;
+            info.frontFace = frontFace;
             info.rasterizerDiscardEnable = rasterizerDiscardEnable;
             info.depthClampEnable = depthClampEnable;
             info.depthBiasEnable = depthBiasEnable;
@@ -52,7 +51,7 @@ namespace nlohmann {
     struct adl_serializer<RasterizationStateInfo> {
         static auto to_json(json &j, const auto &info) {
             j["polygonMode"] = static_cast<uint32_t>(info.polygonMode);
-            if (info.polygonMode == PolygonMode::Line && info.lineWidth.has_value()) {
+            if (info.polygonMode == VK_POLYGON_MODE_LINE && info.lineWidth.has_value()) {
                 j["lineWidth"] = *info.lineWidth;
             }
             j["cullMode"] = static_cast<uint32_t>(info.cullMode);
@@ -70,12 +69,12 @@ namespace nlohmann {
         }
 
         static auto from_json(const json &j, auto &info) {
-            info.polygonMode = j["polygonMode"].get<PolygonMode>();
-            if (info.polygonMode == PolygonMode::Line && j.contains("lineWidth")) {
+            info.polygonMode = j["polygonMode"].get<VkPolygonMode>();
+            if (info.polygonMode == VK_POLYGON_MODE_LINE && j.contains("lineWidth")) {
                 info.lineWidth = j["lineWidth"].get<float>();
             }
-            info.cullMode = j["cullMode"].get<CullMode>();
-            info.frontFace = j["frontFace"].get<FrontFace>();
+            info.cullMode = j["cullMode"].get<VkCullModeFlagBits>();
+            info.frontFace = j["frontFace"].get<VkFrontFace>();
 
             info.rasterizerDiscardEnable = j["rasterizerDiscardEnable"].get<bool>();
             info.depthClampEnable = j["depthClampEnable"].get<bool>();

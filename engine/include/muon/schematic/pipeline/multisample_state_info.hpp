@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <vulkan/vulkan_core.h>
@@ -8,7 +7,7 @@
 namespace muon::schematic {
 
     struct MultisampleStateInfo {
-        RasterizationSamples rasterizationSamples;
+        VkSampleCountFlagBits rasterizationSamples;
         bool sampleShadingEnable{false};
         std::optional<float> minSampleShading{std::nullopt};
         bool alphaToCoverageEnable{false};
@@ -18,7 +17,7 @@ namespace muon::schematic {
             VkPipelineMultisampleStateCreateInfo info{};
 
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-            info.rasterizationSamples = static_cast<VkSampleCountFlagBits>(rasterizationSamples);
+            info.rasterizationSamples = rasterizationSamples;
             info.sampleShadingEnable = sampleShadingEnable;
             if (sampleShadingEnable) {
                 info.minSampleShading = *minSampleShading;
@@ -50,7 +49,7 @@ namespace nlohmann {
         }
 
         static auto from_json(const json &j, auto &info) {
-            info.rasterizationSamples = j["rasterizationSamples"].get<RasterizationSamples>();
+            info.rasterizationSamples = j["rasterizationSamples"].get<VkSampleCountFlagBits>();
             info.sampleShadingEnable = j["sampleShadingEnable"].get<bool>();
             if (info.sampleShadingEnable && j.contains("minSampleShading")) {
                 info.minSampleShading = j["minSampleShading"].get<float>();

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
 #include <vector>
@@ -9,16 +8,15 @@
 namespace muon::schematic {
 
     struct DynamicStateInfo {
-        std::vector<DynamicState> states{};
+        std::vector<VkDynamicState> states{};
 
         constexpr auto ToVk() const -> std::tuple<VkPipelineDynamicStateCreateInfo, std::vector<VkDynamicState>> {
             VkPipelineDynamicStateCreateInfo info{};
             std::vector<VkDynamicState> dynamicStateEnables{};
             dynamicStateEnables.reserve(states.size());
 
-            for (const auto &dynamic : states) {
-                dynamicStateEnables.push_back(static_cast<VkDynamicState>(dynamic));
-            }
+            dynamicStateEnables = states;
+
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
             info.pDynamicStates = dynamicStateEnables.data();
             info.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
@@ -46,7 +44,7 @@ namespace nlohmann {
 
             info.states.reserve(j["states"].size());
             for (const auto &state : j["states"]) {
-                info.states.push_back(j["states"].get<DynamicState>());
+                info.states.push_back(j["states"].get<VkDynamicState>());
             }
         }
     };

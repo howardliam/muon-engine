@@ -1,6 +1,7 @@
 #include "muon/graphics/pipeline_compute.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/log.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
@@ -9,7 +10,7 @@ namespace muon::graphics {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid compute pipeline config");
 
-        const auto &shaderInfo = spec.pipelineInfo.shaders.find(schematic::ShaderStage::Compute)->second;
+        const auto &shaderInfo = spec.pipelineInfo.shaders.find(VK_SHADER_STAGE_COMPUTE_BIT)->second;
         auto shader = m_shaders.emplace_back(nullptr);
         CreateShaderModule(shaderInfo, shader);
         const auto stageInfo = CreateShaderStageInfo(VK_SHADER_STAGE_COMPUTE_BIT, shader, shaderInfo.entryPoint);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/schematic/pipeline/common.hpp"
 #include "muon/schematic/pipeline/stencil_op_state_info.hpp"
 #include <nlohmann/json.hpp>
 #include <nlohmann/adl_serializer.hpp>
@@ -12,7 +11,7 @@ namespace muon::schematic {
     struct DepthStencilStateInfo {
         bool depthTestEnable{false};
         std::optional<bool> depthWriteEnable{std::nullopt};
-        std::optional<CompareOp> depthCompareOp{std::nullopt};
+        std::optional<VkCompareOp> depthCompareOp{std::nullopt};
         std::optional<bool> depthBoundsTestEnable{std::nullopt};
         std::optional<float> minDepthBounds{std::nullopt};
         std::optional<float> maxDepthBounds{std::nullopt};
@@ -28,7 +27,7 @@ namespace muon::schematic {
             info.depthTestEnable = depthTestEnable;
             if (depthTestEnable) {
                 info.depthWriteEnable = *depthWriteEnable;
-                info.depthCompareOp = static_cast<VkCompareOp>(*depthCompareOp);
+                info.depthCompareOp = *depthCompareOp;
                 info.depthBoundsTestEnable = *depthBoundsTestEnable;
                 info.minDepthBounds = *minDepthBounds;
                 info.maxDepthBounds = *maxDepthBounds;
@@ -73,7 +72,7 @@ namespace nlohmann {
             info.depthTestEnable = j["depthTestEnable"].get<bool>();
             if (info.depthTestEnable) {
                 info.depthWriteEnable = j["depthWriteEnable"].get<bool>();
-                info.depthCompareOp = j["depthCompareOp"].get<CompareOp>();
+                info.depthCompareOp = j["depthCompareOp"].get<VkCompareOp>();
                 info.depthBoundsTestEnable = j["depthBoundsTestEnable"].get<bool>();
                 info.minDepthBounds = j["minDepthBounds"].get<float>();
                 info.maxDepthBounds = j["maxDepthBounds"].get<float>();
