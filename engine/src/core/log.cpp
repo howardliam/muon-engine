@@ -31,15 +31,15 @@ namespace muon {
         s_vulkanLogger->flush_on(spdlog::level::trace);
     }
 
-    std::shared_ptr<spdlog::logger> &Log::GetCoreLogger() {
+    auto Log::GetCoreLogger() -> std::shared_ptr<spdlog::logger> & {
         return s_coreLogger;
     }
 
-    std::shared_ptr<spdlog::logger> &Log::GetClientLogger() {
+    auto Log::GetClientLogger() -> std::shared_ptr<spdlog::logger> & {
         return s_clientLogger;
     }
 
-    std::shared_ptr<spdlog::logger> &Log::GetVulkanLogger() {
+    auto Log::GetVulkanLogger() -> std::shared_ptr<spdlog::logger> & {
         return s_vulkanLogger;
     }
 

@@ -84,19 +84,11 @@ namespace muon {
         profiling::Profiler::DestroyContext();
     }
 
-    Window &Application::GetWindow() const {
-        return *m_window;
-    }
-
-    graphics::DeviceContext &Application::GetDeviceContext() const {
-        return *m_deviceContext;
-    }
-
-    Application &Application::Get() {
+    auto Application::Get() -> Application & {
         return *s_instance;
     }
 
-    void Application::Run() {
+    auto Application::Run() -> void {
         MU_CORE_INFO("running application");
 
         while (m_running) {

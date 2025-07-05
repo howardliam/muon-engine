@@ -23,21 +23,22 @@ namespace muon {
         Window(const WindowSpecification &spec);
         ~Window();
 
-        void PollEvents() const;
+        auto PollEvents() const -> void;
 
-        [[nodiscard]] VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const;
-        [[nodiscard]] const char *GetClipboardContents() const;
-        void RequestAttention() const;
+        auto RequestAttention() const -> void;
+
+        [[nodiscard]] auto CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const -> VkResult;
+        [[nodiscard]] auto GetClipboardContents() const -> const char *;
 
     public:
-        [[nodiscard]] VkExtent2D GetExtent() const;
-        [[nodiscard]] uint32_t GetWidth() const;
-        [[nodiscard]] uint32_t GetHeight() const;
-        [[nodiscard]] uint32_t GetRefreshRate() const;
-        [[nodiscard]] std::vector<const char *> GetRequiredExtensions() const;
+        [[nodiscard]] auto GetExtent() const -> VkExtent2D;
+        [[nodiscard]] auto GetWidth() const -> uint32_t;
+        [[nodiscard]] auto GetHeight() const -> uint32_t;
+        [[nodiscard]] auto GetRefreshRate() const -> uint32_t;
+        [[nodiscard]] auto GetRequiredExtensions() const -> std::vector<const char *>;
 
     private:
-        void ConfigureDispatchers();
+        auto ConfigureDispatchers() -> void;
 
     private:
         struct WindowHandle;

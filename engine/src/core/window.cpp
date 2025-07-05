@@ -62,49 +62,49 @@ namespace muon {
         MU_CORE_DEBUG("destroyed window");
     }
 
-    void Window::PollEvents() const {
+    auto Window::PollEvents() const -> void {
         glfwPollEvents();
     }
 
-    VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const {
-        return glfwCreateWindowSurface(instance, m_handle->window, nullptr, surface);
-    }
-
-    const char *Window::GetClipboardContents() const {
-        return glfwGetClipboardString(m_handle->window);
-    }
-
-    void Window::RequestAttention() const {
+    auto Window::RequestAttention() const -> void {
         glfwRequestWindowAttention(m_handle->window);
     }
 
-    VkExtent2D Window::GetExtent() const {
+    auto Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const -> VkResult {
+        return glfwCreateWindowSurface(instance, m_handle->window, nullptr, surface);
+    }
+
+    auto Window::GetClipboardContents() const -> const char * {
+        return glfwGetClipboardString(m_handle->window);
+    }
+
+    auto Window::GetExtent() const -> VkExtent2D {
         return {
             m_data.width,
             m_data.height
         };
     }
 
-    uint32_t Window::GetWidth() const {
+    auto Window::GetWidth() const -> uint32_t {
         return m_data.width;
     }
 
-    uint32_t Window::GetHeight() const {
+    auto Window::GetHeight() const -> uint32_t {
         return m_data.height;
     }
 
-    uint32_t Window::GetRefreshRate() const {
+    auto Window::GetRefreshRate() const -> uint32_t {
         return m_data.refreshRate;
     }
 
-    std::vector<const char *> Window::GetRequiredExtensions() const {
+    auto Window::GetRequiredExtensions() const -> std::vector<const char *> {
         uint32_t count = 0;
         const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&count);
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + count);
         return extensions;
     }
 
-    void Window::ConfigureDispatchers() {
+    auto Window::ConfigureDispatchers() -> void {
         /* window events */
         glfwSetWindowCloseCallback(m_handle->window, [](GLFWwindow *window) {
             const auto &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));

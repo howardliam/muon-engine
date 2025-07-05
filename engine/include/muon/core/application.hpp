@@ -18,7 +18,7 @@ namespace muon {
         int32_t count;
         char **args{nullptr};
 
-        const char *operator[](int32_t index) const {
+        auto operator[](int32_t index) const -> const char * {
             MU_CORE_ASSERT(index < count);
             return args[index];
         }
@@ -35,13 +35,10 @@ namespace muon {
         Application(const ApplicationSpecification &spec);
         virtual ~Application();
 
-        [[nodiscard]] Window &GetWindow() const;
-        [[nodiscard]] graphics::DeviceContext &GetDeviceContext() const;
-
-        [[nodiscard]] static Application &Get();
+        [[nodiscard]] static auto Get() -> Application &;
 
     private:
-        void Run();
+        auto Run() -> void;
 
         friend auto ::main(int32_t argc, char **argv) -> int32_t;
 
