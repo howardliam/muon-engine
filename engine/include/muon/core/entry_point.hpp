@@ -4,9 +4,9 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
-extern muon::Application *muon::CreateApplication(ApplicationCommandLineArgs args);
+extern auto muon::CreateApplication(ApplicationCommandLineArgs args) -> Application *;
 
-int main(int argc, char **argv) {
+auto main(int32_t argc, char **argv) -> int32_t {
     muon::Log::Init();
 
     auto app = muon::CreateApplication({ argc, argv });

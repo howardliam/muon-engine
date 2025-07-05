@@ -10,7 +10,7 @@
 #include <filesystem>
 #include <memory>
 
-int main(int argc, char **argv);
+auto main(int32_t argc, char **argv) -> int32_t;
 
 namespace muon {
 
@@ -43,7 +43,7 @@ namespace muon {
     private:
         void Run();
 
-        friend int ::main(int argc, char **argv);
+        friend auto ::main(int32_t argc, char **argv) -> int32_t;
 
     protected:
         std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
@@ -60,6 +60,6 @@ namespace muon {
         static inline Application *s_instance{nullptr};
     };
 
-    Application *CreateApplication(ApplicationCommandLineArgs args);
+    auto CreateApplication(ApplicationCommandLineArgs args) -> Application *;
 
 }
