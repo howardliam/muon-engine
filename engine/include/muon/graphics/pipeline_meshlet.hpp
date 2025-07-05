@@ -1,10 +1,9 @@
 #pragma once
 
 #include "muon/graphics/device_context.hpp"
+#include "muon/graphics/pipeline_base.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
 #include "muon/schematic/pipeline/pipeline_info.hpp"
-#include "muon/utils/nocopy.hpp"
-#include "muon/utils/nomove.hpp"
 #include <memory>
 #include <vulkan/vulkan_core.h>
 
@@ -16,25 +15,18 @@ namespace muon::graphics {
         schematic::PipelineInfo pipelineInfo{};
     };
 
-    class PipelineMeshlet : NoCopy, NoMove {
+    class PipelineMeshlet : PipelineBase {
     public:
         PipelineMeshlet(const PipelineMeshletSpecification &spec);
         ~PipelineMeshlet();
 
-        void Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo);
-        void Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets);
+        auto Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;
+        auto Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) -> void;
 
     private:
-        void CreateCache();
-        void CreateShaderModules(const std::unordered_map<schematic::ShaderStage, schematic::ShaderInfo> &shaders);
-        void CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo);
+        auto CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;
 
     private:
-        const DeviceContext &m_device;
-
-        std::shared_ptr<PipelineLayout> m_layout{nullptr};
-        VkPipelineCache m_cache{nullptr};
-
         struct PipelineMeshletState {
             VkPipelineViewportStateCreateInfo viewportState{};
             VkPipelineRasterizationStateCreateInfo rasterizationState{};
@@ -47,10 +39,7 @@ namespace muon::graphics {
         };
         PipelineMeshletState m_state{};
 
-        std::vector<VkShaderModule> m_shaders{};
         std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
-
-        VkPipeline m_pipeline{nullptr};
     };
 
 }

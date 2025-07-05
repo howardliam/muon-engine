@@ -2,19 +2,13 @@
 
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
-#include "muon/schematic/pipeline/pipeline_info.hpp"
+#include "muon/schematic/pipeline/shader_info.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
 #include <memory>
 #include <string_view>
 
 namespace muon::graphics {
-
-    struct PipelineSpecification {
-        const DeviceContext *device{nullptr};
-        std::shared_ptr<PipelineLayout> layout{nullptr};
-        schematic::PipelineInfo pipelineInfo{};
-    };
 
     class PipelineBase : NoCopy, NoMove {
     protected:

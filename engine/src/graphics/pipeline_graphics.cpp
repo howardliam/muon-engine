@@ -1,13 +1,11 @@
 #include "muon/graphics/pipeline_graphics.hpp"
 
 #include "muon/core/assert.hpp"
-#include "muon/utils/fs.hpp"
-#include <map>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-    PipelineGraphics::PipelineGraphics(const PipelineGraphicsSpecification &spec) : m_device(*spec.device), m_layout(spec.layout) {
+    PipelineGraphics::PipelineGraphics(const PipelineGraphicsSpecification &spec) : PipelineBase(*spec.device, spec.layout) {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Graphics, "must be graphics pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid graphics pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for graphics pipeline");
@@ -26,22 +24,29 @@ namespace muon::graphics {
         m_state.dynamicStateEnables = dynamicStateEnables;
         m_state.dynamicState = dynamicState;
 
-        CreateCache();
-        CreateShaderModules(spec.pipelineInfo.shaders);
+        const auto &shaders = spec.pipelineInfo.shaders;
+        m_shaders.reserve(shaders.size());
+        m_shaderStages.reserve(shaders.size());
+
+        for (const auto &[stage, shaderInfo] : shaders) {
+            auto shader = m_shaders.emplace_back(nullptr);
+            CreateShaderModule(shaderInfo, shader);
+
+            m_shaderStages.push_back(CreateShaderStageInfo(
+                static_cast<VkShaderStageFlagBits>(stage),
+                shader,
+                shaderInfo.entryPoint
+            ));
+        }
 
         MU_CORE_DEBUG("created graphics pipeline");
     }
 
     PipelineGraphics::~PipelineGraphics() {
-        vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
-        for (const auto shader : m_shaders) {
-            vkDestroyShaderModule(m_device.GetDevice(), shader, nullptr);
-        }
-        vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
         MU_CORE_DEBUG("destroyed graphics pipeline");
     }
 
-    void PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
+    auto PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
         if (m_pipeline) {
             vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
         }
@@ -49,7 +54,7 @@ namespace muon::graphics {
         CreatePipeline(renderingCreateInfo);
     }
 
-    void PipelineGraphics::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) {
+    auto PipelineGraphics::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) -> void {
         vkCmdBindDescriptorSets(
             cmd,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -63,63 +68,7 @@ namespace muon::graphics {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
     }
 
-    void PipelineGraphics::CreateCache() {
-        VkPipelineCacheCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-        createInfo.flags = 0;
-        createInfo.initialDataSize = 0;
-        createInfo.pInitialData = nullptr;
-
-        auto result = vkCreatePipelineCache(m_device.GetDevice(), &createInfo, nullptr, &m_cache);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline cache");
-    }
-
-    void PipelineGraphics::CreateShaderModules(const std::unordered_map<schematic::ShaderStage, schematic::ShaderInfo> &shaders) {
-        std::map<VkShaderStageFlagBits, std::filesystem::path> shaderPaths;
-
-        shaderPaths[VK_SHADER_STAGE_VERTEX_BIT] = *shaders.find(schematic::ShaderStage::Vertex)->second.path;
-        if (shaders.contains(schematic::ShaderStage::TessellationControl)) {
-            shaderPaths[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = *shaders.find(schematic::ShaderStage::TessellationControl)->second.path;
-        }
-        if (shaders.contains(schematic::ShaderStage::TessellationEvaluation)) {
-            shaderPaths[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = *shaders.find(schematic::ShaderStage::TessellationEvaluation)->second.path;
-        }
-        if (shaders.contains(schematic::ShaderStage::Geometry)) {
-            shaderPaths[VK_SHADER_STAGE_GEOMETRY_BIT] = *shaders.find(schematic::ShaderStage::Geometry)->second.path;
-        }
-        shaderPaths[VK_SHADER_STAGE_FRAGMENT_BIT] = *shaders.find(schematic::ShaderStage::Fragment)->second.path;
-
-        m_shaders.resize(shaderPaths.size());
-        m_shaderStages.resize(shaderPaths.size());
-
-        uint32_t index = 0;
-        for (const auto &[stage, path] : shaderPaths) {
-            std::vector byteCode = fs::ReadFileBinary(path);
-
-            VkShaderModuleCreateInfo shaderCreateInfo{};
-            shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-            shaderCreateInfo.codeSize = byteCode.size();
-            shaderCreateInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
-
-            auto result = vkCreateShaderModule(m_device.GetDevice(), &shaderCreateInfo, nullptr, &m_shaders[index]);
-            MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics shader module");
-
-            VkPipelineShaderStageCreateInfo shaderStageCreateInfo{};
-            shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStageCreateInfo.stage = stage;
-            shaderStageCreateInfo.module = m_shaders[index];
-            shaderStageCreateInfo.pName = "main";
-            shaderStageCreateInfo.flags = 0;
-            shaderStageCreateInfo.pNext = nullptr;
-            shaderStageCreateInfo.pSpecializationInfo = nullptr;
-
-            m_shaderStages[index] = shaderStageCreateInfo;
-
-            index += 1;
-        }
-    }
-
-    void PipelineGraphics::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) {
+    auto PipelineGraphics::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
         VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
         vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 

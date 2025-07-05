@@ -5,7 +5,7 @@
 
 namespace muon::graphics {
 
-    PipelineCompute::PipelineCompute(const PipelineSpecification &spec) : PipelineBase(*spec.device, spec.layout) {
+    PipelineCompute::PipelineCompute(const PipelineComputeSpecification &spec) : PipelineBase(*spec.device, spec.layout) {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid compute pipeline config");
 
