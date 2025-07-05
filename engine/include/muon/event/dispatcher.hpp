@@ -20,19 +20,19 @@ namespace muon::event {
         ~Dispatcher() = default;
 
         template<typename Event>
-        [[nodiscard]] Handle Subscribe(std::function<void(const Event &)> listener) {
+        [[nodiscard]] auto Subscribe(std::function<void(const Event &)> listener) -> Handle {
             return m_dispatcher.appendListener(typeid(Event), [listener](const void *event) {
                 listener(*static_cast<const Event *>(event));
             });
         }
 
         template<typename Event>
-        [[nodiscard]] bool Unsubscribe(const Handle handle) {
+        [[nodiscard]] auto Unsubscribe(const Handle handle) -> bool {
             return m_dispatcher.removeListener(typeid(Event), handle);
         }
 
         template<typename Event>
-        void Dispatch(const Event &event) const {
+        auto Dispatch(const Event &event) const -> void {
             m_dispatcher.dispatch(typeid(Event), &event);
         }
 
