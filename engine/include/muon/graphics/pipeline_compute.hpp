@@ -1,47 +1,24 @@
 #pragma once
 
-#include "muon/graphics/device_context.hpp"
-#include "muon/graphics/pipeline_layout.hpp"
-#include "muon/schematic/pipeline/pipeline_info.hpp"
-#include "muon/utils/nocopy.hpp"
-#include "muon/utils/nomove.hpp"
+#include "muon/graphics/pipeline_base.hpp"
 #include <glm/vec3.hpp>
-#include <memory>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-    struct PipelineComputeSpecification {
-        const DeviceContext *device{nullptr};
-        std::shared_ptr<PipelineLayout> layout{nullptr};
-        schematic::PipelineInfo pipelineInfo{};
-    };
-
-    class PipelineCompute : NoCopy, NoMove {
+    class PipelineCompute : PipelineBase {
     public:
-        PipelineCompute(const PipelineComputeSpecification &spec);
+        PipelineCompute(const PipelineSpecification &spec);
         ~PipelineCompute();
 
-        void Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const;
-        void Dispatch(VkCommandBuffer cmd, const VkExtent2D &extent, const glm::uvec3 &groupCount) const;
+        auto Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const -> void;
+        auto Dispatch(VkCommandBuffer cmd, const glm::uvec3 &groupCount) const -> void;
 
     public:
-        [[nodiscard]] VkPipeline Get() const;
+        [[nodiscard]] auto Get() const -> VkPipeline;
 
     private:
-        void CreateCache();
-        void CreateShaderModule(const schematic::ShaderInfo &shader);
-        void CreatePipeline();
-
-    private:
-        const DeviceContext &m_device;
-
-        std::shared_ptr<PipelineLayout> m_layout{nullptr};
-        VkPipelineCache m_cache{nullptr};
-
-        VkShaderModule m_shader{nullptr};
-
-        VkPipeline m_pipeline{nullptr};
+        auto CreatePipeline(const VkPipelineShaderStageCreateInfo &stageInfo) -> void;
     };
 
 }
