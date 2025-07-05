@@ -120,14 +120,14 @@ namespace muon::schematic {
     };
 
     enum class ShaderStage {
-        Task,
-        Mesh,
-        Vertex,
-        TessellationControl,
-        TessellationEvaluation,
-        Geometry,
-        Fragment,
-        Compute,
+        Vertex = 0x0001,
+        TessellationControl = 0x0002,
+        TessellationEvaluation = 0x0004,
+        Geometry = 0x0008,
+        Fragment = 0x0010,
+        Compute = 0x0020,
+        Task = 0x0040,
+        Mesh = 0x0080,
     };
 
     enum class PipelineType {
