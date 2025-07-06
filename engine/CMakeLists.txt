@@ -17,6 +17,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/event/dispatcher.hpp
     ${INCLUDE_DIR}/muon/event/event.hpp
 
+    ${INCLUDE_DIR}/muon/graphics/buffer.hpp
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
@@ -32,6 +33,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/renderer.hpp
     ${INCLUDE_DIR}/muon/graphics/shader_reflection.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
+    ${INCLUDE_DIR}/muon/graphics/texture.hpp
 
     ${INCLUDE_DIR}/muon/input/input_state.hpp
     ${INCLUDE_DIR}/muon/input/key_code.hpp
@@ -66,6 +68,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/window.cpp
 
+    ${SRC_DIR}/graphics/buffer.cpp
     ${SRC_DIR}/graphics/device_context.cpp
     ${SRC_DIR}/graphics/gpu.cpp
     ${SRC_DIR}/graphics/image.cpp
