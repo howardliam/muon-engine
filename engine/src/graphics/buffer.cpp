@@ -1,0 +1,61 @@
+#include "muon/graphics/buffer.hpp"
+
+#include "muon/core/assert.hpp"
+#include "muon/utils/pretty_print.hpp"
+#include <vulkan/vulkan_core.h>
+#include <vk_mem_alloc.h>
+
+namespace muon::graphics {
+
+    Buffer::Buffer(const BufferSpecification &spec) : m_device(*spec.device) {
+        auto getAlignment = [](VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) -> VkDeviceSize {
+            if (minOffsetAlignment > 0) {
+                return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
+            }
+            return instanceSize;
+        };
+
+        m_alignmentSize = getAlignment(spec.instanceSize, spec.minOffsetAlignment);
+        m_size = m_alignmentSize * spec.instanceCount;
+
+        VkBufferCreateInfo bufferCreateInfo{};
+        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.usage = spec.usageFlags;
+        bufferCreateInfo.size = m_size;
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.usage = spec.memoryUsage;
+
+        VmaAllocationInfo allocationInfo{};
+
+        auto result = vmaCreateBuffer(
+            m_device.GetAllocator(),
+            &bufferCreateInfo,
+            &allocationCreateInfo,
+            &m_buffer,
+            &m_allocation,
+            &allocationInfo
+        );
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create buffer");
+
+        MU_CORE_DEBUG("created buffer with size: {}", pp::ParseBytes(m_size));
+    }
+
+    Buffer::~Buffer() {
+        Unmap();
+        vmaDestroyBuffer(m_device.GetAllocator(), m_buffer, m_allocation);
+        MU_CORE_DEBUG("destroyed buffer");
+    }
+
+    [[nodiscard]] auto Buffer::Map() -> VkResult {
+        return vmaMapMemory(m_device.GetAllocator(), m_allocation, &m_mapped);
+    }
+
+    auto Buffer::Unmap() -> void {
+        if (m_mapped == nullptr) { return; }
+        vmaUnmapMemory(m_device.GetAllocator(), m_allocation);
+        m_mapped = nullptr;
+    }
+
+}
