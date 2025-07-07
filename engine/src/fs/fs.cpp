@@ -7,7 +7,7 @@
 namespace muon::fs {
 
     auto ReadFile(const std::filesystem::path &path) -> std::optional<std::string> {
-        std::ifstream file{path, std::ios::ate};
+        std::ifstream file{path};
 
         if (!file.is_open()) {
             MU_CORE_ERROR("failed to open file for reading: {}", path.string());
@@ -15,7 +15,6 @@ namespace muon::fs {
         }
 
         std::stringstream buffer;
-        file.seekg(0);
         buffer << file.rdbuf();
 
         return buffer.str();
