@@ -5,6 +5,6 @@
 
 namespace muon::pp {
 
-    auto PrintBytes(uint64_t byteCount) -> std::string;
+    [[nodiscard]] auto PrintBytes(uint64_t byteCount) -> std::string;
 
 }
