@@ -17,6 +17,8 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/event/dispatcher.hpp
     ${INCLUDE_DIR}/muon/event/event.hpp
 
+    ${INCLUDE_DIR}/muon/fs/fs.hpp
+
     ${INCLUDE_DIR}/muon/graphics/buffer.hpp
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
@@ -57,7 +59,6 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
     ${INCLUDE_DIR}/muon/utils/color.hpp
-    ${INCLUDE_DIR}/muon/utils/fs.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
     ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
@@ -67,6 +68,8 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/core/application.cpp
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/window.cpp
+
+    ${SRC_DIR}/fs/fs.cpp
 
     ${SRC_DIR}/graphics/buffer.cpp
     ${SRC_DIR}/graphics/device_context.cpp
@@ -94,7 +97,6 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
-    ${SRC_DIR}/utils/fs.cpp
     ${SRC_DIR}/utils/pretty_print.cpp
 )
 

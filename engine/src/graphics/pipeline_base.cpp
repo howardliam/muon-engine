@@ -1,7 +1,7 @@
 #include "muon/graphics/pipeline_base.hpp"
 
 #include "muon/core/assert.hpp"
-#include "muon/utils/fs.hpp"
+#include "muon/fs/fs.hpp"
 
 namespace muon::graphics {
 
@@ -29,12 +29,13 @@ namespace muon::graphics {
     }
 
     auto PipelineBase::CreateShaderModule(const schematic::ShaderInfo &shader, VkShaderModule &shaderModule) const -> void {
-        std::vector byteCode = fs::ReadFileBinary(*shader.path);
+        auto byteCode = fs::ReadFile(*shader.path);
+        MU_CORE_ASSERT(byteCode.has_value(), "code does not have value");
 
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = byteCode.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode.data());
+        createInfo.codeSize = byteCode->size();
+        createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode->data());
 
         auto result = vkCreateShaderModule(m_device.GetDevice(), &createInfo, nullptr, &shaderModule);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create shader module");
