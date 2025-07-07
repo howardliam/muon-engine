@@ -82,6 +82,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/graphics/renderer.cpp
     ${SRC_DIR}/graphics/shader_reflection.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
+    ${SRC_DIR}/graphics/texture.cpp
 
     ${SRC_DIR}/input/modifier.cpp
 
