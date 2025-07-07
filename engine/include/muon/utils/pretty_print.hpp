@@ -5,6 +5,6 @@
 
 namespace muon::pp {
 
-    std::string ParseBytes(uint64_t numBytes);
+    auto PrintBytes(uint64_t byteCount) -> std::string;
 
 }
