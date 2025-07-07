@@ -1,17 +1,30 @@
 #include "muon/graphics/image.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/utils/pretty_print.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-    Image::Image(const ImageSpecification &spec) : m_device(*spec.device) {
+    Image::Image(const ImageSpecification &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
         CreateImage();
+        CreateImageView();
+
+        auto cmd = spec.cmd;
+        bool noCommandBuffer = spec.cmd == nullptr;
+
+        if (noCommandBuffer) { cmd = m_device.GetTransferQueue().BeginCommands(); }
+        TransitionLayout(cmd);
+        if (noCommandBuffer) { m_device.GetTransferQueue().EndCommands(cmd); }
+
+        MU_CORE_DEBUG("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
     }
 
     Image::~Image() {
         vkDestroyImageView(m_device.GetDevice(), m_imageView, nullptr);
         vmaDestroyImage(m_device.GetAllocator(), m_image, m_allocation);
+
+        MU_CORE_DEBUG("destroyed image");
     }
 
     auto Image::GetExtent() const -> VkExtent2D {
@@ -83,7 +96,9 @@ namespace muon::graphics {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to bind image memory");
 
         m_bytes = allocInfo.size;
+    }
 
+    auto Image::CreateImageView() -> void {
         m_aspectMask = [](VkFormat format) -> VkImageAspectFlags {
             switch (format) {
                 case VK_FORMAT_UNDEFINED: {
@@ -95,7 +110,6 @@ namespace muon::graphics {
                 case VK_FORMAT_X8_D24_UNORM_PACK32: {
                     return VK_IMAGE_ASPECT_DEPTH_BIT;
                 }
-
 
                 case VK_FORMAT_S8_UINT: {
                     return VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -127,12 +141,40 @@ namespace muon::graphics {
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        result = vkCreateImageView(m_device.GetDevice(), &viewInfo, nullptr, &m_imageView);
+        auto result = vkCreateImageView(m_device.GetDevice(), &viewInfo, nullptr, &m_imageView);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image view");
 
         m_descriptorInfo.imageLayout = m_layout;
         m_descriptorInfo.imageView = m_imageView;
         m_descriptorInfo.sampler = nullptr;
+    }
+
+    auto Image::TransitionLayout(VkCommandBuffer cmd) -> void {
+        VkImageMemoryBarrier2 barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        barrier.image = m_image;
+        barrier.subresourceRange.aspectMask = m_aspectMask;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.srcAccessMask = VK_ACCESS_2_NONE;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+
+        barrier.newLayout = m_layout;
+        barrier.dstAccessMask = m_accessFlags;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstStageMask = m_stageFlags;
+
+        VkDependencyInfo depInfo{};
+        depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+        depInfo.dependencyFlags = 0;
+        depInfo.imageMemoryBarrierCount = 1;
+        depInfo.pImageMemoryBarriers = &barrier;
+        vkCmdPipelineBarrier2(cmd, &depInfo);
     }
 
 }

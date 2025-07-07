@@ -9,13 +9,14 @@
 namespace muon::graphics {
 
     struct ImageSpecification {
-        const DeviceContext *device;
+        const DeviceContext *device{nullptr};
         VkExtent2D extent;
         VkFormat format;
         VkImageLayout layout;
         VkImageUsageFlags usageFlags;
         VkAccessFlags2 accessFlags;
         VkPipelineStageFlags2 stageFlags;
+        VkCommandBuffer cmd{nullptr};
     };
 
     class Image : NoCopy, NoMove {
@@ -37,6 +38,8 @@ namespace muon::graphics {
 
     private:
         auto CreateImage() -> void;
+        auto CreateImageView() -> void;
+        auto TransitionLayout(VkCommandBuffer cmd) -> void;
 
     private:
         const DeviceContext &m_device;
