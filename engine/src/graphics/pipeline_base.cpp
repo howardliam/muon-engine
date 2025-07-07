@@ -29,7 +29,7 @@ namespace muon::graphics {
     }
 
     auto PipelineBase::CreateShaderModule(const schematic::ShaderInfo &shader, VkShaderModule &shaderModule) const -> void {
-        auto byteCode = fs::ReadFile(*shader.path);
+        auto byteCode = fs::ReadFileBinary(*shader.path);
         MU_CORE_ASSERT(byteCode.has_value(), "code does not have value");
 
         VkShaderModuleCreateInfo createInfo{};

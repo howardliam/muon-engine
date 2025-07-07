@@ -2,10 +2,26 @@
 
 #include "muon/core/log.hpp"
 #include <fstream>
+#include <sstream>
 
 namespace muon::fs {
 
-    auto ReadFile(const std::filesystem::path &path) -> std::optional<std::vector<uint8_t>> {
+    auto ReadFile(const std::filesystem::path &path) -> std::optional<std::string> {
+        std::ifstream file{path, std::ios::ate};
+
+        if (!file.is_open()) {
+            MU_CORE_ERROR("failed to open file for reading: {}", path.string());
+            return std::nullopt;
+        }
+
+        std::stringstream buffer;
+        file.seekg(0);
+        buffer << file.rdbuf();
+
+        return buffer.str();
+    }
+
+    auto ReadFileBinary(const std::filesystem::path &path) -> std::optional<std::vector<uint8_t>> {
         std::ifstream file{path, std::ios::ate | std::ios::binary};
 
         if (!file.is_open()) {
