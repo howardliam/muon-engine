@@ -44,7 +44,7 @@ namespace muon::graphics {
         m_descriptorInfo.range = m_size;
         m_descriptorInfo.offset = 0;
 
-        MU_CORE_DEBUG("created buffer with size: {}", pp::ParseBytes(m_size));
+        MU_CORE_DEBUG("created buffer with size: {}", pp::PrintBytes(m_size));
     }
 
     Buffer::~Buffer() {

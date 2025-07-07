@@ -3,6 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/buffer.hpp"
+#include "muon/utils/pretty_print.hpp"
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
 
@@ -24,7 +25,7 @@ namespace muon::graphics {
         UploadData(cmd, spec.textureData, spec.pixelSize);
         if (noCommandBuffer) { m_device.GetTransferQueue().EndCommands(cmd); }
 
-        MU_CORE_DEBUG("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, m_bytes);
+        MU_CORE_DEBUG("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
     }
 
     Texture::~Texture() {
