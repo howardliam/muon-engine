@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/graphics/device_context.hpp"
+#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -21,10 +22,16 @@ namespace muon::graphics {
         [[nodiscard]] auto Map() -> VkResult;
         auto Unmap() -> void;
 
+        auto Write(void *data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
+        auto Flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
+        auto Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
+
     public:
+        [[nodiscard]] auto Get() const -> VkBuffer;
+        [[nodiscard]] auto GetSize() const -> VkDeviceSize;
+        [[nodiscard]] auto GetMappedMemory() const -> void *;
 
-
-    private:
+        [[nodiscard]] auto GetDescriptorInfo() const -> const VkDescriptorBufferInfo &;
 
     private:
         const DeviceContext &m_device;
@@ -34,10 +41,12 @@ namespace muon::graphics {
         VmaAllocation m_allocation{nullptr};
         void *m_mapped{nullptr};
 
-        uint32_t m_instanceCount;
-        VkDeviceSize m_instanceSize;
-        VkDeviceSize m_alignmentSize;
-        VkBufferUsageFlags m_usageFlags;
+        uint32_t m_instanceCount{};
+        VkDeviceSize m_instanceSize{};
+        VkDeviceSize m_alignmentSize{};
+        VkBufferUsageFlags m_usageFlags{};
+
+        VkDescriptorBufferInfo m_descriptorInfo{};
     };
 
 }

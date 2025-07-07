@@ -2,6 +2,7 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/utils/pretty_print.hpp"
+#include <cstring>
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
 
@@ -39,6 +40,10 @@ namespace muon::graphics {
         );
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create buffer");
 
+        m_descriptorInfo.buffer = m_buffer;
+        m_descriptorInfo.range = m_size;
+        m_descriptorInfo.offset = 0;
+
         MU_CORE_DEBUG("created buffer with size: {}", pp::ParseBytes(m_size));
     }
 
@@ -56,6 +61,40 @@ namespace muon::graphics {
         if (m_mapped == nullptr) { return; }
         vmaUnmapMemory(m_device.GetAllocator(), m_allocation);
         m_mapped = nullptr;
+    }
+
+    auto Buffer::Write(void *data, VkDeviceSize size, VkDeviceSize offset) -> void {
+        if (size == VK_WHOLE_SIZE) {
+            std::memcpy(m_mapped, data, m_size);
+        } else {
+            auto memoryOffset = static_cast<uint8_t *>(m_mapped);
+            memoryOffset += offset;
+            std::memcpy(memoryOffset, data, size);
+        }
+    }
+
+    auto Buffer::Flush(VkDeviceSize size, VkDeviceSize offset) -> void {
+        vmaFlushAllocation(m_device.GetAllocator(), m_allocation, offset, size);
+    }
+
+    auto Buffer::Invalidate(VkDeviceSize size, VkDeviceSize offset) -> void {
+        vmaInvalidateAllocation(m_device.GetAllocator(), m_allocation, offset, size);
+    }
+
+    auto Buffer::Get() const -> VkBuffer {
+        return m_buffer;
+    }
+
+    auto Buffer::GetSize() const -> VkDeviceSize {
+        return m_size;
+    }
+
+    auto Buffer::GetMappedMemory() const -> void * {
+        return m_mapped;
+    }
+
+    auto Buffer::GetDescriptorInfo() const -> const VkDescriptorBufferInfo & {
+        return m_descriptorInfo;
     }
 
 }
