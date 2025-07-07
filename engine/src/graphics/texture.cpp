@@ -18,16 +18,11 @@ namespace muon::graphics {
         m_descriptorInfo.sampler = m_sampler;
 
         auto cmd = spec.cmd;
+        bool noCommandBuffer = spec.cmd == nullptr;
 
-        if (spec.cmd == nullptr) {
-            cmd = m_device.GetTransferQueue().BeginCommands();
-        }
-
+        if (noCommandBuffer) { cmd = m_device.GetTransferQueue().BeginCommands(); }
         UploadData(cmd, spec.textureData, spec.pixelSize);
-
-        if (spec.cmd == nullptr) {
-            m_device.GetTransferQueue().EndCommands(cmd);
-        }
+        if (noCommandBuffer) { m_device.GetTransferQueue().EndCommands(cmd); }
 
         MU_CORE_DEBUG("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, m_bytes);
     }
@@ -164,7 +159,7 @@ namespace muon::graphics {
         stagingBufferSpec.instanceCount = textureData.size() / pixelSize;
         stagingBufferSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         stagingBufferSpec.memoryUsage = VMA_MEMORY_USAGE_CPU_ONLY;
-        Buffer stagingBuffer(stagingBufferSpec);
+        Buffer stagingBuffer{stagingBufferSpec};
 
         auto result = stagingBuffer.Map();
         MU_CORE_ASSERT(result == VK_SUCCESS, "faild to map texture staging buffer");

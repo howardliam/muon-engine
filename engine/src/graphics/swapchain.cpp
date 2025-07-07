@@ -7,9 +7,7 @@
 
 namespace muon::graphics {
 
-    Swapchain::Swapchain(const SwapchainSpecification &spec) : m_device(*spec.device) {
-        m_swapchainColorSpace = spec.colorSpace;
-        m_swapchainFormat = spec.format;
+    Swapchain::Swapchain(const SwapchainSpecification &spec) : m_device(*spec.device), m_swapchainColorSpace(spec.colorSpace), m_swapchainFormat(spec.format) {
         CreateSwapchain(spec.windowExtent, spec.presentMode, spec.oldSwapchain);
         CreateImageViews();
         CreateSyncObjects();
@@ -22,15 +20,15 @@ namespace muon::graphics {
     }
 
     Swapchain::~Swapchain() {
-        for (auto &semaphore : m_imageAvailableSemaphores) {
+        for (auto semaphore : m_imageAvailableSemaphores) {
             vkDestroySemaphore(m_device.GetDevice(), semaphore, nullptr);
         }
 
-        for (auto &fence : m_inFlightFences) {
+        for (auto fence : m_inFlightFences) {
             vkDestroyFence(m_device.GetDevice(), fence, nullptr);
         }
 
-        for (auto &semaphore : m_renderFinishedSemaphores) {
+        for (auto semaphore : m_renderFinishedSemaphores) {
             vkDestroySemaphore(m_device.GetDevice(), semaphore, nullptr);
         }
 
