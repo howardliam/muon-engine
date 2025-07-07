@@ -63,7 +63,7 @@ namespace muon::graphics {
         m_mapped = nullptr;
     }
 
-    auto Buffer::Write(void *data, VkDeviceSize size, VkDeviceSize offset) -> void {
+    auto Buffer::Write(const void *data, VkDeviceSize size, VkDeviceSize offset) -> void {
         if (size == VK_WHOLE_SIZE) {
             std::memcpy(m_mapped, data, m_size);
         } else {
