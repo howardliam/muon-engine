@@ -56,7 +56,6 @@ namespace muon::graphics {
         return m_descriptorInfo;
     }
 
-
     auto Texture::CreateImage() -> void {
         VkImageCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -153,6 +152,7 @@ namespace muon::graphics {
         copyBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
         VkDependencyInfo copyDepInfo{};
+        copyDepInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
         copyDepInfo.dependencyFlags = 0;
         copyDepInfo.imageMemoryBarrierCount = 1;
         copyDepInfo.pImageMemoryBarriers = &copyBarrier;
@@ -206,6 +206,7 @@ namespace muon::graphics {
         finalBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 
         VkDependencyInfo finalDepInfo{};
+        finalDepInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
         finalDepInfo.dependencyFlags = 0;
         finalDepInfo.imageMemoryBarrierCount = 1;
         finalDepInfo.pImageMemoryBarriers = &finalBarrier;
