@@ -6,7 +6,7 @@
 
 namespace muon::graphics {
 
-    Queue::Queue(const QueueSpecification &spec) : m_device(spec.device), m_name(spec.name) {
+    Queue::Queue(const Spec &spec) : m_device(spec.device), m_name(spec.name) {
         vkGetDeviceQueue(m_device, spec.queueFamilyIndex, spec.queueIndex, &m_queue);
 
         VkCommandPoolCreateInfo poolInfo{};

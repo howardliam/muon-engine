@@ -387,7 +387,7 @@ namespace muon::graphics {
         nextQueueIndices[computeFamily->index] = 0;
         nextQueueIndices[transferFamily->index] = 0;
 
-        QueueSpecification graphicsSpec{};
+        Queue::Spec graphicsSpec{};
         graphicsSpec.device = m_device;
         graphicsSpec.queueFamilyIndex = graphicsFamily->index;
         graphicsSpec.queueIndex = nextQueueIndices[graphicsFamily->index]++;
@@ -395,7 +395,7 @@ namespace muon::graphics {
         m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
         MU_CORE_ASSERT(m_graphicsQueue, "graphics queue must not be null");
 
-        QueueSpecification computeSpec{};
+        Queue::Spec computeSpec{};
         computeSpec.device = m_device;
         computeSpec.queueFamilyIndex = computeFamily->index;
         computeSpec.queueIndex = nextQueueIndices[computeFamily->index]++;
@@ -403,7 +403,7 @@ namespace muon::graphics {
         m_computeQueue = std::make_unique<Queue>(computeSpec);
         MU_CORE_ASSERT(m_computeQueue, "compute queue must not be null");
 
-        QueueSpecification transferSpec{};
+        Queue::Spec transferSpec{};
         transferSpec.device = m_device;
         transferSpec.queueFamilyIndex = transferFamily->index;
         transferSpec.queueIndex = nextQueueIndices[transferFamily->index]++;

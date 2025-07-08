@@ -2,20 +2,22 @@
 
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
+#include <limits>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-    struct QueueSpecification {
-        VkDevice device;
-        uint32_t queueFamilyIndex;
-        uint32_t queueIndex;
-        const char *name;
-    };
-
     class Queue : NoCopy, NoMove {
     public:
-        Queue(const QueueSpecification &spec);
+        struct Spec {
+            VkDevice device{nullptr};
+            uint32_t queueFamilyIndex{std::numeric_limits<uint32_t>().max()};
+            uint32_t queueIndex{std::numeric_limits<uint32_t>().max()};
+            const char *name{nullptr};
+        };
+
+    public:
+        Queue(const Spec &spec);
         ~Queue();
 
     public:
