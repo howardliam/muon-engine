@@ -26,10 +26,10 @@ namespace muon {
 
         m_dispatcher = std::make_unique<event::Dispatcher>();
 
-        WindowSpecification windowSpec{};
+        Window::Spec windowSpec{};
         try {
             YAML::Node config = YAML::LoadFile("Muon.yaml");
-            windowSpec = config["window"].as<WindowSpecification>();
+            windowSpec = config["window"].as<Window::Spec>();
         } catch (const std::exception &e) {
             MU_CORE_ERROR("{}, using default values", e.what());
         }

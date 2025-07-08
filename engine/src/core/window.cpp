@@ -15,7 +15,7 @@ namespace muon {
         GLFWwindow *window;
     };
 
-    Window::Window(const WindowSpecification &spec) : m_handle(std::make_unique<WindowHandle>()) {
+    Window::Window(const Spec &spec) : m_handle(std::make_unique<WindowHandle>()) {
         m_data.dispatcher = spec.dispatcher;
         m_data.title = spec.title;
 

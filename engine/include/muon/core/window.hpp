@@ -10,17 +10,18 @@
 
 namespace muon {
 
-    struct WindowSpecification {
-        event::Dispatcher *dispatcher{nullptr};
-        uint32_t width{std::numeric_limits<uint32_t>().max()};
-        uint32_t height{std::numeric_limits<uint32_t>().max()};
-        std::string_view title{};
-        std::filesystem::path icon{};
-    };
-
     class Window {
     public:
-        Window(const WindowSpecification &spec);
+        struct Spec {
+            event::Dispatcher *dispatcher{nullptr};
+            uint32_t width{std::numeric_limits<uint32_t>().max()};
+            uint32_t height{std::numeric_limits<uint32_t>().max()};
+            std::string_view title{};
+            std::filesystem::path icon{};
+        };
+
+    public:
+        Window(const Spec &spec);
         ~Window();
 
         auto PollEvents() const -> void;
@@ -61,7 +62,7 @@ namespace muon {
 namespace YAML {
 
     template<>
-    struct convert<muon::WindowSpecification> {
+    struct convert<muon::Window::Spec> {
         static auto encode(const auto &spec) -> Node {
             Node node;
             node["title"] = spec.title;
