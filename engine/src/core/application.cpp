@@ -18,7 +18,7 @@
 
 namespace muon {
 
-    Application::Application(const ApplicationSpecification &spec) {
+    Application::Application(const Spec &spec) {
         MU_CORE_ASSERT(!s_instance, "application already exists");
         s_instance = this;
 

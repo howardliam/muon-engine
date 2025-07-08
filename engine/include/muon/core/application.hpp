@@ -24,15 +24,16 @@ namespace muon {
         }
     };
 
-    struct ApplicationSpecification {
-        std::string name = "Muon Application";
-        std::filesystem::path workingDirectory;
-        ApplicationCommandLineArgs cliArgs;
-    };
-
     class Application {
     public:
-        Application(const ApplicationSpecification &spec);
+        struct Spec {
+            std::string name = "Muon Application";
+            std::filesystem::path workingDirectory;
+            ApplicationCommandLineArgs cliArgs;
+        };
+
+    public:
+        Application(const Spec &spec);
         virtual ~Application();
 
         [[nodiscard]] static auto Get() -> Application &;
