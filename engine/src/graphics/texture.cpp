@@ -9,7 +9,7 @@
 
 namespace muon::graphics {
 
-    Texture::Texture(const TextureSpecification &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format) {
+    Texture::Texture(const Spec &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format) {
         CreateImage();
         CreateImageView();
         CreateSampler();

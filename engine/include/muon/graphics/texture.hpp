@@ -8,19 +8,19 @@
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
-
-    struct TextureSpecification {
-        const DeviceContext *device{nullptr};
-        VkExtent2D extent{};
-        VkFormat format{};
-        const std::vector<uint8_t> &textureData{};
-        uint32_t pixelSize{};
-        VkCommandBuffer cmd{nullptr};
-    };
-
     class Texture : NoCopy, NoMove {
     public:
-        Texture(const TextureSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            VkExtent2D extent{};
+            VkFormat format{};
+            const std::vector<uint8_t> &textureData{};
+            uint32_t pixelSize{};
+            VkCommandBuffer cmd{nullptr};
+        };
+
+    public:
+        Texture(const Spec &spec);
         ~Texture();
 
     public:
