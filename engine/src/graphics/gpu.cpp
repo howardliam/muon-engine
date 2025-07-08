@@ -1,6 +1,5 @@
 #include "muon/graphics/gpu.hpp"
 
-#include "muon/core/log.hpp"
 #include <string_view>
 #include <unordered_set>
 #include <vector>
@@ -8,7 +7,7 @@
 
 namespace muon::graphics {
 
-    Gpu::Gpu(const GpuSpecification& spec) {
+    Gpu::Gpu(const Spec& spec) {
         DetermineSuitability(
             spec.physicalDevice,
             spec.surface,

@@ -7,16 +7,17 @@
 
 namespace muon::graphics {
 
-    struct GpuSpecification {
-        VkPhysicalDevice physicalDevice{nullptr};
-        VkSurfaceKHR surface{nullptr};
-        std::unordered_set<const char *> requiredDeviceExtensions{};
-        std::unordered_set<const char *> optionalDeviceExtensions{};
-    };
-
     class Gpu {
     public:
-        Gpu(const GpuSpecification& spec);
+        struct Spec {
+            VkPhysicalDevice physicalDevice{nullptr};
+            VkSurfaceKHR surface{nullptr};
+            std::unordered_set<const char *> requiredDeviceExtensions{};
+            std::unordered_set<const char *> optionalDeviceExtensions{};
+        };
+
+    public:
+        Gpu(const Spec& spec);
         ~Gpu() = default;
 
     public:

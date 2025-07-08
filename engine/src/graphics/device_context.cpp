@@ -244,7 +244,7 @@ namespace muon::graphics {
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to available get GPUs");
         MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
 
-        GpuSpecification gpuSpec{};
+        Gpu::Spec gpuSpec{};
         gpuSpec.surface = m_surface;
         gpuSpec.requiredDeviceExtensions = std::unordered_set<const char *>(constants::k_requiredDeviceExtensions.begin(), constants::k_requiredDeviceExtensions.end());
         gpuSpec.optionalDeviceExtensions = std::unordered_set<const char *>(constants::k_optionalDeviceExtensions.begin(), constants::k_optionalDeviceExtensions.end());
