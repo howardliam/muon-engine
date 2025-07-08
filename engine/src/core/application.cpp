@@ -45,7 +45,7 @@ namespace muon {
         profilerSpec.deviceContext = m_deviceContext.get();
         profiling::Profiler::CreateContext(profilerSpec);
 
-        graphics::RendererSpecification rendererSpec{};
+        graphics::Renderer::Spec rendererSpec{};
         rendererSpec.window = m_window.get();
         rendererSpec.device = m_deviceContext.get();
         m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);

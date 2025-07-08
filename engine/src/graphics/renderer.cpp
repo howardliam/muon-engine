@@ -5,7 +5,7 @@
 
 namespace muon::graphics {
 
-    Renderer::Renderer(const RendererSpecification &spec) : m_window(*spec.window), m_device(*spec.device) {
+    Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_device(*spec.device) {
         ProbeSurfaceFormats();
         ProbePresentModes();
 

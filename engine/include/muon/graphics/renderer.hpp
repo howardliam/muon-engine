@@ -11,14 +11,15 @@
 
 namespace muon::graphics {
 
-    struct RendererSpecification {
-        const Window *window;
-        const DeviceContext *device;
-    };
-
     class Renderer : NoCopy, NoMove {
     public:
-        Renderer(const RendererSpecification &spec);
+        struct Spec {
+            const Window *window{nullptr};
+            const DeviceContext *device{nullptr};
+        };
+
+    public:
+        Renderer(const Spec &spec);
         ~Renderer();
 
         [[nodiscard]] VkCommandBuffer BeginFrame();
