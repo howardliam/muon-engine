@@ -63,7 +63,7 @@ namespace muon::graphics {
         }
 
         m_frameInProgress = false;
-        m_currentFrameIndex = (m_currentFrameIndex + 1) % constants::maxFramesInFlight;
+        m_currentFrameIndex = (m_currentFrameIndex + 1) % k_maxFramesInFlight;
     }
 
     void Renderer::RebuildSwapchain() {
@@ -220,13 +220,13 @@ namespace muon::graphics {
             m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
         } else {
             std::unique_ptr oldSwapChain = std::move(m_swapchain);
-            swapchainSpec.oldSwapchain = oldSwapChain->GetSwapchain();
+            swapchainSpec.oldSwapchain = oldSwapChain->Get();
             m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
         }
     }
 
     void Renderer::CreateCommandBuffers() {
-        m_commandBuffers.resize(constants::maxFramesInFlight);
+        m_commandBuffers.resize(k_maxFramesInFlight);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
