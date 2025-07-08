@@ -5,18 +5,19 @@
 
 namespace muon::graphics {
 
-    struct BufferSpecification {
-        const DeviceContext *device{nullptr};
-        VkDeviceSize instanceSize{};
-        uint32_t instanceCount{};
-        VkBufferUsageFlags usageFlags{};
-        VmaMemoryUsage memoryUsage{};
-        VkDeviceSize minOffsetAlignment{1};
-    };
-
     class Buffer {
     public:
-        Buffer(const BufferSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            VkDeviceSize instanceSize{};
+            uint32_t instanceCount{};
+            VkBufferUsageFlags usageFlags{};
+            VmaMemoryUsage memoryUsage{};
+            VkDeviceSize minOffsetAlignment{1};
+        };
+
+    public:
+        Buffer(const Spec &spec);
         ~Buffer();
 
         [[nodiscard]] auto Map() -> VkResult;

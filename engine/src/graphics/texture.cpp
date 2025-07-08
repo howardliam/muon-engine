@@ -154,7 +154,7 @@ namespace muon::graphics {
         copyDepInfo.pImageMemoryBarriers = &copyBarrier;
         vkCmdPipelineBarrier2(cmd, &copyDepInfo);
 
-        BufferSpecification stagingBufferSpec{};
+        Buffer::Spec stagingBufferSpec{};
         stagingBufferSpec.device = &m_device;
         stagingBufferSpec.instanceSize = pixelSize;
         stagingBufferSpec.instanceCount = textureData.size() / pixelSize;

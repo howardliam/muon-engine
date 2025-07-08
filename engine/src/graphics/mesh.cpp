@@ -41,7 +41,7 @@ namespace muon::graphics {
         auto vertexSize = stride;
         m_vertexCount = data.size() / vertexSize;
 
-        BufferSpecification spec{};
+        Buffer::Spec spec{};
         spec.device = &m_device;
         spec.instanceSize = vertexSize;
         spec.instanceCount = m_vertexCount;
@@ -69,7 +69,7 @@ namespace muon::graphics {
     auto Mesh::CreateIndexBuffer(VkCommandBuffer cmd, const std::vector<uint32_t> &data) -> void {
         m_indexCount = data.size();
 
-        BufferSpecification spec{};
+        Buffer::Spec spec{};
         spec.device = &m_device;
         spec.instanceSize = sizeof(uint32_t);
         spec.instanceCount = m_indexCount;

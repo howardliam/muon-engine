@@ -8,7 +8,7 @@
 
 namespace muon::graphics {
 
-    Buffer::Buffer(const BufferSpecification &spec) : m_device(*spec.device) {
+    Buffer::Buffer(const Spec &spec) : m_device(*spec.device) {
         auto getAlignment = [](VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) -> VkDeviceSize {
             if (minOffsetAlignment > 0) {
                 return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
