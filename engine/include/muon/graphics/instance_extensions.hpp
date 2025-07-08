@@ -3,7 +3,7 @@
 #include <array>
 #include <vulkan/vulkan_core.h>
 
-namespace muon::graphics::constants {
+namespace muon::graphics {
 
 	constexpr std::array<const char*, 2> k_requiredInstanceExtensions = {
 		VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,

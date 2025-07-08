@@ -156,7 +156,7 @@ namespace muon::graphics {
 
     void DeviceContext::CreateInstance(const Window &window) {
         auto extensions = window.GetRequiredExtensions();
-        extensions.insert(extensions.end(), constants::k_requiredInstanceExtensions.begin(), constants::k_requiredInstanceExtensions.end());
+        extensions.insert(extensions.end(), k_requiredInstanceExtensions.begin(), k_requiredInstanceExtensions.end());
 
         #ifdef MU_DEBUG_ENABLED
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -246,8 +246,8 @@ namespace muon::graphics {
 
         Gpu::Spec gpuSpec{};
         gpuSpec.surface = m_surface;
-        gpuSpec.requiredDeviceExtensions = std::unordered_set<const char *>(constants::k_requiredDeviceExtensions.begin(), constants::k_requiredDeviceExtensions.end());
-        gpuSpec.optionalDeviceExtensions = std::unordered_set<const char *>(constants::k_optionalDeviceExtensions.begin(), constants::k_optionalDeviceExtensions.end());
+        gpuSpec.requiredDeviceExtensions = std::unordered_set<const char *>(k_requiredDeviceExtensions.begin(), k_requiredDeviceExtensions.end());
+        gpuSpec.optionalDeviceExtensions = std::unordered_set<const char *>(k_optionalDeviceExtensions.begin(), k_optionalDeviceExtensions.end());
 
         std::vector<std::pair<Gpu, VkPhysicalDevice>> gpus{};
 
