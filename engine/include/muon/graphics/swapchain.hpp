@@ -11,18 +11,19 @@ namespace muon::graphics {
 
     constexpr uint32_t k_maxFramesInFlight = 2;
 
-    struct SwapchainSpecification {
-        const DeviceContext *device{nullptr};
-        VkExtent2D windowExtent{};
-        VkColorSpaceKHR colorSpace{};
-        VkFormat format{};
-        VkPresentModeKHR presentMode{};
-        VkSwapchainKHR oldSwapchain{nullptr};
-    };
-
     class Swapchain : NoCopy, NoMove {
     public:
-        Swapchain(const SwapchainSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            VkExtent2D windowExtent{};
+            VkColorSpaceKHR colorSpace{};
+            VkFormat format{};
+            VkPresentModeKHR presentMode{};
+            VkSwapchainKHR oldSwapchain{nullptr};
+        };
+
+    public:
+        Swapchain(const Spec &spec);
         ~Swapchain();
 
         [[nodiscard]] auto AcquireNextImage(uint32_t *imageIndex) -> VkResult;

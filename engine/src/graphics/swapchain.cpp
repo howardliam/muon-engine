@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-    Swapchain::Swapchain(const SwapchainSpecification &spec) : m_device(*spec.device), m_swapchainColorSpace(spec.colorSpace), m_swapchainFormat(spec.format) {
+    Swapchain::Swapchain(const Spec &spec) : m_device(*spec.device), m_swapchainColorSpace(spec.colorSpace), m_swapchainFormat(spec.format) {
         CreateSwapchain(spec.windowExtent, spec.presentMode, spec.oldSwapchain);
         CreateImageViews();
         CreateSyncObjects();

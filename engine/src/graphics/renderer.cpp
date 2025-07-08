@@ -208,7 +208,7 @@ namespace muon::graphics {
     void Renderer::CreateSwapchain() {
         const auto &surfaceFormat = GetActiveSurfaceFormat();
 
-        SwapchainSpecification swapchainSpec{};
+        Swapchain::Spec swapchainSpec{};
         swapchainSpec.device = &m_device;
         swapchainSpec.windowExtent = m_window.GetExtent();
         swapchainSpec.colorSpace = surfaceFormat.colorSpace;
