@@ -9,15 +9,16 @@
 
 namespace muon::graphics {
 
-    struct PipelineGraphicsSpecification {
-        const DeviceContext *device{nullptr};
-        std::shared_ptr<PipelineLayout> layout{nullptr};
-        schematic::PipelineInfo pipelineInfo{};
-    };
-
     class PipelineGraphics : PipelineBase {
     public:
-        PipelineGraphics(const PipelineGraphicsSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            std::shared_ptr<PipelineLayout> layout{nullptr};
+            schematic::PipelineInfo pipelineInfo{};
+        };
+
+    public:
+        PipelineGraphics(const Spec &spec);
         ~PipelineGraphics();
 
         auto Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;

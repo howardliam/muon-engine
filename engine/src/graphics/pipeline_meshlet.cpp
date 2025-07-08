@@ -6,7 +6,7 @@
 
 namespace muon::graphics {
 
-    PipelineMeshlet::PipelineMeshlet(const PipelineMeshletSpecification &spec) : PipelineBase(*spec.device, spec.layout) {
+    PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(*spec.device, spec.layout) {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Meshlet, "must be meshlet pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid meshlet pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for meshlet pipeline");

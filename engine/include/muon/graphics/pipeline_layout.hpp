@@ -9,15 +9,16 @@
 
 namespace muon::graphics {
 
-    struct PipelineLayoutSpecification {
-        const DeviceContext *device{nullptr};
-        std::vector<VkDescriptorSetLayout> setLayouts{};
-        std::optional<VkPushConstantRange> pushConstant{std::nullopt};
-    };
-
     class PipelineLayout : NoCopy, NoMove {
     public:
-        PipelineLayout(const PipelineLayoutSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            std::vector<VkDescriptorSetLayout> setLayouts{};
+            std::optional<VkPushConstantRange> pushConstant{std::nullopt};
+        };
+
+    public:
+        PipelineLayout(const Spec &spec);
         ~PipelineLayout();
 
     public:

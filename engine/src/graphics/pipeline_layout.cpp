@@ -4,7 +4,7 @@
 
 namespace muon::graphics {
 
-    PipelineLayout::PipelineLayout(const PipelineLayoutSpecification &spec) : m_device(*spec.device) {
+    PipelineLayout::PipelineLayout(const Spec &spec) : m_device(*spec.device) {
         VkPipelineLayoutCreateInfo createInfo{};
         createInfo.setLayoutCount = spec.setLayouts.size();
         createInfo.pSetLayouts = spec.setLayouts.data();

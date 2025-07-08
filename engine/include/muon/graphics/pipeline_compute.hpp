@@ -10,15 +10,16 @@
 
 namespace muon::graphics {
 
-    struct PipelineComputeSpecification {
-        const DeviceContext *device{nullptr};
-        std::shared_ptr<PipelineLayout> layout{nullptr};
-        schematic::PipelineInfo pipelineInfo{};
-    };
-
     class PipelineCompute : PipelineBase {
     public:
-        PipelineCompute(const PipelineComputeSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            std::shared_ptr<PipelineLayout> layout{nullptr};
+            schematic::PipelineInfo pipelineInfo{};
+        };
+
+    public:
+        PipelineCompute(const Spec &spec);
         ~PipelineCompute();
 
         auto Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const -> void;
