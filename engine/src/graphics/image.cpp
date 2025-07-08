@@ -6,7 +6,7 @@
 
 namespace muon::graphics {
 
-    Image::Image(const ImageSpecification &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
+    Image::Image(const Spec &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
         CreateImage();
         CreateImageView();
 

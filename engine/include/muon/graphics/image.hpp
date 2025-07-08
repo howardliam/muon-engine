@@ -8,20 +8,21 @@
 
 namespace muon::graphics {
 
-    struct ImageSpecification {
-        const DeviceContext *device{nullptr};
-        VkExtent2D extent;
-        VkFormat format;
-        VkImageLayout layout;
-        VkImageUsageFlags usageFlags;
-        VkAccessFlags2 accessFlags;
-        VkPipelineStageFlags2 stageFlags;
-        VkCommandBuffer cmd{nullptr};
-    };
-
     class Image : NoCopy, NoMove {
     public:
-        Image(const ImageSpecification &spec);
+        struct Spec {
+            const DeviceContext *device{nullptr};
+            VkExtent2D extent;
+            VkFormat format;
+            VkImageLayout layout;
+            VkImageUsageFlags usageFlags;
+            VkAccessFlags2 accessFlags;
+            VkPipelineStageFlags2 stageFlags;
+            VkCommandBuffer cmd{nullptr};
+        };
+
+    public:
+        Image(const Spec &spec);
         ~Image();
 
     public:
