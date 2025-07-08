@@ -6,7 +6,7 @@
 
 namespace muon::profiling {
 
-    void Profiler::CreateContext(const ProfilerSpecification &spec) {
+    void Profiler::CreateContext(const Spec &spec) {
         MU_CORE_ASSERT(s_tracyContext == nullptr, "tracy context must not exist");
 
         VkCommandBufferAllocateInfo allocateInfo{};
