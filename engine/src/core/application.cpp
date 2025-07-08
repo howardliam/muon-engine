@@ -37,7 +37,7 @@ namespace muon {
         windowSpec.dispatcher = m_dispatcher.get();
         m_window = std::make_unique<Window>(windowSpec);
 
-        graphics::DeviceContextSpecification deviceContextSpec{};
+        graphics::DeviceContext::Spec deviceContextSpec{};
         deviceContextSpec.window = m_window.get();
         m_deviceContext = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
 

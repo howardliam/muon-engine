@@ -92,7 +92,7 @@ namespace {
 
 namespace muon::graphics {
 
-    DeviceContext::DeviceContext(const DeviceContextSpecification &spec) {
+    DeviceContext::DeviceContext(const Spec &spec) {
         MU_CORE_ASSERT(spec.window, "a window must be present");
 
         CreateInstance(*spec.window);

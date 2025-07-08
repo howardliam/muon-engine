@@ -17,7 +17,12 @@ namespace muon::graphics {
 
     class DeviceContext : NoCopy, NoMove {
     public:
-        DeviceContext(const DeviceContextSpecification &spec);
+        struct Spec {
+            const Window *window{nullptr};
+        };
+
+    public:
+        DeviceContext(const Spec &spec);
         ~DeviceContext();
 
     public:
