@@ -31,6 +31,10 @@ namespace muon::graphics {
         [[nodiscard]] auto Get() const -> VkBuffer;
         [[nodiscard]] auto GetSize() const -> VkDeviceSize;
         [[nodiscard]] auto GetMappedMemory() const -> void *;
+        [[nodiscard]] auto GetDeviceAddress() const -> VkDeviceAddress;
+
+        [[nodiscard]] auto GetInstanceCount() const -> uint32_t;
+        [[nodiscard]] auto GetInstanceSize() const -> VkDeviceSize;
 
         [[nodiscard]] auto GetDescriptorInfo() const -> const VkDescriptorBufferInfo &;
 
@@ -38,9 +42,10 @@ namespace muon::graphics {
         const DeviceContext &m_device;
 
         VkBuffer m_buffer{nullptr};
-        VkDeviceSize m_size{};
         VmaAllocation m_allocation{nullptr};
+        VkDeviceSize m_size{};
         void *m_mapped{nullptr};
+        VkDeviceAddress m_deviceAddress{};
 
         uint32_t m_instanceCount{};
         VkDeviceSize m_instanceSize{};

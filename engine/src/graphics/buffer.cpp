@@ -8,7 +8,7 @@
 
 namespace muon::graphics {
 
-    Buffer::Buffer(const Spec &spec) : m_device(*spec.device) {
+    Buffer::Buffer(const Spec &spec) : m_device(*spec.device), m_usageFlags(spec.usageFlags) {
         auto getAlignment = [](VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) -> VkDeviceSize {
             if (minOffsetAlignment > 0) {
                 return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
@@ -39,6 +39,14 @@ namespace muon::graphics {
             &allocationInfo
         );
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create buffer");
+
+        if (m_usageFlags & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+            VkBufferDeviceAddressInfo addressInfo{};
+            addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+            addressInfo.buffer = m_buffer;
+
+            m_deviceAddress = vkGetBufferDeviceAddress(m_device.GetDevice(), &addressInfo);
+        }
 
         m_descriptorInfo.buffer = m_buffer;
         m_descriptorInfo.range = m_size;
@@ -91,6 +99,19 @@ namespace muon::graphics {
 
     auto Buffer::GetMappedMemory() const -> void * {
         return m_mapped;
+    }
+
+    auto Buffer::GetDeviceAddress() const -> VkDeviceAddress {
+        MU_CORE_ASSERT(m_usageFlags & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, "buffer must be created with shader device address usage");
+        return m_deviceAddress;
+    }
+
+    auto Buffer::GetInstanceCount() const -> uint32_t {
+        return m_instanceCount;
+    }
+
+    auto Buffer::GetInstanceSize() const -> VkDeviceSize {
+        return m_instanceSize;
     }
 
     auto Buffer::GetDescriptorInfo() const -> const VkDescriptorBufferInfo & {
