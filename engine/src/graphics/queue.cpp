@@ -25,7 +25,7 @@ namespace muon::graphics {
         MU_CORE_DEBUG("destroyed {} queue", m_name);
     }
 
-    VkCommandBuffer Queue::BeginCommands() {
+    auto Queue::BeginCommands() -> VkCommandBuffer {
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -46,7 +46,7 @@ namespace muon::graphics {
         return commandBuffer;
     }
 
-    void Queue::EndCommands(VkCommandBuffer cmd) {
+    auto Queue::EndCommands(VkCommandBuffer cmd) -> void {
         vkEndCommandBuffer(cmd);
 
         VkSubmitInfo submitInfo{};
@@ -62,11 +62,19 @@ namespace muon::graphics {
         vkFreeCommandBuffers(m_device, m_commandPool, 1, &cmd);
     }
 
-    VkQueue Queue::Get() const {
+    auto Queue::GetFamilyIndex() const -> uint32_t {
+        return m_familyIndex;
+    }
+
+    auto Queue::GetIndex() const -> uint32_t {
+        return m_index;
+    }
+
+    auto Queue::Get() const -> VkQueue {
         return m_queue;
     }
 
-    VkCommandPool Queue::GetCommandPool() const {
+    auto Queue::GetCommandPool() const -> VkCommandPool {
         return m_commandPool;
     }
 

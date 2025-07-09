@@ -21,15 +21,20 @@ namespace muon::graphics {
         ~Queue();
 
     public:
-        [[nodiscard]] VkCommandBuffer BeginCommands();
-        void EndCommands(VkCommandBuffer cmd);
+        [[nodiscard]] auto BeginCommands() -> VkCommandBuffer;
+        auto EndCommands(VkCommandBuffer cmd) -> void;
 
     public:
-        [[nodiscard]] VkQueue Get() const;
-        [[nodiscard]] VkCommandPool GetCommandPool() const;
+        [[nodiscard]] auto GetFamilyIndex() const -> uint32_t;
+        [[nodiscard]] auto GetIndex() const -> uint32_t;
+
+        [[nodiscard]] auto Get() const -> VkQueue;
+        [[nodiscard]] auto GetCommandPool() const -> VkCommandPool;
 
     private:
         VkDevice m_device{nullptr};
+        uint32_t m_familyIndex{std::numeric_limits<uint32_t>().max()};
+        uint32_t m_index{std::numeric_limits<uint32_t>().max()};
         const char *m_name{nullptr};
 
         VkQueue m_queue{nullptr};
