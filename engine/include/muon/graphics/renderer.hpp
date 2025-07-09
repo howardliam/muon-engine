@@ -5,6 +5,7 @@
 #include "muon/graphics/swapchain.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
+#include <limits>
 #include <unordered_set>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -51,10 +52,10 @@ namespace muon::graphics {
         std::vector<VkSurfaceFormatKHR> m_availableHdrSurfaceFormats{};
         std::vector<VkSurfaceFormatKHR> m_availableSdrSurfaceFormats{};
         bool m_hdrEnabled{false};
-        uint32_t m_activeSurfaceFormat{0};
+        uint32_t m_activeSurfaceFormat{std::numeric_limits<uint32_t>().max()};
 
         std::unordered_set<VkPresentModeKHR> m_availablePresentModes{};
-        VkPresentModeKHR m_selectedPresentMode;
+        VkPresentModeKHR m_selectedPresentMode{VK_PRESENT_MODE_FIFO_KHR};
 
         std::unique_ptr<Swapchain> m_swapchain{nullptr};
         std::vector<VkCommandBuffer> m_commandBuffers{};
