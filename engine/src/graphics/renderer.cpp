@@ -2,6 +2,7 @@
 
 #include "muon/core/assert.hpp"
 #include "vulkan/vulkan_core.h"
+#include <algorithm>
 
 namespace muon::graphics {
 
@@ -22,7 +23,7 @@ namespace muon::graphics {
         );
     }
 
-    VkCommandBuffer Renderer::BeginFrame() {
+    auto Renderer::BeginFrame() -> VkCommandBuffer {
         MU_CORE_ASSERT(!m_frameInProgress, "cannot begin frame while frame is in progress");
 
         auto result = m_swapchain->AcquireNextImage(&m_currentImageIndex);
@@ -45,7 +46,7 @@ namespace muon::graphics {
         return cmd;
     }
 
-    void Renderer::EndFrame() {
+    auto Renderer::EndFrame() -> void{
         MU_CORE_ASSERT(m_frameInProgress, "cannot end frame if a frame has not been started");
 
         const auto cmd = m_commandBuffers[m_currentFrameIndex];
@@ -66,52 +67,59 @@ namespace muon::graphics {
         m_currentFrameIndex = (m_currentFrameIndex + 1) % k_maxFramesInFlight;
     }
 
-    void Renderer::RebuildSwapchain() {
+    auto Renderer::RebuildSwapchain() -> void {
         MU_CORE_ASSERT(!m_frameInProgress, "cannot rebuild swapchain while frame is in progress");
         CreateSwapchain();
     }
 
-    bool Renderer::HasHdrSupport() const {
+    auto Renderer::HasHdrSupport() const -> bool {
         return m_hdrSupport;
     }
 
-    const std::vector<VkSurfaceFormatKHR> &Renderer::GetAvailableHdrSurfaceFormats() const {
-        return m_availableHdrSurfaceFormats;
-    }
-
-    const std::vector<VkSurfaceFormatKHR> &Renderer::GetAvailableSdrSurfaceFormats() const {
-        return m_availableSdrSurfaceFormats;
-    }
-
-    bool Renderer::IsHdrEnabled() const {
-        return m_hdrEnabled;
-    }
-
-    VkSurfaceFormatKHR Renderer::GetActiveSurfaceFormat() const {
-        if (m_hdrEnabled) {
-            return m_availableHdrSurfaceFormats[m_activeSurfaceFormat];
-        } else {
-            return m_availableSdrSurfaceFormats[m_activeSurfaceFormat];
+    auto Renderer::GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpaceKHR> {
+        std::vector<VkColorSpaceKHR> colorSpaces{};
+        for (const auto &surfaceFormat : m_availableSurfaceFormats) {
+            if (surfaceFormat.isHdr != hdr) { continue; }
+            colorSpaces.push_back(surfaceFormat.colorSpace);
         }
+        return colorSpaces;
     }
 
-    const std::unordered_set<VkPresentModeKHR> &Renderer::GetAvailablePresentModes() const {
+    auto Renderer::GetActiveSurfaceFormat() const -> const SurfaceFormat & {
+        return *m_activeSurfaceFormat;
+    }
+
+    auto Renderer::SetActiveSurfaceFormat(VkColorSpaceKHR colorSpace) const -> void {
+        auto pred = [&colorSpace](const SurfaceFormat &surfaceFormat) { return surfaceFormat.colorSpace == colorSpace; };
+        auto it = std::ranges::find_if(m_availableSurfaceFormats, pred);
+        MU_CORE_ASSERT(it != m_availableSurfaceFormats.end(), "the requested color space must be available");
+        m_activeSurfaceFormat = it.base();
+    }
+
+    auto Renderer::IsHdrEnabled() const -> bool {
+        return m_activeSurfaceFormat->isHdr;
+    }
+
+    auto Renderer::GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> &{
         return m_availablePresentModes;
     }
 
-    void Renderer::SetPresentMode(VkPresentModeKHR presentMode) {
-        MU_CORE_ASSERT(m_availablePresentModes.contains(presentMode), "the present mode must be available");
-        m_selectedPresentMode = presentMode;
+    auto Renderer::GetActivePresentMode() const -> const VkPresentModeKHR & {
+        return *m_activePresentMode;
     }
 
-    void Renderer::ProbeSurfaceFormats() {
+    auto Renderer::SetActivePresentMode(VkPresentModeKHR presentMode) const -> void {
+        MU_CORE_ASSERT(m_availablePresentModes.contains(presentMode), "the requested present mode must be available");
+        m_activePresentMode = &*m_availablePresentModes.find(presentMode);
+    }
+
+    auto Renderer::ProbeSurfaceFormats() -> void {
         uint32_t surfaceFormatCount = 0;
         auto result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &surfaceFormatCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
         std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
         result = vkGetPhysicalDeviceSurfaceFormatsKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &surfaceFormatCount, surfaceFormats.data());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
-
 
         for (const auto &surfaceFormat : surfaceFormats) {
             bool candidateColorSpace = false;
@@ -140,41 +148,34 @@ namespace muon::graphics {
             }
 
             if (candidateColorSpace) {
-                if (hdrColorSpace) {
-                    switch (surfaceFormat.format) {
-                        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-                        case VK_FORMAT_A2R10G10B10_UNORM_PACK32: {
-                            m_availableHdrSurfaceFormats.push_back(surfaceFormat);
-                            break;
-                        }
-
-                        default: {
-                            break;
-                        }
+                switch (surfaceFormat.format) {
+                    case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+                    case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+                    case VK_FORMAT_R8G8B8A8_SRGB:
+                    case VK_FORMAT_B8G8R8A8_SRGB: {
+                        if (hdrColorSpace) { m_hdrSupport = true; }
+                        m_availableSurfaceFormats.emplace_back(hdrColorSpace, surfaceFormat.format, surfaceFormat.colorSpace);
+                        break;
                     }
-                } else {
-                    switch (surfaceFormat.format) {
-                        case VK_FORMAT_R8G8B8A8_SRGB:
-                        case VK_FORMAT_B8G8R8A8_SRGB: {
-                            m_availableSdrSurfaceFormats.push_back(surfaceFormat);
-                            break;
-                        }
 
-                        default: {
-                            break;
-                        }
+                    default: {
+                        break;
                     }
                 }
             }
         }
 
-        if (!m_availableHdrSurfaceFormats.empty()) {
-            m_hdrSupport = true;
-            m_hdrEnabled = true;
+        if (m_hdrSupport) {
+            auto it = std::ranges::find_if(m_availableSurfaceFormats, [](const SurfaceFormat &format) { return format.isHdr; });
+            if (it != m_availableSurfaceFormats.end()) {
+                m_activeSurfaceFormat = it.base();
+            }
+        } else {
+            m_activeSurfaceFormat = &m_availableSurfaceFormats.front();
         }
     }
 
-    void Renderer::ProbePresentModes() {
+    auto Renderer::ProbePresentModes() -> void {
         uint32_t presentModeCount = 0;
         auto result = vkGetPhysicalDeviceSurfacePresentModesKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &presentModeCount, nullptr);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
@@ -199,21 +200,19 @@ namespace muon::graphics {
 
         // hard code for the moment
         if (m_availablePresentModes.contains(VK_PRESENT_MODE_MAILBOX_KHR)) {
-            SetPresentMode(VK_PRESENT_MODE_MAILBOX_KHR);
+            SetActivePresentMode(VK_PRESENT_MODE_MAILBOX_KHR);
         } else {
-            SetPresentMode(VK_PRESENT_MODE_FIFO_KHR);
+            SetActivePresentMode(VK_PRESENT_MODE_FIFO_KHR);
         }
     }
 
-    void Renderer::CreateSwapchain() {
-        const auto &surfaceFormat = GetActiveSurfaceFormat();
-
+    auto Renderer::CreateSwapchain() -> void {
         Swapchain::Spec swapchainSpec{};
         swapchainSpec.device = &m_device;
         swapchainSpec.windowExtent = m_window.GetExtent();
-        swapchainSpec.colorSpace = surfaceFormat.colorSpace;
-        swapchainSpec.format = surfaceFormat.format;
-        swapchainSpec.presentMode = m_selectedPresentMode;
+        swapchainSpec.colorSpace = m_activeSurfaceFormat->colorSpace;
+        swapchainSpec.format = m_activeSurfaceFormat->format;
+        swapchainSpec.presentMode = *m_activePresentMode;
 
         if (m_swapchain == nullptr) {
             swapchainSpec.oldSwapchain = nullptr;
@@ -225,7 +224,7 @@ namespace muon::graphics {
         }
     }
 
-    void Renderer::CreateCommandBuffers() {
+    auto Renderer::CreateCommandBuffers() -> void {
         m_commandBuffers.resize(k_maxFramesInFlight);
 
         VkCommandBufferAllocateInfo allocInfo{};

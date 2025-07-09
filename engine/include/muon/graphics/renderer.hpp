@@ -12,6 +12,12 @@
 
 namespace muon::graphics {
 
+    struct SurfaceFormat {
+        bool isHdr{false};
+        VkFormat format{VK_FORMAT_UNDEFINED};
+        VkColorSpaceKHR colorSpace{VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+    };
+
     class Renderer : NoCopy, NoMove {
     public:
         struct Spec {
@@ -30,13 +36,15 @@ namespace muon::graphics {
 
     public:
         [[nodiscard]] auto HasHdrSupport() const -> bool;
-        [[nodiscard]] auto GetAvailableHdrSurfaceFormats() const -> const std::vector<VkSurfaceFormatKHR> &;
-        [[nodiscard]] auto GetAvailableSdrSurfaceFormats() const -> const std::vector<VkSurfaceFormatKHR> &;
+
+        [[nodiscard]] auto GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpaceKHR>;
+        [[nodiscard]] auto GetActiveSurfaceFormat() const -> const SurfaceFormat &;
+        auto SetActiveSurfaceFormat(VkColorSpaceKHR colorSpace) const -> void;
         [[nodiscard]] auto IsHdrEnabled() const -> bool;
-        [[nodiscard]] auto GetActiveSurfaceFormat() const -> VkSurfaceFormatKHR;
 
         [[nodiscard]] auto GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> &;
-        auto SetPresentMode(VkPresentModeKHR presentMode) -> void;
+        [[nodiscard]] auto GetActivePresentMode() const -> const VkPresentModeKHR &;
+        auto SetActivePresentMode(VkPresentModeKHR presentMode) const -> void;
 
     private:
         auto ProbeSurfaceFormats() -> void;
@@ -49,13 +57,11 @@ namespace muon::graphics {
         const DeviceContext &m_device;
 
         bool m_hdrSupport{false};
-        std::vector<VkSurfaceFormatKHR> m_availableHdrSurfaceFormats{};
-        std::vector<VkSurfaceFormatKHR> m_availableSdrSurfaceFormats{};
-        bool m_hdrEnabled{false};
-        uint32_t m_activeSurfaceFormat{std::numeric_limits<uint32_t>().max()};
+        std::vector<SurfaceFormat> m_availableSurfaceFormats{};
+        mutable const SurfaceFormat *m_activeSurfaceFormat{nullptr};
 
         std::unordered_set<VkPresentModeKHR> m_availablePresentModes{};
-        VkPresentModeKHR m_selectedPresentMode{VK_PRESENT_MODE_FIFO_KHR};
+        mutable const VkPresentModeKHR *m_activePresentMode{nullptr};
 
         std::unique_ptr<Swapchain> m_swapchain{nullptr};
         std::vector<VkCommandBuffer> m_commandBuffers{};
