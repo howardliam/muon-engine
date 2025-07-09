@@ -23,26 +23,26 @@ namespace muon::graphics {
         Renderer(const Spec &spec);
         ~Renderer();
 
-        [[nodiscard]] VkCommandBuffer BeginFrame();
-        void EndFrame();
+        [[nodiscard]] auto BeginFrame() -> VkCommandBuffer;
+        auto EndFrame() -> void;
 
-        void RebuildSwapchain();
+        auto RebuildSwapchain() -> void;
 
     public:
-        [[nodiscard]] bool HasHdrSupport() const;
-        [[nodiscard]] const std::vector<VkSurfaceFormatKHR> &GetAvailableHdrSurfaceFormats() const;
-        [[nodiscard]] const std::vector<VkSurfaceFormatKHR> &GetAvailableSdrSurfaceFormats() const;
-        [[nodiscard]] bool IsHdrEnabled() const;
-        [[nodiscard]] VkSurfaceFormatKHR GetActiveSurfaceFormat() const;
+        [[nodiscard]] auto HasHdrSupport() const -> bool;
+        [[nodiscard]] auto GetAvailableHdrSurfaceFormats() const -> const std::vector<VkSurfaceFormatKHR> &;
+        [[nodiscard]] auto GetAvailableSdrSurfaceFormats() const -> const std::vector<VkSurfaceFormatKHR> &;
+        [[nodiscard]] auto IsHdrEnabled() const -> bool;
+        [[nodiscard]] auto GetActiveSurfaceFormat() const -> VkSurfaceFormatKHR;
 
-        [[nodiscard]] const std::unordered_set<VkPresentModeKHR> &GetAvailablePresentModes() const;
-        void SetPresentMode(VkPresentModeKHR presentMode);
+        [[nodiscard]] auto GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> &;
+        auto SetPresentMode(VkPresentModeKHR presentMode) -> void;
 
     private:
-        void ProbeSurfaceFormats();
-        void ProbePresentModes();
-        void CreateSwapchain();
-        void CreateCommandBuffers();
+        auto ProbeSurfaceFormats() -> void;
+        auto ProbePresentModes() -> void;
+        auto CreateSwapchain() -> void;
+        auto CreateCommandBuffers() -> void;
 
     private:
         const Window &m_window;
