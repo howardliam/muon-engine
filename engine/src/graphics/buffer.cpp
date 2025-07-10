@@ -27,9 +27,8 @@ namespace muon::graphics {
         bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo allocationCreateInfo{};
-        allocationCreateInfo.requiredFlags = spec.memoryPropertyFlags;
         allocationCreateInfo.usage = spec.memoryUsage;
-        allocationCreateInfo.flags = spec.allocationFlags;
+        allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 
         VmaAllocationInfo allocationInfo{};
 
