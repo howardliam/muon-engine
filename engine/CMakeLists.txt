@@ -91,9 +91,6 @@ set(ENGINE_SRC_FILES
 
     ${SRC_DIR}/profiling/profiler.cpp
 
-    ${SRC_DIR}/schematic/pipeline/pipeline_info.cpp
-    ${SRC_DIR}/schematic/pipeline/shader_info.cpp
-
     ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
