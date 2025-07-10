@@ -5,14 +5,18 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
+#include "muon/graphics/buffer.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
 #include "muon/profiling/profiler.hpp"
+#include <cstring>
 #include <fmt/ranges.h>
 #include <GLFW/glfw3.h>
+#include <glm/vec3.hpp>
 #include <memory>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
 
@@ -90,6 +94,45 @@ namespace muon {
 
     auto Application::Run() -> void {
         MU_CORE_INFO("running application");
+
+        struct Vertex {
+            glm::vec3 position;
+        };
+
+        std::vector<Vertex> vertices{
+            {{0.0, 0.5, 0.0}},
+            {{0.5, -0.5, 0.0}},
+            {{-0.5, -0.5, 0.0}},
+        };
+        std::vector<uint8_t> vertexData(vertices.size() * sizeof(Vertex));
+        std::memcpy(vertexData.data(), vertices.data(), vertexData.size());
+
+        std::vector<uint32_t> indices{
+            0, 1, 2
+        };
+
+        // auto cmd = m_deviceContext->GetTransferQueue().BeginCommands();
+
+        // graphics::Mesh::Spec meshSpec{};
+        // meshSpec.device = m_deviceContext.get();
+        // meshSpec.vertexData = &vertexData;
+        // meshSpec.vertexStride = sizeof(Vertex);
+        // meshSpec.indices = &indices;
+        // meshSpec.cmd = cmd;
+
+        // graphics::Mesh mesh{meshSpec};
+
+        // m_deviceContext->GetTransferQueue().EndCommands(cmd);
+
+        graphics::Buffer::Spec bufferSpec{};
+        bufferSpec.device = m_deviceContext.get();
+        bufferSpec.instanceCount = 3000;
+        bufferSpec.instanceSize = 8;
+        bufferSpec.usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+
+        graphics::Buffer buffer{bufferSpec};
+        // auto result = buffer.Map();
+        auto address = buffer.GetDeviceAddress();
 
         while (m_running) {
             m_window->PollEvents();

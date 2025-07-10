@@ -43,7 +43,6 @@ namespace muon::graphics {
         spec.instanceSize = vertexSize;
         spec.instanceCount = m_vertexCount;
         spec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        spec.memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         Buffer stagingBuffer{spec};
 
         auto result = stagingBuffer.Map();
@@ -52,7 +51,6 @@ namespace muon::graphics {
         stagingBuffer.Write(data.data());
 
         spec.usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        spec.memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
         m_vertexBuffer = std::make_unique<Buffer>(spec);
 
         VkBufferCopy copy{};
@@ -71,7 +69,6 @@ namespace muon::graphics {
         spec.instanceSize = sizeof(uint32_t);
         spec.instanceCount = m_indexCount;
         spec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        spec.memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         Buffer stagingBuffer{spec};
 
         auto result = stagingBuffer.Map();
@@ -80,7 +77,6 @@ namespace muon::graphics {
         stagingBuffer.Write(data.data());
 
         spec.usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        spec.memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
         m_indexBuffer = std::make_unique<Buffer>(spec);
 
         VkBufferCopy copy{};

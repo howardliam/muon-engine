@@ -156,7 +156,6 @@ namespace muon::graphics {
         stagingBufferSpec.instanceSize = pixelSize;
         stagingBufferSpec.instanceCount = textureData.size() / pixelSize;
         stagingBufferSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        stagingBufferSpec.memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         Buffer stagingBuffer{stagingBufferSpec};
 
         auto result = stagingBuffer.Map();
