@@ -328,10 +328,15 @@ namespace muon::graphics {
             index += 1;
         }
 
+        VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
+        bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+        bufferDeviceAddressFeatures.bufferDeviceAddress = true;
+
         VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures{};
         meshShaderFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
         meshShaderFeatures.meshShader = true;
         meshShaderFeatures.taskShader = true;
+        meshShaderFeatures.pNext = &bufferDeviceAddressFeatures;
 
         VkPhysicalDeviceSynchronization2Features syncFeatures{};
         syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
@@ -417,6 +422,7 @@ namespace muon::graphics {
         createInfo.instance = m_instance;
         createInfo.physicalDevice = m_physicalDevice;
         createInfo.device = m_device;
+        createInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
         auto result = vmaCreateAllocator(&createInfo, &m_allocator);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create allocator");
