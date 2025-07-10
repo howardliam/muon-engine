@@ -12,7 +12,9 @@ namespace muon::graphics {
             VkDeviceSize instanceSize{};
             uint32_t instanceCount{};
             VkBufferUsageFlags usageFlags{};
-            VmaMemoryUsage memoryUsage{};
+            VkMemoryPropertyFlags memoryPropertyFlags{};
+            VmaMemoryUsage memoryUsage{VMA_MEMORY_USAGE_AUTO};
+            VmaAllocationCreateFlags allocationFlags{};
             VkDeviceSize minOffsetAlignment{1};
         };
 

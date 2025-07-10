@@ -1,6 +1,7 @@
 #include "muon/graphics/buffer.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/log.hpp"
 #include "muon/utils/pretty_print.hpp"
 #include <cstring>
 #include <vulkan/vulkan_core.h>
@@ -26,7 +27,9 @@ namespace muon::graphics {
         bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.requiredFlags = spec.memoryPropertyFlags;
         allocationCreateInfo.usage = spec.memoryUsage;
+        allocationCreateInfo.flags = spec.allocationFlags;
 
         VmaAllocationInfo allocationInfo{};
 
