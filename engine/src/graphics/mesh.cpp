@@ -10,13 +10,10 @@
 namespace muon::graphics {
 
     Mesh::Mesh(const Spec &spec) : m_device(*spec.device) {
-        auto cmd = spec.cmd;
-        bool noCommandBuffer = spec.cmd == nullptr;
+        MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
 
-        if (noCommandBuffer) { cmd = m_device.GetTransferQueue().BeginCommands(); }
         CreateVertexBuffer(spec.cmd, *spec.vertexData, spec.vertexStride);
         CreateIndexBuffer(spec.cmd, *spec.indices);
-        if (noCommandBuffer) { m_device.GetTransferQueue().EndCommands(cmd); }
 
         MU_CORE_DEBUG("created mesh with: {} vertices", m_vertexCount);
     }

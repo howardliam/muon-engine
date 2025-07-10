@@ -1,21 +1,19 @@
 #include "muon/graphics/image.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/log.hpp"
 #include "muon/utils/pretty_print.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
     Image::Image(const Spec &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
+        MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
+
         CreateImage();
         CreateImageView();
 
-        auto cmd = spec.cmd;
-        bool noCommandBuffer = spec.cmd == nullptr;
-
-        if (noCommandBuffer) { cmd = m_device.GetTransferQueue().BeginCommands(); }
-        TransitionLayout(cmd);
-        if (noCommandBuffer) { m_device.GetTransferQueue().EndCommands(cmd); }
+        TransitionLayout(spec.cmd);
 
         MU_CORE_DEBUG("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
     }

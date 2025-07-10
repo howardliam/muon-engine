@@ -10,6 +10,8 @@
 namespace muon::graphics {
 
     Texture::Texture(const Spec &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format) {
+        MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
+
         CreateImage();
         CreateImageView();
         CreateSampler();
@@ -18,12 +20,7 @@ namespace muon::graphics {
         m_descriptorInfo.imageView = m_imageView;
         m_descriptorInfo.sampler = m_sampler;
 
-        auto cmd = spec.cmd;
-        bool noCommandBuffer = spec.cmd == nullptr;
-
-        if (noCommandBuffer) { cmd = m_device.GetTransferQueue().BeginCommands(); }
-        UploadData(cmd, spec.textureData, spec.pixelSize);
-        if (noCommandBuffer) { m_device.GetTransferQueue().EndCommands(cmd); }
+        UploadData(spec.cmd, spec.textureData, spec.pixelSize);
 
         MU_CORE_DEBUG("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
     }
