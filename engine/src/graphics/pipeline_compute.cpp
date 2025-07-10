@@ -8,7 +8,6 @@ namespace muon::graphics {
 
     PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase(*spec.device, spec.layout) {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
-        MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid compute pipeline config");
 
         const auto &shaderInfo = spec.pipelineInfo.shaders.find(VK_SHADER_STAGE_COMPUTE_BIT)->second;
         auto shader = m_shaders.emplace_back(nullptr);

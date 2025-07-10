@@ -18,8 +18,6 @@ namespace muon::schematic {
         std::string entryPoint{};
 
         std::optional<glm::uvec3> workGroupSize{std::nullopt};
-
-        [[nodiscard]] auto IsValid() const -> bool;
     };
 
 }

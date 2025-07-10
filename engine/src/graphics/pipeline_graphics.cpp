@@ -8,7 +8,6 @@ namespace muon::graphics {
 
     PipelineGraphics::PipelineGraphics(const Spec &spec) : PipelineBase(*spec.device, spec.layout) {
         MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Graphics, "must be graphics pipeline config");
-        MU_CORE_ASSERT(spec.pipelineInfo.IsValid(), "must be a valid graphics pipeline config");
         MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for graphics pipeline");
         MU_CORE_ASSERT(spec.pipelineInfo.state->inputAssembly.has_value(), "pipeline state must have input assembly info for graphics pipeline");
 

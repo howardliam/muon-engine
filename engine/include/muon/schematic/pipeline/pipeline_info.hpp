@@ -22,8 +22,6 @@ namespace muon::schematic {
         PipelineType type;
         std::optional<PipelineStateInfo> state{std::nullopt}; // used by graphics and meshlet pipelines
         std::unordered_map<VkShaderStageFlagBits, ShaderInfo> shaders{};
-
-        [[nodiscard]] auto IsValid() const -> bool;
     };
 
 }
