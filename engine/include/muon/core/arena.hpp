@@ -1,18 +1,43 @@
 #pragma once
 
-#include "muon/core/assert.hpp"
-#include "muon/utils/pretty_print.hpp"
+#include "muon/core/log.hpp"
+#include "muon/utils/alignment.hpp"
+#include <atomic>
 #include <cstdint>
 #include <cstdlib>
 #include <utility>
 
 namespace muon {
 
+    struct ArenaPage {
+        static constexpr size_t k_size{4096};
+        uint8_t *data{static_cast<uint8_t *>(std::malloc(k_size))};
+        size_t offset{0};
+
+        std::atomic<size_t> refCount{0};
+
+        auto Retain() -> void {
+            refCount.fetch_add(1, std::memory_order::relaxed);
+        }
+
+        auto Release() -> void {
+            if (refCount.fetch_sub(1, std::memory_order::acq_rel) == 1) {
+                delete this;
+            }
+        }
+    };
+
     template<typename T>
     class ArenaPtr {
     public:
-        ArenaPtr(T *ptr) : m_ptr{ptr} {};
-        ~ArenaPtr() { m_ptr->~T(); }
+        ArenaPtr(T *ptr, ArenaPage *page) : m_ptr{ptr}, m_page(page) {
+            m_page->Retain();
+        };
+
+        ~ArenaPtr() {
+            m_ptr->~T();
+            m_page->Release();
+        }
 
     public:
         [[nodiscard]] auto Get() const -> T * { return m_ptr; }
@@ -21,31 +46,39 @@ namespace muon {
 
     private:
         T *m_ptr{nullptr};
+        ArenaPage *m_page{nullptr};
     };
 
     class ArenaAllocator {
     public:
-        ArenaAllocator(size_t size) : m_size{size} {
-            m_data = static_cast<uint8_t *>(std::malloc(size));
-            MU_CORE_DEBUG("created arena with size: {}", pp::PrintBytes(m_size));
-        }
-
-        ~ArenaAllocator() { delete m_data; }
+        ArenaAllocator() = default;
+        ~ArenaAllocator() = default;
 
         template<typename T, typename ...Args>
-        [[nodiscard]] auto Allocate(Args &&...args) -> ArenaPtr<T> {
-            MU_CORE_ASSERT((m_offset + sizeof(T)) < m_size, "there is not enough room to allocate");
-            m_offset += sizeof(T);
-            return ArenaPtr<T>(new(m_data + m_offset) T(std::forward<Args>(args)...));
+        [[nodiscard]] auto Create(Args &&...args) -> ArenaPtr<T> {
+            uint8_t *memory = Allocate(sizeof(T));
+            T *ptr = new(memory) T(std::forward<Args>(args)...);
+            return ArenaPtr<T>(ptr, m_currentPage);
         }
 
-    public:
-        [[nodiscard]] auto GetSize() const -> size_t { return m_size; }
+    private:
+        [[nodiscard]] auto Allocate(size_t size) -> uint8_t * {
+            size = Alignment(size, 8);
+            if (m_currentPage == nullptr || (m_currentPage->offset + size) > ArenaPage::k_size) {
+                m_currentPage = new ArenaPage();
+                m_pages.push_back(m_currentPage);
+                MU_CORE_DEBUG("allocated new arena page");
+            }
+
+            uint8_t *memory =  m_currentPage->data + m_currentPage->offset;
+            m_currentPage->offset += size;
+
+            return memory;
+        }
 
     private:
-        size_t m_size{0};
-        uint8_t *m_data{nullptr};
-        size_t m_offset{0};
+        std::vector<ArenaPage *> m_pages{};
+        ArenaPage *m_currentPage{nullptr};
     };
 
 }
