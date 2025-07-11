@@ -1,0 +1,11 @@
+#pragma once
+
+#include <cstddef>
+
+namespace muon::literals {
+
+    [[nodiscard]] auto operator""_kb(unsigned long long) -> size_t;
+    [[nodiscard]] auto operator""_mb(unsigned long long) -> size_t;
+    [[nodiscard]] auto operator""_gb(unsigned long long) -> size_t;
+
+}

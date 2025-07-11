@@ -62,6 +62,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
     ${INCLUDE_DIR}/muon/utils/color.hpp
+    ${INCLUDE_DIR}/muon/utils/literals.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
     ${INCLUDE_DIR}/muon/utils/nomove.hpp
     ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
@@ -98,6 +99,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
+    ${SRC_DIR}/utils/literals.cpp
     ${SRC_DIR}/utils/pretty_print.cpp
 )
 
