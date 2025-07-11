@@ -7,7 +7,6 @@
 
 namespace muon::event {
 
-
     class Dispatcher : NoCopy, NoMove {
     private:
         using EventDispatcher = eventpp::EventDispatcher<std::type_index, void(const void *)>;
