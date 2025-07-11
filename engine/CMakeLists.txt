@@ -133,6 +133,8 @@ if(MUON_ENGINE_TESTS)
     set(TEST_FILES
         ${TEST_DIR}/schematic/pipeline/pipeline_info.cpp
         ${TEST_DIR}/schematic/pipeline/shader_info.cpp
+
+        ${TEST_DIR}/utils/literals.cpp
     )
 
     add_executable(muon-tests ${TEST_FILES})
