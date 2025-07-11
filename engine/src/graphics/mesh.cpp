@@ -38,18 +38,22 @@ namespace muon::graphics {
         auto vertexSize = stride;
         m_vertexCount = data.size() / vertexSize;
 
-        Buffer::Spec spec{};
-        spec.device = &m_device;
-        spec.instanceSize = vertexSize;
-        spec.instanceCount = m_vertexCount;
-        spec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        Buffer stagingBuffer{spec};
+        Buffer::Spec stagingSpec{};
+        stagingSpec.device = &m_device;
+        stagingSpec.instanceSize = vertexSize;
+        stagingSpec.instanceCount = m_vertexCount;
+        stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        Buffer stagingBuffer{stagingSpec};
 
         auto result = stagingBuffer.Map();
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to map staging buffer");
 
         stagingBuffer.Write(data.data());
 
+        Buffer::Spec spec{};
+        spec.device = &m_device;
+        spec.instanceSize = vertexSize;
+        spec.instanceCount = m_vertexCount;
         spec.usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
         m_vertexBuffer = std::make_unique<Buffer>(spec);
 
@@ -64,18 +68,22 @@ namespace muon::graphics {
     auto Mesh::CreateIndexBuffer(VkCommandBuffer cmd, const std::vector<uint32_t> &data) -> void {
         m_indexCount = data.size();
 
-        Buffer::Spec spec{};
-        spec.device = &m_device;
-        spec.instanceSize = sizeof(uint32_t);
-        spec.instanceCount = m_indexCount;
-        spec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        Buffer stagingBuffer{spec};
+        Buffer::Spec stagingSpec{};
+        stagingSpec.device = &m_device;
+        stagingSpec.instanceSize = sizeof(uint32_t);
+        stagingSpec.instanceCount = m_indexCount;
+        stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        Buffer stagingBuffer{stagingSpec};
 
         auto result = stagingBuffer.Map();
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to map staging buffer");
 
         stagingBuffer.Write(data.data());
 
+        Buffer::Spec spec{};
+        spec.device = &m_device;
+        spec.instanceSize = sizeof(uint32_t);
+        spec.instanceCount = m_indexCount;
         spec.usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
         m_indexBuffer = std::make_unique<Buffer>(spec);
 

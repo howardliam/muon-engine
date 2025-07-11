@@ -5,8 +5,8 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "muon/graphics/buffer.hpp"
 #include "muon/graphics/device_context.hpp"
+#include "muon/graphics/mesh.hpp"
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
@@ -15,6 +15,7 @@
 #include <fmt/ranges.h>
 #include <GLFW/glfw3.h>
 #include <glm/vec3.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -111,28 +112,18 @@ namespace muon {
             0, 1, 2
         };
 
-        // auto cmd = m_deviceContext->GetTransferQueue().BeginCommands();
+        auto cmd = m_deviceContext->GetTransferQueue().BeginCommands();
 
-        // graphics::Mesh::Spec meshSpec{};
-        // meshSpec.device = m_deviceContext.get();
-        // meshSpec.vertexData = &vertexData;
-        // meshSpec.vertexStride = sizeof(Vertex);
-        // meshSpec.indices = &indices;
-        // meshSpec.cmd = cmd;
+        graphics::Mesh::Spec meshSpec{};
+        meshSpec.device = m_deviceContext.get();
+        meshSpec.vertexData = &vertexData;
+        meshSpec.vertexStride = sizeof(Vertex);
+        meshSpec.indices = &indices;
+        meshSpec.cmd = cmd;
 
-        // graphics::Mesh mesh{meshSpec};
+        graphics::Mesh mesh{meshSpec};
 
-        // m_deviceContext->GetTransferQueue().EndCommands(cmd);
-
-        graphics::Buffer::Spec bufferSpec{};
-        bufferSpec.device = m_deviceContext.get();
-        bufferSpec.instanceCount = 3000;
-        bufferSpec.instanceSize = 8;
-        bufferSpec.usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-
-        graphics::Buffer buffer{bufferSpec};
-        // auto result = buffer.Map();
-        auto address = buffer.GetDeviceAddress();
+        m_deviceContext->GetTransferQueue().EndCommands(cmd);
 
         while (m_running) {
             m_window->PollEvents();
