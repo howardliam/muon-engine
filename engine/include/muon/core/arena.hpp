@@ -1,6 +1,7 @@
 #pragma once
 
 #include "muon/core/assert.hpp"
+#include "muon/utils/pretty_print.hpp"
 #include <cstdint>
 #include <cstdlib>
 #include <utility>
@@ -26,6 +27,7 @@ namespace muon {
     public:
         ArenaAllocator(size_t size) : m_size{size} {
             m_data = static_cast<uint8_t *>(std::malloc(size));
+            MU_CORE_DEBUG("created arena with size: {}", pp::PrintBytes(m_size));
         }
 
         ~ArenaAllocator() { delete m_data; }
