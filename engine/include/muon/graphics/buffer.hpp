@@ -16,6 +16,8 @@ namespace muon::graphics {
             VkDeviceSize minOffsetAlignment{1};
         };
 
+        static constexpr bool inFlightResource = true;
+
     public:
         Buffer(const Spec &spec);
         ~Buffer();
