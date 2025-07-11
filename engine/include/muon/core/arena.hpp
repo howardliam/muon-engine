@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/core/log.hpp"
 #include "muon/utils/alignment.hpp"
 #include <atomic>
 #include <cstdint>
@@ -67,7 +66,6 @@ namespace muon {
             if (m_currentPage == nullptr || (m_currentPage->offset + size) > ArenaPage::k_size) {
                 m_currentPage = new ArenaPage();
                 m_pages.push_back(m_currentPage);
-                MU_CORE_DEBUG("allocated new arena page");
             }
 
             uint8_t *memory =  m_currentPage->data + m_currentPage->offset;
