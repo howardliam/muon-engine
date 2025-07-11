@@ -29,4 +29,17 @@ namespace muon {
         REQUIRE(data->bar == false);
     }
 
+    TEST_CASE("allocate custom struct with constructor", "[arena]") {
+        ArenaAllocator allocator;
+
+        struct TestStruct {
+            uint32_t foo;
+            TestStruct() : foo{5} {}
+        };
+
+        ArenaPtr data = allocator.Create<TestStruct>();
+
+        REQUIRE(data->foo == 5);
+    }
+
 }
