@@ -14,14 +14,14 @@ namespace muon {
         uint8_t *data{static_cast<uint8_t *>(std::malloc(k_size))};
         size_t offset{0};
 
-        std::atomic<size_t> refCount{0};
+        std::atomic<size_t> refs{0};
 
         auto Retain() -> void {
-            refCount.fetch_add(1, std::memory_order::relaxed);
+            refs.fetch_add(1, std::memory_order::relaxed);
         }
 
         auto Release() -> void {
-            if (refCount.fetch_sub(1, std::memory_order::acq_rel) == 1) {
+            if (refs.fetch_sub(1, std::memory_order::acq_rel) == 1) {
                 delete this;
             }
         }
