@@ -2,6 +2,7 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "muon/utils/alignment.hpp"
 #include "muon/utils/pretty_print.hpp"
 #include <cstring>
 #include <vulkan/vulkan_core.h>
@@ -9,16 +10,9 @@
 
 namespace muon::graphics {
 
-    Buffer::Buffer(const Spec &spec) : m_device(*spec.device), m_usageFlags(spec.usageFlags) {
-        auto getAlignment = [](VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) -> VkDeviceSize {
-            if (minOffsetAlignment > 0) {
-                return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
-            }
-            return instanceSize;
-        };
-
-        m_alignmentSize = getAlignment(spec.instanceSize, spec.minOffsetAlignment);
-        m_size = m_alignmentSize * spec.instanceCount;
+    Buffer::Buffer(const Spec &spec) : m_device(*spec.device), m_usageFlags(spec.usageFlags), m_instanceSize(spec.instanceSize), m_instanceCount(spec.instanceCount) {
+        m_alignmentSize = spec.minOffsetAlignment > 0 ? Alignment(m_instanceSize, spec.minOffsetAlignment) : m_instanceSize;
+        m_size = m_alignmentSize * m_instanceCount;
 
         VkBufferCreateInfo bufferCreateInfo{};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
