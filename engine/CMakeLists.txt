@@ -131,6 +131,10 @@ if(MUON_ENGINE_TESTS)
 
     set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     set(TEST_FILES
+        ${TEST_DIR}/main.cpp
+
+        ${TEST_DIR}/core/arena.cpp
+
         ${TEST_DIR}/schematic/pipeline/pipeline_info.cpp
         ${TEST_DIR}/schematic/pipeline/shader_info.cpp
 
@@ -139,7 +143,7 @@ if(MUON_ENGINE_TESTS)
 
     add_executable(muon-tests ${TEST_FILES})
     target_link_libraries(muon-tests PRIVATE
-        Catch2WithMain
+        Catch2
         muon::engine
     )
 
