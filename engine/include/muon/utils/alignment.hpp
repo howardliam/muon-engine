@@ -7,7 +7,7 @@ namespace muon {
 
     template<std::integral T>
     [[nodiscard]] auto Alignment(T integer, size_t alignment) -> T {
-        return (integer + alignment - 1) & ~(alignment - 1);
+        return ((integer + alignment - 1) / alignment) * alignment;
     }
 
 }

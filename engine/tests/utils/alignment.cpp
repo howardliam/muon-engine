@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 namespace muon {
+
     TEST_CASE("align 0 by 8", "[alignment]") {
         uint32_t value = 0;
         uint32_t alignment = 8;
