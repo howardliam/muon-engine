@@ -112,18 +112,18 @@ namespace muon {
             0, 1, 2
         };
 
-        auto cmd = m_deviceContext->GetTransferQueue().BeginCommands();
+        // auto cmd = m_deviceContext->GetTransferQueue().BeginCommands();
 
-        graphics::Mesh::Spec meshSpec{};
-        meshSpec.device = m_deviceContext.get();
-        meshSpec.vertexData = &vertexData;
-        meshSpec.vertexStride = sizeof(Vertex);
-        meshSpec.indices = &indices;
-        meshSpec.cmd = cmd;
+        // graphics::Mesh::Spec meshSpec{};
+        // meshSpec.device = m_deviceContext.get();
+        // meshSpec.vertexData = &vertexData;
+        // meshSpec.vertexStride = sizeof(Vertex);
+        // meshSpec.indices = &indices;
+        // meshSpec.cmd = cmd;
 
-        graphics::Mesh mesh{meshSpec};
+        // graphics::Mesh mesh{meshSpec};
 
-        m_deviceContext->GetTransferQueue().EndCommands(cmd);
+        // m_deviceContext->GetTransferQueue().EndCommands(cmd);
 
         while (m_running) {
             m_window->PollEvents();
