@@ -43,16 +43,17 @@ namespace muon::graphics {
     private:
         const DeviceContext &m_device;
 
+        VkDeviceSize m_instanceSize{};
+        uint32_t m_instanceCount{};
+        VkDeviceSize m_alignmentSize{};
+        VkDeviceSize m_size{};
+
+        VkBufferUsageFlags m_usageFlags{};
+
         VkBuffer m_buffer{nullptr};
         VmaAllocation m_allocation{nullptr};
-        VkDeviceSize m_size{};
         void *m_mapped{nullptr};
         VkDeviceAddress m_deviceAddress{};
-
-        uint32_t m_instanceCount{};
-        VkDeviceSize m_instanceSize{};
-        VkDeviceSize m_alignmentSize{};
-        VkBufferUsageFlags m_usageFlags{};
 
         VkDescriptorBufferInfo m_descriptorInfo{};
     };
