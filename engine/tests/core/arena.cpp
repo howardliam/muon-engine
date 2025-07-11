@@ -5,15 +5,28 @@
 namespace muon {
 
     TEST_CASE("create arena", "[arena]") {
-        ArenaAllocator allocator{1'000};
-        REQUIRE(allocator.GetSize() == 1'000);
+        ArenaAllocator allocator;
     }
 
     TEST_CASE("allocate uint32_t", "[arena]") {
-        ArenaAllocator allocator{1'000};
-        ArenaPtr integer = allocator.Allocate<uint32_t>(2'147'483'647);
+        ArenaAllocator allocator;
+        ArenaPtr data = allocator.Create<uint32_t>(2'147'483'647);
 
-        REQUIRE(*integer == 2'147'483'647);
+        REQUIRE(*data == 2'147'483'647);
+    }
+
+    TEST_CASE("allocate custom struct", "[arena]") {
+        ArenaAllocator allocator;
+
+        struct TestStruct {
+            uint32_t foo{0};
+            bool bar{false};
+        };
+
+        ArenaPtr data = allocator.Create<TestStruct>(0, false);
+
+        REQUIRE(data->foo == 0);
+        REQUIRE(data->bar == false);
     }
 
 }
