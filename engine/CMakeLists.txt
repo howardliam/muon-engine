@@ -61,6 +61,7 @@ set(ENGINE_HEADER_FILES
 
     ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
 
+    ${INCLUDE_DIR}/muon/utils/alignment.hpp
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/literals.hpp
     ${INCLUDE_DIR}/muon/utils/nocopy.hpp
@@ -138,6 +139,7 @@ if(MUON_ENGINE_TESTS)
         ${TEST_DIR}/schematic/pipeline/pipeline_info.cpp
         ${TEST_DIR}/schematic/pipeline/shader_info.cpp
 
+        ${TEST_DIR}/utils/alignment.cpp
         ${TEST_DIR}/utils/literals.cpp
     )
 
