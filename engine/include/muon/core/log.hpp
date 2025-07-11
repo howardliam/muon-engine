@@ -9,16 +9,16 @@ namespace muon {
 
     class Log {
     public:
-        static void Init();
+        static auto Init() -> void;
 
         static auto GetCoreLogger() -> std::shared_ptr<spdlog::logger> &;
         static auto GetClientLogger() -> std::shared_ptr<spdlog::logger> &;
         static auto GetVulkanLogger() -> std::shared_ptr<spdlog::logger> &;
 
     private:
-        static inline std::shared_ptr<spdlog::logger> s_coreLogger = nullptr;
-        static inline std::shared_ptr<spdlog::logger> s_clientLogger = nullptr;
-        static inline std::shared_ptr<spdlog::logger> s_vulkanLogger = nullptr;
+        static inline std::shared_ptr<spdlog::logger> s_coreLogger{nullptr};
+        static inline std::shared_ptr<spdlog::logger> s_clientLogger{nullptr};
+        static inline std::shared_ptr<spdlog::logger> s_vulkanLogger{nullptr};
     };
 
 }
