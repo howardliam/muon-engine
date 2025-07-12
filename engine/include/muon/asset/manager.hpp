@@ -28,8 +28,8 @@ public:
     auto BeginLoading() -> void;
     auto EndLoading() -> void;
 
-    auto FromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void;
-    auto FromFile(const std::filesystem::path &path) -> void;
+    auto LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void;
+    auto LoadFromFile(const std::filesystem::path &path) -> void;
 
 public:
     [[nodiscard]] auto GetCommandBuffer() -> VkCommandBuffer;

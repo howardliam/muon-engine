@@ -64,7 +64,7 @@ auto Manager::EndLoading() -> void {
     m_loadingInProgress = false;
 }
 
-auto Manager::FromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
+auto Manager::LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
     MU_CORE_ASSERT(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
 
     auto loader = GetLoader(fileType);
@@ -73,7 +73,7 @@ auto Manager::FromMemory(const std::vector<uint8_t> &data, const std::string_vie
     loader->FromMemory(data);
 }
 
-auto Manager::FromFile(const std::filesystem::path &path) -> void {
+auto Manager::LoadFromFile(const std::filesystem::path &path) -> void {
     MU_CORE_ASSERT(m_loadingInProgress, "cannot load from file if loading hasn't begun");
 
     MU_CORE_ASSERT(path.has_extension(), "file must have an extension");
