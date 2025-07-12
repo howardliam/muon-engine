@@ -6,6 +6,9 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(ENGINE_HEADER_FILES
+    ${INCLUDE_DIR}/muon/asset/loader.hpp
+    ${INCLUDE_DIR}/muon/asset/manager.hpp
+
     ${INCLUDE_DIR}/muon/core/arena.hpp
     ${INCLUDE_DIR}/muon/core/application.hpp
     ${INCLUDE_DIR}/muon/core/assert.hpp
@@ -23,6 +26,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/fs/fs.hpp
 
     ${INCLUDE_DIR}/muon/graphics/buffer.hpp
+    ${INCLUDE_DIR}/muon/graphics/context.hpp
     ${INCLUDE_DIR}/muon/graphics/device_context.hpp
     ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
     ${INCLUDE_DIR}/muon/graphics/gpu.hpp
@@ -70,6 +74,8 @@ set(ENGINE_HEADER_FILES
 )
 
 set(ENGINE_SRC_FILES
+    ${SRC_DIR}/asset/manager.cpp
+
     ${SRC_DIR}/core/application.cpp
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/window.cpp
@@ -77,7 +83,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/fs/fs.cpp
 
     ${SRC_DIR}/graphics/buffer.cpp
-    ${SRC_DIR}/graphics/device_context.cpp
+    ${SRC_DIR}/graphics/context.cpp
     ${SRC_DIR}/graphics/gpu.cpp
     ${SRC_DIR}/graphics/image.cpp
     ${SRC_DIR}/graphics/mesh.cpp
