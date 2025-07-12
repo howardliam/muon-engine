@@ -26,10 +26,11 @@ auto Manager::RegisterLoader(Loader *loader) -> void {
     auto key = loader->GetFileType();
     MU_CORE_ASSERT(key.starts_with('.'), "file type must begin with a fullstop, e.g.: .png, .jxl");
 
-    if (m_loaders.find(key.data()) != m_loaders.end()) {
+    if (m_loaders.find(key.data()) == m_loaders.end()) {
         std::unique_ptr<Loader> loader2(loader);
         loader2->SetManager(this);
         m_loaders[key.data()] = std::move(loader2);
+        MU_CORE_DEBUG("registered file loader for: {} files", key);
     } else {
         MU_CORE_WARN("loader already exists for: {} files", key);
     }
