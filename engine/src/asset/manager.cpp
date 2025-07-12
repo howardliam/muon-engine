@@ -15,26 +15,22 @@ Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{s
 
     vkAllocateCommandBuffers(m_context.GetDevice(), &allocInfo, &m_cmd);
 
-    for (const auto &loader : spec.loaders) {
+    for (auto &loader : spec.loaders) {
         RegisterLoader(loader);
     }
 }
 
 Manager::~Manager() { vkFreeCommandBuffers(m_context.GetDevice(), m_transferQueue.GetCommandPool(), 1, &m_cmd); }
 
-auto Manager::RegisterLoader(const Loader &loader) -> void {
-    MU_CORE_ASSERT(loader.fileType.starts_with('.'), "file type must begin with a fullstop, e.g.: .png, .jxl");
+auto Manager::RegisterLoader(Loader *loader) -> void {
+    auto key = loader->GetFileType();
+    MU_CORE_ASSERT(key.starts_with('.'), "file type must begin with a fullstop, e.g.: .png, .jxl");
 
-    if (m_fileLoaders.find(loader.fileType) != m_fileLoaders.end()) {
-        m_fileLoaders[loader.fileType] = loader.fileLoad;
+    if (m_loaders.find(key.data()) != m_loaders.end()) {
+        std::unique_ptr<Loader> loader2(loader);
+        m_loaders[key.data()] = std::move(loader2);
     } else {
-        MU_CORE_WARN("file loader already exists for: {} files", loader.fileType);
-    }
-
-    if (m_memoryLoaders.find(loader.fileType) != m_memoryLoaders.end()) {
-        m_memoryLoaders[loader.fileType] = loader.memoryLoad;
-    } else {
-        MU_CORE_WARN("memory loader already exists for: {} files", loader.fileType);
+        MU_CORE_WARN("loader already exists for: {} files", key);
     }
 }
 
@@ -66,27 +62,35 @@ auto Manager::EndLoading() -> void {
     m_loadingInProgress = false;
 }
 
-auto Manager::LoadFile(const std::filesystem::path &path) -> void {
+auto Manager::FromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
+    MU_CORE_ASSERT(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
+
+    auto loader = GetLoader(fileType);
+    MU_CORE_ASSERT(loader != nullptr, "no loader found");
+
+    loader->FromMemory(data);
+}
+
+auto Manager::FromFile(const std::filesystem::path &path) -> void {
     MU_CORE_ASSERT(m_loadingInProgress, "cannot load from file if loading hasn't begun");
 
     MU_CORE_ASSERT(path.has_extension(), "file must have an extension");
     auto extension = path.extension();
 
-    auto it = m_fileLoaders.find(extension);
-    MU_CORE_ASSERT(it != m_fileLoaders.end(), "no loader found");
+    auto loader = GetLoader(extension.c_str());
+    MU_CORE_ASSERT(loader != nullptr, "no loader found");
 
-    it->second(this, path);
-}
-
-auto Manager::LoadMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
-    MU_CORE_ASSERT(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
-
-    auto it = m_memoryLoaders.find(fileType.data());
-    MU_CORE_ASSERT(it != m_memoryLoaders.end(), "no loader found");
-
-    it->second(this, data);
+    loader->FromFile(path);
 }
 
 auto Manager::GetCommandBuffer() -> VkCommandBuffer { return m_cmd; }
+
+auto Manager::GetLoader(const std::string_view fileType) -> Loader * {
+    auto it = m_loaders.find(fileType.data());
+    if (it == m_loaders.end()) {
+        return nullptr;
+    }
+    return it->second.get();
+}
 
 } // namespace muon::asset
