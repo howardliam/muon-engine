@@ -1,4 +1,4 @@
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
@@ -87,7 +87,7 @@ void DestroyDebugUtilsMessenger(
 
 namespace muon::graphics {
 
-DeviceContext::DeviceContext(const Spec &spec) {
+Context::Context(const Spec &spec) {
     MU_CORE_ASSERT(spec.window, "a window must be present");
 
     CreateInstance(*spec.window);
@@ -102,7 +102,7 @@ DeviceContext::DeviceContext(const Spec &spec) {
     MU_CORE_DEBUG("created device");
 }
 
-DeviceContext::~DeviceContext() {
+Context::~Context() {
     vmaDestroyAllocator(m_allocator);
     m_graphicsQueue.reset();
     m_computeQueue.reset();
@@ -117,23 +117,23 @@ DeviceContext::~DeviceContext() {
     MU_CORE_DEBUG("destroyed device");
 }
 
-VkInstance DeviceContext::GetInstance() const { return m_instance; }
+VkInstance Context::GetInstance() const { return m_instance; }
 
-VkSurfaceKHR DeviceContext::GetSurface() const { return m_surface; }
+VkSurfaceKHR Context::GetSurface() const { return m_surface; }
 
-VkPhysicalDevice DeviceContext::GetPhysicalDevice() const { return m_physicalDevice; }
+VkPhysicalDevice Context::GetPhysicalDevice() const { return m_physicalDevice; }
 
-VkDevice DeviceContext::GetDevice() const { return m_device; }
+VkDevice Context::GetDevice() const { return m_device; }
 
-Queue &DeviceContext::GetGraphicsQueue() const { return *m_graphicsQueue; }
+Queue &Context::GetGraphicsQueue() const { return *m_graphicsQueue; }
 
-Queue &DeviceContext::GetComputeQueue() const { return *m_computeQueue; }
+Queue &Context::GetComputeQueue() const { return *m_computeQueue; }
 
-Queue &DeviceContext::GetTransferQueue() const { return *m_transferQueue; }
+Queue &Context::GetTransferQueue() const { return *m_transferQueue; }
 
-VmaAllocator DeviceContext::GetAllocator() const { return m_allocator; }
+VmaAllocator Context::GetAllocator() const { return m_allocator; }
 
-void DeviceContext::CreateInstance(const Window &window) {
+void Context::CreateInstance(const Window &window) {
     auto extensions = window.GetRequiredExtensions();
     extensions.insert(extensions.end(), k_requiredInstanceExtensions.begin(), k_requiredInstanceExtensions.end());
 
@@ -194,7 +194,7 @@ void DeviceContext::CreateInstance(const Window &window) {
     }
 }
 
-void DeviceContext::CreateDebugMessenger() {
+void Context::CreateDebugMessenger() {
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -207,12 +207,12 @@ void DeviceContext::CreateDebugMessenger() {
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
 }
 
-void DeviceContext::CreateSurface(const Window &window) {
+void Context::CreateSurface(const Window &window) {
     auto result = window.CreateSurface(m_instance, &m_surface);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create window surface");
 }
 
-void DeviceContext::SelectPhysicalDevice() {
+void Context::SelectPhysicalDevice() {
     uint32_t deviceCount;
     auto result = vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get available GPU count");
@@ -258,7 +258,7 @@ void DeviceContext::SelectPhysicalDevice() {
     MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
 }
 
-void DeviceContext::CreateLogicalDevice() {
+void Context::CreateLogicalDevice() {
     const QueueInfo queueInfo(m_physicalDevice, m_surface);
     MU_CORE_ASSERT(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
     MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
@@ -405,7 +405,7 @@ void DeviceContext::CreateLogicalDevice() {
     MU_CORE_ASSERT(m_transferQueue, "transfer queue must not be null");
 }
 
-void DeviceContext::CreateAllocator() {
+void Context::CreateAllocator() {
     VmaAllocatorCreateInfo createInfo{};
     createInfo.instance = m_instance;
     createInfo.physicalDevice = m_physicalDevice;
