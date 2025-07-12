@@ -25,6 +25,7 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 | files | open compound named in snake_case, e.g.: `frame_handler.hpp` |
 | class/struct visibility | group visibility by methods and members separately |
 | headers | always use `.hpp` extension over `.h` when the code is C++ specific |
+| errors | no exceptions, opt for `std::optional<T>` and `std::expected<T, E>` in return types, assertions to fail fast during debug |
 | abbreviations, initialisations | treated as single words, e.g.: `Hdr`, `Ssao`, `Gltf` |
 | code spelling | follow American English |
 | non-code spelling | may follow preferred English dialect |
