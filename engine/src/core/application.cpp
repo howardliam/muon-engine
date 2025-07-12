@@ -40,12 +40,12 @@ Application::Application(const Spec &spec) {
     windowSpec.dispatcher = m_dispatcher.get();
     m_window = std::make_unique<Window>(windowSpec);
 
-    graphics::DeviceContext::Spec deviceContextSpec{};
-    deviceContextSpec.window = m_window.get();
-    m_device = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
+    graphics::DeviceContext::Spec deviceSpec{};
+    deviceSpec.window = m_window.get();
+    m_device = std::make_unique<graphics::DeviceContext>(deviceSpec);
 
     profiling::Profiler::Spec profilerSpec{};
-    profilerSpec.deviceContext = m_device.get();
+    profilerSpec.device = m_device.get();
     profiling::Profiler::CreateContext(profilerSpec);
 
     graphics::Renderer::Spec rendererSpec{};
