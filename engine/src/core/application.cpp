@@ -1,11 +1,12 @@
 #include "muon/core/application.hpp"
 
+#include "muon/asset/loaders/png.hpp"
+#include "muon/asset/manager.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "muon/graphics/device_context.hpp"
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
@@ -52,6 +53,11 @@ Application::Application(const Spec &spec) {
     rendererSpec.window = m_window.get();
     rendererSpec.device = m_context.get();
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
+
+    asset::Manager::Spec assetManagerSpec{};
+    assetManagerSpec.context = m_context.get();
+    assetManagerSpec.loaders = {new asset::PngLoader()};
+    m_assetManager = std::make_unique<asset::Manager>(assetManagerSpec);
 
     m_onWindowClose = m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
         MU_CORE_INFO("window closed received");
