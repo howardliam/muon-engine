@@ -5,7 +5,7 @@
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 #include "muon/graphics/renderer.hpp"
 
 #include <cstdint>
@@ -50,7 +50,7 @@ protected:
     std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
 
     std::unique_ptr<Window> m_window{nullptr};
-    std::unique_ptr<graphics::DeviceContext> m_device{nullptr};
+    std::unique_ptr<graphics::Context> m_context{nullptr};
     std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
 
     bool m_running{true};

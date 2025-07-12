@@ -40,17 +40,17 @@ Application::Application(const Spec &spec) {
     windowSpec.dispatcher = m_dispatcher.get();
     m_window = std::make_unique<Window>(windowSpec);
 
-    graphics::DeviceContext::Spec deviceSpec{};
-    deviceSpec.window = m_window.get();
-    m_device = std::make_unique<graphics::DeviceContext>(deviceSpec);
+    graphics::Context::Spec contextSpec{};
+    contextSpec.window = m_window.get();
+    m_context = std::make_unique<graphics::Context>(contextSpec);
 
     profiling::Profiler::Spec profilerSpec{};
-    profilerSpec.device = m_device.get();
+    profilerSpec.device = m_context.get();
     profiling::Profiler::CreateContext(profilerSpec);
 
     graphics::Renderer::Spec rendererSpec{};
     rendererSpec.window = m_window.get();
-    rendererSpec.device = m_device.get();
+    rendererSpec.device = m_context.get();
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     m_onWindowClose = m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
@@ -59,7 +59,7 @@ Application::Application(const Spec &spec) {
     });
 
     auto _ = m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
-        vkQueueWaitIdle(m_device->GetGraphicsQueue().Get());
+        vkQueueWaitIdle(m_context->GetGraphicsQueue().Get());
         m_renderer->RebuildSwapchain();
     });
 
@@ -104,10 +104,10 @@ auto Application::Run() -> void {
 
     std::vector<uint32_t> indices{0, 1, 2};
 
-    // auto cmd = m_device->GetTransferQueue().BeginCommands();
+    // auto cmd = m_context->GetTransferQueue().BeginCommands();
 
     // graphics::Mesh::Spec meshSpec{};
-    // meshSpec.device = m_device.get();
+    // meshSpec.device = m_context.get();
     // meshSpec.vertexData = &vertexData;
     // meshSpec.vertexStride = sizeof(Vertex);
     // meshSpec.indices = &indices;
@@ -115,7 +115,7 @@ auto Application::Run() -> void {
 
     // graphics::Mesh mesh{meshSpec};
 
-    // m_device->GetTransferQueue().EndCommands(cmd);
+    // m_context->GetTransferQueue().EndCommands(cmd);
 
     while (m_running) {
         m_window->PollEvents();
@@ -125,7 +125,7 @@ auto Application::Run() -> void {
         }
     }
 
-    vkDeviceWaitIdle(m_device->GetDevice());
+    vkDeviceWaitIdle(m_context->GetDevice());
 }
 
 } // namespace muon
