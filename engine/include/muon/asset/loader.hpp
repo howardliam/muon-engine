@@ -10,13 +10,13 @@ class Manager;
 
 class Loader {
 public:
-    Loader(Manager *manager) : m_manager{manager} {}
     virtual ~Loader() = default;
-
-    [[nodiscard]] virtual auto GetFileType() -> std::string_view = 0;
 
     virtual auto FromMemory(const std::vector<uint8_t> &data) -> void = 0;
     virtual auto FromFile(const std::filesystem::path &path) -> void = 0;
+
+    [[nodiscard]] virtual auto GetFileType() -> std::string_view = 0;
+    auto SetManager(Manager *manager) -> void { m_manager = manager; }
 
 protected:
     Manager *m_manager{nullptr};
