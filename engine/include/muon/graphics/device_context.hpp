@@ -4,60 +4,61 @@
 #include "muon/graphics/queue.hpp"
 #include "muon/utils/nocopy.hpp"
 #include "muon/utils/nomove.hpp"
+
 #include <string>
 #include <unordered_set>
-#include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
+#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-    class DeviceContext : NoCopy, NoMove {
-    public:
-        struct Spec {
-            const Window *window{nullptr};
-        };
-
-    public:
-        DeviceContext(const Spec &spec);
-        ~DeviceContext();
-
-    public:
-        [[nodiscard]] VkInstance GetInstance() const;
-        [[nodiscard]] VkSurfaceKHR GetSurface() const;
-        [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
-        [[nodiscard]] VkDevice GetDevice() const;
-
-        [[nodiscard]] Queue &GetGraphicsQueue() const;
-        [[nodiscard]] Queue &GetComputeQueue() const;
-        [[nodiscard]] Queue &GetTransferQueue() const;
-
-        [[nodiscard]] VmaAllocator GetAllocator() const;
-
-    private:
-        void CreateInstance(const Window &window);
-        void CreateDebugMessenger();
-        void CreateSurface(const Window &window);
-        void SelectPhysicalDevice();
-        void CreateLogicalDevice();
-        void CreateAllocator();
-
-    private:
-        VkInstance m_instance{nullptr};
-
-        VkDebugUtilsMessengerEXT m_debugMessenger{nullptr};
-
-        VkSurfaceKHR m_surface{nullptr};
-
-        VkPhysicalDevice m_physicalDevice{nullptr};
-        std::unordered_set<std::string> m_enabledExtensions{};
-
-        VkDevice m_device{nullptr};
-
-        std::unique_ptr<Queue> m_graphicsQueue{nullptr};
-        std::unique_ptr<Queue> m_computeQueue{nullptr};
-        std::unique_ptr<Queue> m_transferQueue{nullptr};
-
-        VmaAllocator m_allocator{nullptr};
+class DeviceContext : NoCopy, NoMove {
+public:
+    struct Spec {
+        const Window *window{nullptr};
     };
 
-}
+public:
+    DeviceContext(const Spec &spec);
+    ~DeviceContext();
+
+public:
+    [[nodiscard]] VkInstance GetInstance() const;
+    [[nodiscard]] VkSurfaceKHR GetSurface() const;
+    [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
+    [[nodiscard]] VkDevice GetDevice() const;
+
+    [[nodiscard]] Queue &GetGraphicsQueue() const;
+    [[nodiscard]] Queue &GetComputeQueue() const;
+    [[nodiscard]] Queue &GetTransferQueue() const;
+
+    [[nodiscard]] VmaAllocator GetAllocator() const;
+
+private:
+    void CreateInstance(const Window &window);
+    void CreateDebugMessenger();
+    void CreateSurface(const Window &window);
+    void SelectPhysicalDevice();
+    void CreateLogicalDevice();
+    void CreateAllocator();
+
+private:
+    VkInstance m_instance{nullptr};
+
+    VkDebugUtilsMessengerEXT m_debugMessenger{nullptr};
+
+    VkSurfaceKHR m_surface{nullptr};
+
+    VkPhysicalDevice m_physicalDevice{nullptr};
+    std::unordered_set<std::string> m_enabledExtensions{};
+
+    VkDevice m_device{nullptr};
+
+    std::unique_ptr<Queue> m_graphicsQueue{nullptr};
+    std::unique_ptr<Queue> m_computeQueue{nullptr};
+    std::unique_ptr<Queue> m_transferQueue{nullptr};
+
+    VmaAllocator m_allocator{nullptr};
+};
+
+} // namespace muon::graphics

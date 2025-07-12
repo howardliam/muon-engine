@@ -4,12 +4,10 @@
 
 namespace muon {
 
-    ScriptManager::ScriptManager() {}
+ScriptManager::ScriptManager() {}
 
-    ScriptManager::~ScriptManager() {}
+ScriptManager::~ScriptManager() {}
 
-    void ScriptManager::Run() {
-        MU_INFO("hello");
-    }
+void ScriptManager::Run() { MU_INFO("hello"); }
 
-}
+} // namespace muon

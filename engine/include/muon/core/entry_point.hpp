@@ -9,7 +9,7 @@ extern auto muon::CreateApplication(ApplicationCommandLineArgs args) -> Applicat
 auto main(int32_t argc, char **argv) -> int32_t {
     muon::Log::Init();
 
-    auto app = muon::CreateApplication({ argc, argv });
+    auto app = muon::CreateApplication({argc, argv});
     MU_CORE_ASSERT(app, "application must exist");
 
     app->Run();

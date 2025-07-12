@@ -2,7 +2,7 @@
 
 namespace muon::graphics {
 
-    template<typename T>
-    concept InFlightResource = T::inFlightResource;
+template <typename T>
+concept InFlightResource = T::inFlightResource;
 
 }

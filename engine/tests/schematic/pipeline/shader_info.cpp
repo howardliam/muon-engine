@@ -4,7 +4,7 @@
 
 namespace muon::schematic {
 
-    using json = nlohmann::json;
-    using namespace nlohmann::literals;
+using json = nlohmann::json;
+using namespace nlohmann::literals;
 
-}
+} // namespace muon::schematic

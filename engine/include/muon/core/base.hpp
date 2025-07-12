@@ -5,20 +5,20 @@
 
 #ifdef MU_DEBUG_ENABLED
 
-    #ifdef _WIN32
+#ifdef _WIN32
 
-        #include <windows.h>
-        #define MU_DEBUG_BREAK() __debugbreak()
-
-    #else
-
-        #include <csignal>
-        #define MU_DEBUG_BREAK() raise(SIGTRAP)
-
-    #endif
+#include <windows.h>
+#define MU_DEBUG_BREAK() __debugbreak()
 
 #else
 
-    #define MU_DEBUG_BREAK()
+#include <csignal>
+#define MU_DEBUG_BREAK() raise(SIGTRAP)
+
+#endif
+
+#else
+
+#define MU_DEBUG_BREAK()
 
 #endif

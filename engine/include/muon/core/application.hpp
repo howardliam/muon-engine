@@ -6,6 +6,7 @@
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/renderer.hpp"
 #include "muon/scripting/script_manager.hpp"
+
 #include <cstdint>
 #include <filesystem>
 #include <memory>
@@ -14,50 +15,50 @@ auto main(int32_t argc, char **argv) -> int32_t;
 
 namespace muon {
 
-    struct ApplicationCommandLineArgs {
-        int32_t count;
-        char **args{nullptr};
+struct ApplicationCommandLineArgs {
+    int32_t count;
+    char **args{nullptr};
 
-        auto operator[](int32_t index) const -> const char * {
-            MU_CORE_ASSERT(index < count);
-            return args[index];
-        }
+    auto operator[](int32_t index) const -> const char * {
+        MU_CORE_ASSERT(index < count);
+        return args[index];
+    }
+};
+
+class Application {
+public:
+    struct Spec {
+        std::string name = "Muon Application";
+        std::filesystem::path workingDirectory;
+        ApplicationCommandLineArgs cliArgs;
     };
 
-    class Application {
-    public:
-        struct Spec {
-            std::string name = "Muon Application";
-            std::filesystem::path workingDirectory;
-            ApplicationCommandLineArgs cliArgs;
-        };
+public:
+    Application(const Spec &spec);
+    virtual ~Application();
 
-    public:
-        Application(const Spec &spec);
-        virtual ~Application();
+    [[nodiscard]] static auto Get() -> Application &;
 
-        [[nodiscard]] static auto Get() -> Application &;
+private:
+    auto Run() -> void;
 
-    private:
-        auto Run() -> void;
+    friend auto ::main(int32_t argc, char **argv) -> int32_t;
 
-        friend auto ::main(int32_t argc, char **argv) -> int32_t;
+protected:
+    std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
+    std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
 
-    protected:
-        std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
-        std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
+    std::unique_ptr<Window> m_window{nullptr};
+    std::unique_ptr<graphics::DeviceContext> m_deviceContext{nullptr};
+    std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
 
-        std::unique_ptr<Window> m_window{nullptr};
-        std::unique_ptr<graphics::DeviceContext> m_deviceContext{nullptr};
-        std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
+    std::unique_ptr<ScriptManager> m_scriptManager{nullptr};
 
-        std::unique_ptr<ScriptManager> m_scriptManager{nullptr};
+    bool m_running{true};
 
-        bool m_running{true};
+    static inline Application *s_instance{nullptr};
+};
 
-        static inline Application *s_instance{nullptr};
-    };
+auto CreateApplication(ApplicationCommandLineArgs args) -> Application *;
 
-    auto CreateApplication(ApplicationCommandLineArgs args) -> Application *;
-
-}
+} // namespace muon

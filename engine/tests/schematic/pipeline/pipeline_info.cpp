@@ -5,11 +5,11 @@
 
 namespace muon::schematic {
 
-    using json = nlohmann::json;
-    using namespace nlohmann::literals;
+using json = nlohmann::json;
+using namespace nlohmann::literals;
 
-    TEST_CASE("Compute pipeline info is serialized", "[schematic][pipeline]") {
-        const auto jsonPipelineInfo = R"({
+TEST_CASE("Compute pipeline info is serialized", "[schematic][pipeline]") {
+    const auto jsonPipelineInfo = R"({
             "shaders": {
                 "VK_SHADER_STAGE_COMPUTE_BIT": {
                     "entryPoint": "main",
@@ -20,16 +20,16 @@ namespace muon::schematic {
             "type": "Compute"
         })"_json;
 
-        schematic::PipelineInfo info{};
-        info.type = schematic::PipelineType::Compute;
+    schematic::PipelineInfo info{};
+    info.type = schematic::PipelineType::Compute;
 
-        info.shaders[VK_SHADER_STAGE_COMPUTE_BIT].entryPoint = "main";
-        info.shaders[VK_SHADER_STAGE_COMPUTE_BIT].path = "foo";
-        info.shaders[VK_SHADER_STAGE_COMPUTE_BIT].workGroupSize = {3, 3, 1};
+    info.shaders[VK_SHADER_STAGE_COMPUTE_BIT].entryPoint = "main";
+    info.shaders[VK_SHADER_STAGE_COMPUTE_BIT].path = "foo";
+    info.shaders[VK_SHADER_STAGE_COMPUTE_BIT].workGroupSize = {3, 3, 1};
 
-        const json j = info;
+    const json j = info;
 
-        REQUIRE(j == jsonPipelineInfo);
-    }
-
+    REQUIRE(j == jsonPipelineInfo);
 }
+
+} // namespace muon::schematic

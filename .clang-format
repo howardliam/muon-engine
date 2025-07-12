@@ -1,0 +1,17 @@
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 130
+Language: Cpp
+AccessModifierOffset: -4
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+AllowShortBlocksOnASingleLine: Always
+AllowShortCompoundRequirementOnASingleLine: true
+BreakBeforeConceptDeclarations: Always
+BreakConstructorInitializers: BeforeColon
+BreakTemplateDeclarations: Yes
+EmptyLineBeforeAccessModifier: LogicalBlock
+IncludeBlocks: Regroup
+IndentAccessModifiers: false
+IndentCaseLabels: true
+PointerAlignment: Right

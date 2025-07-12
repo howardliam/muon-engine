@@ -4,12 +4,12 @@
 
 namespace muon::fs {
 
-    class StreamWriter {
-    public:
-        virtual ~StreamWriter() = default;
+class StreamWriter {
+public:
+    virtual ~StreamWriter() = default;
 
-        [[nodiscard]] virtual auto GetStreamPosition() const -> uint64_t = 0;
-        virtual auto SetStreamPosition(uint64_t position) -> void = 0;
-    };
+    [[nodiscard]] virtual auto GetStreamPosition() const -> uint64_t = 0;
+    virtual auto SetStreamPosition(uint64_t position) -> void = 0;
+};
 
-}
+} // namespace muon::fs

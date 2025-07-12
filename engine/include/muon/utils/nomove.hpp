@@ -2,13 +2,13 @@
 
 namespace muon {
 
-    class NoMove {
-    protected:
-        NoMove() = default;
-        ~NoMove() = default;
+class NoMove {
+protected:
+    NoMove() = default;
+    ~NoMove() = default;
 
-        NoMove(NoMove &&other) = delete;
-        NoMove &operator=(NoMove &&other) = delete;
-    };
+    NoMove(NoMove &&other) = delete;
+    NoMove &operator=(NoMove &&other) = delete;
+};
 
-}
+} // namespace muon

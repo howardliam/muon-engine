@@ -2,14 +2,12 @@
 
 namespace muon {
 
-    class ScriptManager {
-    public:
-        ScriptManager();
-        ~ScriptManager();
+class ScriptManager {
+public:
+    ScriptManager();
+    ~ScriptManager();
 
-        void Run();
+    void Run();
+};
 
-    private:
-    };
-
-}
+} // namespace muon

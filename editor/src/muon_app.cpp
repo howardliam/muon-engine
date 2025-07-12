@@ -3,19 +3,17 @@
 
 namespace muon {
 
-    class MuonEditor final : public Application {
-    public:
-        MuonEditor(const Spec &spec) : Application(spec) {
+class MuonEditor final : public Application {
+  public:
+    MuonEditor(const Spec &spec) : Application(spec) {}
+};
 
-        }
-    };
+auto CreateApplication(ApplicationCommandLineArgs args) -> Application * {
+    Application::Spec spec{};
+    spec.name = "Muon Editor";
+    spec.cliArgs = args;
 
-    auto CreateApplication(ApplicationCommandLineArgs args) -> Application * {
-        Application::Spec spec{};
-        spec.name = "Muon Editor";
-        spec.cliArgs = args;
-
-        return new MuonEditor(spec);
-    }
-
+    return new MuonEditor(spec);
 }
+
+} // namespace muon
