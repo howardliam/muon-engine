@@ -4,7 +4,7 @@
 namespace muon {
 
 class MuonEditor final : public Application {
-  public:
+public:
     MuonEditor(const Spec &spec) : Application(spec) {}
 };
 
