@@ -6,6 +6,7 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(ENGINE_HEADER_FILES
+    ${INCLUDE_DIR}/muon/asset/loaders/png.hpp
     ${INCLUDE_DIR}/muon/asset/loader.hpp
     ${INCLUDE_DIR}/muon/asset/manager.hpp
 
@@ -74,6 +75,7 @@ set(ENGINE_HEADER_FILES
 )
 
 set(ENGINE_SRC_FILES
+    ${SRC_DIR}/asset/loaders/png.cpp
     ${SRC_DIR}/asset/manager.cpp
 
     ${SRC_DIR}/core/application.cpp
@@ -127,6 +129,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     slang spirv-reflect-static
     glm
     magic_enum::magic_enum
+    spng
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
