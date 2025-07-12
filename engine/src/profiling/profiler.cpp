@@ -7,34 +7,32 @@
 
 namespace muon::profiling {
 
-void Profiler::CreateContext(const Spec &spec) {
+auto Profiler::CreateContext(const Spec &spec) -> void {
     MU_CORE_ASSERT(s_tracyContext == nullptr, "tracy context must not exist");
 
     VkCommandBufferAllocateInfo allocateInfo{};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocateInfo.commandPool = spec.deviceContext->GetGraphicsQueue().GetCommandPool();
+    allocateInfo.commandPool = spec.device->GetGraphicsQueue().GetCommandPool();
     allocateInfo.commandBufferCount = 1;
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
     VkCommandBuffer cmd;
-    vkAllocateCommandBuffers(spec.deviceContext->GetDevice(), &allocateInfo, &cmd);
+    vkAllocateCommandBuffers(spec.device->GetDevice(), &allocateInfo, &cmd);
 
-    s_tracyContext = TracyVkContext(
-        spec.deviceContext->GetPhysicalDevice(), spec.deviceContext->GetDevice(), spec.deviceContext->GetGraphicsQueue().Get(),
-        cmd
-    );
+    s_tracyContext =
+        TracyVkContext(spec.device->GetPhysicalDevice(), spec.device->GetDevice(), spec.device->GetGraphicsQueue().Get(), cmd);
     MU_CORE_DEBUG("created profiler context");
 }
 
-void Profiler::DestroyContext() {
+auto Profiler::DestroyContext() -> void {
     MU_CORE_ASSERT(s_tracyContext != nullptr, "tracy context must exist");
     TracyVkDestroy(s_tracyContext);
     MU_CORE_DEBUG("destroyed profiler context");
 }
 
-void Profiler::Collect(VkCommandBuffer cmd) { TracyVkCollect(s_tracyContext, cmd); }
+auto Profiler::Collect(VkCommandBuffer cmd) -> void { TracyVkCollect(s_tracyContext, cmd); }
 
-const tracy::VkCtx *Profiler::GetContext() {
+auto Profiler::GetContext() -> const tracy::VkCtx * {
     MU_CORE_ASSERT(s_tracyContext != nullptr, "tracy context must exist");
     return s_tracyContext;
 }

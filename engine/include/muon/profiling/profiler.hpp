@@ -10,15 +10,15 @@ namespace muon::profiling {
 class Profiler {
 public:
     struct Spec {
-        const graphics::DeviceContext *deviceContext{nullptr};
+        const graphics::DeviceContext *device{nullptr};
     };
 
 public:
-    static void CreateContext(const Spec &spec);
-    static void DestroyContext();
+    static auto CreateContext(const Spec &spec) -> void;
+    static auto DestroyContext() -> void;
 
-    static void Collect(VkCommandBuffer cmd);
-    static const tracy::VkCtx *GetContext();
+    static auto Collect(VkCommandBuffer cmd) -> void;
+    static auto GetContext() -> const tracy::VkCtx *;
 
 private:
     static inline tracy::VkCtx *s_tracyContext{nullptr};
