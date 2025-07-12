@@ -28,6 +28,7 @@ auto Manager::RegisterLoader(Loader *loader) -> void {
 
     if (m_loaders.find(key.data()) != m_loaders.end()) {
         std::unique_ptr<Loader> loader2(loader);
+        loader2->SetManager(this);
         m_loaders[key.data()] = std::move(loader2);
     } else {
         MU_CORE_WARN("loader already exists for: {} files", key);
