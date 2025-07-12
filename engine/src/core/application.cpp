@@ -53,8 +53,6 @@ Application::Application(const Spec &spec) {
     rendererSpec.device = m_device.get();
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
-    m_scriptManager = std::make_unique<ScriptManager>();
-
     m_onWindowClose = m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
         MU_CORE_INFO("window closed received");
         m_running = false;
@@ -65,9 +63,9 @@ Application::Application(const Spec &spec) {
         m_renderer->RebuildSwapchain();
     });
 
-    _ = m_dispatcher->Subscribe<event::MouseButtonEvent>([&](const auto &event) {
+    _ = m_dispatcher->Subscribe<event::MouseButtonEvent>([](const auto &event) {
         if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
-            m_scriptManager->Run();
+            MU_CORE_INFO("hello!");
         }
     });
 

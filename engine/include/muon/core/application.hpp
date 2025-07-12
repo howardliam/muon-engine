@@ -7,7 +7,6 @@
 #include "muon/event/dispatcher.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/renderer.hpp"
-#include "muon/scripting/script_manager.hpp"
 
 #include <cstdint>
 #include <filesystem>
@@ -53,8 +52,6 @@ protected:
     std::unique_ptr<Window> m_window{nullptr};
     std::unique_ptr<graphics::DeviceContext> m_device{nullptr};
     std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
-
-    std::unique_ptr<ScriptManager> m_scriptManager{nullptr};
 
     bool m_running{true};
 
