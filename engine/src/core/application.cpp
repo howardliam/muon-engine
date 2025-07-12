@@ -42,15 +42,15 @@ Application::Application(const Spec &spec) {
 
     graphics::DeviceContext::Spec deviceContextSpec{};
     deviceContextSpec.window = m_window.get();
-    m_deviceContext = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
+    m_device = std::make_unique<graphics::DeviceContext>(deviceContextSpec);
 
     profiling::Profiler::Spec profilerSpec{};
-    profilerSpec.deviceContext = m_deviceContext.get();
+    profilerSpec.deviceContext = m_device.get();
     profiling::Profiler::CreateContext(profilerSpec);
 
     graphics::Renderer::Spec rendererSpec{};
     rendererSpec.window = m_window.get();
-    rendererSpec.device = m_deviceContext.get();
+    rendererSpec.device = m_device.get();
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     m_scriptManager = std::make_unique<ScriptManager>();
@@ -61,7 +61,7 @@ Application::Application(const Spec &spec) {
     });
 
     auto _ = m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
-        vkQueueWaitIdle(m_deviceContext->GetGraphicsQueue().Get());
+        vkQueueWaitIdle(m_device->GetGraphicsQueue().Get());
         m_renderer->RebuildSwapchain();
     });
 
@@ -106,10 +106,10 @@ auto Application::Run() -> void {
 
     std::vector<uint32_t> indices{0, 1, 2};
 
-    // auto cmd = m_deviceContext->GetTransferQueue().BeginCommands();
+    // auto cmd = m_device->GetTransferQueue().BeginCommands();
 
     // graphics::Mesh::Spec meshSpec{};
-    // meshSpec.device = m_deviceContext.get();
+    // meshSpec.device = m_device.get();
     // meshSpec.vertexData = &vertexData;
     // meshSpec.vertexStride = sizeof(Vertex);
     // meshSpec.indices = &indices;
@@ -117,7 +117,7 @@ auto Application::Run() -> void {
 
     // graphics::Mesh mesh{meshSpec};
 
-    // m_deviceContext->GetTransferQueue().EndCommands(cmd);
+    // m_device->GetTransferQueue().EndCommands(cmd);
 
     while (m_running) {
         m_window->PollEvents();
@@ -127,7 +127,7 @@ auto Application::Run() -> void {
         }
     }
 
-    vkDeviceWaitIdle(m_deviceContext->GetDevice());
+    vkDeviceWaitIdle(m_device->GetDevice());
 }
 
 } // namespace muon

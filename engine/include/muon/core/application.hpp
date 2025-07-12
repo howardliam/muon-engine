@@ -49,7 +49,7 @@ protected:
     std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
 
     std::unique_ptr<Window> m_window{nullptr};
-    std::unique_ptr<graphics::DeviceContext> m_deviceContext{nullptr};
+    std::unique_ptr<graphics::DeviceContext> m_device{nullptr};
     std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
 
     std::unique_ptr<ScriptManager> m_scriptManager{nullptr};
