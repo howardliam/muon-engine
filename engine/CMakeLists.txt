@@ -12,6 +12,8 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/base.hpp
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
+    ${INCLUDE_DIR}/muon/core/no_copy.hpp
+    ${INCLUDE_DIR}/muon/core/no_move.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
     ${INCLUDE_DIR}/muon/core/window.hpp
 
@@ -64,8 +66,6 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/utils/alignment.hpp
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/literals.hpp
-    ${INCLUDE_DIR}/muon/utils/nocopy.hpp
-    ${INCLUDE_DIR}/muon/utils/nomove.hpp
     ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
 )
 

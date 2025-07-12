@@ -1,8 +1,8 @@
 #pragma once
 
+#include "muon/core/no_copy.hpp"
+#include "muon/core/no_move.hpp"
 #include "muon/graphics/device_context.hpp"
-#include "muon/utils/nocopy.hpp"
-#include "muon/utils/nomove.hpp"
 
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>

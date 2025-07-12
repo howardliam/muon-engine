@@ -1,6 +1,8 @@
 #pragma once
 
 #include "muon/core/assert.hpp"
+#include "muon/core/no_copy.hpp"
+#include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/graphics/device_context.hpp"
@@ -25,7 +27,7 @@ struct ApplicationCommandLineArgs {
     }
 };
 
-class Application {
+class Application : NoCopy, NoMove {
 public:
     struct Spec {
         std::string name = "Muon Application";

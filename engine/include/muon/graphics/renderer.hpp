@@ -1,10 +1,10 @@
 #pragma once
 
+#include "muon/core/no_copy.hpp"
+#include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/swapchain.hpp"
-#include "muon/utils/nocopy.hpp"
-#include "muon/utils/nomove.hpp"
 
 #include <unordered_set>
 #include <vector>

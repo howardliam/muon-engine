@@ -1,12 +1,14 @@
 #pragma once
 
+#include "muon/core/no_copy.hpp"
+#include "muon/core/no_move.hpp"
 #include "muon/graphics/device_context.hpp"
 
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-class Buffer {
+class Buffer : NoCopy, NoMove {
 public:
     struct Spec {
         const DeviceContext *device{nullptr};

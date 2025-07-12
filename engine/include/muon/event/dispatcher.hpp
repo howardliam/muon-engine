@@ -1,7 +1,7 @@
 #pragma once
 
-#include "muon/utils/nocopy.hpp"
-#include "muon/utils/nomove.hpp"
+#include "muon/core/no_copy.hpp"
+#include "muon/core/no_move.hpp"
 
 #include <eventpp/eventdispatcher.h>
 #include <typeindex>

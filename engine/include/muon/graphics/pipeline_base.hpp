@@ -1,10 +1,10 @@
 #pragma once
 
+#include "muon/core/no_copy.hpp"
+#include "muon/core/no_move.hpp"
 #include "muon/graphics/device_context.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
 #include "muon/schematic/pipeline/shader_info.hpp"
-#include "muon/utils/nocopy.hpp"
-#include "muon/utils/nomove.hpp"
 
 #include <memory>
 #include <string_view>
