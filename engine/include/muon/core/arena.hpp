@@ -7,16 +7,23 @@
 
 namespace muon {
 
-struct ArenaPage {
-    size_t size;
-    uint8_t *data{nullptr};
-    size_t offset{0};
-    std::atomic<size_t> refs{0};
-
+class ArenaPage {
+public:
     ArenaPage(size_t size);
+
+    [[nodiscard]] auto Allocate(size_t size) -> uint8_t *;
 
     auto Retain() -> void;
     auto Release() -> void;
+
+public:
+    [[nodiscard]] auto CanFit(size_t size) const -> bool;
+
+private:
+    size_t m_size;
+    uint8_t *m_data{nullptr};
+    size_t m_offset{0};
+    std::atomic<size_t> m_refs{0};
 };
 
 template <typename T>
