@@ -16,10 +16,11 @@ auto ArenaPage::Allocate(size_t size) -> uint8_t * {
 
 auto ArenaPage::CanFit(size_t size) const -> bool { return (m_offset + size) < m_size; }
 
-ArenaAllocator::ArenaAllocator(size_t size) : m_pageSize{size} {}
+ArenaAllocator::ArenaAllocator(size_t size) : m_pageSize{size} { m_pages.push_back(std::make_shared<ArenaPage>(m_pageSize)); }
 
 auto ArenaAllocator::Allocate(size_t size) -> uint8_t * {
     size = Alignment(size, 8);
+
     auto currentPage = m_pages[m_currentPageIndex];
     if (currentPage == nullptr || !currentPage->CanFit(size)) {
         m_currentPageIndex = m_pages.size();
