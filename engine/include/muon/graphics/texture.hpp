@@ -2,6 +2,7 @@
 
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
+#include "muon/graphics/buffer.hpp"
 #include "muon/graphics/device_context.hpp"
 
 #include <vector>
@@ -19,6 +20,7 @@ public:
         const std::vector<uint8_t> &textureData{};
         uint32_t pixelSize{};
         VkCommandBuffer cmd{nullptr};
+        std::vector<Buffer> *transientBuffers{nullptr};
     };
 
 public:
@@ -37,7 +39,9 @@ private:
     auto CreateImageView() -> void;
     auto CreateSampler() -> void;
 
-    auto UploadData(VkCommandBuffer cmd, const std::vector<uint8_t> &textureData, uint32_t pixelSize) -> void;
+    auto UploadData(
+        VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
+    ) -> void;
 
 private:
     const DeviceContext &m_device;

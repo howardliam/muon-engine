@@ -20,6 +20,7 @@ public:
         uint32_t vertexStride{0};
         const std::vector<uint32_t> *indices{nullptr};
         VkCommandBuffer cmd{nullptr};
+        std::vector<Buffer> *transientBuffers{nullptr};
     };
 
 public:
@@ -30,8 +31,10 @@ public:
     auto Draw(VkCommandBuffer cmd) -> void;
 
 private:
-    auto CreateVertexBuffer(VkCommandBuffer cmd, const std::vector<uint8_t> &data, uint32_t stride) -> void;
-    auto CreateIndexBuffer(VkCommandBuffer cmd, const std::vector<uint32_t> &data) -> void;
+    auto CreateVertexBuffer(
+        VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint8_t> &data, uint32_t stride
+    ) -> void;
+    auto CreateIndexBuffer(VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint32_t> &data) -> void;
 
 private:
     const DeviceContext &m_device;

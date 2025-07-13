@@ -12,6 +12,7 @@ namespace muon::graphics {
 
 Texture::Texture(const Spec &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format) {
     MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
+    MU_CORE_ASSERT(spec.transientBuffers != nullptr, "there must be a valid transient buffer vector");
 
     CreateImage();
     CreateImageView();
@@ -21,7 +22,7 @@ Texture::Texture(const Spec &spec) : m_device(*spec.device), m_extent(spec.exten
     m_descriptorInfo.imageView = m_imageView;
     m_descriptorInfo.sampler = m_sampler;
 
-    UploadData(spec.cmd, spec.textureData, spec.pixelSize);
+    UploadData(spec.cmd, spec.transientBuffers, spec.textureData, spec.pixelSize);
 
     MU_CORE_DEBUG(
         "created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes)
@@ -119,7 +120,9 @@ auto Texture::CreateSampler() -> void {
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture samper");
 }
 
-auto Texture::UploadData(VkCommandBuffer cmd, const std::vector<uint8_t> &textureData, uint32_t pixelSize) -> void {
+auto Texture::UploadData(
+    VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
+) -> void {
     VkImageMemoryBarrier2 copyBarrier{};
     copyBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
     copyBarrier.image = m_image;
@@ -146,12 +149,12 @@ auto Texture::UploadData(VkCommandBuffer cmd, const std::vector<uint8_t> &textur
     copyDepInfo.pImageMemoryBarriers = &copyBarrier;
     vkCmdPipelineBarrier2(cmd, &copyDepInfo);
 
-    Buffer::Spec stagingBufferSpec{};
-    stagingBufferSpec.device = &m_device;
-    stagingBufferSpec.instanceSize = pixelSize;
-    stagingBufferSpec.instanceCount = textureData.size() / pixelSize;
-    stagingBufferSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    Buffer stagingBuffer{stagingBufferSpec};
+    Buffer::Spec stagingSpec{};
+    stagingSpec.device = &m_device;
+    stagingSpec.instanceSize = pixelSize;
+    stagingSpec.instanceCount = textureData.size() / pixelSize;
+    stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    Buffer &stagingBuffer = transientBuffers->emplace_back(stagingSpec);
 
     auto result = stagingBuffer.Map();
     MU_CORE_ASSERT(result == VK_SUCCESS, "faild to map texture staging buffer");
