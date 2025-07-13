@@ -19,7 +19,7 @@ public:
         VkDeviceSize minOffsetAlignment{1};
     };
 
-    static constexpr bool inFlightResource = true;
+    static constexpr bool transientResource = true;
 
 public:
     Buffer(const Spec &spec);

@@ -3,6 +3,6 @@
 namespace muon::graphics {
 
 template <typename T>
-concept InFlightResource = T::inFlightResource;
+concept TransientResource = T::transientResource;
 
 }
