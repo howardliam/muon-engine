@@ -13,10 +13,8 @@
 #include "muon/profiling/profiler.hpp"
 
 #include <GLFW/glfw3.h>
-#include <cstring>
 #include <fmt/ranges.h>
 #include <glm/vec3.hpp>
-#include <magic_enum/magic_enum.hpp>
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -95,33 +93,6 @@ auto Application::Get() -> Application & { return *s_instance; }
 
 auto Application::Run() -> void {
     MU_CORE_INFO("running application");
-
-    struct Vertex {
-        glm::vec3 position;
-    };
-
-    std::vector<Vertex> vertices{
-        {{0.0, 0.5, 0.0}},
-        {{0.5, -0.5, 0.0}},
-        {{-0.5, -0.5, 0.0}},
-    };
-    std::vector<uint8_t> vertexData(vertices.size() * sizeof(Vertex));
-    std::memcpy(vertexData.data(), vertices.data(), vertexData.size());
-
-    std::vector<uint32_t> indices{0, 1, 2};
-
-    // auto cmd = m_context->GetTransferQueue().BeginCommands();
-
-    // graphics::Mesh::Spec meshSpec{};
-    // meshSpec.device = m_context.get();
-    // meshSpec.vertexData = &vertexData;
-    // meshSpec.vertexStride = sizeof(Vertex);
-    // meshSpec.indices = &indices;
-    // meshSpec.cmd = cmd;
-
-    // graphics::Mesh mesh{meshSpec};
-
-    // m_context->GetTransferQueue().EndCommands(cmd);
 
     while (m_running) {
         m_window->PollEvents();
