@@ -30,12 +30,6 @@ auto ArenaAllocator::Allocate(size_t size) -> uint8_t * {
 }
 
 auto ArenaAllocator::Reset() -> void {
-    for (const auto &page : m_pages) {
-        if (page == nullptr) {
-            continue;
-        }
-    }
-
     m_pages.clear();
     m_currentPageIndex = 0;
 }
