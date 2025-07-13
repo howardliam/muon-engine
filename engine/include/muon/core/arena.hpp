@@ -1,5 +1,7 @@
 #pragma once
 
+#include "muon/core/no_copy.hpp"
+
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
@@ -23,10 +25,20 @@ private:
 };
 
 template <typename T>
-class ArenaPtr {
+class ArenaPtr : NoCopy {
 public:
     ArenaPtr(T *ptr, std::shared_ptr<ArenaPage> page) : m_ptr{ptr}, m_page{page} {};
     ~ArenaPtr() { m_ptr->~T(); }
+
+    ArenaPtr(ArenaPtr &&other) noexcept : m_ptr{other.m_ptr}, m_page{std::move(other.m_page)} { other.m_ptr = nullptr; };
+    auto operator=(ArenaPtr &&other) noexcept -> ArenaPtr & {
+        if (this != &other) {
+            m_page = std::move(other.m_page);
+            m_ptr = other.m_ptr;
+            other.m_ptr = nullptr;
+        }
+        return *this;
+    }
 
 public:
     [[nodiscard]] auto IsValid() const -> bool { return !m_page.expired(); }
