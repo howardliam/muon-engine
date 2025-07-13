@@ -24,6 +24,9 @@ public:
     Buffer(const Spec &spec);
     ~Buffer();
 
+    Buffer(Buffer &&other) noexcept;
+    [[nodiscard]] auto operator=(Buffer &&other) noexcept -> Buffer &;
+
     [[nodiscard]] auto Map() -> VkResult;
     auto Unmap() -> void;
 

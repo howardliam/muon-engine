@@ -55,6 +55,39 @@ Buffer::~Buffer() {
     MU_CORE_DEBUG("destroyed buffer");
 }
 
+Buffer::Buffer(Buffer &&other) noexcept
+    : m_device{other.m_device}, m_instanceSize{other.m_instanceSize}, m_instanceCount{other.m_instanceCount},
+      m_alignmentSize{other.m_alignmentSize}, m_size{other.m_size}, m_usageFlags{other.m_usageFlags}, m_buffer{other.m_buffer},
+      m_allocation{other.m_allocation}, m_deviceAddress{other.m_deviceAddress}, m_descriptorInfo{other.m_descriptorInfo} {
+
+    other.Unmap();
+
+    other.m_buffer = nullptr;
+    other.m_allocation = nullptr;
+    other.m_descriptorInfo = {};
+}
+
+auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
+    if (this != &other) {
+        other.Unmap();
+
+        m_instanceSize = other.m_instanceSize;
+        m_instanceCount = other.m_instanceCount;
+        m_alignmentSize = other.m_alignmentSize;
+        m_size = other.m_size;
+
+        m_usageFlags = other.m_usageFlags;
+
+        m_buffer = other.m_buffer;
+        m_allocation = other.m_allocation;
+        m_deviceAddress = other.m_deviceAddress;
+
+        m_descriptorInfo = other.m_descriptorInfo;
+    }
+
+    return *this;
+}
+
 [[nodiscard]] auto Buffer::Map() -> VkResult { return vmaMapMemory(m_device.GetAllocator(), m_allocation, &m_mapped); }
 
 auto Buffer::Unmap() -> void {
