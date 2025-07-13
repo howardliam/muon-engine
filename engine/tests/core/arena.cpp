@@ -4,17 +4,15 @@
 
 namespace muon {
 
-TEST_CASE("create arena", "[arena]") { ArenaAllocator allocator; }
-
 TEST_CASE("allocate uint32_t", "[arena]") {
-    ArenaAllocator allocator;
+    ArenaAllocator allocator{1000};
     ArenaPtr data = allocator.Create<uint32_t>(2'147'483'647);
 
     REQUIRE(*data == 2'147'483'647);
 }
 
 TEST_CASE("allocate custom struct", "[arena]") {
-    ArenaAllocator allocator;
+    ArenaAllocator allocator{1000};
 
     struct TestStruct {
         uint32_t foo{0};
@@ -28,7 +26,7 @@ TEST_CASE("allocate custom struct", "[arena]") {
 }
 
 TEST_CASE("allocate custom struct with constructor", "[arena]") {
-    ArenaAllocator allocator;
+    ArenaAllocator allocator{1000};
 
     struct TestStruct {
         uint32_t foo;
