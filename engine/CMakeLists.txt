@@ -18,7 +18,6 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/no_copy.hpp
     ${INCLUDE_DIR}/muon/core/no_move.hpp
-    ${INCLUDE_DIR}/muon/core/resource.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
     ${INCLUDE_DIR}/muon/core/window.hpp
 
