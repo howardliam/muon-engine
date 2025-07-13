@@ -79,6 +79,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/asset/manager.cpp
 
     ${SRC_DIR}/core/application.cpp
+    ${SRC_DIR}/core/arena.cpp
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/window.cpp
 

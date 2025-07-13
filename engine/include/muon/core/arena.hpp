@@ -1,29 +1,22 @@
 #pragma once
 
-#include "muon/utils/alignment.hpp"
-
 #include <atomic>
 #include <cstdint>
 #include <cstdlib>
-#include <utility>
 #include <vector>
 
 namespace muon {
 
 struct ArenaPage {
-    static constexpr size_t k_size{4096};
-    uint8_t *data{static_cast<uint8_t *>(std::malloc(k_size))};
+    size_t size;
+    uint8_t *data{nullptr};
     size_t offset{0};
-
     std::atomic<size_t> refs{0};
 
-    auto Retain() -> void { refs.fetch_add(1, std::memory_order::relaxed); }
+    ArenaPage(size_t size);
 
-    auto Release() -> void {
-        if (refs.fetch_sub(1, std::memory_order::acq_rel) == 1) {
-            delete this;
-        }
-    }
+    auto Retain() -> void;
+    auto Release() -> void;
 };
 
 template <typename T>
@@ -48,8 +41,7 @@ private:
 
 class ArenaAllocator {
 public:
-    ArenaAllocator() = default;
-    ~ArenaAllocator() = default;
+    ArenaAllocator(size_t size);
 
     template <typename T, typename... Args>
     [[nodiscard]] auto Create(Args &&...args) -> ArenaPtr<T> {
@@ -59,20 +51,10 @@ public:
     }
 
 private:
-    [[nodiscard]] auto Allocate(size_t size) -> uint8_t * {
-        size = Alignment(size, 8);
-        if (m_currentPage == nullptr || (m_currentPage->offset + size) > ArenaPage::k_size) {
-            m_currentPage = new ArenaPage();
-            m_pages.push_back(m_currentPage);
-        }
-
-        uint8_t *memory = m_currentPage->data + m_currentPage->offset;
-        m_currentPage->offset += size;
-
-        return memory;
-    }
+    [[nodiscard]] auto Allocate(size_t size) -> uint8_t *;
 
 private:
+    const size_t m_pageSize;
     std::vector<ArenaPage *> m_pages{};
     ArenaPage *m_currentPage{nullptr};
 };
