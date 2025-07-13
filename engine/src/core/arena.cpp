@@ -14,26 +14,30 @@ auto ArenaPage::Allocate(size_t size) -> uint8_t * {
     return memory;
 }
 
-auto ArenaPage::Retain() -> void { m_refs.fetch_add(1, std::memory_order::relaxed); }
-
-auto ArenaPage::Release() -> void {
-    if (m_refs.fetch_sub(1, std::memory_order::acq_rel) == 1) {
-        delete this;
-    }
-}
-
 auto ArenaPage::CanFit(size_t size) const -> bool { return (m_offset + size) < m_size; }
 
 ArenaAllocator::ArenaAllocator(size_t size) : m_pageSize{size} {}
 
 auto ArenaAllocator::Allocate(size_t size) -> uint8_t * {
     size = Alignment(size, 8);
-    if (m_currentPage == nullptr || !m_currentPage->CanFit(size)) {
-        m_currentPage = new ArenaPage(m_pageSize);
-        m_pages.push_back(m_currentPage);
+    auto currentPage = m_pages[m_currentPageIndex];
+    if (currentPage == nullptr || !currentPage->CanFit(size)) {
+        m_currentPageIndex = m_pages.size();
+        m_pages.push_back(std::make_shared<ArenaPage>(m_pageSize));
     }
 
-    return m_currentPage->Allocate(size);
+    return currentPage->Allocate(size);
+}
+
+auto ArenaAllocator::Reset() -> void {
+    for (const auto &page : m_pages) {
+        if (page == nullptr) {
+            continue;
+        }
+    }
+
+    m_pages.clear();
+    m_currentPageIndex = 0;
 }
 
 } // namespace muon
