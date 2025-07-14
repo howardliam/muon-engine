@@ -16,11 +16,12 @@ class Mesh : NoCopy, NoMove {
 public:
     struct Spec {
         const DeviceContext *device{nullptr};
+        VkCommandBuffer cmd{nullptr};
+        std::deque<Buffer> *uploadBuffers{nullptr};
+
         const std::vector<uint8_t> *vertexData{nullptr};
         uint32_t vertexStride{0};
         const std::vector<uint32_t> *indices{nullptr};
-        VkCommandBuffer cmd{nullptr};
-        std::deque<Buffer> *uploadBuffers{nullptr};
     };
 
 public:
@@ -31,10 +32,10 @@ public:
     auto Draw(VkCommandBuffer cmd) -> void;
 
 private:
-    auto
-    CreateVertexBuffer(VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &data, uint32_t stride)
-        -> void;
-    auto CreateIndexBuffer(VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint32_t> &data) -> void;
+    auto CreateBuffer(
+        VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const void *data, VkDeviceSize instanceSize, size_t instanceCount,
+        VkBufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
+    ) -> void;
 
 private:
     const DeviceContext &m_device;
