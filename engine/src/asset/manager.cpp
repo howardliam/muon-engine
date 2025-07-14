@@ -74,7 +74,7 @@ auto Manager::EndLoading() -> void {
     result = vkResetFences(m_context.GetDevice(), 1, &m_uploadFence);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to reset upload fence");
 
-    // clean up transient buffers
+    m_uploadBuffers.clear();
 }
 
 auto Manager::LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
@@ -99,6 +99,8 @@ auto Manager::LoadFromFile(const std::filesystem::path &path) -> void {
 }
 
 auto Manager::GetCommandBuffer() -> VkCommandBuffer { return m_cmd; }
+
+auto Manager::GetUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
 
 auto Manager::GetLoader(const std::string_view fileType) -> Loader * {
     auto it = m_loaders.find(fileType.data());

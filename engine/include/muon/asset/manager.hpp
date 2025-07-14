@@ -1,8 +1,10 @@
 #pragma once
 
 #include "muon/asset/loader.hpp"
+#include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
 
+#include <deque>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -33,6 +35,7 @@ public:
 
 public:
     [[nodiscard]] auto GetCommandBuffer() -> VkCommandBuffer;
+    [[nodiscard]] auto GetUploadBuffers() -> std::deque<graphics::Buffer> *;
 
 private:
     [[nodiscard]] auto GetLoader(const std::string_view fileType) -> Loader *;
@@ -45,7 +48,7 @@ private:
 
     VkCommandBuffer m_cmd{nullptr};
     VkFence m_uploadFence{nullptr};
-    // std::vector<graphics::Buffer> m_uploadBuffers{};
+    std::deque<graphics::Buffer> m_uploadBuffers{};
 
     std::unordered_map<std::string, std::unique_ptr<Loader>> m_loaders;
 };
