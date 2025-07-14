@@ -20,7 +20,7 @@ public:
     ~Dispatcher() = default;
 
     template <typename Event>
-    [[nodiscard]] auto Subscribe(std::function<void(const Event &)> listener) -> Handle {
+    auto Subscribe(std::function<void(const Event &)> listener) -> Handle {
         return m_dispatcher.appendListener(typeid(Event), [listener](const void *event) {
             listener(*static_cast<const Event *>(event));
         });
