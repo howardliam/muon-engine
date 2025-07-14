@@ -2,7 +2,7 @@
 
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <memory>
 #include <vector>
@@ -15,7 +15,7 @@ constexpr uint32_t k_maxFramesInFlight = 2;
 class Swapchain : NoCopy, NoMove {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         VkExtent2D windowExtent{};
         VkColorSpaceKHR colorSpace{};
         VkFormat format{};
@@ -50,7 +50,7 @@ private:
     auto CreateSyncObjects() -> void;
 
 private:
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     VkSwapchainKHR m_swapchain{nullptr};
     std::shared_ptr<Swapchain> m_oldSwapchain{nullptr};
