@@ -5,7 +5,7 @@
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/device_context.hpp"
 
-#include <vector>
+#include <deque>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>
 
@@ -20,7 +20,7 @@ public:
         const std::vector<uint8_t> &textureData{};
         uint32_t pixelSize{};
         VkCommandBuffer cmd{nullptr};
-        std::vector<Buffer> *transientBuffers{nullptr};
+        std::deque<Buffer> *uploadBuffers{nullptr};
     };
 
 public:
@@ -40,7 +40,7 @@ private:
     auto CreateSampler() -> void;
 
     auto UploadData(
-        VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
+        VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
     ) -> void;
 
 private:

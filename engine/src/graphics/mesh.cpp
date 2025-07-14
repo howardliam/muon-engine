@@ -12,10 +12,10 @@ namespace muon::graphics {
 
 Mesh::Mesh(const Spec &spec) : m_device(*spec.device) {
     MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
-    MU_CORE_ASSERT(spec.transientBuffers != nullptr, "there must be a valid transient buffer vector");
+    MU_CORE_ASSERT(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
-    CreateVertexBuffer(spec.cmd, spec.transientBuffers, *spec.vertexData, spec.vertexStride);
-    CreateIndexBuffer(spec.cmd, spec.transientBuffers, *spec.indices);
+    CreateVertexBuffer(spec.cmd, spec.uploadBuffers, *spec.vertexData, spec.vertexStride);
+    CreateIndexBuffer(spec.cmd, spec.uploadBuffers, *spec.indices);
 
     MU_CORE_DEBUG("created mesh with: {} vertices", m_vertexCount);
 }
@@ -33,7 +33,7 @@ auto Mesh::Bind(VkCommandBuffer cmd) -> void {
 auto Mesh::Draw(VkCommandBuffer cmd) -> void { vkCmdDrawIndexed(cmd, m_indexCount, 1, 0, 0, 0); }
 
 auto Mesh::CreateVertexBuffer(
-    VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint8_t> &data, uint32_t stride
+    VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &data, uint32_t stride
 ) -> void {
     auto vertexSize = stride;
     m_vertexCount = data.size() / vertexSize;
@@ -43,7 +43,7 @@ auto Mesh::CreateVertexBuffer(
     stagingSpec.instanceSize = vertexSize;
     stagingSpec.instanceCount = m_vertexCount;
     stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    Buffer &stagingBuffer = transientBuffers->emplace_back(stagingSpec);
+    Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
 
     auto result = stagingBuffer.Map();
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to map staging buffer");
@@ -65,8 +65,7 @@ auto Mesh::CreateVertexBuffer(
     vkCmdCopyBuffer(cmd, stagingBuffer.Get(), m_vertexBuffer->Get(), 1, &copy);
 }
 
-auto Mesh::CreateIndexBuffer(VkCommandBuffer cmd, std::vector<Buffer> *transientBuffers, const std::vector<uint32_t> &data)
-    -> void {
+auto Mesh::CreateIndexBuffer(VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint32_t> &data) -> void {
     m_indexCount = data.size();
 
     Buffer::Spec stagingSpec{};
@@ -74,7 +73,7 @@ auto Mesh::CreateIndexBuffer(VkCommandBuffer cmd, std::vector<Buffer> *transient
     stagingSpec.instanceSize = sizeof(uint32_t);
     stagingSpec.instanceCount = m_indexCount;
     stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    Buffer &stagingBuffer = transientBuffers->emplace_back(stagingSpec);
+    Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
 
     auto result = stagingBuffer.Map();
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to map staging buffer");
