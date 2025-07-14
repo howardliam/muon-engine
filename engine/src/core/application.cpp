@@ -62,26 +62,24 @@ Application::Application(const Spec &spec) {
         m_running = false;
     });
 
-    auto _ = m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
+    m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
         vkQueueWaitIdle(m_context->GetGraphicsQueue().Get());
         m_renderer->RebuildSwapchain();
     });
 
-    _ = m_dispatcher->Subscribe<event::MouseButtonEvent>([](const auto &event) {
+    m_dispatcher->Subscribe<event::MouseButtonEvent>([](const auto &event) {
         if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
             MU_CORE_INFO("hello!");
         }
     });
 
-    _ = m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
+    m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
         if (event.keycode == input::KeyCode::V && event.mods.IsCtrlDown()) {
             MU_CORE_INFO("{}", m_window->GetClipboardContents());
         }
     });
 
-    _ = m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) {
-        MU_CORE_INFO("{}", fmt::join(event.paths, ", "));
-    });
+    m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) { MU_CORE_INFO("{}", fmt::join(event.paths, ", ")); });
 }
 
 Application::~Application() {
