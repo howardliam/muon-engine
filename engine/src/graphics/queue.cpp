@@ -10,8 +10,7 @@ namespace muon::graphics {
 Queue::Queue(const Spec &spec) : m_device(spec.device), m_name(spec.name) {
     vkGetDeviceQueue(m_device, spec.queueFamilyIndex, spec.queueIndex, &m_queue);
 
-    VkCommandPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    VkCommandPoolCreateInfo poolInfo{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
     poolInfo.queueFamilyIndex = spec.queueFamilyIndex;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
@@ -26,9 +25,10 @@ Queue::~Queue() {
     MU_CORE_DEBUG("destroyed {} queue", m_name);
 }
 
+auto Queue::Wait() -> VkResult { return vkQueueWaitIdle(m_queue); }
+
 auto Queue::BeginCommands() -> VkCommandBuffer {
-    VkCommandBufferAllocateInfo allocateInfo{};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    VkCommandBufferAllocateInfo allocateInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocateInfo.commandPool = m_commandPool;
     allocateInfo.commandBufferCount = 1;
@@ -37,8 +37,7 @@ auto Queue::BeginCommands() -> VkCommandBuffer {
     auto result = vkAllocateCommandBuffers(m_device, &allocateInfo, &commandBuffer);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate single time command buffer");
 
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
@@ -50,8 +49,7 @@ auto Queue::BeginCommands() -> VkCommandBuffer {
 auto Queue::EndCommands(VkCommandBuffer cmd) -> void {
     vkEndCommandBuffer(cmd);
 
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmd;
 

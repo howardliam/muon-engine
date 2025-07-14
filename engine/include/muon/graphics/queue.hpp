@@ -21,6 +21,8 @@ public:
     Queue(const Spec &spec);
     ~Queue();
 
+    [[nodiscard]] auto Wait() -> VkResult;
+
 public:
     [[nodiscard]] auto BeginCommands() -> VkCommandBuffer;
     auto EndCommands(VkCommandBuffer cmd) -> void;
