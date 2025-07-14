@@ -49,7 +49,7 @@ Application::Application(const Spec &spec) {
 
     graphics::Renderer::Spec rendererSpec{};
     rendererSpec.window = m_window.get();
-    rendererSpec.device = m_context.get();
+    rendererSpec.context = m_context.get();
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     asset::Manager::Spec assetManagerSpec{};
