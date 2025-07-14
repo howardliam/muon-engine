@@ -15,12 +15,13 @@ class Texture : NoCopy, NoMove {
 public:
     struct Spec {
         const DeviceContext *device{nullptr};
+        VkCommandBuffer cmd{nullptr};
+        std::deque<Buffer> *uploadBuffers{nullptr};
+
         VkExtent2D extent{};
         VkFormat format{};
         const std::vector<uint8_t> &textureData{};
         uint32_t pixelSize{};
-        VkCommandBuffer cmd{nullptr};
-        std::deque<Buffer> *uploadBuffers{nullptr};
     };
 
 public:
