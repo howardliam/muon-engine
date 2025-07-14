@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_device(*spec.device) {
+Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_context(*spec.context) {
     ProbeSurfaceFormats();
     ProbePresentModes();
 
@@ -17,7 +17,7 @@ Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_device(*spec.de
 
 Renderer::~Renderer() {
     vkFreeCommandBuffers(
-        m_device.GetDevice(), m_device.GetGraphicsQueue().GetCommandPool(), m_commandBuffers.size(), m_commandBuffers.data()
+        m_context.GetDevice(), m_context.GetGraphicsQueue().GetCommandPool(), m_commandBuffers.size(), m_commandBuffers.data()
     );
 }
 
@@ -35,8 +35,7 @@ auto Renderer::BeginFrame() -> VkCommandBuffer {
 
     const auto cmd = m_commandBuffers[m_currentFrameIndex];
 
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
 
     result = vkBeginCommandBuffer(cmd, &beginInfo);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to begin recording command buffer");
@@ -106,11 +105,11 @@ auto Renderer::SetActivePresentMode(VkPresentModeKHR presentMode) const -> void 
 auto Renderer::ProbeSurfaceFormats() -> void {
     uint32_t surfaceFormatCount = 0;
     auto result =
-        vkGetPhysicalDeviceSurfaceFormatsKHR(m_device.GetPhysicalDevice(), m_device.GetSurface(), &surfaceFormatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(m_context.GetPhysicalDevice(), m_context.GetSurface(), &surfaceFormatCount, nullptr);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
     std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
     result = vkGetPhysicalDeviceSurfaceFormatsKHR(
-        m_device.GetPhysicalDevice(), m_device.GetSurface(), &surfaceFormatCount, surfaceFormats.data()
+        m_context.GetPhysicalDevice(), m_context.GetSurface(), &surfaceFormatCount, surfaceFormats.data()
     );
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
 
@@ -173,12 +172,12 @@ auto Renderer::ProbeSurfaceFormats() -> void {
 auto Renderer::ProbePresentModes() -> void {
     uint32_t presentModeCount = 0;
     auto result = vkGetPhysicalDeviceSurfacePresentModesKHR(
-        m_device.GetPhysicalDevice(), m_device.GetSurface(), &presentModeCount, nullptr
+        m_context.GetPhysicalDevice(), m_context.GetSurface(), &presentModeCount, nullptr
     );
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
     result = vkGetPhysicalDeviceSurfacePresentModesKHR(
-        m_device.GetPhysicalDevice(), m_device.GetSurface(), &presentModeCount, presentModes.data()
+        m_context.GetPhysicalDevice(), m_context.GetSurface(), &presentModeCount, presentModes.data()
     );
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present mode count");
 
@@ -207,7 +206,7 @@ auto Renderer::ProbePresentModes() -> void {
 
 auto Renderer::CreateSwapchain() -> void {
     Swapchain::Spec swapchainSpec{};
-    swapchainSpec.device = &m_device;
+    swapchainSpec.context = &m_context;
     swapchainSpec.windowExtent = m_window.GetExtent();
     swapchainSpec.colorSpace = m_activeSurfaceFormat->colorSpace;
     swapchainSpec.format = m_activeSurfaceFormat->format;
@@ -226,13 +225,12 @@ auto Renderer::CreateSwapchain() -> void {
 auto Renderer::CreateCommandBuffers() -> void {
     m_commandBuffers.resize(k_maxFramesInFlight);
 
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = m_device.GetGraphicsQueue().GetCommandPool();
+    allocInfo.commandPool = m_context.GetGraphicsQueue().GetCommandPool();
     allocInfo.commandBufferCount = m_commandBuffers.size();
 
-    auto result = vkAllocateCommandBuffers(m_device.GetDevice(), &allocInfo, m_commandBuffers.data());
+    auto result = vkAllocateCommandBuffers(m_context.GetDevice(), &allocInfo, m_commandBuffers.data());
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate command buffers");
 }
 

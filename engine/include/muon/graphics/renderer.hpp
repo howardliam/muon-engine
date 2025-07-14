@@ -3,7 +3,7 @@
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 #include "muon/graphics/swapchain.hpp"
 
 #include <unordered_set>
@@ -22,7 +22,7 @@ class Renderer : NoCopy, NoMove {
 public:
     struct Spec {
         const Window *window{nullptr};
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
     };
 
 public:
@@ -54,7 +54,7 @@ private:
 
 private:
     const Window &m_window;
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     bool m_hdrSupport{false};
     std::vector<SurfaceFormat> m_availableSurfaceFormats{};
