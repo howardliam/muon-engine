@@ -22,25 +22,27 @@ public:
     Context(const Spec &spec);
     ~Context();
 
+    [[nodiscard]] auto DeviceWait() -> VkResult;
+
 public:
-    [[nodiscard]] VkInstance GetInstance() const;
-    [[nodiscard]] VkSurfaceKHR GetSurface() const;
-    [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
-    [[nodiscard]] VkDevice GetDevice() const;
+    [[nodiscard]] auto GetInstance() const -> VkInstance;
+    [[nodiscard]] auto GetSurface() const -> VkSurfaceKHR;
+    [[nodiscard]] auto GetPhysicalDevice() const -> VkPhysicalDevice;
+    [[nodiscard]] auto GetDevice() const -> VkDevice;
 
-    [[nodiscard]] Queue &GetGraphicsQueue() const;
-    [[nodiscard]] Queue &GetComputeQueue() const;
-    [[nodiscard]] Queue &GetTransferQueue() const;
+    [[nodiscard]] auto GetGraphicsQueue() const -> Queue &;
+    [[nodiscard]] auto GetComputeQueue() const -> Queue &;
+    [[nodiscard]] auto GetTransferQueue() const -> Queue &;
 
-    [[nodiscard]] VmaAllocator GetAllocator() const;
+    [[nodiscard]] auto GetAllocator() const -> VmaAllocator;
 
 private:
-    void CreateInstance(const Window &window);
-    void CreateDebugMessenger();
-    void CreateSurface(const Window &window);
-    void SelectPhysicalDevice();
-    void CreateLogicalDevice();
-    void CreateAllocator();
+    auto CreateInstance(const Window &window) -> void;
+    auto CreateDebugMessenger() -> void;
+    auto CreateSurface(const Window &window) -> void;
+    auto SelectPhysicalDevice() -> void;
+    auto CreateLogicalDevice() -> void;
+    auto CreateAllocator() -> void;
 
 private:
     VkInstance m_instance{nullptr};

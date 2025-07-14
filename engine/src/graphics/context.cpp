@@ -117,23 +117,25 @@ Context::~Context() {
     MU_CORE_DEBUG("destroyed device");
 }
 
-VkInstance Context::GetInstance() const { return m_instance; }
+auto Context::DeviceWait() -> VkResult { return vkDeviceWaitIdle(m_device); }
 
-VkSurfaceKHR Context::GetSurface() const { return m_surface; }
+auto Context::GetInstance() const -> VkInstance { return m_instance; }
 
-VkPhysicalDevice Context::GetPhysicalDevice() const { return m_physicalDevice; }
+auto Context::GetSurface() const -> VkSurfaceKHR { return m_surface; }
 
-VkDevice Context::GetDevice() const { return m_device; }
+auto Context::GetPhysicalDevice() const -> VkPhysicalDevice { return m_physicalDevice; }
 
-Queue &Context::GetGraphicsQueue() const { return *m_graphicsQueue; }
+auto Context::GetDevice() const -> VkDevice { return m_device; }
 
-Queue &Context::GetComputeQueue() const { return *m_computeQueue; }
+auto Context::GetGraphicsQueue() const -> Queue & { return *m_graphicsQueue; }
 
-Queue &Context::GetTransferQueue() const { return *m_transferQueue; }
+auto Context::GetComputeQueue() const -> Queue & { return *m_computeQueue; }
 
-VmaAllocator Context::GetAllocator() const { return m_allocator; }
+auto Context::GetTransferQueue() const -> Queue & { return *m_transferQueue; }
 
-void Context::CreateInstance(const Window &window) {
+auto Context::GetAllocator() const -> VmaAllocator { return m_allocator; }
+
+auto Context::CreateInstance(const Window &window) -> void {
     auto extensions = window.GetRequiredExtensions();
     extensions.insert(extensions.end(), k_requiredInstanceExtensions.begin(), k_requiredInstanceExtensions.end());
 
@@ -141,16 +143,14 @@ void Context::CreateInstance(const Window &window) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    VkApplicationInfo appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO};
     appInfo.pApplicationName = "Muon";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Muon";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_3;
 
-    VkInstanceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    VkInstanceCreateInfo createInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
@@ -194,9 +194,8 @@ void Context::CreateInstance(const Window &window) {
     }
 }
 
-void Context::CreateDebugMessenger() {
-    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+auto Context::CreateDebugMessenger() -> void {
+    VkDebugUtilsMessengerCreateInfoEXT createInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
@@ -207,13 +206,13 @@ void Context::CreateDebugMessenger() {
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
 }
 
-void Context::CreateSurface(const Window &window) {
+auto Context::CreateSurface(const Window &window) -> void {
     auto result = window.CreateSurface(m_instance, &m_surface);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create window surface");
 }
 
-void Context::SelectPhysicalDevice() {
-    uint32_t deviceCount;
+auto Context::SelectPhysicalDevice() -> void {
+    uint32_t deviceCount = 0;
     auto result = vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get available GPU count");
     std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
@@ -258,8 +257,8 @@ void Context::SelectPhysicalDevice() {
     MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
 }
 
-void Context::CreateLogicalDevice() {
-    const QueueInfo queueInfo(m_physicalDevice, m_surface);
+auto Context::CreateLogicalDevice() -> void {
+    const QueueInfo queueInfo{m_physicalDevice, m_surface};
     MU_CORE_ASSERT(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
     MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
 
@@ -316,28 +315,27 @@ void Context::CreateLogicalDevice() {
         index += 1;
     }
 
-    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
-    bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES
+    };
     bufferDeviceAddressFeatures.bufferDeviceAddress = true;
 
-    VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures{};
-    meshShaderFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+    VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT};
     meshShaderFeatures.meshShader = true;
     meshShaderFeatures.taskShader = true;
     meshShaderFeatures.pNext = &bufferDeviceAddressFeatures;
 
-    VkPhysicalDeviceSynchronization2Features syncFeatures{};
-    syncFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+    VkPhysicalDeviceSynchronization2Features syncFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
     syncFeatures.synchronization2 = true;
     syncFeatures.pNext = &meshShaderFeatures;
 
-    VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
-    dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+    VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES
+    };
     dynamicRenderingFeatures.dynamicRendering = true;
     dynamicRenderingFeatures.pNext = &syncFeatures;
 
-    VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
-    indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
     indexingFeatures.descriptorBindingPartiallyBound = true;
     indexingFeatures.shaderSampledImageArrayNonUniformIndexing = true;
     indexingFeatures.runtimeDescriptorArray = true;
@@ -353,8 +351,7 @@ void Context::CreateLogicalDevice() {
     indexingFeatures.shaderStorageImageArrayNonUniformIndexing = true;
     indexingFeatures.pNext = &dynamicRenderingFeatures;
 
-    VkPhysicalDeviceFeatures2 deviceFeatures{};
-    deviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    VkPhysicalDeviceFeatures2 deviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
     vkGetPhysicalDeviceFeatures2(m_physicalDevice, &deviceFeatures);
     deviceFeatures.pNext = &indexingFeatures;
 
@@ -364,8 +361,7 @@ void Context::CreateLogicalDevice() {
         enabledExtensions.push_back(extension.c_str());
     }
 
-    VkDeviceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    VkDeviceCreateInfo createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     createInfo.queueCreateInfoCount = queueCreateInfos.size();
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.enabledExtensionCount = enabledExtensions.size();
@@ -405,7 +401,7 @@ void Context::CreateLogicalDevice() {
     MU_CORE_ASSERT(m_transferQueue, "transfer queue must not be null");
 }
 
-void Context::CreateAllocator() {
+auto Context::CreateAllocator() -> void {
     VmaAllocatorCreateInfo createInfo{};
     createInfo.instance = m_instance;
     createInfo.physicalDevice = m_physicalDevice;
