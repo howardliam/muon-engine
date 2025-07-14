@@ -12,11 +12,8 @@
 #include "muon/input/mouse.hpp"
 #include "muon/profiling/profiler.hpp"
 
-#include <GLFW/glfw3.h>
 #include <fmt/ranges.h>
-#include <glm/vec3.hpp>
 #include <memory>
-#include <vector>
 #include <vulkan/vulkan_core.h>
 #include <yaml-cpp/yaml.h>
 
@@ -100,7 +97,8 @@ auto Application::Run() -> void {
         }
     }
 
-    vkDeviceWaitIdle(m_context->GetDevice());
+    auto result = m_context->DeviceWait();
+    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait idle for device");
 }
 
 } // namespace muon
