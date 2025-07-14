@@ -3,6 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
+#include <limits>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::asset {
@@ -12,15 +13,20 @@ Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{s
     allocInfo.commandPool = m_transferQueue.GetCommandPool();
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
-
     vkAllocateCommandBuffers(m_context.GetDevice(), &allocInfo, &m_cmd);
+
+    VkFenceCreateInfo createInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    vkCreateFence(m_context.GetDevice(), &createInfo, nullptr, &m_uploadFence);
 
     for (auto &loader : spec.loaders) {
         RegisterLoader(loader);
     }
 }
 
-Manager::~Manager() { vkFreeCommandBuffers(m_context.GetDevice(), m_transferQueue.GetCommandPool(), 1, &m_cmd); }
+Manager::~Manager() {
+    vkDestroyFence(m_context.GetDevice(), m_uploadFence, nullptr);
+    vkFreeCommandBuffers(m_context.GetDevice(), m_transferQueue.GetCommandPool(), 1, &m_cmd);
+}
 
 auto Manager::RegisterLoader(Loader *loader) -> void {
     auto key = loader->GetFileType();
@@ -40,7 +46,6 @@ auto Manager::BeginLoading() -> void {
     MU_CORE_ASSERT(!m_loadingInProgress, "cannot begin loading while loading is in progress");
 
     VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-
     auto result = vkBeginCommandBuffer(m_cmd, &beginInfo);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to begin recording command buffer");
 
@@ -58,10 +63,18 @@ auto Manager::EndLoading() -> void {
     submitInfo.pCommandBuffers = &m_cmd;
     submitInfo.waitSemaphoreCount = 0;
     submitInfo.signalSemaphoreCount = 0;
-    result = vkQueueSubmit(m_transferQueue.Get(), 1, &submitInfo, nullptr);
+    result = vkQueueSubmit(m_transferQueue.Get(), 1, &submitInfo, m_uploadFence);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit command buffer to queue");
 
     m_loadingInProgress = false;
+
+    result = vkWaitForFences(m_context.GetDevice(), 1, &m_uploadFence, true, std::numeric_limits<uint64_t>().max());
+    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for upload fence to be signalled");
+
+    result = vkResetFences(m_context.GetDevice(), 1, &m_uploadFence);
+    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to reset upload fence");
+
+    // clean up transient buffers
 }
 
 auto Manager::LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {

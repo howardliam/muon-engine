@@ -41,8 +41,11 @@ private:
     const graphics::Context &m_context;
     const graphics::Queue &m_transferQueue;
 
-    VkCommandBuffer m_cmd{nullptr};
     bool m_loadingInProgress{false};
+
+    VkCommandBuffer m_cmd{nullptr};
+    VkFence m_uploadFence{nullptr};
+    // std::vector<graphics::Buffer> m_uploadBuffers{};
 
     std::unordered_map<std::string, std::unique_ptr<Loader>> m_loaders;
 };
