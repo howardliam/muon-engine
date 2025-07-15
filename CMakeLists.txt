@@ -35,10 +35,6 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/eventpp)
 
 # graphics
-add_subdirectory(external/vulkan-headers)
-add_subdirectory(external/vulkan-loader)
-add_subdirectory(external/vulkan-memory-allocator)
-
 add_subdirectory(external/spirv-headers)
 
 set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
@@ -49,7 +45,12 @@ add_subdirectory(external/spirv-tools)
 
 set(BUILD_EXTERNAL OFF FORCE)
 set(ENABLE_HLSL OFF FORCE)
+set(ENABLE_GLSLANG_BINARIES OFF FORCE)
 add_subdirectory(external/glslang)
+
+add_subdirectory(external/vulkan-headers)
+add_subdirectory(external/vulkan-loader)
+add_subdirectory(external/vulkan-memory-allocator)
 
 # maths
 set(GLM_ENABLE_CXX_20 ON FORCE)
