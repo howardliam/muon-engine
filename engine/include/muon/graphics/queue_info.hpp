@@ -10,7 +10,7 @@ namespace muon::graphics {
 struct QueueFamilyInfo {
     uint32_t index;
     uint32_t queueCount;
-    std::bitset<4> capabilities;
+    std::bitset<6> capabilities;
 
     bool operator==(const QueueFamilyInfo &other) const;
 
@@ -18,6 +18,8 @@ struct QueueFamilyInfo {
     bool IsGraphicsCapable() const;
     bool IsComputeCapable() const;
     bool IsTransferCapable() const;
+    bool IsVideoDecodeCapable() const;
+    bool IsVideoEncodeCapable() const;
 
     bool IsComputeDedicated() const;
     bool IsTransferDedicated() const;
