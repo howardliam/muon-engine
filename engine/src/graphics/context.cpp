@@ -12,16 +12,12 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <ios>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <vector>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>
-
-namespace {
 
 #ifdef MU_DEBUG_ENABLED
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -82,8 +78,6 @@ void DestroyDebugUtilsMessenger(
     return vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, allocator);
 }
 #endif
-
-} // namespace
 
 namespace muon::graphics {
 
@@ -194,6 +188,7 @@ auto Context::CreateInstance(const Window &window) -> void {
     }
 }
 
+#ifdef MU_DEBUG_ENABLED
 auto Context::CreateDebugMessenger() -> void {
     VkDebugUtilsMessengerCreateInfoEXT createInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -205,6 +200,7 @@ auto Context::CreateDebugMessenger() -> void {
     auto result = CreateDebugUtilsMessenger(m_instance, &createInfo, nullptr, &m_debugMessenger);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
 }
+#endif
 
 auto Context::CreateSurface(const Window &window) -> void {
     auto result = window.CreateSurface(m_instance, &m_surface);
