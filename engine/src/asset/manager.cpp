@@ -3,7 +3,10 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 
+#include <algorithm>
+#include <fmt/ranges.h>
 #include <limits>
+#include <memory>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::asset {
@@ -29,17 +32,22 @@ Manager::~Manager() {
 }
 
 auto Manager::RegisterLoader(Loader *loader) -> void {
-    auto key = loader->GetFileType();
-    MU_CORE_ASSERT(key.starts_with('.'), "file type must begin with a fullstop, e.g.: .png, .jxl");
+    auto it = std::ranges::find_if(m_loaders, [&l = loader](const std::unique_ptr<Loader> &loader) -> bool {
+        return loader->GetFileTypes() == l->GetFileTypes();
+    });
 
-    if (m_loaders.find(key.data()) == m_loaders.end()) {
-        std::unique_ptr<Loader> loader2(loader);
-        loader2->SetManager(this);
-        m_loaders[key.data()] = std::move(loader2);
-        MU_CORE_DEBUG("registered file loader for: {} files", key);
-    } else {
-        MU_CORE_WARN("loader already exists for: {} files", key);
+    if (it != m_loaders.end()) {
+        MU_CORE_WARN("loader already exists for: {} files, skipping", fmt::join(loader->GetFileTypes(), ", "));
+        return;
     }
+
+    auto &l = m_loaders.emplace_back(loader);
+
+    for (const auto fileType : l->GetFileTypes()) {
+        m_fileTypes[fileType.data()] = l.get();
+    }
+
+    MU_CORE_DEBUG("registered loader for: {} files", fmt::join(loader->GetFileTypes(), ", "));
 }
 
 auto Manager::BeginLoading() -> void {
@@ -103,11 +111,11 @@ auto Manager::GetCommandBuffer() -> VkCommandBuffer { return m_cmd; }
 auto Manager::GetUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
 
 auto Manager::GetLoader(const std::string_view fileType) -> Loader * {
-    auto it = m_loaders.find(fileType.data());
-    if (it == m_loaders.end()) {
+    auto it = m_fileTypes.find(fileType.data());
+    if (it == m_fileTypes.end()) {
         return nullptr;
     }
-    return it->second.get();
+    return it->second;
 }
 
 } // namespace muon::asset

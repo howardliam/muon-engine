@@ -50,7 +50,8 @@ private:
     VkFence m_uploadFence{nullptr};
     std::deque<graphics::Buffer> m_uploadBuffers{};
 
-    std::unordered_map<std::string, std::unique_ptr<Loader>> m_loaders;
+    std::unordered_map<std::string, Loader *> m_fileTypes{};
+    std::vector<std::unique_ptr<Loader>> m_loaders{};
 };
 
 } // namespace muon::asset

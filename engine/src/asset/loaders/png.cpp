@@ -7,7 +7,7 @@
 
 namespace muon::asset {
 
-auto PngLoader::GetFileType() -> std::string_view { return ".png"; }
+auto PngLoader::GetFileTypes() const -> std::set<std::string_view> { return {".png"}; }
 
 auto PngLoader::FromMemory(const std::vector<uint8_t> &data) -> void {
     MU_CORE_DEBUG("PngLoader::FromMemory successfully called");
