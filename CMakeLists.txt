@@ -39,18 +39,17 @@ add_subdirectory(external/vulkan-headers)
 add_subdirectory(external/vulkan-loader)
 add_subdirectory(external/vulkan-memory-allocator)
 
+add_subdirectory(external/spirv-headers)
+
 set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
 set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
 add_subdirectory(external/spirv-reflect)
 
-# set(SLANG_ENABLE_PREBUILT_BINARIES OFF CACHE BOOL "" FORCE)
-# set(SLANG_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
-# set(SLANG_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
-# set(SLANG_ENABLE_SLANGD OFF CACHE BOOL "" FORCE)
-# set(SLANG_ENABLE_SLANGC OFF CACHE BOOL "" FORCE)
-# set(SLANG_ENABLE_SLANGI OFF CACHE BOOL "" FORCE)
-# set(SLANG_USE_SYSTEM_VULKAN_HEADERS ON CACHE BOOL "" FORCE)
-# add_subdirectory(external/slang)
+add_subdirectory(external/spirv-tools)
+
+set(BUILD_EXTERNAL OFF FORCE)
+set(ENABLE_HLSL OFF FORCE)
+add_subdirectory(external/glslang)
 
 # maths
 set(GLM_ENABLE_CXX_20 ON FORCE)

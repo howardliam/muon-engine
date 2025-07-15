@@ -126,7 +126,8 @@ target_link_libraries(${LIB_NAME} PUBLIC
     glfw eventpp::eventpp
     Tracy::TracyClient
     Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator
-    spirv-reflect-static
+    spirv-reflect-static SPIRV-Tools
+    glslang
     glm
     magic_enum::magic_enum
     spng
