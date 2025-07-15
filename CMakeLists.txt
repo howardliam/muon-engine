@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.30.0)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_BUILD_TYPE Debug)
 
 project(muon)
 
@@ -19,7 +18,7 @@ add_subdirectory(external/json)
 
 # compression
 set(ZLIB_LIBRARY zlib)
-set(ZLIB_INCLUDE_DIR external/zlib)
+set(ZLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/zlib)
 add_subdirectory(external/zlib)
 add_subdirectory(external/zstd/build/cmake zstd)
 target_include_directories(zstd PUBLIC external/zstd/lib/)
@@ -44,15 +43,14 @@ set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
 set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
 add_subdirectory(external/spirv-reflect)
 
-set(SLANG_ENABLE_PREBUILT_BINARIES OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_SLANGD OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_SLANGC OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_SLANGI OFF CACHE BOOL "" FORCE)
-set(SLANG_OVERRIDE_VULKAN_HEADERS_PATH ON CACHE BOOL "" FORCE)
-set(SLANG_OVERRIDE_GLM_PATH ON CACHE BOOL "" FORCE)
-add_subdirectory(external/slang)
+# set(SLANG_ENABLE_PREBUILT_BINARIES OFF CACHE BOOL "" FORCE)
+# set(SLANG_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
+# set(SLANG_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
+# set(SLANG_ENABLE_SLANGD OFF CACHE BOOL "" FORCE)
+# set(SLANG_ENABLE_SLANGC OFF CACHE BOOL "" FORCE)
+# set(SLANG_ENABLE_SLANGI OFF CACHE BOOL "" FORCE)
+# set(SLANG_USE_SYSTEM_VULKAN_HEADERS ON CACHE BOOL "" FORCE)
+# add_subdirectory(external/slang)
 
 # maths
 set(GLM_ENABLE_CXX_20 ON FORCE)
@@ -60,6 +58,7 @@ set(GLM_ENABLE_SIMD_AVX2 ON FORCE)
 add_subdirectory(external/glm)
 
 # assets
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/libspng)
 set(KTX_FEATURE_TESTS OFF CACHE BOOL "" FORCE)
 set(KTX_FEATURE_TOOLS OFF CACHE BOOL "" FORCE)
