@@ -191,11 +191,13 @@ auto Context::CreateInstance(const Window &window) -> void {
 #ifdef MU_DEBUG_ENABLED
 auto Context::CreateDebugMessenger() -> void {
     VkDebugUtilsMessengerCreateInfoEXT createInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
+    createInfo.pfnUserCallback = DebugCallback;
+
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = DebugCallback;
 
     auto result = CreateDebugUtilsMessenger(m_instance, &createInfo, nullptr, &m_debugMessenger);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
@@ -262,11 +264,19 @@ auto Context::CreateLogicalDevice() -> void {
         if (family.queueCount < 1) {
             continue;
         }
-        MU_CORE_TRACE("queue count: {}", family.queueCount);
-        MU_CORE_TRACE("present capable: {}", (std::stringstream() << std::boolalpha << family.IsPresentCapable()).str());
-        MU_CORE_TRACE("graphics capable: {}", (std::stringstream() << std::boolalpha << family.IsGraphicsCapable()).str());
-        MU_CORE_TRACE("compute capable: {}", (std::stringstream() << std::boolalpha << family.IsComputeCapable()).str());
-        MU_CORE_TRACE("transfer capable: {}", (std::stringstream() << std::boolalpha << family.IsTransferCapable()).str());
+
+        MU_CORE_TRACE(
+            "queue family info:\n\t"
+            "queue count: {}\n\t"
+            "present capable: {}\n\t"
+            "graphics capable: {}\n\t"
+            "compute capable: {}\n\t"
+            "transfer capable: {}\n\t"
+            "video decode capable: {}\n\t"
+            "video encode capable: {}",
+            family.queueCount, family.IsPresentCapable(), family.IsGraphicsCapable(), family.IsComputeCapable(),
+            family.IsTransferCapable(), family.IsVideoDecodeCapable(), family.IsVideoEncodeCapable()
+        );
     }
     const auto queueFamilies = queueInfo.GetFamilyInfo();
 
