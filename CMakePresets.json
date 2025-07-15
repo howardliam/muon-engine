@@ -28,12 +28,12 @@
       "configuration": "Release"
     },
     {
-      "name": "releaseWithDebugInfo",
+      "name": "reldebinfo",
       "configurePreset": "default",
       "configuration": "RelWithDebInfo"
     },
     {
-      "name": "minSizeRel",
+      "name": "minsizerel",
       "configurePreset": "default",
       "configuration": "MinSizeRel"
     }

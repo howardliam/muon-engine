@@ -38,7 +38,9 @@ public:
 
 private:
     auto CreateInstance(const Window &window) -> void;
+#ifdef MU_DEBUG_ENABLED
     auto CreateDebugMessenger() -> void;
+#endif
     auto CreateSurface(const Window &window) -> void;
     auto SelectPhysicalDevice() -> void;
     auto CreateLogicalDevice() -> void;
@@ -47,7 +49,9 @@ private:
 private:
     VkInstance m_instance{nullptr};
 
+#ifdef MU_DEBUG_ENABLED
     VkDebugUtilsMessengerEXT m_debugMessenger{nullptr};
+#endif
 
     VkSurfaceKHR m_surface{nullptr};
 
