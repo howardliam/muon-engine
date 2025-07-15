@@ -133,9 +133,9 @@ target_link_libraries(${LIB_NAME} PUBLIC
     spng
 )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_definitions(MU_DEBUG_ENABLED)
-endif()
+add_compile_definitions(
+    $<$<CONFIG:Debug>:MU_DEBUG_ENABLED>
+)
 
 option(MUON_ENGINE_TESTS "Enable Muon Engine tests" ON)
 if(MUON_ENGINE_TESTS)
