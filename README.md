@@ -47,11 +47,14 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 - skypjack/entt
 
 ### Graphics
-- g-truc/glm
+- KhronosGroup/SPIRV-Headers
 - KhronosGroup/SPIRV-Reflect
+- KhronosGroup/SPIRV-Tools
+- KhronosGroup/glslang
 - KhronosGroup/Vulkan-Headers
 - KhronosGroup/Vulkan-Loader
 - GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+- g-truc/glm
 
 ### Images
 - randy408/libspng
