@@ -8,6 +8,8 @@
 
 namespace muon::graphics {
 
+constexpr uint64_t k_waitDuration = 30'000'000'000;
+
 Swapchain::Swapchain(const Spec &spec)
     : m_context(*spec.context), m_graphicsQueue(m_context.GetGraphicsQueue()), m_swapchainColorSpace(spec.colorSpace),
       m_swapchainFormat(spec.format) {
@@ -47,13 +49,11 @@ Swapchain::~Swapchain() {
 }
 
 auto Swapchain::AcquireNextImage(uint32_t *imageIndex) -> VkResult {
-    auto result =
-        vkWaitForFences(m_context.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, std::numeric_limits<uint64_t>::max());
+    auto result = vkWaitForFences(m_context.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, k_waitDuration);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
 
     result = vkAcquireNextImageKHR(
-        m_context.GetDevice(), m_swapchain, std::numeric_limits<uint64_t>::max(), m_imageAvailableSemaphores[m_currentFrame],
-        nullptr, imageIndex
+        m_context.GetDevice(), m_swapchain, k_waitDuration, m_imageAvailableSemaphores[m_currentFrame], nullptr, imageIndex
     );
 
     return result;
@@ -61,8 +61,7 @@ auto Swapchain::AcquireNextImage(uint32_t *imageIndex) -> VkResult {
 
 auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer cmd, uint32_t imageIndex) -> VkResult {
     if (m_imagesInFlight[imageIndex] != nullptr) {
-        auto result =
-            vkWaitForFences(m_context.GetDevice(), 1, &m_imagesInFlight[imageIndex], true, std::numeric_limits<uint64_t>::max());
+        auto result = vkWaitForFences(m_context.GetDevice(), 1, &m_imagesInFlight[imageIndex], true, k_waitDuration);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
     }
     m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
