@@ -223,11 +223,11 @@ auto Swapchain::CreateSyncObjects() -> void {
     VkFenceCreateInfo fenceInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+    VkResult result;
+
     m_imageAvailableSemaphores.resize(k_maxFramesInFlight);
     m_inFlightFences.resize(k_maxFramesInFlight);
     for (uint32_t i = 0; i < k_maxFramesInFlight; i++) {
-        VkResult result;
-
         result = vkCreateSemaphore(m_context.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image available semaphores");
 
