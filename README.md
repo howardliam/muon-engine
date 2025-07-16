@@ -40,6 +40,10 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 - nlohmann/json
 - jbeder/yaml-cpp
 
+### Crypto
+- libtom/libtommath
+- libtom/libtomcrypt
+
 ### Events
 - wqking/eventpp
 
