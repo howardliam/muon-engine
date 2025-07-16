@@ -190,9 +190,9 @@ auto Swapchain::CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presen
 auto Swapchain::CreateImageViews() -> void {
     m_swapchainImageViews.resize(m_imageCount);
 
-    bool swizzleRB = false;
+    bool swizzle = false;
     if (m_swapchainFormat == VK_FORMAT_B8G8R8A8_SRGB || m_swapchainFormat == VK_FORMAT_A2B10G10R10_UNORM_PACK32) {
-        swizzleRB = true;
+        swizzle = true;
     }
 
     for (size_t i = 0; i < m_imageCount; i++) {
@@ -201,9 +201,9 @@ auto Swapchain::CreateImageViews() -> void {
         createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         createInfo.format = m_swapchainFormat;
 
-        createInfo.components.r = swizzleRB ? VK_COMPONENT_SWIZZLE_B : VK_COMPONENT_SWIZZLE_R;
+        createInfo.components.r = swizzle ? VK_COMPONENT_SWIZZLE_B : VK_COMPONENT_SWIZZLE_R;
         createInfo.components.g = VK_COMPONENT_SWIZZLE_G;
-        createInfo.components.b = swizzleRB ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_B;
+        createInfo.components.b = swizzle ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_B;
         createInfo.components.a = VK_COMPONENT_SWIZZLE_A;
 
         createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
