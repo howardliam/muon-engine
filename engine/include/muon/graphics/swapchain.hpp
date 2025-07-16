@@ -3,6 +3,7 @@
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/context.hpp"
+#include "muon/graphics/queue.hpp"
 
 #include <memory>
 #include <vector>
@@ -28,7 +29,7 @@ public:
     ~Swapchain();
 
     [[nodiscard]] auto AcquireNextImage(uint32_t *imageIndex) -> VkResult;
-    [[nodiscard]] auto SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) -> VkResult;
+    [[nodiscard]] auto SubmitCommandBuffers(const VkCommandBuffer cmd, uint32_t imageIndex) -> VkResult;
 
 public:
     [[nodiscard]] auto GetImageCount() const -> size_t;
@@ -51,6 +52,7 @@ private:
 
 private:
     const Context &m_context;
+    const Queue &m_graphicsQueue;
 
     VkSwapchainKHR m_swapchain{nullptr};
     std::shared_ptr<Swapchain> m_oldSwapchain{nullptr};

@@ -9,7 +9,8 @@
 namespace muon::graphics {
 
 Swapchain::Swapchain(const Spec &spec)
-    : m_context(*spec.context), m_swapchainColorSpace(spec.colorSpace), m_swapchainFormat(spec.format) {
+    : m_context(*spec.context), m_graphicsQueue(m_context.GetGraphicsQueue()), m_swapchainColorSpace(spec.colorSpace),
+      m_swapchainFormat(spec.format) {
     CreateSwapchain(spec.windowExtent, spec.presentMode, spec.oldSwapchain);
     CreateImageViews();
     CreateSyncObjects();
@@ -58,13 +59,13 @@ auto Swapchain::AcquireNextImage(uint32_t *imageIndex) -> VkResult {
     return result;
 }
 
-auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) -> VkResult {
-    if (m_imagesInFlight[*imageIndex] != nullptr) {
+auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer cmd, uint32_t imageIndex) -> VkResult {
+    if (m_imagesInFlight[imageIndex] != nullptr) {
         auto result =
-            vkWaitForFences(m_context.GetDevice(), 1, &m_imagesInFlight[*imageIndex], true, std::numeric_limits<uint64_t>::max());
+            vkWaitForFences(m_context.GetDevice(), 1, &m_imagesInFlight[imageIndex], true, std::numeric_limits<uint64_t>::max());
         MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
     }
-    m_imagesInFlight[*imageIndex] = m_inFlightFences[m_currentFrame];
+    m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
     auto result = vkResetFences(m_context.GetDevice(), 1, &m_inFlightFences[m_currentFrame]);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to reset fences");
@@ -78,17 +79,17 @@ auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *i
     submitInfo.pWaitSemaphoreInfos = &waitSemaphores;
 
     VkCommandBufferSubmitInfo commandBufferInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
-    commandBufferInfo.commandBuffer = *buffers;
+    commandBufferInfo.commandBuffer = cmd;
     submitInfo.commandBufferInfoCount = 1;
     submitInfo.pCommandBufferInfos = &commandBufferInfo;
 
     VkSemaphoreSubmitInfo signalSemaphores{VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO};
-    signalSemaphores.semaphore = m_renderFinishedSemaphores[*imageIndex];
+    signalSemaphores.semaphore = m_renderFinishedSemaphores[imageIndex];
     signalSemaphores.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
     submitInfo.signalSemaphoreInfoCount = 1;
     submitInfo.pSignalSemaphoreInfos = &signalSemaphores;
 
-    result = vkQueueSubmit2(m_context.GetGraphicsQueue().Get(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
+    result = vkQueueSubmit2(m_graphicsQueue.Get(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit to queue");
 
     VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
@@ -96,9 +97,9 @@ auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *i
     presentInfo.pWaitSemaphores = &signalSemaphores.semaphore;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &m_swapchain;
-    presentInfo.pImageIndices = imageIndex;
+    presentInfo.pImageIndices = &imageIndex;
 
-    result = vkQueuePresentKHR(m_context.GetGraphicsQueue().Get(), &presentInfo);
+    result = vkQueuePresentKHR(m_graphicsQueue.Get(), &presentInfo);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to present queue");
 
     m_currentFrame = (m_currentFrame + 1) % k_maxFramesInFlight;

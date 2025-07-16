@@ -49,7 +49,7 @@ auto Renderer::EndFrame() -> void {
     const auto cmd = m_commandBuffers[m_currentFrameIndex];
     vkEndCommandBuffer(cmd);
 
-    auto result = m_swapchain->SubmitCommandBuffers(&cmd, &m_currentImageIndex);
+    auto result = m_swapchain->SubmitCommandBuffers(cmd, m_currentImageIndex);
     MU_CORE_ASSERT(
         result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || result == VK_SUCCESS,
         "failed to present swapchain image"
