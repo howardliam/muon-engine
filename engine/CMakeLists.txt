@@ -131,6 +131,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     glm
     magic_enum::magic_enum
     spng
+    libtomcrypt
 )
 
 add_compile_definitions(

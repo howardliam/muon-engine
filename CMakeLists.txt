@@ -72,7 +72,11 @@ add_subdirectory(external/magic-enum)
 # testing
 add_subdirectory(external/catch2)
 
-if (MSVC)
+# crypto
+add_subdirectory(external/libtommath)
+add_subdirectory(external/libtomcrypt)
+
+if(MSVC)
     #add_compile_options(/W4)
 else()
     add_compile_options(-Wall -Wextra -pedantic -fdiagnostics-color=always -O2)
