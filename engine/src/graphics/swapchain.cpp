@@ -148,13 +148,8 @@ auto Swapchain::CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presen
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         extent = capabilities.currentExtent;
     } else {
-        VkExtent2D actualExtent = {static_cast<uint32_t>(windowExtent.width), static_cast<uint32_t>(windowExtent.height)};
-
-        actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        actualExtent.height =
-            std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-        extent = actualExtent;
+        extent.width = std::clamp(windowExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        extent.height = std::clamp(windowExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
     }
 
     uint32_t minImageCount = capabilities.minImageCount + 1;
