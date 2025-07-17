@@ -256,7 +256,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     shader.setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetVulkan_1_3);
     shader.setEnvTarget(glslang::EShTargetLanguage::EShTargetSpv, glslang::EShTargetLanguageVersion::EShTargetSpv_1_6);
 
-    auto messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
+    auto messages = static_cast<EShMessages>(EShMessages::EShMsgSpvRules | EShMessages::EShMsgVulkanRules);
 
     auto success = shader.parse(&m_resource, 450, false, messages);
     if (!success) {
