@@ -5,7 +5,6 @@
 
 #include <SPIRV/GlslangToSpv.h>
 #include <cstring>
-#include <fmt/ranges.h>
 #include <fstream>
 #include <glslang/Public/ShaderLang.h>
 #include <mutex>
@@ -185,8 +184,6 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) {
     m_resource = k_defaultTBuiltInResource;
 
     m_worker = std::thread([this]() {
-        using namespace std::chrono_literals;
-
         MU_CORE_DEBUG("shader compilation worker thread spawned");
 
         while (true) {
@@ -203,8 +200,6 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) {
             m_workQueue.pop();
 
             Compile(request);
-
-            std::this_thread::sleep_for(50ms);
         }
 
         MU_CORE_DEBUG("shader compilation worker thread done");
