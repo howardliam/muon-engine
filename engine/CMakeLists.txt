@@ -42,6 +42,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/graphics/queue.hpp
     ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
     ${INCLUDE_DIR}/muon/graphics/renderer.hpp
+    ${INCLUDE_DIR}/muon/graphics/shader_compiler.hpp
     ${INCLUDE_DIR}/muon/graphics/shader_reflection.hpp
     ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
     ${INCLUDE_DIR}/muon/graphics/texture.hpp
@@ -97,6 +98,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/graphics/queue.cpp
     ${SRC_DIR}/graphics/queue_info.cpp
     ${SRC_DIR}/graphics/renderer.cpp
+    ${SRC_DIR}/graphics/shader_compiler.cpp
     ${SRC_DIR}/graphics/shader_reflection.cpp
     ${SRC_DIR}/graphics/swapchain.cpp
     ${SRC_DIR}/graphics/texture.cpp
