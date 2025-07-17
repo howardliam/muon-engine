@@ -158,17 +158,14 @@ auto Context::CreateInstance(const Window &window) -> void {
         std::vector<VkLayerProperties> availableLayers(propertyCount);
         vkEnumerateInstanceLayerProperties(&propertyCount, availableLayers.data());
 
-        bool layerFound = false;
-        for (const auto &layerProperties : availableLayers) {
-            if (std::strcmp(validationLayer, layerProperties.layerName) == 0) {
-                layerFound = true;
-                break;
-            }
-        }
+        auto it = std::ranges::find_if(availableLayers, [&](const VkLayerProperties &props) -> bool {
+            return std::strcmp(props.layerName, validationLayer) == 0;
+        });
 
-        if (!layerFound) {
+        if (it == availableLayers.end()) {
             return false;
         }
+
         return true;
     };
 
