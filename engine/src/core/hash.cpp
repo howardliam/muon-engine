@@ -28,10 +28,9 @@ auto HashFile(std::ifstream &file) -> std::optional<std::array<uint8_t, k_arrayS
 
     int32_t result;
 
-    constexpr size_t k_bufferSize = 256;
-    std::array<char, k_bufferSize> buffer;
-    while (file.getline(buffer.data(), k_bufferSize)) {
-        result = blake2b_process(&state, reinterpret_cast<const uint8_t *>(buffer.data()), buffer.size());
+    std::string line;
+    while (std::getline(file, line)) {
+        result = blake2b_process(&state, reinterpret_cast<const uint8_t *>(line.data()), line.size());
         if (result != CRYPT_OK) {
             return std::nullopt;
         }
