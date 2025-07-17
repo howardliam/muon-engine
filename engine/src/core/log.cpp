@@ -35,4 +35,6 @@ auto Log::GetCoreLogger() -> std::shared_ptr<spdlog::logger> & { return s_coreLo
 auto Log::GetClientLogger() -> std::shared_ptr<spdlog::logger> & { return s_clientLogger; }
 auto Log::GetVulkanLogger() -> std::shared_ptr<spdlog::logger> & { return s_vulkanLogger; }
 
+auto Log::SetLogLevel(spdlog::level::level_enum level) -> void { spdlog::set_level(level); }
+
 } // namespace muon
