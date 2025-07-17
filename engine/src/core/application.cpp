@@ -7,6 +7,7 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
+#include "muon/graphics/shader_compiler.hpp"
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
@@ -88,6 +89,10 @@ auto Application::Get() -> Application & { return *s_instance; }
 
 auto Application::Run() -> void {
     MU_CORE_INFO("running application");
+
+    graphics::ShaderCompiler::Spec compilerSpec{};
+    graphics::ShaderCompiler compiler{compilerSpec};
+    compiler.SubmitWork({"./assets/shaders/test.vert"});
 
     while (m_running) {
         m_window->PollEvents();

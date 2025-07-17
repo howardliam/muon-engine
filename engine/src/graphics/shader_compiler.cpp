@@ -5,6 +5,8 @@
 
 #include <SPIRV/GlslangToSpv.h>
 #include <cstring>
+#include <fmt/ranges.h>
+#include <fstream>
 #include <glslang/Public/ShaderLang.h>
 #include <mutex>
 #include <optional>
@@ -226,6 +228,64 @@ auto ShaderCompiler::SubmitWork(ShaderCompilationRequest request) -> void {
     m_conVar.notify_one();
 }
 
-auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void { MU_CORE_INFO("beginning compilation"); }
+auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
+    MU_CORE_TRACE("beginning compilation");
+
+    std::ifstream file{request.path, std::ios::binary};
+    if (!file.is_open()) {
+        MU_CORE_ERROR("failed to open file: {}", request.path.generic_string());
+        return;
+    }
+
+    auto stage = ExtensionToStage(request.path.extension().generic_string());
+    if (!stage.has_value()) {
+        MU_CORE_ERROR("failed to parse file extension: {}", request.path.extension().generic_string());
+        return;
+    }
+
+    file.seekg(0, std::ios::end);
+    std::vector<char> buffer(file.tellg());
+    file.seekg(0, std::ios::beg);
+    file.read(buffer.data(), buffer.size());
+
+    std::vector<const char *> shaderSrc = {buffer.data()};
+
+    glslang::TShader shader(*stage);
+    shader.setStrings(shaderSrc.data(), shaderSrc.size());
+    shader.setEnvInput(glslang::EShSource::EShSourceGlsl, *stage, glslang::EShClient::EShClientVulkan, 450);
+    shader.setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetVulkan_1_3);
+    shader.setEnvTarget(glslang::EShTargetLanguage::EShTargetSpv, glslang::EShTargetLanguageVersion::EShTargetSpv_1_6);
+
+    auto messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
+
+    auto success = shader.parse(&m_resource, 450, false, messages);
+    if (!success) {
+        MU_CORE_ERROR("failed to parse GLSL source: \n{}", shader.getInfoLog());
+        return;
+    }
+
+    glslang::TProgram program;
+    program.addShader(&shader);
+    success = program.link(messages);
+    if (!success) {
+        MU_CORE_ERROR("failed to link shader program: \n{}", program.getInfoLog());
+        return;
+    }
+
+    std::vector<uint32_t> spirv;
+
+    glslang::SpvOptions options;
+    options.generateDebugInfo = true;
+    options.disableOptimizer = false;
+    options.optimizeSize = true;
+
+    glslang::GlslangToSpv(*program.getIntermediate(*stage), spirv, &options);
+
+    auto outPath = request.path.string();
+    outPath.append(".spv");
+    std::ofstream outFile{outPath, std::ios::binary};
+    outFile.write(reinterpret_cast<char *>(spirv.data()), spirv.size() * sizeof(uint32_t));
+    MU_CORE_DEBUG("writing out SPIR-V to {}", outPath);
+}
 
 } // namespace muon::graphics
