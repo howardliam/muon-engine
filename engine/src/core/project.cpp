@@ -3,16 +3,14 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/errors.hpp"
 #include "muon/core/log.hpp"
-#include "yaml-cpp/emittermanip.h"
 
 #include <exception>
 #include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
+#include <toml++/toml.hpp>
 #include <vector>
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
@@ -27,8 +25,8 @@ auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
     s_activeProject = std::make_shared<Project>(spec);
     s_activeProject->ConfigureProjectStructure();
     auto result = s_activeProject->WriteProjectFile();
-    if (auto error = result.error(); !result.has_value()) {
-        switch (error) {
+    if (!result.has_value()) {
+        switch (result.error()) {
             case FileSystemError::BadFile:
                 MU_CORE_ERROR("failed to write project file");
                 break;
@@ -40,13 +38,15 @@ auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
     return s_activeProject;
 }
 
-auto Project::Load(const std::filesystem::path &projectFile) -> std::shared_ptr<Project> {
+auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<Project> {
+    auto config = toml::parse_file((projectPath / "project.toml").c_str());
+
+    auto projectName = config["name"].value<std::string_view>();
+    MU_CORE_ASSERT(projectName.has_value(), "`project.toml` must have a name field");
+
     Spec spec{};
-    spec.path = projectFile;
-    try {
-        YAML::Node projectYaml = YAML::LoadFile(projectFile / "project.yaml");
-        spec.name = projectYaml["name"].as<std::string>();
-    } catch (const std::exception &e) { MU_CORE_ASSERT("failed to load project file"); }
+    spec.path = projectPath;
+    spec.name = *projectName;
 
     s_activeProject = std::make_shared<Project>(spec);
 
@@ -57,8 +57,8 @@ auto Project::Load(const std::filesystem::path &projectFile) -> std::shared_ptr<
 
 auto Project::Save() -> bool {
     auto result = WriteProjectFile();
-    if (auto error = result.error(); !result.has_value()) {
-        switch (error) {
+    if (!result.has_value()) {
+        switch (result.error()) {
             case FileSystemError::BadFile:
                 MU_CORE_ERROR("failed to write project file");
                 break;
@@ -118,20 +118,18 @@ auto Project::ConfigureProjectStructure() -> void {
 }
 
 auto Project::WriteProjectFile() -> std::expected<void, FileSystemError> {
-    auto projectFilePath = m_path / "project.yaml";
+    auto projectFilePath = m_path / "project.toml";
+
+    toml::table projectConfig{
+        {"name", m_name}
+    };
 
     std::ofstream file{projectFilePath, std::ios::trunc};
     if (!file.is_open()) {
         return std::unexpected(FileSystemError::BadFile);
     }
+    file << projectConfig;
 
-    YAML::Emitter emitter;
-    emitter << YAML::BeginMap;
-    emitter << YAML::Key << "name";
-    emitter << YAML::Value << m_name;
-    emitter << YAML::EndMap;
-
-    file.write(emitter.c_str(), emitter.size());
     return {};
 }
 
