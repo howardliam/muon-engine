@@ -20,6 +20,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/no_copy.hpp
     ${INCLUDE_DIR}/muon/core/no_move.hpp
     ${INCLUDE_DIR}/muon/core/platform_detection.hpp
+    ${INCLUDE_DIR}/muon/core/project.hpp
     ${INCLUDE_DIR}/muon/core/window.hpp
 
     ${INCLUDE_DIR}/muon/event/dispatcher.hpp
@@ -83,6 +84,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/core/arena.cpp
     ${SRC_DIR}/core/hash.cpp
     ${SRC_DIR}/core/log.cpp
+    ${SRC_DIR}/core/project.cpp
     ${SRC_DIR}/core/window.cpp
 
     ${SRC_DIR}/fs/fs.cpp
