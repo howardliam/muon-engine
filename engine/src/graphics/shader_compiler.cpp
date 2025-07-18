@@ -265,10 +265,6 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
         return;
     }
 
-    for (uint32_t i = 0; i < 32; i++) {
-        MU_CORE_INFO("{}, {}", hash[i], (*sourceHash)[i]);
-    }
-
     if (hash == *sourceHash) {
         MU_CORE_TRACE("identical hashes, skipping: {}", request.path.extension().generic_string());
         return;
@@ -335,7 +331,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     uint32_t rows = writeQuery.exec();
     MU_CORE_TRACE("updated {} rows", rows);
 
-    // writeQuery.reset();
+    writeQuery.reset();
 }
 
 } // namespace muon::graphics
