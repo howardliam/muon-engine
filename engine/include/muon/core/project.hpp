@@ -1,5 +1,8 @@
 #pragma once
 
+#include "muon/core/errors.hpp"
+
+#include <expected>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -33,7 +36,7 @@ public:
 
 private:
     auto ConfigureProjectStructure() -> void;
-    auto WriteProjectFile() -> void;
+    [[nodiscard]] auto WriteProjectFile() -> std::expected<void, FileSystemError>;
 
 private:
     std::string m_name{"untitled"};

@@ -1,6 +1,7 @@
 #include "muon/core/project.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/errors.hpp"
 #include "muon/core/log.hpp"
 #include "yaml-cpp/emittermanip.h"
 
@@ -25,7 +26,14 @@ Project::~Project() {
 auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
     s_activeProject = std::make_shared<Project>(spec);
     s_activeProject->ConfigureProjectStructure();
-    s_activeProject->WriteProjectFile();
+    auto result = s_activeProject->WriteProjectFile();
+    if (auto error = result.error(); !result.has_value()) {
+        switch (error) {
+            case FileSystemError::BadFile:
+                MU_CORE_ERROR("failed to write project file");
+                break;
+        }
+    }
 
     MU_CORE_DEBUG("created new project");
 
@@ -48,7 +56,15 @@ auto Project::Load(const std::filesystem::path &projectFile) -> std::shared_ptr<
 }
 
 auto Project::Save() -> bool {
-    WriteProjectFile();
+    auto result = WriteProjectFile();
+    if (auto error = result.error(); !result.has_value()) {
+        switch (error) {
+            case FileSystemError::BadFile:
+                MU_CORE_ERROR("failed to write project file");
+                break;
+        }
+    }
+
     MU_CORE_DEBUG("saved project");
     return true;
 }
@@ -101,12 +117,13 @@ auto Project::ConfigureProjectStructure() -> void {
     }
 }
 
-auto Project::WriteProjectFile() -> void {
+auto Project::WriteProjectFile() -> std::expected<void, FileSystemError> {
     auto projectFilePath = m_path / "project.yaml";
-    MU_CORE_ASSERT(!std::filesystem::is_regular_file(projectFilePath), "path is not a regular file");
 
     std::ofstream file{projectFilePath, std::ios::trunc};
-    MU_CORE_ASSERT(file.is_open(), "failed to open project file");
+    if (!file.is_open()) {
+        return std::unexpected(FileSystemError::BadFile);
+    }
 
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
@@ -115,6 +132,7 @@ auto Project::WriteProjectFile() -> void {
     emitter << YAML::EndMap;
 
     file.write(emitter.c_str(), emitter.size());
+    return {};
 }
 
 } // namespace muon

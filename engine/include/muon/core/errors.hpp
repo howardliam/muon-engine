@@ -1,3 +1,9 @@
 #pragma once
 
-namespace muon {}
+namespace muon {
+
+enum class FileSystemError {
+    BadFile,
+};
+
+}
