@@ -15,6 +15,7 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/assert.hpp
     ${INCLUDE_DIR}/muon/core/base.hpp
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
+    ${INCLUDE_DIR}/muon/core/errors.hpp
     ${INCLUDE_DIR}/muon/core/hash.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/no_copy.hpp
