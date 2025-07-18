@@ -15,7 +15,7 @@
 
 namespace muon {
 
-Project::Project(const Spec &spec) : m_name(spec.name), m_directory(spec.directory) {}
+Project::Project(const Spec &spec) : m_name(spec.name), m_path(spec.path) {}
 
 Project::~Project() {
     auto success = Save();
@@ -34,14 +34,13 @@ auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
 
 auto Project::Load(const std::filesystem::path &projectFile) -> std::shared_ptr<Project> {
     Spec spec{};
+    spec.path = projectFile;
     try {
-        YAML::Node projectYaml = YAML::LoadFile(projectFile);
+        YAML::Node projectYaml = YAML::LoadFile(projectFile / "project.yaml");
         spec.name = projectYaml["name"].as<std::string>();
-        spec.directory = projectYaml["directory"].as<std::string>();
     } catch (const std::exception &e) { MU_CORE_ASSERT("failed to load project file"); }
 
     s_activeProject = std::make_shared<Project>(spec);
-    s_activeProject->m_projectFilePath = projectFile;
 
     MU_CORE_DEBUG("loaded project from file");
 
@@ -54,12 +53,12 @@ auto Project::Save() -> bool {
     return true;
 }
 
-auto Project::GetProjectDirectory() const -> const std::filesystem::path & { return m_directory; }
-auto Project::GetImagesDirectory() const -> std::filesystem::path { return m_directory / "images"; }
-auto Project::GetModelsDirectory() const -> std::filesystem::path { return m_directory / "models"; }
-auto Project::GetScenesDirectory() const -> std::filesystem::path { return m_directory / "scenes"; }
-auto Project::GetScriptsDirectory() const -> std::filesystem::path { return m_directory / "scripts"; }
-auto Project::GetShadersDirectory() const -> std::filesystem::path { return m_directory / "shaders"; }
+auto Project::GetProjectDirectory() const -> const std::filesystem::path & { return m_path; }
+auto Project::GetImagesDirectory() const -> std::filesystem::path { return m_path / "images"; }
+auto Project::GetModelsDirectory() const -> std::filesystem::path { return m_path / "models"; }
+auto Project::GetScenesDirectory() const -> std::filesystem::path { return m_path / "scenes"; }
+auto Project::GetScriptsDirectory() const -> std::filesystem::path { return m_path / "scripts"; }
+auto Project::GetShadersDirectory() const -> std::filesystem::path { return m_path / "shaders"; }
 
 auto Project::GetActiveProject() -> std::shared_ptr<Project> { return s_activeProject; }
 
@@ -75,14 +74,14 @@ auto Project::ConfigureProjectStructure() -> void {
         return success;
     };
 
-    if (!std::filesystem::exists(m_directory)) {
-        MU_CORE_TRACE("creating working directory at: {}", m_directory.generic_string());
-        auto success = createDirectories(m_directory);
+    if (!std::filesystem::exists(m_path)) {
+        MU_CORE_TRACE("creating working directory at: {}", m_path.generic_string());
+        auto success = createDirectories(m_path);
         MU_CORE_ASSERT(success, "failed to create working directory");
     }
 
-    MU_CORE_ASSERT(std::filesystem::is_directory(m_directory), "path to working directory must be a directory");
-    MU_CORE_ASSERT(std::filesystem::is_empty(m_directory), "working directory must be empty on initialization");
+    MU_CORE_ASSERT(std::filesystem::is_directory(m_path), "path to working directory must be a directory");
+    MU_CORE_ASSERT(std::filesystem::is_empty(m_path), "working directory must be empty on initialization");
 
     std::vector<std::filesystem::path> assetPaths = {
         GetImagesDirectory(), GetModelsDirectory(), GetScenesDirectory(), GetScriptsDirectory(), GetShadersDirectory(),
@@ -103,18 +102,16 @@ auto Project::ConfigureProjectStructure() -> void {
 }
 
 auto Project::WriteProjectFile() -> void {
-    m_projectFilePath = m_directory / (m_name + ".yaml");
-    MU_CORE_ASSERT(!std::filesystem::is_regular_file(m_projectFilePath), "path is not a regular file");
+    auto projectFilePath = m_path / "project.yaml";
+    MU_CORE_ASSERT(!std::filesystem::is_regular_file(projectFilePath), "path is not a regular file");
 
-    std::ofstream file{m_projectFilePath, std::ios::trunc};
+    std::ofstream file{projectFilePath, std::ios::trunc};
     MU_CORE_ASSERT(file.is_open(), "failed to open project file");
 
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
     emitter << YAML::Key << "name";
     emitter << YAML::Value << m_name;
-    emitter << YAML::Key << "directory";
-    emitter << YAML::Value << m_directory.generic_string();
     emitter << YAML::EndMap;
 
     file.write(emitter.c_str(), emitter.size());

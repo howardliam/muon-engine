@@ -10,7 +10,7 @@ class Project {
 public:
     struct Spec {
         std::string name{"untitled"};
-        std::filesystem::path directory;
+        std::filesystem::path path;
     };
 
 public:
@@ -18,7 +18,7 @@ public:
     ~Project();
 
     static auto Create(const Spec &spec) -> std::shared_ptr<Project>;
-    static auto Load(const std::filesystem::path &projectFile) -> std::shared_ptr<Project>;
+    static auto Load(const std::filesystem::path &projectPath) -> std::shared_ptr<Project>;
     [[nodiscard]] auto Save() -> bool;
 
 public:
@@ -37,9 +37,7 @@ private:
 
 private:
     std::string m_name{"untitled"};
-    std::filesystem::path m_directory;
-
-    std::filesystem::path m_projectFilePath;
+    std::filesystem::path m_path;
 
     static inline std::shared_ptr<Project> s_activeProject{nullptr};
 };
