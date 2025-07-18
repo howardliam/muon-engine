@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SQLiteCpp/Database.h>
 #include <atomic>
 #include <condition_variable>
 #include <filesystem>
@@ -16,7 +17,9 @@ struct ShaderCompilationRequest {
 
 class ShaderCompiler {
 public:
-    struct Spec {};
+    struct Spec {
+        std::filesystem::path hashStorePath;
+    };
 
 public:
     ShaderCompiler(const Spec &spec);
@@ -29,6 +32,8 @@ private:
 
 private:
     TBuiltInResource m_resource;
+
+    SQLite::Database m_hashStore;
 
     std::queue<ShaderCompilationRequest> m_workQueue{};
     std::mutex m_workMutex;

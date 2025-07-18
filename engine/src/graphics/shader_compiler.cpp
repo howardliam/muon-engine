@@ -1,9 +1,14 @@
 #include "muon/graphics/shader_compiler.hpp"
 
+#include "SQLiteCpp/Database.h"
+#include "SQLiteCpp/Statement.h"
 #include "muon/core/assert.hpp"
+#include "muon/core/hash.hpp"
 #include "muon/core/log.hpp"
 
 #include <SPIRV/GlslangToSpv.h>
+#include <algorithm>
+#include <array>
 #include <cstring>
 #include <fstream>
 #include <glslang/Public/ShaderLang.h>
@@ -177,9 +182,18 @@ const TBuiltInResource k_defaultTBuiltInResource = {
 
 namespace muon::graphics {
 
-ShaderCompiler::ShaderCompiler(const Spec &spec) {
+ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE) {
     bool success = glslang::InitializeProcess();
     MU_CORE_ASSERT(success, "failed to initialise shader compiler");
+
+    m_hashStore.exec(R"(
+        create table if not exists hash_store (
+            id integer primary key autoincrement,
+            source_path text,
+            source_hash blob(32),
+            spirv_path text
+        )
+    )");
 
     m_resource = k_defaultTBuiltInResource;
 
@@ -232,12 +246,41 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
         return;
     }
 
+    std::array<uint8_t, 32> hash;
+
+    SQLite::Statement readQuery{m_hashStore, R"(
+        select * from hash_store where source_path = :path
+    )"};
+    readQuery.bind(":path", request.path.c_str());
+    while (readQuery.executeStep()) {
+        const uint8_t *rawHash = static_cast<const uint8_t *>(readQuery.getColumn(2).getBlob());
+        std::copy(rawHash, rawHash + 32, hash.begin());
+        break;
+    }
+    readQuery.reset();
+
+    std::optional sourceHash = HashFile(file);
+    if (!sourceHash.has_value()) {
+        MU_CORE_ERROR("failed to hash file contents: {}", request.path.extension().generic_string());
+        return;
+    }
+
+    for (uint32_t i = 0; i < 32; i++) {
+        MU_CORE_INFO("{}, {}", hash[i], (*sourceHash)[i]);
+    }
+
+    if (hash == *sourceHash) {
+        MU_CORE_TRACE("identical hashes, skipping: {}", request.path.extension().generic_string());
+        return;
+    }
+
     auto stage = ExtensionToStage(request.path.extension().generic_string());
     if (!stage.has_value()) {
         MU_CORE_ERROR("failed to parse file extension: {}", request.path.extension().generic_string());
         return;
     }
 
+    file.clear();
     file.seekg(0, std::ios::end);
     std::vector<char> buffer(file.tellg());
     file.seekg(0, std::ios::beg);
@@ -281,6 +324,18 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     std::ofstream outFile{outPath, std::ios::binary};
     outFile.write(reinterpret_cast<char *>(spirv.data()), spirv.size() * sizeof(uint32_t));
     MU_CORE_DEBUG("writing out SPIR-V to {}", outPath);
+
+    SQLite::Statement writeQuery{m_hashStore, R"(
+        insert into hash_store values(null, :source_path, :source_hash, :spirv_path)
+    )"};
+    writeQuery.bind(":source_path", request.path.c_str());
+    writeQuery.bind(":source_hash", sourceHash->data(), sourceHash->size());
+    writeQuery.bind(":spirv_path", outPath.c_str());
+
+    uint32_t rows = writeQuery.exec();
+    MU_CORE_TRACE("updated {} rows", rows);
+
+    // writeQuery.reset();
 }
 
 } // namespace muon::graphics
