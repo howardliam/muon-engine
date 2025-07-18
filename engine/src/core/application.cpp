@@ -4,6 +4,7 @@
 #include "muon/asset/manager.hpp"
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "muon/core/project.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
@@ -16,7 +17,6 @@
 #include <fmt/ranges.h>
 #include <memory>
 #include <vulkan/vulkan_core.h>
-#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
@@ -29,10 +29,6 @@ Application::Application(const Spec &spec) {
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
     Window::Spec windowSpec{};
-    try {
-        YAML::Node config = YAML::LoadFile("Muon.yaml");
-        windowSpec = config["window"].as<Window::Spec>();
-    } catch (const std::exception &e) { MU_CORE_ERROR("{}, using default values", e.what()); }
     windowSpec.title = spec.name;
     windowSpec.dispatcher = m_dispatcher.get();
     m_window = std::make_unique<Window>(windowSpec);
@@ -78,6 +74,12 @@ Application::Application(const Spec &spec) {
     });
 
     m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) { MU_CORE_INFO("{}", fmt::join(event.paths, ", ")); });
+
+    Project::Spec projectSpec{};
+    // projectSpec.name = "test project";
+    // projectSpec.directory = spec.workingDirectory / "test-project";
+    // std::shared_ptr project = Project::Create(projectSpec);
+    std::shared_ptr project = Project::Load(spec.workingDirectory / "test-project");
 }
 
 Application::~Application() {

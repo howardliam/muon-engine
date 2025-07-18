@@ -8,7 +8,6 @@
 #include <string_view>
 #include <vector>
 #include <vulkan/vulkan_core.h>
-#include <yaml-cpp/yaml.h>
 
 namespace muon {
 
@@ -60,28 +59,3 @@ private:
 };
 
 } // namespace muon
-
-namespace YAML {
-
-template <>
-struct convert<muon::Window::Spec> {
-    static auto encode(const auto &spec) -> Node {
-        Node node;
-        node["title"] = spec.title;
-        node["dimensions"].push_back(spec.width);
-        node["dimensions"].push_back(spec.height);
-        return node;
-    }
-
-    static auto decode(const Node &node, auto &spec) -> bool {
-        if (!node.IsMap()) {
-            return false;
-        }
-
-        spec.width = node["dimensions"][0].as<uint32_t>();
-        spec.height = node["dimensions"][1].as<uint32_t>();
-        return true;
-    }
-};
-
-} // namespace YAML

@@ -129,7 +129,7 @@ target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
 target_link_libraries(${LIB_NAME} PUBLIC
     fmt::fmt spdlog::spdlog_header_only
-    yaml-cpp::yaml-cpp tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
+    tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
     Tracy::TracyClient
     Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator

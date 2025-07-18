@@ -13,7 +13,6 @@ add_subdirectory(external/fmt)
 add_subdirectory(external/spdlog)
 
 # config formats
-add_subdirectory(external/yaml-cpp)
 add_subdirectory(external/tomlplusplus)
 add_subdirectory(external/json)
 
