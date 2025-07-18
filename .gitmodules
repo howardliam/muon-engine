@@ -76,3 +76,6 @@
 [submodule "external/tomlplusplus"]
 	path = external/tomlplusplus
 	url = https://github.com/marzer/tomlplusplus
+[submodule "external/sqlitecpp"]
+	path = external/sqlitecpp
+	url = https://github.com/SRombauts/SQLiteCpp
