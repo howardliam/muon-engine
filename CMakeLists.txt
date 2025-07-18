@@ -68,6 +68,7 @@ add_subdirectory(external/libktx)
 # misc
 add_subdirectory(external/entt)
 add_subdirectory(external/magic-enum)
+add_subdirectory(external/sqlitecpp)
 
 # testing
 add_subdirectory(external/catch2)

@@ -139,6 +139,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     magic_enum::magic_enum
     spng
     libtomcrypt
+    SQLiteCpp
 )
 
 add_compile_definitions(
