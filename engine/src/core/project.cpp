@@ -135,7 +135,7 @@ auto Project::WriteProjectFile() -> bool {
     }
     file << projectConfig << std::endl;
 
-    return {};
+    return true;
 }
 
 } // namespace muon
