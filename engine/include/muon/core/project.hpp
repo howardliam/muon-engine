@@ -29,9 +29,11 @@ public:
     [[nodiscard]] auto GetScriptsDirectory() const -> std::filesystem::path;
     [[nodiscard]] auto GetShadersDirectory() const -> std::filesystem::path;
 
+    [[nodiscard]] static auto GetActiveProject() -> std::shared_ptr<Project>;
+
 private:
     auto ConfigureProjectStructure() -> void;
-    auto CreateProjectFile() -> void;
+    auto WriteProjectFile() -> void;
 
 private:
     std::string m_name{"untitled"};

@@ -25,7 +25,7 @@ Project::~Project() {
 auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
     s_activeProject = std::make_shared<Project>(spec);
     s_activeProject->ConfigureProjectStructure();
-    s_activeProject->CreateProjectFile();
+    s_activeProject->WriteProjectFile();
 
     MU_CORE_DEBUG("created new project");
 
@@ -49,6 +49,7 @@ auto Project::Load(const std::filesystem::path &projectFile) -> std::shared_ptr<
 }
 
 auto Project::Save() -> bool {
+    WriteProjectFile();
     MU_CORE_DEBUG("saved project");
     return true;
 }
@@ -59,6 +60,8 @@ auto Project::GetModelsDirectory() const -> std::filesystem::path { return m_dir
 auto Project::GetScenesDirectory() const -> std::filesystem::path { return m_directory / "scenes"; }
 auto Project::GetScriptsDirectory() const -> std::filesystem::path { return m_directory / "scripts"; }
 auto Project::GetShadersDirectory() const -> std::filesystem::path { return m_directory / "shaders"; }
+
+auto Project::GetActiveProject() -> std::shared_ptr<Project> { return s_activeProject; }
 
 auto Project::ConfigureProjectStructure() -> void {
     auto createDirectories = [](const std::filesystem::path &path) -> bool {
@@ -99,11 +102,11 @@ auto Project::ConfigureProjectStructure() -> void {
     }
 }
 
-auto Project::CreateProjectFile() -> void {
+auto Project::WriteProjectFile() -> void {
     m_projectFilePath = m_directory / (m_name + ".yaml");
-    MU_CORE_ASSERT(!std::filesystem::exists(m_projectFilePath), "path is not empty");
+    MU_CORE_ASSERT(!std::filesystem::is_regular_file(m_projectFilePath), "path is not a regular file");
 
-    std::ofstream file{m_projectFilePath};
+    std::ofstream file{m_projectFilePath, std::ios::trunc};
     MU_CORE_ASSERT(file.is_open(), "failed to open project file");
 
     YAML::Emitter emitter;
