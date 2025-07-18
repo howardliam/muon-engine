@@ -1,10 +1,8 @@
 #include "muon/core/project.hpp"
 
 #include "muon/core/assert.hpp"
-#include "muon/core/errors.hpp"
 #include "muon/core/log.hpp"
 
-#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -24,14 +22,15 @@ Project::~Project() {
 
 auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
     s_activeProject = std::make_shared<Project>(spec);
-    s_activeProject->ConfigureProjectStructure();
-    auto result = s_activeProject->WriteProjectFile();
-    if (!result.has_value()) {
-        switch (result.error()) {
-            case FileSystemError::BadFile:
-                MU_CORE_ERROR("failed to write project file");
-                break;
-        }
+
+    bool success = s_activeProject->ConfigureProjectStructure();
+    if (!success) {
+        return nullptr;
+    }
+
+    success = s_activeProject->WriteProjectFile();
+    if (!success) {
+        return nullptr;
     }
 
     MU_CORE_DEBUG("created new project");
@@ -62,13 +61,10 @@ auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<
 }
 
 auto Project::Save() -> bool {
-    auto result = WriteProjectFile();
-    if (!result.has_value()) {
-        switch (result.error()) {
-            case FileSystemError::BadFile:
-                MU_CORE_ERROR("failed to write project file");
-                break;
-        }
+    bool success = WriteProjectFile();
+    if (!success) {
+        MU_CORE_ERROR("failed to save project");
+        return false;
     }
 
     MU_CORE_DEBUG("saved project");
@@ -84,22 +80,23 @@ auto Project::GetShadersDirectory() const -> std::filesystem::path { return m_pa
 
 auto Project::GetActiveProject() -> std::shared_ptr<Project> { return s_activeProject; }
 
-auto Project::ConfigureProjectStructure() -> void {
+auto Project::ConfigureProjectStructure() -> bool {
     auto createDirectories = [](const std::filesystem::path &path) -> bool {
-        bool success = false;
-        try {
-            success = std::filesystem::create_directories(path);
-        } catch (const std::exception &e) {
-            MU_CORE_ERROR("failed to create directory: {} with reason: {}", path.generic_string(), e.what());
-            return success;
+        std::error_code ec;
+        bool success = std::filesystem::create_directories(path, ec);
+
+        if (ec.value() != 0) {
+            MU_CORE_ERROR("failed to create directory: {} with reason: {}", path.generic_string(), ec.message());
+            return false;
         }
+
         return success;
     };
 
     if (!std::filesystem::exists(m_path)) {
         MU_CORE_TRACE("creating working directory at: {}", m_path.generic_string());
         auto success = createDirectories(m_path);
-        MU_CORE_ASSERT(success, "failed to create working directory");
+        MU_CORE_ASSERT(success, "failed to create project directory");
     }
 
     MU_CORE_ASSERT(std::filesystem::is_directory(m_path), "path to working directory must be a directory");
@@ -121,9 +118,11 @@ auto Project::ConfigureProjectStructure() -> void {
         auto success = createDirectories(path);
         MU_CORE_ASSERT(success, "failed to create project subdirectory");
     }
+
+    return true;
 }
 
-auto Project::WriteProjectFile() -> std::expected<void, FileSystemError> {
+auto Project::WriteProjectFile() -> bool {
     auto projectFilePath = m_path / "project.toml";
 
     toml::table projectConfig{
@@ -132,7 +131,7 @@ auto Project::WriteProjectFile() -> std::expected<void, FileSystemError> {
 
     std::ofstream file{projectFilePath, std::ios::trunc};
     if (!file.is_open()) {
-        return std::unexpected(FileSystemError::BadFile);
+        return false;
     }
     file << projectConfig << std::endl;
 
