@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <toml++/toml.hpp>
 #include <vector>
@@ -128,7 +129,7 @@ auto Project::WriteProjectFile() -> std::expected<void, FileSystemError> {
     if (!file.is_open()) {
         return std::unexpected(FileSystemError::BadFile);
     }
-    file << projectConfig;
+    file << projectConfig << std::endl;
 
     return {};
 }
