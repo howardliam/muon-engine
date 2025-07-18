@@ -28,9 +28,6 @@
 [submodule "external/uuid"]
 	path = external/uuid
 	url = https://github.com/boostorg/uuid
-[submodule "external/yaml-cpp"]
-	path = external/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp
 [submodule "external/entt"]
 	path = external/entt
 	url = https://github.com/skypjack/entt
