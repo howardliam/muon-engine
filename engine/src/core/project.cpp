@@ -40,6 +40,11 @@ auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
 }
 
 auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<Project> {
+    MU_CORE_ASSERT(std::filesystem::exists(projectPath), "project path must exist");
+
+    auto projectConfigPath = projectPath / "project.toml";
+    MU_CORE_ASSERT(std::filesystem::exists(projectConfigPath), "project config file must exist");
+
     auto config = toml::parse_file((projectPath / "project.toml").c_str());
 
     auto projectName = config["name"].value<std::string_view>();
