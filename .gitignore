@@ -9,3 +9,4 @@ screenshot.png
 imgui.ini
 
 *.log
+*.db
