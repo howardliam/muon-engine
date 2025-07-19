@@ -68,8 +68,6 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/schematic/pipeline/stencil_op_state_info.hpp
     ${INCLUDE_DIR}/muon/schematic/pipeline/viewport_state_info.hpp
 
-    ${INCLUDE_DIR}/muon/scripting/script_manager.hpp
-
     ${INCLUDE_DIR}/muon/utils/alignment.hpp
     ${INCLUDE_DIR}/muon/utils/color.hpp
     ${INCLUDE_DIR}/muon/utils/literals.hpp
@@ -110,8 +108,6 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/input/modifier.cpp
 
     ${SRC_DIR}/profiling/profiler.cpp
-
-    ${SRC_DIR}/scripting/script_manager.cpp
 
     ${SRC_DIR}/utils/color.cpp
     ${SRC_DIR}/utils/literals.cpp
