@@ -11,6 +11,7 @@
 #include <array>
 #include <cstring>
 #include <fstream>
+#include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <mutex>
 #include <optional>
@@ -194,8 +195,6 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePat
         )
     )");
 
-    m_resource = k_defaultTBuiltInResource;
-
     m_worker = std::thread([this]() {
         MU_CORE_DEBUG("shader compilation worker thread spawned");
 
@@ -291,7 +290,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
 
     auto messages = static_cast<EShMessages>(EShMessages::EShMsgSpvRules | EShMessages::EShMsgVulkanRules);
 
-    auto success = shader.parse(&m_resource, 450, false, messages);
+    auto success = shader.parse(&k_defaultTBuiltInResource, 450, false, messages);
     if (!success) {
         MU_CORE_ERROR("failed to parse GLSL source: \n{}", shader.getInfoLog());
         return;
