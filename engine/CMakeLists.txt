@@ -17,6 +17,8 @@ set(ENGINE_HEADER_FILES
     ${INCLUDE_DIR}/muon/core/entry_point.hpp
     ${INCLUDE_DIR}/muon/core/errors.hpp
     ${INCLUDE_DIR}/muon/core/hash.hpp
+    ${INCLUDE_DIR}/muon/core/layer.hpp
+    ${INCLUDE_DIR}/muon/core/layer_stack.hpp
     ${INCLUDE_DIR}/muon/core/log.hpp
     ${INCLUDE_DIR}/muon/core/no_copy.hpp
     ${INCLUDE_DIR}/muon/core/no_move.hpp
@@ -81,6 +83,7 @@ set(ENGINE_SRC_FILES
     ${SRC_DIR}/core/application.cpp
     ${SRC_DIR}/core/arena.cpp
     ${SRC_DIR}/core/hash.cpp
+    ${SRC_DIR}/core/layer_stack.cpp
     ${SRC_DIR}/core/log.cpp
     ${SRC_DIR}/core/project.cpp
     ${SRC_DIR}/core/window.cpp
