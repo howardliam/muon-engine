@@ -260,12 +260,12 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
 
     std::optional sourceHash = HashFile(file);
     if (!sourceHash.has_value()) {
-        MU_CORE_ERROR("failed to hash file contents: {}", request.path.extension().generic_string());
+        MU_CORE_ERROR("failed to hash file contents: {}", request.path.generic_string());
         return;
     }
 
     if (hash == *sourceHash) {
-        MU_CORE_TRACE("identical hashes, skipping: {}", request.path.extension().generic_string());
+        MU_CORE_TRACE("identical hashes, skipping: {}", request.path.generic_string());
         return;
     }
 
