@@ -2,7 +2,7 @@
 
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <optional>
 #include <vector>
@@ -13,7 +13,7 @@ namespace muon::graphics {
 class PipelineLayout : NoCopy, NoMove {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         std::vector<VkDescriptorSetLayout> setLayouts{};
         std::optional<VkPushConstantRange> pushConstant{std::nullopt};
     };
@@ -26,7 +26,7 @@ public:
     [[nodiscard]] VkPipelineLayout Get() const;
 
 private:
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     VkPipelineLayout m_layout{nullptr};
 };

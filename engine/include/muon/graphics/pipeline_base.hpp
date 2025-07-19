@@ -2,7 +2,7 @@
 
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
 #include "muon/schematic/pipeline/shader_info.hpp"
 
@@ -13,7 +13,7 @@ namespace muon::graphics {
 
 class PipelineBase : NoCopy, NoMove {
 protected:
-    PipelineBase(const DeviceContext &device, std::shared_ptr<PipelineLayout> layout);
+    PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout);
     ~PipelineBase();
 
     auto CreateCache() -> void;
@@ -23,7 +23,7 @@ protected:
     ) const -> VkPipelineShaderStageCreateInfo;
 
 protected:
-    const DeviceContext &m_device;
+    const Context &m_context;
     std::shared_ptr<PipelineLayout> m_layout{nullptr};
     VkPipelineCache m_cache{nullptr};
     std::vector<VkShaderModule> m_shaders{};

@@ -10,7 +10,7 @@
 
 namespace muon::graphics {
 
-Mesh::Mesh(const Spec &spec) : m_device(*spec.device) {
+Mesh::Mesh(const Spec &spec) : m_context(*spec.context) {
     MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
     MU_CORE_ASSERT(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
@@ -44,7 +44,7 @@ auto Mesh::CreateBuffer(
     VkBufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
 ) -> void {
     Buffer::Spec stagingSpec{};
-    stagingSpec.device = &m_device;
+    stagingSpec.context = &m_context;
     stagingSpec.instanceSize = instanceSize;
     stagingSpec.instanceCount = instanceCount;
     stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -56,7 +56,7 @@ auto Mesh::CreateBuffer(
     stagingBuffer.Write(data);
 
     Buffer::Spec spec{};
-    spec.device = &m_device;
+    spec.context = &m_context;
     spec.instanceSize = instanceSize;
     spec.instanceCount = instanceCount;
     spec.usageFlags = bufferUsage | VK_BUFFER_USAGE_TRANSFER_DST_BIT;

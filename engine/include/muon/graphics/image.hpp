@@ -2,7 +2,7 @@
 
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>
@@ -12,7 +12,7 @@ namespace muon::graphics {
 class Image : NoCopy, NoMove {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         VkExtent2D extent;
         VkFormat format;
         VkImageLayout layout;
@@ -44,7 +44,7 @@ private:
     auto TransitionLayout(VkCommandBuffer cmd) -> void;
 
 private:
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     VkDeviceSize m_bytes;
     VkExtent2D m_extent;

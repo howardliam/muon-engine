@@ -10,7 +10,7 @@
 
 namespace muon::graphics {
 
-Texture::Texture(const Spec &spec) : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format) {
+Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format) {
     MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
     MU_CORE_ASSERT(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
@@ -30,9 +30,9 @@ Texture::Texture(const Spec &spec) : m_device(*spec.device), m_extent(spec.exten
 }
 
 Texture::~Texture() {
-    vkDestroySampler(m_device.GetDevice(), m_sampler, nullptr);
-    vkDestroyImageView(m_device.GetDevice(), m_imageView, nullptr);
-    vmaDestroyImage(m_device.GetAllocator(), m_image, m_allocation);
+    vkDestroySampler(m_context.GetDevice(), m_sampler, nullptr);
+    vkDestroyImageView(m_context.GetDevice(), m_imageView, nullptr);
+    vmaDestroyImage(m_context.GetAllocator(), m_image, m_allocation);
 
     MU_CORE_DEBUG("destroyed texture");
 }
@@ -46,8 +46,7 @@ auto Texture::GetSampler() const -> VkSampler { return m_sampler; }
 auto Texture::GetDescriptorInfo() const -> const VkDescriptorImageInfo & { return m_descriptorInfo; }
 
 auto Texture::CreateImage() -> void {
-    VkImageCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    VkImageCreateInfo createInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     createInfo.extent = {m_extent.width, m_extent.height, 1};
     createInfo.mipLevels = 1;
     createInfo.arrayLayers = 1;
@@ -59,29 +58,28 @@ auto Texture::CreateImage() -> void {
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.flags = 0;
 
-    auto result = vkCreateImage(m_device.GetDevice(), &createInfo, nullptr, &m_image);
+    auto result = vkCreateImage(m_context.GetDevice(), &createInfo, nullptr, &m_image);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture image");
 
     VkMemoryRequirements memoryRequirements{};
-    vkGetImageMemoryRequirements(m_device.GetDevice(), m_image, &memoryRequirements);
+    vkGetImageMemoryRequirements(m_context.GetDevice(), m_image, &memoryRequirements);
 
     VmaAllocationCreateInfo allocCreateInfo{};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     allocCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
     VmaAllocationInfo allocInfo{};
-    result = vmaAllocateMemory(m_device.GetAllocator(), &memoryRequirements, &allocCreateInfo, &m_allocation, &allocInfo);
+    result = vmaAllocateMemory(m_context.GetAllocator(), &memoryRequirements, &allocCreateInfo, &m_allocation, &allocInfo);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate texture image memory");
 
-    result = vmaBindImageMemory(m_device.GetAllocator(), m_allocation, m_image);
+    result = vmaBindImageMemory(m_context.GetAllocator(), m_allocation, m_image);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to bind texture image memory");
 
     m_bytes = allocInfo.size;
 }
 
 auto Texture::CreateImageView() -> void {
-    VkImageViewCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo createInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     createInfo.format = m_format;
     createInfo.components.r = VK_COMPONENT_SWIZZLE_R;
@@ -94,13 +92,12 @@ auto Texture::CreateImageView() -> void {
     createInfo.subresourceRange.baseArrayLayer = 0;
     createInfo.subresourceRange.layerCount = 1;
 
-    auto result = vkCreateImageView(m_device.GetDevice(), &createInfo, nullptr, &m_imageView);
+    auto result = vkCreateImageView(m_context.GetDevice(), &createInfo, nullptr, &m_imageView);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture image view");
 }
 
 auto Texture::CreateSampler() -> void {
-    VkSamplerCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    VkSamplerCreateInfo createInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
     createInfo.minFilter = VK_FILTER_LINEAR;
     createInfo.magFilter = VK_FILTER_LINEAR;
     createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -116,15 +113,14 @@ auto Texture::CreateSampler() -> void {
     createInfo.maxAnisotropy = 4.0;
     createInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
-    auto result = vkCreateSampler(m_device.GetDevice(), &createInfo, nullptr, &m_sampler);
+    auto result = vkCreateSampler(m_context.GetDevice(), &createInfo, nullptr, &m_sampler);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture samper");
 }
 
 auto Texture::UploadData(
     VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
 ) -> void {
-    VkImageMemoryBarrier2 copyBarrier{};
-    copyBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+    VkImageMemoryBarrier2 copyBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
     copyBarrier.image = m_image;
     copyBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     copyBarrier.subresourceRange.baseMipLevel = 0;
@@ -142,15 +138,14 @@ auto Texture::UploadData(
     copyBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     copyBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
-    VkDependencyInfo copyDepInfo{};
-    copyDepInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    VkDependencyInfo copyDepInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
     copyDepInfo.dependencyFlags = 0;
     copyDepInfo.imageMemoryBarrierCount = 1;
     copyDepInfo.pImageMemoryBarriers = &copyBarrier;
     vkCmdPipelineBarrier2(cmd, &copyDepInfo);
 
     Buffer::Spec stagingSpec{};
-    stagingSpec.device = &m_device;
+    stagingSpec.context = &m_context;
     stagingSpec.instanceSize = pixelSize;
     stagingSpec.instanceCount = textureData.size() / pixelSize;
     stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -176,8 +171,7 @@ auto Texture::UploadData(
 
     vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    VkImageMemoryBarrier2 finalBarrier{};
-    finalBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+    VkImageMemoryBarrier2 finalBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
     finalBarrier.image = m_image;
     finalBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     finalBarrier.subresourceRange.baseMipLevel = 0;
@@ -195,8 +189,7 @@ auto Texture::UploadData(
     finalBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     finalBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 
-    VkDependencyInfo finalDepInfo{};
-    finalDepInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    VkDependencyInfo finalDepInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
     finalDepInfo.dependencyFlags = 0;
     finalDepInfo.imageMemoryBarrierCount = 1;
     finalDepInfo.pImageMemoryBarriers = &finalBarrier;

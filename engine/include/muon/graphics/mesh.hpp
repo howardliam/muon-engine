@@ -3,7 +3,7 @@
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/buffer.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <cstdint>
 #include <deque>
@@ -15,7 +15,7 @@ namespace muon::graphics {
 class Mesh : NoCopy, NoMove {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         VkCommandBuffer cmd{nullptr};
         std::deque<Buffer> *uploadBuffers{nullptr};
 
@@ -38,7 +38,7 @@ private:
     ) -> void;
 
 private:
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     std::unique_ptr<Buffer> m_vertexBuffer{nullptr};
     uint32_t m_vertexCount;

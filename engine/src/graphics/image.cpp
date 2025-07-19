@@ -9,8 +9,8 @@
 namespace muon::graphics {
 
 Image::Image(const Spec &spec)
-    : m_device(*spec.device), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags),
-      m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
+    : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout),
+      m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
     MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
 
     CreateImage();
@@ -22,8 +22,8 @@ Image::Image(const Spec &spec)
 }
 
 Image::~Image() {
-    vkDestroyImageView(m_device.GetDevice(), m_imageView, nullptr);
-    vmaDestroyImage(m_device.GetAllocator(), m_image, m_allocation);
+    vkDestroyImageView(m_context.GetDevice(), m_imageView, nullptr);
+    vmaDestroyImage(m_context.GetAllocator(), m_image, m_allocation);
 
     MU_CORE_DEBUG("destroyed image");
 }
@@ -61,21 +61,21 @@ auto Image::CreateImage() -> void {
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    auto result = vkCreateImage(m_device.GetDevice(), &imageInfo, nullptr, &m_image);
+    auto result = vkCreateImage(m_context.GetDevice(), &imageInfo, nullptr, &m_image);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image");
 
     VkMemoryRequirements memoryRequirements{};
-    vkGetImageMemoryRequirements(m_device.GetDevice(), m_image, &memoryRequirements);
+    vkGetImageMemoryRequirements(m_context.GetDevice(), m_image, &memoryRequirements);
 
     VmaAllocationCreateInfo allocCreateInfo{};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     allocCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
     VmaAllocationInfo allocInfo{};
-    result = vmaAllocateMemory(m_device.GetAllocator(), &memoryRequirements, &allocCreateInfo, &m_allocation, &allocInfo);
+    result = vmaAllocateMemory(m_context.GetAllocator(), &memoryRequirements, &allocCreateInfo, &m_allocation, &allocInfo);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate image memory");
 
-    result = vmaBindImageMemory(m_device.GetAllocator(), m_allocation, m_image);
+    result = vmaBindImageMemory(m_context.GetAllocator(), m_allocation, m_image);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to bind image memory");
 
     m_bytes = allocInfo.size;
@@ -124,7 +124,7 @@ auto Image::CreateImageView() -> void {
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    auto result = vkCreateImageView(m_device.GetDevice(), &viewInfo, nullptr, &m_imageView);
+    auto result = vkCreateImageView(m_context.GetDevice(), &viewInfo, nullptr, &m_imageView);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image view");
 
     m_descriptorInfo.imageLayout = m_layout;

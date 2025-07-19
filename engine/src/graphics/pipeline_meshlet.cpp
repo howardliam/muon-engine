@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(*spec.device, spec.layout) {
+PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(*spec.context, spec.layout) {
     MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Meshlet, "must be meshlet pipeline config");
     MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for meshlet pipeline");
 
@@ -41,7 +41,7 @@ PipelineMeshlet::~PipelineMeshlet() { MU_CORE_DEBUG("destroyed meshlet pipeline"
 
 auto PipelineMeshlet::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
     if (m_pipeline) {
-        vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
+        vkDestroyPipeline(m_context.GetDevice(), m_pipeline, nullptr);
     }
 
     CreatePipeline(renderingCreateInfo);
@@ -53,11 +53,9 @@ auto PipelineMeshlet::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSe
 }
 
 auto PipelineMeshlet::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
-    VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
-    vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
 
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
-    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(m_shaderStages.size());
     pipelineCreateInfo.pStages = m_shaderStages.data();
     pipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
@@ -75,7 +73,7 @@ auto PipelineMeshlet::CreatePipeline(const VkPipelineRenderingCreateInfo &render
     pipelineCreateInfo.basePipelineIndex = -1;
     pipelineCreateInfo.basePipelineHandle = nullptr;
 
-    auto result = vkCreateGraphicsPipelines(m_device.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
+    auto result = vkCreateGraphicsPipelines(m_context.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create meshlet pipeline");
 }
 

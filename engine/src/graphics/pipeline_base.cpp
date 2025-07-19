@@ -5,17 +5,17 @@
 
 namespace muon::graphics {
 
-PipelineBase::PipelineBase(const DeviceContext &device, std::shared_ptr<PipelineLayout> layout)
-    : m_device(device), m_layout(layout) {
+PipelineBase::PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout)
+    : m_context(context), m_layout(layout) {
     CreateCache();
 }
 
 PipelineBase::~PipelineBase() {
-    vkDestroyPipeline(m_device.GetDevice(), m_pipeline, nullptr);
+    vkDestroyPipeline(m_context.GetDevice(), m_pipeline, nullptr);
     for (const auto &shader : m_shaders) {
-        vkDestroyShaderModule(m_device.GetDevice(), shader, nullptr);
+        vkDestroyShaderModule(m_context.GetDevice(), shader, nullptr);
     }
-    vkDestroyPipelineCache(m_device.GetDevice(), m_cache, nullptr);
+    vkDestroyPipelineCache(m_context.GetDevice(), m_cache, nullptr);
 }
 
 auto PipelineBase::CreateCache() -> void {
@@ -25,7 +25,7 @@ auto PipelineBase::CreateCache() -> void {
     createInfo.initialDataSize = 0;
     createInfo.pInitialData = nullptr;
 
-    auto result = vkCreatePipelineCache(m_device.GetDevice(), &createInfo, nullptr, &m_cache);
+    auto result = vkCreatePipelineCache(m_context.GetDevice(), &createInfo, nullptr, &m_cache);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create pipeline cache");
 }
 
@@ -38,7 +38,7 @@ auto PipelineBase::CreateShaderModule(const schematic::ShaderInfo &shader, VkSha
     createInfo.codeSize = byteCode->size();
     createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode->data());
 
-    auto result = vkCreateShaderModule(m_device.GetDevice(), &createInfo, nullptr, &shaderModule);
+    auto result = vkCreateShaderModule(m_context.GetDevice(), &createInfo, nullptr, &shaderModule);
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create shader module");
 }
 

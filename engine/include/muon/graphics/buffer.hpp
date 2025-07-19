@@ -1,7 +1,7 @@
 #pragma once
 
 #include "muon/core/no_copy.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <vulkan/vulkan_core.h>
 
@@ -10,7 +10,7 @@ namespace muon::graphics {
 class Buffer : NoCopy {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         VkDeviceSize instanceSize{};
         uint32_t instanceCount{};
         VkBufferUsageFlags usageFlags{};
@@ -46,7 +46,7 @@ public:
     [[nodiscard]] auto GetDescriptorInfo() const -> const VkDescriptorBufferInfo &;
 
 private:
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     VkDeviceSize m_instanceSize{};
     uint32_t m_instanceCount{};

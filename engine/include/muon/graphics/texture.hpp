@@ -3,7 +3,7 @@
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/buffer.hpp"
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <deque>
 #include <vk_mem_alloc.h>
@@ -14,7 +14,7 @@ namespace muon::graphics {
 class Texture : NoCopy, NoMove {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         VkCommandBuffer cmd{nullptr};
         std::deque<Buffer> *uploadBuffers{nullptr};
 
@@ -45,7 +45,7 @@ private:
     ) -> void;
 
 private:
-    const DeviceContext &m_device;
+    const Context &m_context;
 
     VkDeviceSize m_bytes{};
     VkExtent2D m_extent{};

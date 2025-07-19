@@ -1,6 +1,6 @@
 #pragma once
 
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_base.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
 #include "muon/schematic/pipeline/pipeline_info.hpp"
@@ -13,7 +13,7 @@ namespace muon::graphics {
 class PipelineMeshlet : PipelineBase {
 public:
     struct Spec {
-        const DeviceContext *device{nullptr};
+        const Context *context{nullptr};
         std::shared_ptr<PipelineLayout> layout{nullptr};
         schematic::PipelineInfo pipelineInfo{};
     };
