@@ -25,16 +25,16 @@ public:
     [[nodiscard]] auto DeviceWait() -> VkResult;
 
 public:
-    [[nodiscard]] auto GetInstance() const -> VkInstance;
-    [[nodiscard]] auto GetSurface() const -> VkSurfaceKHR;
-    [[nodiscard]] auto GetPhysicalDevice() const -> VkPhysicalDevice;
-    [[nodiscard]] auto GetDevice() const -> VkDevice;
+    auto GetInstance() const -> VkInstance;
+    auto GetSurface() const -> VkSurfaceKHR;
+    auto GetPhysicalDevice() const -> VkPhysicalDevice;
+    auto GetDevice() const -> VkDevice;
 
-    [[nodiscard]] auto GetGraphicsQueue() const -> Queue &;
-    [[nodiscard]] auto GetComputeQueue() const -> Queue &;
-    [[nodiscard]] auto GetTransferQueue() const -> Queue &;
+    auto GetGraphicsQueue() const -> Queue &;
+    auto GetComputeQueue() const -> Queue &;
+    auto GetTransferQueue() const -> Queue &;
 
-    [[nodiscard]] auto GetAllocator() const -> VmaAllocator;
+    auto GetAllocator() const -> VmaAllocator;
 
 private:
     auto CreateInstance(const Window &window) -> void;

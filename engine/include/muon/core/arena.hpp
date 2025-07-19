@@ -16,7 +16,7 @@ public:
     [[nodiscard]] auto Allocate(size_t size) -> uint8_t *;
 
 public:
-    [[nodiscard]] auto CanFit(size_t size) const -> bool;
+    auto CanFit(size_t size) const -> bool;
 
 private:
     size_t m_size;
@@ -41,10 +41,10 @@ public:
     }
 
 public:
-    [[nodiscard]] auto IsValid() const -> bool { return !m_page.expired(); }
-    [[nodiscard]] auto Get() const -> T * { return m_ptr; }
-    [[nodiscard]] auto operator->() -> T * { return m_ptr; }
-    [[nodiscard]] auto operator*() -> T & { return *m_ptr; }
+    auto IsValid() const -> bool { return !m_page.expired(); }
+    auto Get() const -> T * { return m_ptr; }
+    auto operator->() -> T * { return m_ptr; }
+    auto operator*() -> T & { return *m_ptr; }
 
 private:
     T *m_ptr{nullptr};

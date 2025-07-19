@@ -28,11 +28,11 @@ public:
     auto EndCommands(VkCommandBuffer cmd) -> void;
 
 public:
-    [[nodiscard]] auto GetFamilyIndex() const -> uint32_t;
-    [[nodiscard]] auto GetIndex() const -> uint32_t;
+    auto GetFamilyIndex() const -> uint32_t;
+    auto GetIndex() const -> uint32_t;
 
-    [[nodiscard]] auto Get() const -> VkQueue;
-    [[nodiscard]] auto GetCommandPool() const -> VkCommandPool;
+    auto Get() const -> VkQueue;
+    auto GetCommandPool() const -> VkCommandPool;
 
 private:
     VkDevice m_device{nullptr};

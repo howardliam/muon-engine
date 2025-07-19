@@ -22,21 +22,21 @@ public:
 
     static auto Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>, ProjectError>;
     static auto Load(const std::filesystem::path &projectPath) -> std::expected<std::shared_ptr<Project>, ProjectError>;
-    [[nodiscard]] auto Save() -> std::expected<void, ProjectError>;
+    auto Save() -> std::expected<void, ProjectError>;
 
 public:
-    [[nodiscard]] auto GetProjectDirectory() const -> const std::filesystem::path &;
-    [[nodiscard]] auto GetImagesDirectory() const -> std::filesystem::path;
-    [[nodiscard]] auto GetModelsDirectory() const -> std::filesystem::path;
-    [[nodiscard]] auto GetScenesDirectory() const -> std::filesystem::path;
-    [[nodiscard]] auto GetScriptsDirectory() const -> std::filesystem::path;
-    [[nodiscard]] auto GetShadersDirectory() const -> std::filesystem::path;
+    auto GetProjectDirectory() const -> const std::filesystem::path &;
+    auto GetImagesDirectory() const -> std::filesystem::path;
+    auto GetModelsDirectory() const -> std::filesystem::path;
+    auto GetScenesDirectory() const -> std::filesystem::path;
+    auto GetScriptsDirectory() const -> std::filesystem::path;
+    auto GetShadersDirectory() const -> std::filesystem::path;
 
-    [[nodiscard]] static auto GetActiveProject() -> std::shared_ptr<Project>;
+    static auto GetActiveProject() -> std::shared_ptr<Project>;
 
 private:
-    [[nodiscard]] auto ConfigureProjectStructure() -> std::expected<void, ProjectError>;
-    [[nodiscard]] auto WriteProjectFile() -> std::expected<void, ProjectError>;
+    auto ConfigureProjectStructure() -> std::expected<void, ProjectError>;
+    auto WriteProjectFile() -> std::expected<void, ProjectError>;
 
 private:
     std::string m_name{"untitled"};

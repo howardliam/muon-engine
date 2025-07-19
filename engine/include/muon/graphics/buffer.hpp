@@ -25,7 +25,7 @@ public:
     ~Buffer();
 
     Buffer(Buffer &&other) noexcept;
-    [[nodiscard]] auto operator=(Buffer &&other) noexcept -> Buffer &;
+    auto operator=(Buffer &&other) noexcept -> Buffer &;
 
     [[nodiscard]] auto Map() -> VkResult;
     auto Unmap() -> void;
@@ -35,15 +35,15 @@ public:
     auto Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
 
 public:
-    [[nodiscard]] auto Get() const -> VkBuffer;
-    [[nodiscard]] auto GetSize() const -> VkDeviceSize;
-    [[nodiscard]] auto GetMappedMemory() const -> void *;
-    [[nodiscard]] auto GetDeviceAddress() const -> VkDeviceAddress;
+    auto Get() const -> VkBuffer;
+    auto GetSize() const -> VkDeviceSize;
+    auto GetMappedMemory() const -> void *;
+    auto GetDeviceAddress() const -> VkDeviceAddress;
 
-    [[nodiscard]] auto GetInstanceCount() const -> uint32_t;
-    [[nodiscard]] auto GetInstanceSize() const -> VkDeviceSize;
+    auto GetInstanceCount() const -> uint32_t;
+    auto GetInstanceSize() const -> VkDeviceSize;
 
-    [[nodiscard]] auto GetDescriptorInfo() const -> const VkDescriptorBufferInfo &;
+    auto GetDescriptorInfo() const -> const VkDescriptorBufferInfo &;
 
 private:
     const Context &m_context;

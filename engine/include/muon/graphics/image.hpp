@@ -27,16 +27,16 @@ public:
     ~Image();
 
 public:
-    [[nodiscard]] auto GetExtent() const -> VkExtent2D;
-    [[nodiscard]] auto GetFormat() const -> VkFormat;
-    [[nodiscard]] auto GetLayout() const -> VkImageLayout;
-    [[nodiscard]] auto GetUsageFlags() const -> VkImageUsageFlags;
-    [[nodiscard]] auto GetAccessFlags() const -> VkAccessFlags2;
-    [[nodiscard]] auto GetStageFlags() const -> VkPipelineStageFlags2;
+    auto GetExtent() const -> VkExtent2D;
+    auto GetFormat() const -> VkFormat;
+    auto GetLayout() const -> VkImageLayout;
+    auto GetUsageFlags() const -> VkImageUsageFlags;
+    auto GetAccessFlags() const -> VkAccessFlags2;
+    auto GetStageFlags() const -> VkPipelineStageFlags2;
 
-    [[nodiscard]] auto Get() const -> VkImage;
-    [[nodiscard]] auto GetView() const -> VkImageView;
-    [[nodiscard]] auto GetDescriptorInfo() const -> const VkDescriptorImageInfo &;
+    auto Get() const -> VkImage;
+    auto GetView() const -> VkImageView;
+    auto GetDescriptorInfo() const -> const VkDescriptorImageInfo &;
 
 private:
     auto CreateImage() -> void;

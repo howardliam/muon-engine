@@ -34,11 +34,11 @@ public:
     auto LoadFromFile(const std::filesystem::path &path) -> void;
 
 public:
-    [[nodiscard]] auto GetCommandBuffer() -> VkCommandBuffer;
-    [[nodiscard]] auto GetUploadBuffers() -> std::deque<graphics::Buffer> *;
+    auto GetCommandBuffer() -> VkCommandBuffer;
+    auto GetUploadBuffers() -> std::deque<graphics::Buffer> *;
 
 private:
-    [[nodiscard]] auto GetLoader(const std::string_view fileType) -> Loader *;
+    auto GetLoader(const std::string_view fileType) -> Loader *;
 
 private:
     const graphics::Context &m_context;

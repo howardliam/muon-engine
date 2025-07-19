@@ -27,7 +27,7 @@ public:
     auto Dispatch(VkCommandBuffer cmd, const glm::uvec3 &groupCount) const -> void;
 
 public:
-    [[nodiscard]] auto Get() const -> VkPipeline;
+    auto Get() const -> VkPipeline;
 
 private:
     auto CreatePipeline(const VkPipelineShaderStageCreateInfo &stageInfo) -> void;

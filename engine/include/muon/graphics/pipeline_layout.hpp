@@ -23,7 +23,7 @@ public:
     ~PipelineLayout();
 
 public:
-    [[nodiscard]] VkPipelineLayout Get() const;
+    VkPipelineLayout Get() const;
 
 private:
     const Context &m_context;

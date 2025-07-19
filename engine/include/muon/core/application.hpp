@@ -39,7 +39,7 @@ public:
     Application(const Spec &spec);
     virtual ~Application();
 
-    [[nodiscard]] static auto Get() -> Application &;
+    static auto Get() -> Application &;
 
 private:
     auto Run() -> void;

@@ -21,9 +21,9 @@ public:
     ~Gpu() = default;
 
 public:
-    [[nodiscard]] bool IsSuitable() const;
-    [[nodiscard]] uint64_t GetMemorySize() const;
-    [[nodiscard]] const std::unordered_set<std::string> &GetSupportedExtensions() const;
+    bool IsSuitable() const;
+    uint64_t GetMemorySize() const;
+    const std::unordered_set<std::string> &GetSupportedExtensions() const;
 
 private:
     void DetermineSuitability(

@@ -35,15 +35,15 @@ public:
     auto RebuildSwapchain() -> void;
 
 public:
-    [[nodiscard]] auto HasHdrSupport() const -> bool;
+    auto HasHdrSupport() const -> bool;
 
-    [[nodiscard]] auto GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpaceKHR>;
-    [[nodiscard]] auto GetActiveSurfaceFormat() const -> const SurfaceFormat &;
+    auto GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpaceKHR>;
+    auto GetActiveSurfaceFormat() const -> const SurfaceFormat &;
     auto SetActiveSurfaceFormat(VkColorSpaceKHR colorSpace) const -> void;
-    [[nodiscard]] auto IsHdrEnabled() const -> bool;
+    auto IsHdrEnabled() const -> bool;
 
-    [[nodiscard]] auto GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> &;
-    [[nodiscard]] auto GetActivePresentMode() const -> const VkPresentModeKHR &;
+    auto GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> &;
+    auto GetActivePresentMode() const -> const VkPresentModeKHR &;
     auto SetActivePresentMode(VkPresentModeKHR presentMode) const -> void;
 
 private:

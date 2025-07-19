@@ -13,7 +13,7 @@ class Loader {
 public:
     virtual ~Loader() = default;
 
-    [[nodiscard]] virtual auto GetFileTypes() const -> std::set<std::string_view> = 0;
+    virtual auto GetFileTypes() const -> std::set<std::string_view> = 0;
     auto SetManager(Manager *manager) -> void { m_manager = manager; }
 
     auto operator==(const Loader *other) -> bool { return GetFileTypes() == other->GetFileTypes(); }

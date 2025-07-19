@@ -32,18 +32,18 @@ public:
     [[nodiscard]] auto SubmitCommandBuffers(const VkCommandBuffer cmd, uint32_t imageIndex) -> VkResult;
 
 public:
-    [[nodiscard]] auto GetImageCount() const -> size_t;
+    auto GetImageCount() const -> size_t;
 
-    [[nodiscard]] auto Get() const -> VkSwapchainKHR;
-    [[nodiscard]] auto GetFormat() const -> VkFormat;
-    [[nodiscard]] auto IsImageHdr() const -> bool;
-    [[nodiscard]] auto GetImage(int32_t index) const -> VkImage;
-    [[nodiscard]] auto GetImageView(int32_t index) const -> VkImageView;
+    auto Get() const -> VkSwapchainKHR;
+    auto GetFormat() const -> VkFormat;
+    auto IsImageHdr() const -> bool;
+    auto GetImage(int32_t index) const -> VkImage;
+    auto GetImageView(int32_t index) const -> VkImageView;
 
-    [[nodiscard]] auto GetExtent() const -> VkExtent2D;
-    [[nodiscard]] auto GetWidth() const -> uint32_t;
-    [[nodiscard]] auto GetHeight() const -> uint32_t;
-    [[nodiscard]] auto GetAspectRatio() const -> float;
+    auto GetExtent() const -> VkExtent2D;
+    auto GetWidth() const -> uint32_t;
+    auto GetHeight() const -> uint32_t;
+    auto GetAspectRatio() const -> float;
 
 private:
     auto CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presentMode, VkSwapchainKHR oldSwapchain) -> void;

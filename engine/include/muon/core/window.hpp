@@ -30,14 +30,14 @@ public:
     auto RequestAttention() const -> void;
 
     [[nodiscard]] auto CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const -> VkResult;
-    [[nodiscard]] auto GetClipboardContents() const -> const char *;
 
 public:
-    [[nodiscard]] auto GetExtent() const -> VkExtent2D;
-    [[nodiscard]] auto GetWidth() const -> uint32_t;
-    [[nodiscard]] auto GetHeight() const -> uint32_t;
-    [[nodiscard]] auto GetRefreshRate() const -> uint32_t;
-    [[nodiscard]] auto GetRequiredExtensions() const -> std::vector<const char *>;
+    auto GetExtent() const -> VkExtent2D;
+    auto GetWidth() const -> uint32_t;
+    auto GetHeight() const -> uint32_t;
+    auto GetRefreshRate() const -> uint32_t;
+    auto GetRequiredExtensions() const -> std::vector<const char *>;
+    auto GetClipboardContents() const -> const char *;
 
 private:
     auto ConfigureDispatchers() -> void;

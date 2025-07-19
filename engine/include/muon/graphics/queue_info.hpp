@@ -31,8 +31,8 @@ public:
     ~QueueInfo() = default;
 
 public:
-    [[nodiscard]] uint32_t GetTotalQueueCount() const;
-    [[nodiscard]] const std::vector<QueueFamilyInfo> &GetFamilyInfo() const;
+    uint32_t GetTotalQueueCount() const;
+    const std::vector<QueueFamilyInfo> &GetFamilyInfo() const;
 
 private:
     uint32_t m_totalQueueCount{0};
