@@ -24,7 +24,7 @@ Application::Application(const Spec &spec) {
     MU_CORE_ASSERT(!s_instance, "application already exists");
     s_instance = this;
 
-    MU_CORE_INFO("creating application");
+    std::shared_ptr project = Project::Load(spec.workingDirectory / "test-project");
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
@@ -57,7 +57,8 @@ Application::Application(const Spec &spec) {
     });
 
     m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
-        vkQueueWaitIdle(m_context->GetGraphicsQueue().Get());
+        auto result = m_context->GetGraphicsQueue().Wait();
+        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait idle for queue");
         m_renderer->RebuildSwapchain();
     });
 
@@ -75,16 +76,12 @@ Application::Application(const Spec &spec) {
 
     m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) { MU_CORE_INFO("{}", fmt::join(event.paths, ", ")); });
 
-    Project::Spec projectSpec{};
-    // projectSpec.name = "test project";
-    // projectSpec.directory = spec.workingDirectory / "test-project";
-    // std::shared_ptr project = Project::Create(projectSpec);
-    std::shared_ptr project = Project::Load(spec.workingDirectory / "test-project");
+    MU_CORE_DEBUG("created application");
 }
 
 Application::~Application() {
-    MU_CORE_INFO("destroying application");
     profiling::Profiler::DestroyContext();
+    MU_CORE_DEBUG("destroyed application");
 }
 
 auto Application::Get() -> Application & { return *s_instance; }
@@ -93,8 +90,9 @@ auto Application::Run() -> void {
     MU_CORE_INFO("running application");
 
     graphics::ShaderCompiler::Spec compilerSpec{};
+    compilerSpec.hashStorePath = Project::GetActiveProject()->GetProjectDirectory() / "hash_store.db";
     graphics::ShaderCompiler compiler{compilerSpec};
-    compiler.SubmitWork({"./assets/shaders/test.vert"});
+    compiler.SubmitWork({Project::GetActiveProject()->GetProjectDirectory() / "shaders/test.vert"});
 
     while (m_running) {
         m_window->PollEvents();
