@@ -39,12 +39,17 @@ auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
 }
 
 auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<Project> {
-    MU_CORE_ASSERT(std::filesystem::exists(projectPath), "project path must exist");
+    if (!std::filesystem::exists(projectPath)) {
+        MU_CORE_TRACE("no project exists, attempting to create");
+        Spec spec{};
+        spec.path = projectPath;
+        return Create(spec);
+    }
 
     auto projectConfigPath = projectPath / "project.toml";
     MU_CORE_ASSERT(std::filesystem::exists(projectConfigPath), "project config file must exist");
 
-    auto config = toml::parse_file((projectPath / "project.toml").c_str());
+    auto config = toml::parse_file(projectConfigPath.c_str());
 
     auto projectName = config["name"].value<std::string_view>();
     MU_CORE_ASSERT(projectName.has_value(), "`project.toml` must have a name field");
@@ -71,14 +76,40 @@ auto Project::Save() -> bool {
     return true;
 }
 
-auto Project::GetProjectDirectory() const -> const std::filesystem::path & { return m_path; }
-auto Project::GetImagesDirectory() const -> std::filesystem::path { return m_path / "images"; }
-auto Project::GetModelsDirectory() const -> std::filesystem::path { return m_path / "models"; }
-auto Project::GetScenesDirectory() const -> std::filesystem::path { return m_path / "scenes"; }
-auto Project::GetScriptsDirectory() const -> std::filesystem::path { return m_path / "scripts"; }
-auto Project::GetShadersDirectory() const -> std::filesystem::path { return m_path / "shaders"; }
+auto Project::GetProjectDirectory() const -> const std::filesystem::path & {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return m_path;
+}
 
-auto Project::GetActiveProject() -> std::shared_ptr<Project> { return s_activeProject; }
+auto Project::GetImagesDirectory() const -> std::filesystem::path {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return m_path / "images";
+}
+
+auto Project::GetModelsDirectory() const -> std::filesystem::path {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return m_path / "models";
+}
+
+auto Project::GetScenesDirectory() const -> std::filesystem::path {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return m_path / "scenes";
+}
+
+auto Project::GetScriptsDirectory() const -> std::filesystem::path {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return m_path / "scripts";
+}
+
+auto Project::GetShadersDirectory() const -> std::filesystem::path {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return m_path / "shaders";
+}
+
+auto Project::GetActiveProject() -> std::shared_ptr<Project> {
+    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    return s_activeProject;
+}
 
 auto Project::ConfigureProjectStructure() -> bool {
     auto createDirectories = [](const std::filesystem::path &path) -> bool {
