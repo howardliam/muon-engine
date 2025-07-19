@@ -24,7 +24,35 @@ Application::Application(const Spec &spec) {
     MU_CORE_ASSERT(!s_instance, "application already exists");
     s_instance = this;
 
-    std::shared_ptr project = Project::Load(spec.workingDirectory / "test-project");
+    auto result = Project::Load(spec.workingDirectory / "test-project");
+    if (!result.has_value()) {
+        switch (result.error()) {
+            case ProjectError::FailedToCreateDirectory:
+                MU_CORE_ERROR("failed to create directory");
+                break;
+
+            case ProjectError::PathIsNotDirectory:
+                MU_CORE_ERROR("path is not directory");
+                break;
+
+            case ProjectError::DirectoryIsNotEmpty:
+                MU_CORE_ERROR("directory is not empty");
+                break;
+
+            case ProjectError::FailedToOpenProjectFile:
+                MU_CORE_ERROR("failed to open project file");
+                break;
+
+            case ProjectError::ProjectFileDoesNotExist:
+                MU_CORE_ERROR("project file does not exist");
+                break;
+
+            case ProjectError::MalformedProjectFile:
+                MU_CORE_ERROR("malformed project file");
+                break;
+        }
+    }
+    std::shared_ptr project = *result;
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
