@@ -1,6 +1,6 @@
 #pragma once
 
-#include "muon/graphics/device_context.hpp"
+#include "muon/graphics/context.hpp"
 
 #include <tracy/TracyVulkan.hpp>
 #include <vulkan/vulkan_core.h>
@@ -10,7 +10,7 @@ namespace muon::profiling {
 class Profiler {
 public:
     struct Spec {
-        const graphics::DeviceContext *device{nullptr};
+        const graphics::Context *context{nullptr};
     };
 
 public:

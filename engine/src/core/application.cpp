@@ -66,7 +66,7 @@ Application::Application(const Spec &spec) {
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     profiling::Profiler::Spec profilerSpec{};
-    profilerSpec.device = m_context.get();
+    profilerSpec.context = m_context.get();
     profiling::Profiler::CreateContext(profilerSpec);
 
     graphics::Renderer::Spec rendererSpec{};

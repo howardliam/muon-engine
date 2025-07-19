@@ -12,15 +12,15 @@ auto Profiler::CreateContext(const Spec &spec) -> void {
 
     VkCommandBufferAllocateInfo allocateInfo{};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocateInfo.commandPool = spec.device->GetGraphicsQueue().GetCommandPool();
+    allocateInfo.commandPool = spec.context->GetGraphicsQueue().GetCommandPool();
     allocateInfo.commandBufferCount = 1;
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
     VkCommandBuffer cmd;
-    vkAllocateCommandBuffers(spec.device->GetDevice(), &allocateInfo, &cmd);
+    vkAllocateCommandBuffers(spec.context->GetDevice(), &allocateInfo, &cmd);
 
     s_tracyContext =
-        TracyVkContext(spec.device->GetPhysicalDevice(), spec.device->GetDevice(), spec.device->GetGraphicsQueue().Get(), cmd);
+        TracyVkContext(spec.context->GetPhysicalDevice(), spec.context->GetDevice(), spec.context->GetGraphicsQueue().Get(), cmd);
     MU_CORE_DEBUG("created profiler context");
 }
 
