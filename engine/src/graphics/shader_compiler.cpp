@@ -200,7 +200,7 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePat
         MU_CORE_DEBUG("shader compilation worker thread spawned");
 
         while (true) {
-            MU_CORE_TRACE("checking for work");
+            MU_CORE_TRACE("waiting for work");
             std::unique_lock<std::mutex> lock{m_workMutex};
             m_conVar.wait(lock, [this]() { return !m_workQueue.empty() || m_terminate.load(); });
 
