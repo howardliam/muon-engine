@@ -1,6 +1,7 @@
 #include "muon/core/project.hpp"
 
 #include "muon/core/assert.hpp"
+#include "muon/core/errors.hpp"
 #include "muon/core/log.hpp"
 
 #include <filesystem>
@@ -20,17 +21,17 @@ Project::~Project() {
     MU_CORE_ASSERT(success, "failed to save project file to disk");
 }
 
-auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
+auto Project::Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>, ProjectError> {
     s_activeProject = std::make_shared<Project>(spec);
 
-    bool success = s_activeProject->ConfigureProjectStructure();
-    if (!success) {
-        return nullptr;
+    auto result = s_activeProject->ConfigureProjectStructure();
+    if (!result.has_value()) {
+        return std::unexpected(result.error());
     }
 
-    success = s_activeProject->WriteProjectFile();
-    if (!success) {
-        return nullptr;
+    result = s_activeProject->WriteProjectFile();
+    if (!result.has_value()) {
+        return std::unexpected(result.error());
     }
 
     MU_CORE_DEBUG("created new project");
@@ -38,7 +39,7 @@ auto Project::Create(const Spec &spec) -> std::shared_ptr<Project> {
     return s_activeProject;
 }
 
-auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<Project> {
+auto Project::Load(const std::filesystem::path &projectPath) -> std::expected<std::shared_ptr<Project>, ProjectError> {
     if (!std::filesystem::exists(projectPath)) {
         MU_CORE_TRACE("no project exists, attempting to create");
         Spec spec{};
@@ -47,12 +48,16 @@ auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<
     }
 
     auto projectConfigPath = projectPath / "project.toml";
-    MU_CORE_ASSERT(std::filesystem::exists(projectConfigPath), "project config file must exist");
+    if (!std::filesystem::exists(projectConfigPath)) {
+        return std::unexpected(ProjectError::ProjectFileDoesNotExist);
+    }
 
     auto config = toml::parse_file(projectConfigPath.c_str());
 
     auto projectName = config["name"].value<std::string_view>();
-    MU_CORE_ASSERT(projectName.has_value(), "`project.toml` must have a name field");
+    if (!projectName.has_value()) {
+        return std::unexpected(ProjectError::MalformedProjectFile);
+    }
 
     Spec spec{};
     spec.path = projectPath;
@@ -65,15 +70,14 @@ auto Project::Load(const std::filesystem::path &projectPath) -> std::shared_ptr<
     return s_activeProject;
 }
 
-auto Project::Save() -> bool {
-    bool success = WriteProjectFile();
-    if (!success) {
-        MU_CORE_ERROR("failed to save project");
-        return false;
+auto Project::Save() -> std::expected<void, ProjectError> {
+    auto result = WriteProjectFile();
+    if (!result.has_value()) {
+        return result;
     }
 
     MU_CORE_DEBUG("saved project");
-    return true;
+    return {};
 }
 
 auto Project::GetProjectDirectory() const -> const std::filesystem::path & {
@@ -111,27 +115,34 @@ auto Project::GetActiveProject() -> std::shared_ptr<Project> {
     return s_activeProject;
 }
 
-auto Project::ConfigureProjectStructure() -> bool {
-    auto createDirectories = [](const std::filesystem::path &path) -> bool {
+auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
+    auto createDirectories = [](const std::filesystem::path &path) -> std::expected<void, ProjectError> {
         std::error_code ec;
-        bool success = std::filesystem::create_directories(path, ec);
+        std::filesystem::create_directories(path, ec);
 
         if (ec.value() != 0) {
             MU_CORE_ERROR("failed to create directory: {} with reason: {}", path.generic_string(), ec.message());
-            return false;
+            return std::unexpected(ProjectError::FailedToCreateDirectory);
         }
 
-        return success;
+        return {};
     };
 
     if (!std::filesystem::exists(m_path)) {
-        MU_CORE_TRACE("creating working directory at: {}", m_path.generic_string());
-        auto success = createDirectories(m_path);
-        MU_CORE_ASSERT(success, "failed to create project directory");
+        MU_CORE_TRACE("creating project directory at: {}", m_path.generic_string());
+        auto result = createDirectories(m_path);
+        if (!result.has_value()) {
+            return result;
+        }
     }
 
-    MU_CORE_ASSERT(std::filesystem::is_directory(m_path), "path to working directory must be a directory");
-    MU_CORE_ASSERT(std::filesystem::is_empty(m_path), "working directory must be empty on initialization");
+    if (!std::filesystem::is_directory(m_path)) {
+        return std::unexpected(ProjectError::PathIsNotDirectory);
+    }
+
+    if (!std::filesystem::is_empty(m_path)) {
+        return std::unexpected(ProjectError::DirectoryIsNotEmpty);
+    }
 
     std::vector<std::filesystem::path> assetPaths = {
         GetImagesDirectory(), GetModelsDirectory(), GetScenesDirectory(), GetScriptsDirectory(), GetShadersDirectory(),
@@ -140,20 +151,16 @@ auto Project::ConfigureProjectStructure() -> bool {
     for (const auto &path : assetPaths) {
         MU_CORE_TRACE("attempting to create: {}", path.generic_string());
 
-        if (std::filesystem::exists(path)) {
-            MU_CORE_ASSERT(std::filesystem::is_directory(path), "project subdirectory must be a directory");
-            MU_CORE_TRACE("{} already exists, skipping", path.generic_string());
-            continue;
+        auto result = createDirectories(path);
+        if (!result.has_value()) {
+            return result;
         }
-
-        auto success = createDirectories(path);
-        MU_CORE_ASSERT(success, "failed to create project subdirectory");
     }
 
-    return true;
+    return {};
 }
 
-auto Project::WriteProjectFile() -> bool {
+auto Project::WriteProjectFile() -> std::expected<void, ProjectError> {
     auto projectFilePath = m_path / "project.toml";
 
     toml::table projectConfig{
@@ -162,11 +169,11 @@ auto Project::WriteProjectFile() -> bool {
 
     std::ofstream file{projectFilePath, std::ios::trunc};
     if (!file.is_open()) {
-        return false;
+        return std::unexpected(ProjectError::FailedToOpenProjectFile);
     }
     file << projectConfig << std::endl;
 
-    return true;
+    return {};
 }
 
 } // namespace muon

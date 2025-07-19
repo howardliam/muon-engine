@@ -1,5 +1,8 @@
 #pragma once
 
+#include "muon/core/errors.hpp"
+
+#include <expected>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -17,9 +20,9 @@ public:
     Project(const Spec &spec);
     ~Project();
 
-    static auto Create(const Spec &spec) -> std::shared_ptr<Project>;
-    static auto Load(const std::filesystem::path &projectPath) -> std::shared_ptr<Project>;
-    [[nodiscard]] auto Save() -> bool;
+    static auto Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>, ProjectError>;
+    static auto Load(const std::filesystem::path &projectPath) -> std::expected<std::shared_ptr<Project>, ProjectError>;
+    [[nodiscard]] auto Save() -> std::expected<void, ProjectError>;
 
 public:
     [[nodiscard]] auto GetProjectDirectory() const -> const std::filesystem::path &;
@@ -32,8 +35,8 @@ public:
     [[nodiscard]] static auto GetActiveProject() -> std::shared_ptr<Project>;
 
 private:
-    [[nodiscard]] auto ConfigureProjectStructure() -> bool;
-    [[nodiscard]] auto WriteProjectFile() -> bool;
+    [[nodiscard]] auto ConfigureProjectStructure() -> std::expected<void, ProjectError>;
+    [[nodiscard]] auto WriteProjectFile() -> std::expected<void, ProjectError>;
 
 private:
     std::string m_name{"untitled"};

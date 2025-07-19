@@ -2,8 +2,13 @@
 
 namespace muon {
 
-enum class FileSystemError {
-    BadFile,
+enum class ProjectError {
+    FailedToCreateDirectory,
+    PathIsNotDirectory,
+    DirectoryIsNotEmpty,
+    FailedToOpenProjectFile,
+    ProjectFileDoesNotExist,
+    MalformedProjectFile,
 };
 
-}
+} // namespace muon
