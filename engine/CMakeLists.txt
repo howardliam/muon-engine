@@ -135,7 +135,7 @@ target_link_libraries(${LIB_NAME} PUBLIC
     glslang
     glm
     magic_enum::magic_enum
-    spng
+    spng_static
     libtomcrypt
     SQLiteCpp
 )
