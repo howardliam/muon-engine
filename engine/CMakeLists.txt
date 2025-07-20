@@ -125,14 +125,17 @@ add_library(muon::engine ALIAS ${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
 
+target_link_libraries(${LIB_NAME} PRIVATE
+    spirv-reflect-static SPIRV-Tools glslang
+)
+
+
 target_link_libraries(${LIB_NAME} PUBLIC
     fmt::fmt spdlog::spdlog_header_only
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
     Tracy::TracyClient
     Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator
-    spirv-reflect-static SPIRV-Tools
-    glslang
     glm
     magic_enum::magic_enum
     spng_static
