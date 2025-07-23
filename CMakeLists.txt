@@ -50,9 +50,11 @@ add_subdirectory(external/glslang)
 
 add_subdirectory(external/vulkan-headers)
 add_subdirectory(external/vulkan-loader)
-add_subdirectory(external/vulkan-hpp)
 set(VULKAN_HPP_NO_EXCEPTIONS ON FORCE)
+add_subdirectory(external/vulkan-hpp)
+
 add_subdirectory(external/vulkan-memory-allocator)
+add_subdirectory(external/vulkan-memory-allocator-hpp)
 
 # maths
 set(GLM_ENABLE_CXX_20 ON FORCE)

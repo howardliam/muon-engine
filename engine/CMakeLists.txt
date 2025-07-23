@@ -116,8 +116,8 @@ target_link_libraries(muon-engine PUBLIC
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
     Tracy::TracyClient
-    Vulkan::Loader Vulkan::Hpp
-    VulkanMemoryAllocator
+    Vulkan::Headers Vulkan::Loader Vulkan::Hpp
+    VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
     glm
     magic_enum::magic_enum
     spng_static
