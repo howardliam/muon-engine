@@ -79,3 +79,6 @@
 [submodule "external/sqlitecpp"]
 	path = external/sqlitecpp
 	url = https://github.com/SRombauts/SQLiteCpp
+[submodule "external/vulkan-hpp"]
+	path = external/vulkan-hpp
+	url = https://github.com/KhronosGroup/Vulkan-Hpp
