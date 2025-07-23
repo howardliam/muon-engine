@@ -2,8 +2,10 @@
 
 #include "muon/core/no_copy.hpp"
 #include "muon/graphics/context.hpp"
+#include "vk_mem_alloc_enums.hpp"
+#include "vulkan/vulkan.hpp"
 
-#include <vulkan/vulkan_core.h>
+#include <expected>
 
 namespace muon::graphics {
 
@@ -11,14 +13,12 @@ class Buffer : NoCopy {
 public:
     struct Spec {
         const Context *context{nullptr};
-        VkDeviceSize instanceSize{};
+        vk::DeviceSize instanceSize{};
         uint32_t instanceCount{};
-        VkBufferUsageFlags usageFlags{};
-        VmaMemoryUsage memoryUsage{VMA_MEMORY_USAGE_AUTO};
-        VkDeviceSize minOffsetAlignment{1};
+        vk::BufferUsageFlags usageFlags{};
+        vma::MemoryUsage memoryUsage{vma::MemoryUsage::eAuto};
+        vk::DeviceSize minOffsetAlignment{1};
     };
-
-    static constexpr bool transientResource = true;
 
 public:
     Buffer(const Spec &spec);
@@ -27,40 +27,42 @@ public:
     Buffer(Buffer &&other) noexcept;
     auto operator=(Buffer &&other) noexcept -> Buffer &;
 
-    [[nodiscard]] auto Map() -> VkResult;
+    auto Map() -> std::expected<void, vk::Result>;
     auto Unmap() -> void;
 
-    auto Write(const void *data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
-    auto Flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
-    auto Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) -> void;
+    auto Write(const void *data, vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
+    auto Flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
+    auto Invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
 
 public:
-    auto Get() const -> VkBuffer;
-    auto GetSize() const -> VkDeviceSize;
+    auto Get() -> vk::raii::Buffer &;
+    auto Get() const -> const vk::raii::Buffer &;
+
+    auto GetSize() const -> vk::DeviceSize;
     auto GetMappedMemory() const -> void *;
-    auto GetDeviceAddress() const -> VkDeviceAddress;
+    auto GetDeviceAddress() const -> vk::DeviceAddress;
 
     auto GetInstanceCount() const -> uint32_t;
-    auto GetInstanceSize() const -> VkDeviceSize;
+    auto GetInstanceSize() const -> vk::DeviceSize;
 
-    auto GetDescriptorInfo() const -> const VkDescriptorBufferInfo &;
+    auto GetDescriptorInfo() const -> const vk::DescriptorBufferInfo &;
 
 private:
     const Context &m_context;
 
-    VkDeviceSize m_instanceSize{};
-    uint32_t m_instanceCount{};
-    VkDeviceSize m_alignmentSize{};
-    VkDeviceSize m_size{};
+    vk::DeviceSize m_instanceSize;
+    uint32_t m_instanceCount;
+    vk::DeviceSize m_alignmentSize;
+    vk::DeviceSize m_size;
 
-    VkBufferUsageFlags m_usageFlags{};
+    vk::BufferUsageFlags m_usageFlags;
 
-    VkBuffer m_buffer{nullptr};
-    VmaAllocation m_allocation{nullptr};
+    vk::raii::Buffer m_buffer{nullptr};
+    vma::Allocation m_allocation;
     void *m_mapped{nullptr};
-    VkDeviceAddress m_deviceAddress{};
+    vk::DeviceAddress m_deviceAddress;
 
-    VkDescriptorBufferInfo m_descriptorInfo{};
+    vk::DescriptorBufferInfo m_descriptorInfo;
 };
 
 } // namespace muon::graphics

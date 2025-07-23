@@ -4,10 +4,13 @@
 #include "muon/core/log.hpp"
 #include "muon/utils/alignment.hpp"
 #include "muon/utils/pretty_print.hpp"
+#include "vk_mem_alloc.hpp"
+#include "vk_mem_alloc_enums.hpp"
+#include "vulkan/vulkan_raii.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 #include <cstring>
-#include <vk_mem_alloc.h>
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::graphics {
 
@@ -17,29 +20,29 @@ Buffer::Buffer(const Spec &spec)
     m_alignmentSize = spec.minOffsetAlignment > 0 ? Alignment(m_instanceSize, spec.minOffsetAlignment) : m_instanceSize;
     m_size = m_alignmentSize * m_instanceCount;
 
-    VkBufferCreateInfo bufferCreateInfo{};
-    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.usage = spec.usageFlags;
-    bufferCreateInfo.size = m_size;
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    vk::BufferCreateInfo bufferCi;
+    bufferCi.usage = spec.usageFlags;
+    bufferCi.size = m_size;
+    bufferCi.sharingMode = vk::SharingMode::eExclusive;
 
-    VmaAllocationCreateInfo allocationCreateInfo{};
-    allocationCreateInfo.usage = spec.memoryUsage;
-    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+    vma::AllocationCreateInfo allocationCi;
+    allocationCi.usage = spec.memoryUsage;
+    allocationCi.flags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite;
 
-    VmaAllocationInfo allocationInfo{};
+    vma::AllocationInfo allocationInfo;
 
-    auto result = vmaCreateBuffer(
-        m_context.GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, &allocationInfo
-    );
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create buffer");
+    auto result = m_context.GetAllocator().createBuffer(bufferCi, allocationCi, allocationInfo);
+    MU_CORE_ASSERT(result.result == vk::Result::eSuccess, "failed to create buffer");
 
-    if (m_usageFlags & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-        VkBufferDeviceAddressInfo addressInfo{};
-        addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-        addressInfo.buffer = m_buffer;
+    auto [buffer, allocation] = result.value;
+    buffer = vk::raii::Buffer{m_context.GetDevice(), buffer};
+    m_allocation = allocation;
 
-        m_deviceAddress = vkGetBufferDeviceAddress(m_context.GetDevice(), &addressInfo);
+    if (m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress) {
+        vk::BufferDeviceAddressInfo bdaInfo;
+        bdaInfo.buffer = m_buffer;
+
+        m_deviceAddress = m_context.GetDevice().getBufferAddress(bdaInfo);
     }
 
     m_descriptorInfo.buffer = m_buffer;
@@ -51,20 +54,22 @@ Buffer::Buffer(const Spec &spec)
 
 Buffer::~Buffer() {
     Unmap();
-    vmaDestroyBuffer(m_context.GetAllocator(), m_buffer, m_allocation);
+    m_context.GetAllocator().destroyBuffer(m_buffer, m_allocation);
     MU_CORE_DEBUG("destroyed buffer");
 }
 
 Buffer::Buffer(Buffer &&other) noexcept
     : m_context{other.m_context}, m_instanceSize{other.m_instanceSize}, m_instanceCount{other.m_instanceCount},
-      m_alignmentSize{other.m_alignmentSize}, m_size{other.m_size}, m_usageFlags{other.m_usageFlags}, m_buffer{other.m_buffer},
+      m_alignmentSize{other.m_alignmentSize}, m_size{other.m_size}, m_usageFlags{other.m_usageFlags},
       m_allocation{other.m_allocation}, m_deviceAddress{other.m_deviceAddress}, m_descriptorInfo{other.m_descriptorInfo} {
+
+    m_buffer.swap(other.m_buffer);
 
     other.Unmap();
 
     other.m_buffer = nullptr;
     other.m_allocation = nullptr;
-    other.m_descriptorInfo = {};
+    other.m_descriptorInfo = vk::DescriptorBufferInfo{};
 }
 
 auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
@@ -78,7 +83,7 @@ auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
 
         m_usageFlags = other.m_usageFlags;
 
-        m_buffer = other.m_buffer;
+        m_buffer.swap(other.m_buffer);
         m_allocation = other.m_allocation;
         m_deviceAddress = other.m_deviceAddress;
 
@@ -88,17 +93,27 @@ auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
     return *this;
 }
 
-[[nodiscard]] auto Buffer::Map() -> VkResult { return vmaMapMemory(m_context.GetAllocator(), m_allocation, &m_mapped); }
+auto Buffer::Map() -> std::expected<void, vk::Result> {
+    auto result = m_context.GetAllocator().mapMemory(m_allocation);
+    if (result.result != vk::Result::eSuccess) {
+        return std::unexpected(result.result);
+    }
+
+    m_mapped = result.value;
+
+    return {};
+}
 
 auto Buffer::Unmap() -> void {
     if (m_mapped == nullptr) {
         return;
     }
-    vmaUnmapMemory(m_context.GetAllocator(), m_allocation);
+
+    m_context.GetAllocator().unmapMemory(m_allocation);
     m_mapped = nullptr;
 }
 
-auto Buffer::Write(const void *data, VkDeviceSize size, VkDeviceSize offset) -> void {
+auto Buffer::Write(const void *data, vk::DeviceSize size, vk::DeviceSize offset) -> void {
     if (size == VK_WHOLE_SIZE) {
         std::memcpy(m_mapped, data, m_size);
     } else {
@@ -108,31 +123,32 @@ auto Buffer::Write(const void *data, VkDeviceSize size, VkDeviceSize offset) -> 
     }
 }
 
-auto Buffer::Flush(VkDeviceSize size, VkDeviceSize offset) -> void {
+auto Buffer::Flush(vk::DeviceSize size, vk::DeviceSize offset) -> void {
     vmaFlushAllocation(m_context.GetAllocator(), m_allocation, offset, size);
 }
 
-auto Buffer::Invalidate(VkDeviceSize size, VkDeviceSize offset) -> void {
+auto Buffer::Invalidate(vk::DeviceSize size, vk::DeviceSize offset) -> void {
     vmaInvalidateAllocation(m_context.GetAllocator(), m_allocation, offset, size);
 }
 
-auto Buffer::Get() const -> VkBuffer { return m_buffer; }
+auto Buffer::Get() -> vk::raii::Buffer & { return m_buffer; }
+auto Buffer::Get() const -> const vk::raii::Buffer & { return m_buffer; }
 
-auto Buffer::GetSize() const -> VkDeviceSize { return m_size; }
+auto Buffer::GetSize() const -> vk::DeviceSize { return m_size; }
 
 auto Buffer::GetMappedMemory() const -> void * { return m_mapped; }
 
 auto Buffer::GetDeviceAddress() const -> VkDeviceAddress {
     MU_CORE_ASSERT(
-        m_usageFlags & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, "buffer must be created with shader context address usage"
+        m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress, "buffer must be created with shader context address usage"
     );
     return m_deviceAddress;
 }
 
 auto Buffer::GetInstanceCount() const -> uint32_t { return m_instanceCount; }
 
-auto Buffer::GetInstanceSize() const -> VkDeviceSize { return m_instanceSize; }
+auto Buffer::GetInstanceSize() const -> vk::DeviceSize { return m_instanceSize; }
 
-auto Buffer::GetDescriptorInfo() const -> const VkDescriptorBufferInfo & { return m_descriptorInfo; }
+auto Buffer::GetDescriptorInfo() const -> const vk::DescriptorBufferInfo & { return m_descriptorInfo; }
 
 } // namespace muon::graphics
