@@ -85,8 +85,7 @@ Application::Application(const Spec &spec) {
     });
 
     m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
-        auto result = m_context->GetGraphicsQueue().Wait();
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait idle for queue");
+        m_context->GetGraphicsQueue().Get().waitIdle();
         m_renderer->RebuildSwapchain();
     });
 
@@ -130,8 +129,7 @@ auto Application::Run() -> void {
         }
     }
 
-    auto result = m_context->DeviceWait();
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait idle for device");
+    m_context->GetDevice().waitIdle();
 }
 
 } // namespace muon
