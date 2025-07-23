@@ -82,3 +82,6 @@
 [submodule "external/vulkan-hpp"]
 	path = external/vulkan-hpp
 	url = https://github.com/KhronosGroup/Vulkan-Hpp
+[submodule "external/vulkan-memory-allocator-hpp"]
+	path = external/vulkan-memory-allocator-hpp
+	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp
