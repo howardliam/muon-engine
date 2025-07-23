@@ -3,9 +3,8 @@
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/context.hpp"
-
-#include <vk_mem_alloc.h>
-#include <vulkan/vulkan_core.h>
+#include "vk_mem_alloc.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 namespace muon::graphics {
 
@@ -13,13 +12,13 @@ class Image : NoCopy, NoMove {
 public:
     struct Spec {
         const Context *context{nullptr};
-        VkExtent2D extent;
-        VkFormat format;
-        VkImageLayout layout;
-        VkImageUsageFlags usageFlags;
-        VkAccessFlags2 accessFlags;
-        VkPipelineStageFlags2 stageFlags;
-        VkCommandBuffer cmd{nullptr};
+        vk::raii::CommandBuffer *commandBuffer{nullptr};
+        vk::Extent2D extent;
+        vk::Format format;
+        vk::ImageLayout layout;
+        vk::ImageUsageFlags usageFlags;
+        vk::AccessFlags2 accessFlags;
+        vk::PipelineStageFlags2 stageFlags;
     };
 
 public:
@@ -27,39 +26,42 @@ public:
     ~Image();
 
 public:
-    auto GetExtent() const -> VkExtent2D;
-    auto GetFormat() const -> VkFormat;
-    auto GetLayout() const -> VkImageLayout;
-    auto GetUsageFlags() const -> VkImageUsageFlags;
-    auto GetAccessFlags() const -> VkAccessFlags2;
-    auto GetStageFlags() const -> VkPipelineStageFlags2;
+    auto Get() -> vk::raii::Image &;
+    auto Get() const -> const vk::raii::Image &;
 
-    auto Get() const -> VkImage;
-    auto GetView() const -> VkImageView;
-    auto GetDescriptorInfo() const -> const VkDescriptorImageInfo &;
+    auto GetView() -> vk::raii::ImageView &;
+    auto GetView() const -> const vk::raii::ImageView &;
+
+    auto GetExtent() const -> vk::Extent2D;
+    auto GetFormat() const -> vk::Format;
+    auto GetLayout() const -> vk::ImageLayout;
+    auto GetUsageFlags() const -> vk::ImageUsageFlags;
+    auto GetAccessFlags() const -> vk::AccessFlags2;
+    auto GetStageFlags() const -> vk::PipelineStageFlags2;
+    auto GetDescriptorInfo() const -> const vk::DescriptorImageInfo &;
 
 private:
     auto CreateImage() -> void;
     auto CreateImageView() -> void;
-    auto TransitionLayout(VkCommandBuffer cmd) -> void;
+    auto TransitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void;
 
 private:
     const Context &m_context;
 
-    VkDeviceSize m_bytes;
-    VkExtent2D m_extent;
-    VkFormat m_format;
-    VkImageLayout m_layout;
-    VkImageUsageFlags m_usageFlags;
-    VkAccessFlags2 m_accessFlags;
-    VkPipelineStageFlags2 m_stageFlags;
-    VkImageAspectFlags m_aspectMask;
+    vk::raii::Image m_image{nullptr};
+    vma::Allocation m_allocation{nullptr};
+    vk::raii::ImageView m_imageView{nullptr};
 
-    VkImage m_image{nullptr};
-    VmaAllocation m_allocation{nullptr};
-    VkImageView m_imageView{nullptr};
+    vk::DeviceSize m_bytes;
+    vk::Extent2D m_extent;
+    vk::Format m_format;
+    vk::ImageLayout m_layout;
+    vk::ImageUsageFlags m_usageFlags;
+    vk::AccessFlags2 m_accessFlags;
+    vk::PipelineStageFlags2 m_stageFlags;
+    vk::ImageAspectFlags m_aspectMask;
 
-    VkDescriptorImageInfo m_descriptorInfo{};
+    vk::DescriptorImageInfo m_descriptorInfo;
 };
 
 } // namespace muon::graphics
