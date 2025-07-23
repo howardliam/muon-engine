@@ -189,7 +189,9 @@ auto Context::CreateInstance(const Window &window) -> void {
     }
 #endif
 
-    m_instance = vk::raii::Instance{m_context, instanceCi};
+    auto instanceResult = m_context.createInstance(instanceCi);
+    MU_CORE_ASSERT(instanceResult, "failed to create instance");
+    m_instance = std::move(*instanceResult);
 }
 
 #ifdef MU_DEBUG_ENABLED
@@ -205,7 +207,10 @@ auto Context::CreateDebugMessenger() -> void {
         vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding |
         vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-    m_debugMessenger = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
+    auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
+    MU_CORE_ASSERT(debugMessengerResult, "failed to create debug messenger");
+
+    m_debugMessenger = std::move(*debugMessengerResult);
 }
 #endif
 
@@ -215,32 +220,33 @@ auto Context::CreateSurface(const Window &window) -> void {
 }
 
 auto Context::SelectPhysicalDevice() -> void {
-    vk::raii::PhysicalDevices physicalDevices{m_instance};
-    MU_CORE_ASSERT(physicalDevices.empty(), "failed to available get GPUs");
+    auto enumerationResult = m_instance.enumeratePhysicalDevices();
+    MU_CORE_ASSERT(enumerationResult, "failed to get available GPUs");
+    auto physicalDevices = enumerationResult.value();
 
     Gpu::Spec gpuSpec{};
     gpuSpec.surface = &m_surface;
 
-    std::vector<std::pair<Gpu, vk::PhysicalDevice>> gpus{};
+    using GpuPair = std::pair<Gpu, const vk::raii::PhysicalDevice *>;
+    std::vector<GpuPair> gpus{};
 
     for (const auto &physicalDevice : physicalDevices) {
-        gpuSpec.physicalDevice = physicalDevice;
+        gpuSpec.physicalDevice = &physicalDevice;
         Gpu gpu(gpuSpec);
 
         if (gpu.IsSuitable()) {
-            gpus.push_back({gpu, physicalDevice});
+            gpus.push_back({gpu, &physicalDevice});
         }
     }
 
-    auto sort = [](const std::pair<Gpu, VkPhysicalDevice> &a, const std::pair<Gpu, VkPhysicalDevice> &b) {
-        // add system to determine how many optional extensions each device supports and sort by that too
-        return a.first.GetMemorySize() > b.first.GetMemorySize();
-    };
+    auto sort = [](const GpuPair &a, const GpuPair &b) -> bool { return a.first.GetMemorySize() > b.first.GetMemorySize(); };
     std::sort(gpus.begin(), gpus.end(), sort);
 
     if (gpus.size() >= 1) {
         auto &[gpu, physicalDevice] = gpus.front();
-        m_physicalDevice = vk::raii::PhysicalDevice{m_instance, physicalDevice};
+        m_physicalDevice = *physicalDevice;
+    } else {
+        MU_CORE_ASSERT("failed to select a suitable GPU");
     }
 }
 
@@ -333,7 +339,9 @@ auto Context::CreateLogicalDevice() -> void {
     deviceCi.ppEnabledExtensionNames = nullptr;
     deviceCi.pNext = &features;
 
-    m_device = vk::raii::Device{m_physicalDevice, deviceCi};
+    auto deviceResult = m_physicalDevice.createDevice(deviceCi);
+    MU_CORE_ASSERT(deviceResult, "failed to create device");
+    m_device = std::move(*deviceResult);
 
     std::map<uint32_t, uint32_t> nextQueueIndices;
     nextQueueIndices[graphicsFamily->index] = 0;
