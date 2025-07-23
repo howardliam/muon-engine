@@ -3,7 +3,6 @@
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_base.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
-#include "muon/schematic/pipeline/pipeline_info.hpp"
 
 #include <glm/vec3.hpp>
 #include <memory>
@@ -16,7 +15,6 @@ public:
     struct Spec {
         const Context *context{nullptr};
         std::shared_ptr<PipelineLayout> layout{nullptr};
-        schematic::PipelineInfo pipelineInfo{};
     };
 
 public:

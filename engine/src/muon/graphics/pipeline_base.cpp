@@ -29,8 +29,8 @@ auto PipelineBase::CreateCache() -> void {
     MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create pipeline cache");
 }
 
-auto PipelineBase::CreateShaderModule(const schematic::ShaderInfo &shader, VkShaderModule &shaderModule) const -> void {
-    auto byteCode = fs::ReadFileBinary(*shader.path);
+auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, VkShaderModule &shaderModule) const -> void {
+    auto byteCode = fs::ReadFileBinary(path);
     MU_CORE_ASSERT(byteCode.has_value(), "code does not have value");
 
     VkShaderModuleCreateInfo createInfo{};

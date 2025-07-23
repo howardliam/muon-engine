@@ -8,13 +8,13 @@
 namespace muon::graphics {
 
 PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase(*spec.context, spec.layout) {
-    MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
+    // MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
 
-    const auto &shaderInfo = spec.pipelineInfo.shaders.find(VK_SHADER_STAGE_COMPUTE_BIT)->second;
-    auto shader = m_shaders.emplace_back(nullptr);
-    CreateShaderModule(shaderInfo, shader);
-    const auto stageInfo = CreateShaderStageInfo(VK_SHADER_STAGE_COMPUTE_BIT, shader, shaderInfo.entryPoint);
-    CreatePipeline(stageInfo);
+    // const auto &shaderInfo = spec.pipelineInfo.shaders.find(VK_SHADER_STAGE_COMPUTE_BIT)->second;
+    // auto shader = m_shaders.emplace_back(nullptr);
+    // CreateShaderModule(shaderInfo, shader);
+    // const auto stageInfo = CreateShaderStageInfo(VK_SHADER_STAGE_COMPUTE_BIT, shader, shaderInfo.entryPoint);
+    // CreatePipeline(stageInfo);
 
     MU_CORE_DEBUG("created compute pipeline");
 }

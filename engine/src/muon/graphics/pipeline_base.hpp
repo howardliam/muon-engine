@@ -4,8 +4,8 @@
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
-#include "muon/schematic/pipeline/shader_info.hpp"
 
+#include <filesystem>
 #include <memory>
 #include <string_view>
 
@@ -17,7 +17,7 @@ protected:
     ~PipelineBase();
 
     auto CreateCache() -> void;
-    auto CreateShaderModule(const schematic::ShaderInfo &shader, VkShaderModule &shaderModule) const -> void;
+    auto CreateShaderModule(const std::filesystem::path &path, VkShaderModule &shaderModule) const -> void;
     [[nodiscard]] auto CreateShaderStageInfo(
         const VkShaderStageFlagBits stage, const VkShaderModule &shaderModule, const std::string_view entryPoint
     ) const -> VkPipelineShaderStageCreateInfo;
