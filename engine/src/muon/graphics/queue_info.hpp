@@ -1,9 +1,10 @@
 #pragma once
 
+#include "vulkan/vulkan_raii.hpp"
+
 #include <bitset>
 #include <cstdint>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -27,7 +28,7 @@ struct QueueFamilyInfo {
 
 class QueueInfo {
 public:
-    QueueInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+    QueueInfo(vk::raii::PhysicalDevice physicalDevice, vk::raii::SurfaceKHR surface);
     ~QueueInfo() = default;
 
 public:

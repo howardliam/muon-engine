@@ -1,6 +1,8 @@
 #include "muon/graphics/queue_info.hpp"
 
-#include "muon/core/assert.hpp"
+#include "vulkan/vulkan_enums.hpp"
+
+#include <cstddef>
 
 namespace muon::graphics {
 
@@ -18,44 +20,41 @@ bool QueueFamilyInfo::IsVideoEncodeCapable() const { return capabilities.test(5)
 bool QueueFamilyInfo::IsComputeDedicated() const { return !IsGraphicsCapable() && IsComputeCapable(); }
 bool QueueFamilyInfo::IsTransferDedicated() const { return !IsGraphicsCapable() && !IsComputeCapable() && IsTransferCapable(); }
 
-QueueInfo::QueueInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
-    uint32_t queueFamilyPropertyCount{0};
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, nullptr);
-    std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyPropertyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
+QueueInfo::QueueInfo(vk::raii::PhysicalDevice physicalDevice, vk::raii::SurfaceKHR surface) {
+    auto queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
 
-    m_families.resize(queueFamilyPropertyCount);
+    m_families.resize(queueFamilyProperties.size());
 
-    for (uint32_t i = 0; i < queueFamilyPropertyCount; i++) {
-        const auto &properties = queueFamilyProperties[i];
+    size_t index = 0;
+    for (const auto &properties : queueFamilyProperties) {
 
-        VkBool32 presentSupport;
-        auto result = vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface support");
+        auto support = physicalDevice.getSurfaceSupportKHR(index, surface);
 
         std::bitset<6> capabilities;
 
-        if (presentSupport) {
+        if (support) {
             capabilities.set(0);
         }
-        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        if (properties.queueFlags & vk::QueueFlagBits::eGraphics) {
             capabilities.set(1);
         }
-        if (properties.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+        if (properties.queueFlags & vk::QueueFlagBits::eCompute) {
             capabilities.set(2);
         }
-        if (properties.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+        if (properties.queueFlags & vk::QueueFlagBits::eTransfer) {
             capabilities.set(3);
         }
-        if (properties.queueFlags & VK_QUEUE_VIDEO_DECODE_BIT_KHR) {
+        if (properties.queueFlags & vk::QueueFlagBits::eVideoDecodeKHR) {
             capabilities.set(4);
         }
-        if (properties.queueFlags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR) {
+        if (properties.queueFlags & vk::QueueFlagBits::eVideoEncodeKHR) {
             capabilities.set(5);
         }
 
-        m_families.emplace(m_families.begin() + i, i, properties.queueCount, capabilities);
+        m_families.emplace(m_families.begin() + index, index, properties.queueCount, capabilities);
         m_totalQueueCount += properties.queueCount;
+
+        index += 1;
     }
 }
 
