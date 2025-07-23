@@ -28,7 +28,7 @@ struct QueueFamilyInfo {
 
 class QueueInfo {
 public:
-    QueueInfo(vk::raii::PhysicalDevice physicalDevice, vk::raii::SurfaceKHR surface);
+    QueueInfo(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface);
     ~QueueInfo() = default;
 
 public:

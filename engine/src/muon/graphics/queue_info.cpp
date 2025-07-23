@@ -20,7 +20,7 @@ bool QueueFamilyInfo::IsVideoEncodeCapable() const { return capabilities.test(5)
 bool QueueFamilyInfo::IsComputeDedicated() const { return !IsGraphicsCapable() && IsComputeCapable(); }
 bool QueueFamilyInfo::IsTransferDedicated() const { return !IsGraphicsCapable() && !IsComputeCapable() && IsTransferCapable(); }
 
-QueueInfo::QueueInfo(vk::raii::PhysicalDevice physicalDevice, vk::raii::SurfaceKHR surface) {
+QueueInfo::QueueInfo(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface) {
     auto queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
 
     m_families.resize(queueFamilyProperties.size());
