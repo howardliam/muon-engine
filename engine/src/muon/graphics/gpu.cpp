@@ -1,35 +1,27 @@
 #include "muon/graphics/gpu.hpp"
 
-#include <string_view>
+#include "vulkan/vulkan.hpp"
+
 #include <unordered_set>
-#include <vector>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
-Gpu::Gpu(const Spec &spec) {
-    DetermineSuitability(spec.physicalDevice, spec.surface, spec.requiredDeviceExtensions, spec.optionalDeviceExtensions);
-}
+Gpu::Gpu(const Spec &spec) { DetermineSuitability(*spec.physicalDevice, *spec.surface); }
 
-bool Gpu::IsSuitable() const { return m_coreSuitabilities == 0b1111; }
+bool Gpu::IsSuitable() const { return m_coreSuitabilities == 0b1110; }
 
 uint64_t Gpu::GetMemorySize() const { return m_memorySize; }
 
 const std::unordered_set<std::string> &Gpu::GetSupportedExtensions() const { return m_supportedExtensions; }
 
-void Gpu::DetermineSuitability(
-    VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, const std::unordered_set<const char *> &requiredDeviceExtensions,
-    const std::unordered_set<const char *> &optionalDeviceExtensions
-) {
-    VkPhysicalDeviceProperties deviceProperties{};
-    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+void Gpu::DetermineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface) {
+    auto deviceProperties = physicalDevice.getProperties();
 
-    if (deviceProperties.apiVersion >= VK_API_VERSION_1_3) {
+    if (deviceProperties.apiVersion >= vk::ApiVersion13) {
         m_coreSuitabilities.set(3);
     }
 
-    if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ||
-        deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+    if (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
         m_coreSuitabilities.set(2);
     }
 
@@ -37,34 +29,11 @@ void Gpu::DetermineSuitability(
         m_coreSuitabilities.set(1);
     }
 
-    uint32_t availableExtensionCount{0};
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableExtensionCount, nullptr);
-    std::vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableExtensionCount, availableExtensions.data());
+    auto memoryProperties = physicalDevice.getMemoryProperties();
 
-    std::unordered_set<std::string_view> requiredExtensions(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
-    std::unordered_set<std::string_view> optionalExtensions(optionalDeviceExtensions.begin(), optionalDeviceExtensions.end());
-    for (const auto &extension : availableExtensions) {
-        if (requiredExtensions.contains(extension.extensionName)) {
-            m_supportedExtensions.insert(std::string(extension.extensionName));
-            requiredExtensions.erase(extension.extensionName);
-        }
-
-        if (optionalExtensions.contains(extension.extensionName)) {
-            m_supportedExtensions.insert(std::string(extension.extensionName));
-        }
-    }
-
-    if (requiredExtensions.empty()) {
-        m_coreSuitabilities.set(0);
-    }
-
-    VkPhysicalDeviceMemoryProperties memoryProperties{};
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
-
-    for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; i++) {
-        if (memoryProperties.memoryHeaps[i].flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
-            m_memorySize += memoryProperties.memoryHeaps[i].size;
+    for (const auto &heap : memoryProperties.memoryHeaps) {
+        if (heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
+            m_memorySize += heap.size;
         }
     }
 }

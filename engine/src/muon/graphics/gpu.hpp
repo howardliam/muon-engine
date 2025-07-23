@@ -1,19 +1,18 @@
 #pragma once
 
+#include "vulkan/vulkan_raii.hpp"
+
 #include <bitset>
 #include <string>
 #include <unordered_set>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
 class Gpu {
 public:
     struct Spec {
-        VkPhysicalDevice physicalDevice{nullptr};
-        VkSurfaceKHR surface{nullptr};
-        std::unordered_set<const char *> requiredDeviceExtensions{};
-        std::unordered_set<const char *> optionalDeviceExtensions{};
+        const vk::raii::PhysicalDevice *physicalDevice{nullptr};
+        const vk::raii::SurfaceKHR *surface{nullptr};
     };
 
 public:
@@ -26,10 +25,7 @@ public:
     const std::unordered_set<std::string> &GetSupportedExtensions() const;
 
 private:
-    void DetermineSuitability(
-        VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, const std::unordered_set<const char *> &requiredDeviceExtensions,
-        const std::unordered_set<const char *> &optionalDeviceExtensions
-    );
+    void DetermineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface);
 
 private:
     std::bitset<4> m_coreSuitabilities{0};
