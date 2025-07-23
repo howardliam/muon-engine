@@ -210,7 +210,7 @@ auto Context::CreateDebugMessenger() -> void {
 #endif
 
 auto Context::CreateSurface(const Window &window) -> void {
-    auto result = window.CreateSurface(m_instance, &m_surface);
+    auto result = window.CreateSurface(m_instance, m_surface);
     MU_CORE_ASSERT(!result, "failed to create window surface");
 }
 
@@ -219,7 +219,7 @@ auto Context::SelectPhysicalDevice() -> void {
     MU_CORE_ASSERT(physicalDevices.empty(), "failed to available get GPUs");
 
     Gpu::Spec gpuSpec{};
-    gpuSpec.surface = m_surface;
+    gpuSpec.surface = &m_surface;
 
     std::vector<std::pair<Gpu, vk::PhysicalDevice>> gpus{};
 
