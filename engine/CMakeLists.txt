@@ -1,136 +1,131 @@
 # Engine Library
 
-set(LIB_NAME ${CMAKE_PROJECT_NAME}-engine)
+add_library(muon-engine STATIC)
+add_library(muon::engine ALIAS muon-engine)
 
-set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_sources(
+    muon-engine
+    PRIVATE
+        src/asset/loaders/png.cpp
+        src/asset/manager.cpp
 
-set(ENGINE_HEADER_FILES
-    ${INCLUDE_DIR}/muon/asset/loaders/png.hpp
-    ${INCLUDE_DIR}/muon/asset/loader.hpp
-    ${INCLUDE_DIR}/muon/asset/manager.hpp
+        src/core/application.cpp
+        src/core/arena.cpp
+        src/core/hash.cpp
+        src/core/layer_stack.cpp
+        src/core/log.cpp
+        src/core/project.cpp
+        src/core/window.cpp
 
-    ${INCLUDE_DIR}/muon/core/arena.hpp
-    ${INCLUDE_DIR}/muon/core/application.hpp
-    ${INCLUDE_DIR}/muon/core/assert.hpp
-    ${INCLUDE_DIR}/muon/core/base.hpp
-    ${INCLUDE_DIR}/muon/core/entry_point.hpp
-    ${INCLUDE_DIR}/muon/core/errors.hpp
-    ${INCLUDE_DIR}/muon/core/hash.hpp
-    ${INCLUDE_DIR}/muon/core/layer.hpp
-    ${INCLUDE_DIR}/muon/core/layer_stack.hpp
-    ${INCLUDE_DIR}/muon/core/log.hpp
-    ${INCLUDE_DIR}/muon/core/no_copy.hpp
-    ${INCLUDE_DIR}/muon/core/no_move.hpp
-    ${INCLUDE_DIR}/muon/core/platform_detection.hpp
-    ${INCLUDE_DIR}/muon/core/project.hpp
-    ${INCLUDE_DIR}/muon/core/window.hpp
+        src/fs/fs.cpp
 
-    ${INCLUDE_DIR}/muon/event/dispatcher.hpp
-    ${INCLUDE_DIR}/muon/event/event.hpp
+        src/graphics/buffer.cpp
+        src/graphics/context.cpp
+        src/graphics/gpu.cpp
+        src/graphics/image.cpp
+        src/graphics/mesh.cpp
+        src/graphics/pipeline_base.cpp
+        src/graphics/pipeline_compute.cpp
+        src/graphics/pipeline_graphics.cpp
+        src/graphics/pipeline_layout.cpp
+        src/graphics/pipeline_meshlet.cpp
+        src/graphics/queue.cpp
+        src/graphics/queue_info.cpp
+        src/graphics/renderer.cpp
+        src/graphics/shader_compiler.cpp
+        src/graphics/shader_reflection.cpp
+        src/graphics/swapchain.cpp
+        src/graphics/texture.cpp
 
-    ${INCLUDE_DIR}/muon/fs/fs.hpp
+        src/input/modifier.cpp
 
-    ${INCLUDE_DIR}/muon/graphics/buffer.hpp
-    ${INCLUDE_DIR}/muon/graphics/context.hpp
-    ${INCLUDE_DIR}/muon/graphics/device_extensions.hpp
-    ${INCLUDE_DIR}/muon/graphics/gpu.hpp
-    ${INCLUDE_DIR}/muon/graphics/image.hpp
-    ${INCLUDE_DIR}/muon/graphics/mesh.hpp
-    ${INCLUDE_DIR}/muon/graphics/instance_extensions.hpp
-    ${INCLUDE_DIR}/muon/graphics/pipeline_base.hpp
-    ${INCLUDE_DIR}/muon/graphics/pipeline_compute.hpp
-    ${INCLUDE_DIR}/muon/graphics/pipeline_graphics.hpp
-    ${INCLUDE_DIR}/muon/graphics/pipeline_layout.hpp
-    ${INCLUDE_DIR}/muon/graphics/pipeline_meshlet.hpp
-    ${INCLUDE_DIR}/muon/graphics/queue.hpp
-    ${INCLUDE_DIR}/muon/graphics/queue_info.hpp
-    ${INCLUDE_DIR}/muon/graphics/renderer.hpp
-    ${INCLUDE_DIR}/muon/graphics/shader_compiler.hpp
-    ${INCLUDE_DIR}/muon/graphics/shader_reflection.hpp
-    ${INCLUDE_DIR}/muon/graphics/swapchain.hpp
-    ${INCLUDE_DIR}/muon/graphics/texture.hpp
+        src/profiling/profiler.cpp
 
-    ${INCLUDE_DIR}/muon/input/input_state.hpp
-    ${INCLUDE_DIR}/muon/input/key_code.hpp
-    ${INCLUDE_DIR}/muon/input/modifier.hpp
-    ${INCLUDE_DIR}/muon/input/mouse.hpp
+        src/utils/color.cpp
+        src/utils/literals.cpp
+        src/utils/pretty_print.cpp
 
-    ${INCLUDE_DIR}/muon/profiling/profiler.hpp
+    PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS src
+    FILES
+        src/asset/loaders/png.hpp
+        src/asset/loader.hpp
+        src/asset/manager.hpp
 
-    ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_attachment_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/color_blend_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/depth_stencil_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/input_assembly_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/multisample_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/pipeline_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/pipeline_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/rasterization_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/shader_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/stencil_op_state_info.hpp
-    ${INCLUDE_DIR}/muon/schematic/pipeline/viewport_state_info.hpp
+        src/core/arena.hpp
+        src/core/application.hpp
+        src/core/assert.hpp
+        src/core/base.hpp
+        src/core/entry_point.hpp
+        src/core/errors.hpp
+        src/core/hash.hpp
+        src/core/layer.hpp
+        src/core/layer_stack.hpp
+        src/core/log.hpp
+        src/core/no_copy.hpp
+        src/core/no_move.hpp
+        src/core/platform_detection.hpp
+        src/core/project.hpp
+        src/core/window.hpp
 
-    ${INCLUDE_DIR}/muon/utils/alignment.hpp
-    ${INCLUDE_DIR}/muon/utils/color.hpp
-    ${INCLUDE_DIR}/muon/utils/literals.hpp
-    ${INCLUDE_DIR}/muon/utils/pretty_print.hpp
+        src/event/dispatcher.hpp
+        src/event/event.hpp
+
+        src/fs/fs.hpp
+
+        src/graphics/buffer.hpp
+        src/graphics/context.hpp
+        src/graphics/device_extensions.hpp
+        src/graphics/gpu.hpp
+        src/graphics/image.hpp
+        src/graphics/mesh.hpp
+        src/graphics/instance_extensions.hpp
+        src/graphics/pipeline_base.hpp
+        src/graphics/pipeline_compute.hpp
+        src/graphics/pipeline_graphics.hpp
+        src/graphics/pipeline_layout.hpp
+        src/graphics/pipeline_meshlet.hpp
+        src/graphics/queue.hpp
+        src/graphics/queue_info.hpp
+        src/graphics/renderer.hpp
+        src/graphics/shader_compiler.hpp
+        src/graphics/shader_reflection.hpp
+        src/graphics/swapchain.hpp
+        src/graphics/texture.hpp
+
+        src/input/input_state.hpp
+        src/input/key_code.hpp
+        src/input/modifier.hpp
+        src/input/mouse.hpp
+
+        src/profiling/profiler.hpp
+
+        src/schematic/pipeline/color_blend_attachment_info.hpp
+        src/schematic/pipeline/color_blend_state_info.hpp
+        src/schematic/pipeline/depth_stencil_state_info.hpp
+        src/schematic/pipeline/input_assembly_state_info.hpp
+        src/schematic/pipeline/multisample_state_info.hpp
+        src/schematic/pipeline/pipeline_info.hpp
+        src/schematic/pipeline/pipeline_state_info.hpp
+        src/schematic/pipeline/rasterization_state_info.hpp
+        src/schematic/pipeline/shader_info.hpp
+        src/schematic/pipeline/stencil_op_state_info.hpp
+        src/schematic/pipeline/viewport_state_info.hpp
+
+        src/utils/alignment.hpp
+        src/utils/color.hpp
+        src/utils/literals.hpp
+        src/utils/pretty_print.hpp
 )
 
-set(ENGINE_SRC_FILES
-    ${SRC_DIR}/asset/loaders/png.cpp
-    ${SRC_DIR}/asset/manager.cpp
+# target_include_directories(muon-engine PUBLIC ${INCLUDE_DIR})
 
-    ${SRC_DIR}/core/application.cpp
-    ${SRC_DIR}/core/arena.cpp
-    ${SRC_DIR}/core/hash.cpp
-    ${SRC_DIR}/core/layer_stack.cpp
-    ${SRC_DIR}/core/log.cpp
-    ${SRC_DIR}/core/project.cpp
-    ${SRC_DIR}/core/window.cpp
-
-    ${SRC_DIR}/fs/fs.cpp
-
-    ${SRC_DIR}/graphics/buffer.cpp
-    ${SRC_DIR}/graphics/context.cpp
-    ${SRC_DIR}/graphics/gpu.cpp
-    ${SRC_DIR}/graphics/image.cpp
-    ${SRC_DIR}/graphics/mesh.cpp
-    ${SRC_DIR}/graphics/pipeline_base.cpp
-    ${SRC_DIR}/graphics/pipeline_compute.cpp
-    ${SRC_DIR}/graphics/pipeline_graphics.cpp
-    ${SRC_DIR}/graphics/pipeline_layout.cpp
-    ${SRC_DIR}/graphics/pipeline_meshlet.cpp
-    ${SRC_DIR}/graphics/queue.cpp
-    ${SRC_DIR}/graphics/queue_info.cpp
-    ${SRC_DIR}/graphics/renderer.cpp
-    ${SRC_DIR}/graphics/shader_compiler.cpp
-    ${SRC_DIR}/graphics/shader_reflection.cpp
-    ${SRC_DIR}/graphics/swapchain.cpp
-    ${SRC_DIR}/graphics/texture.cpp
-
-    ${SRC_DIR}/input/modifier.cpp
-
-    ${SRC_DIR}/profiling/profiler.cpp
-
-    ${SRC_DIR}/utils/color.cpp
-    ${SRC_DIR}/utils/literals.cpp
-    ${SRC_DIR}/utils/pretty_print.cpp
-)
-
-add_library(${LIB_NAME} STATIC
-    ${ENGINE_HEADER_FILES}
-    ${ENGINE_SRC_FILES}
-)
-add_library(muon::engine ALIAS ${LIB_NAME})
-
-target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
-
-target_link_libraries(${LIB_NAME} PRIVATE
+target_link_libraries(muon-engine PRIVATE
     spirv-reflect-static SPIRV-Tools glslang
 )
 
-
-target_link_libraries(${LIB_NAME} PUBLIC
+target_link_libraries(muon-engine PUBLIC
     fmt::fmt spdlog::spdlog_header_only
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
