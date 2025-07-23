@@ -7,8 +7,10 @@
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 
 namespace muon {
 
@@ -65,8 +67,20 @@ auto Window::PollEvents() const -> void { glfwPollEvents(); }
 
 auto Window::RequestAttention() const -> void { glfwRequestWindowAttention(m_handle->window); }
 
-auto Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const -> VkResult {
-    return glfwCreateWindowSurface(instance, m_handle->window, nullptr, surface);
+auto Window::CreateSurface(const vk::raii::Instance &instance, vk::raii::SurfaceKHR &surface) const
+    -> std::expected<void, vk::Result> {
+
+    vk::SurfaceKHR surfaceInner = *surface;
+
+    auto result = static_cast<vk::Result>(
+        glfwCreateWindowSurface(*instance, m_handle->window, nullptr, reinterpret_cast<VkSurfaceKHR *>(&surfaceInner))
+    );
+
+    if (result != vk::Result::eSuccess) {
+        return std::unexpected(result);
+    }
+
+    return {};
 }
 
 auto Window::GetClipboardContents() const -> const char * { return glfwGetClipboardString(m_handle->window); }

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "muon/event/dispatcher.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <cstdint>
+#include <expected>
 #include <filesystem>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 namespace muon {
 
@@ -29,7 +30,8 @@ public:
 
     auto RequestAttention() const -> void;
 
-    [[nodiscard]] auto CreateSurface(VkInstance instance, VkSurfaceKHR *surface) const -> VkResult;
+    auto CreateSurface(const vk::raii::Instance &instance, vk::raii::SurfaceKHR &surface) const
+        -> std::expected<void, vk::Result>;
 
 public:
     auto GetExtent() const -> VkExtent2D;
