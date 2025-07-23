@@ -4,11 +4,13 @@
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
 #include "muon/graphics/queue.hpp"
+#include "vk_mem_alloc.hpp"
+#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
+#include <expected>
 #include <string>
 #include <unordered_set>
-#include <vk_mem_alloc.h>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -22,19 +24,26 @@ public:
     Context(const Spec &spec);
     ~Context();
 
-    [[nodiscard]] auto DeviceWait() -> VkResult;
+    auto DeviceWaitIdle() -> std::expected<void, vk::Result>;
 
 public:
-    auto GetInstance() const -> VkInstance;
-    auto GetSurface() const -> VkSurfaceKHR;
-    auto GetPhysicalDevice() const -> VkPhysicalDevice;
-    auto GetDevice() const -> VkDevice;
+    auto GetInstance() -> vk::raii::Instance &;
+    auto GetInstance() const -> const vk::raii::Instance &;
+
+    auto GetSurface() -> vk::raii::SurfaceKHR &;
+    auto GetSurface() const -> const vk::raii::SurfaceKHR &;
+
+    auto GetPhysicalDevice() -> vk::raii::PhysicalDevice &;
+    auto GetPhysicalDevice() const -> const vk::raii::PhysicalDevice &;
+
+    auto GetDevice() -> vk::raii::Device &;
+    auto GetDevice() const -> const vk::raii::Device &;
 
     auto GetGraphicsQueue() const -> Queue &;
     auto GetComputeQueue() const -> Queue &;
     auto GetTransferQueue() const -> Queue &;
 
-    auto GetAllocator() const -> VmaAllocator;
+    auto GetAllocator() const -> vma::Allocator;
 
 private:
     auto CreateInstance(const Window &window) -> void;
@@ -47,24 +56,25 @@ private:
     auto CreateAllocator() -> void;
 
 private:
-    VkInstance m_instance{nullptr};
+    vk::raii::Context m_context;
+    vk::raii::Instance m_instance{nullptr};
 
 #ifdef MU_DEBUG_ENABLED
-    VkDebugUtilsMessengerEXT m_debugMessenger{nullptr};
+    vk::raii::DebugUtilsMessengerEXT m_debugMessenger{nullptr};
 #endif
 
-    VkSurfaceKHR m_surface{nullptr};
+    vk::raii::SurfaceKHR m_surface{nullptr};
 
-    VkPhysicalDevice m_physicalDevice{nullptr};
+    vk::raii::PhysicalDevice m_physicalDevice{nullptr};
     std::unordered_set<std::string> m_enabledExtensions{};
 
-    VkDevice m_device{nullptr};
+    vk::raii::Device m_device{nullptr};
 
     std::unique_ptr<Queue> m_graphicsQueue{nullptr};
     std::unique_ptr<Queue> m_computeQueue{nullptr};
     std::unique_ptr<Queue> m_transferQueue{nullptr};
 
-    VmaAllocator m_allocator{nullptr};
+    vma::Allocator m_allocator{nullptr};
 };
 
 } // namespace muon::graphics

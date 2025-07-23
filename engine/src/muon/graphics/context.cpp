@@ -3,44 +3,48 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
-#include "muon/graphics/device_extensions.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/instance_extensions.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
+#include "vk_mem_alloc_enums.hpp"
+#include "vk_mem_alloc_funcs.hpp"
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.hpp"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_handles.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <expected>
 #include <memory>
 #include <set>
 #include <vector>
-#define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.h>
-#include <vulkan/vulkan_core.h>
 
 #ifdef MU_DEBUG_ENABLED
-static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT *callbackData, void *userData
+static VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugCallback(
+    vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType,
+    const vk::DebugUtilsMessengerCallbackDataEXT *callbackData, void *userData
 ) {
     switch (messageSeverity) {
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose: {
             MU_VK_DEBUG(callbackData->pMessage);
             break;
         }
 
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo: {
             MU_VK_INFO(callbackData->pMessage);
             break;
         }
 
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning: {
             MU_VK_WARN(callbackData->pMessage);
             break;
         }
 
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError: {
             MU_VK_ERROR(callbackData->pMessage);
             break;
         }
@@ -53,17 +57,22 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     return false;
 }
 
-VkResult CreateDebugUtilsMessenger(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *createInfo, const VkAllocationCallbacks *allocator,
-    VkDebugUtilsMessengerEXT *debugMessenger
+vk::Result CreateDebugUtilsMessenger(
+    vk::Instance instance, const vk::DebugUtilsMessengerCreateInfoEXT *createInfo, const vk::AllocationCallbacks *allocator,
+    vk::DebugUtilsMessengerEXT *debugMessenger
 ) {
     auto procAddr = vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     auto vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(procAddr);
     if (vkCreateDebugUtilsMessengerEXT == nullptr) {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
+        return vk::Result::eErrorExtensionNotPresent;
     }
 
-    return vkCreateDebugUtilsMessengerEXT(instance, createInfo, allocator, debugMessenger);
+    auto result = vkCreateDebugUtilsMessengerEXT(
+        instance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT *>(createInfo),
+        reinterpret_cast<const VkAllocationCallbacks *>(allocator), reinterpret_cast<VkDebugUtilsMessengerEXT *>(debugMessenger)
+    );
+
+    return static_cast<vk::Result>(result);
 }
 
 void DestroyDebugUtilsMessenger(
@@ -84,6 +93,8 @@ namespace muon::graphics {
 Context::Context(const Spec &spec) {
     MU_CORE_ASSERT(spec.window, "a window must be present");
 
+    m_context = vk::raii::Context();
+
     CreateInstance(*spec.window);
 #ifdef MU_DEBUG_ENABLED
     CreateDebugMessenger();
@@ -97,29 +108,30 @@ Context::Context(const Spec &spec) {
 }
 
 Context::~Context() {
-    vmaDestroyAllocator(m_allocator);
+    m_allocator.destroy();
     m_graphicsQueue.reset();
     m_computeQueue.reset();
     m_transferQueue.reset();
-    vkDestroyDevice(m_device, nullptr);
-    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-#ifdef MU_DEBUG_ENABLED
-    DestroyDebugUtilsMessenger(m_instance, m_debugMessenger, nullptr);
-#endif
-    vkDestroyInstance(m_instance, nullptr);
 
     MU_CORE_DEBUG("destroyed device");
 }
 
-auto Context::DeviceWait() -> VkResult { return vkDeviceWaitIdle(m_device); }
+auto Context::DeviceWaitIdle() -> std::expected<void, vk::Result> {
+    m_device.waitIdle();
+    return {};
+}
 
-auto Context::GetInstance() const -> VkInstance { return m_instance; }
+auto Context::GetInstance() -> vk::raii::Instance & { return m_instance; }
+auto Context::GetInstance() const -> const vk::raii::Instance & { return m_instance; }
 
-auto Context::GetSurface() const -> VkSurfaceKHR { return m_surface; }
+auto Context::GetSurface() -> vk::raii::SurfaceKHR & { return m_surface; }
+auto Context::GetSurface() const -> const vk::raii::SurfaceKHR & { return m_surface; }
 
-auto Context::GetPhysicalDevice() const -> VkPhysicalDevice { return m_physicalDevice; }
+auto Context::GetPhysicalDevice() -> vk::raii::PhysicalDevice & { return m_physicalDevice; }
+auto Context::GetPhysicalDevice() const -> const vk::raii::PhysicalDevice & { return m_physicalDevice; }
 
-auto Context::GetDevice() const -> VkDevice { return m_device; }
+auto Context::GetDevice() -> vk::raii::Device & { return m_device; }
+auto Context::GetDevice() const -> const vk::raii::Device & { return m_device; }
 
 auto Context::GetGraphicsQueue() const -> Queue & { return *m_graphicsQueue; }
 
@@ -127,7 +139,7 @@ auto Context::GetComputeQueue() const -> Queue & { return *m_computeQueue; }
 
 auto Context::GetTransferQueue() const -> Queue & { return *m_transferQueue; }
 
-auto Context::GetAllocator() const -> VmaAllocator { return m_allocator; }
+auto Context::GetAllocator() const -> vma::Allocator { return m_allocator; }
 
 auto Context::CreateInstance(const Window &window) -> void {
     auto extensions = window.GetRequiredExtensions();
@@ -137,17 +149,17 @@ auto Context::CreateInstance(const Window &window) -> void {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-    VkApplicationInfo appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO};
+    vk::ApplicationInfo appInfo;
     appInfo.pApplicationName = "Muon";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Muon";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_3;
 
-    VkInstanceCreateInfo createInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
-    createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    createInfo.ppEnabledExtensionNames = extensions.data();
+    vk::InstanceCreateInfo instanceCi;
+    instanceCi.pApplicationInfo = &appInfo;
+    instanceCi.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    instanceCi.ppEnabledExtensionNames = extensions.data();
 
 #ifdef MU_DEBUG_ENABLED
     const char *validationLayer = "VK_LAYER_KHRONOS_validation";
@@ -170,59 +182,46 @@ auto Context::CreateInstance(const Window &window) -> void {
     };
 
     if (checkValidationLayerSupport()) {
-        createInfo.enabledLayerCount = 1;
-        createInfo.ppEnabledLayerNames = &validationLayer;
+        instanceCi.enabledLayerCount = 1;
+        instanceCi.ppEnabledLayerNames = &validationLayer;
     } else {
         MU_CORE_WARN("the validation layer is not available");
     }
 #endif
 
-    auto result = vkCreateInstance(&createInfo, nullptr, &m_instance);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create instance");
-
-    for (const auto &extension : extensions) {
-        MU_CORE_TRACE("instance extension: `{}` enabled", extension);
-    }
+    m_instance = vk::raii::Instance{m_context, instanceCi};
 }
 
 #ifdef MU_DEBUG_ENABLED
 auto Context::CreateDebugMessenger() -> void {
-    VkDebugUtilsMessengerCreateInfoEXT createInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
-    createInfo.pfnUserCallback = DebugCallback;
+    vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCi;
+    debugUtilsMessengerCi.pfnUserCallback = DebugCallback;
 
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debugUtilsMessengerCi.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+                                            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                                            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    debugUtilsMessengerCi.messageType =
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding |
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-    auto result = CreateDebugUtilsMessenger(m_instance, &createInfo, nullptr, &m_debugMessenger);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create debug messenger");
+    m_debugMessenger = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
 }
 #endif
 
 auto Context::CreateSurface(const Window &window) -> void {
     auto result = window.CreateSurface(m_instance, &m_surface);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create window surface");
+    MU_CORE_ASSERT(!result, "failed to create window surface");
 }
 
 auto Context::SelectPhysicalDevice() -> void {
-    uint32_t deviceCount = 0;
-    auto result = vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get available GPU count");
-    std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-    result = vkEnumeratePhysicalDevices(m_instance, &deviceCount, physicalDevices.data());
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to available get GPUs");
-    MU_CORE_ASSERT(physicalDevices.size() > 0, "no GPUs available with Vulkan support");
+    vk::raii::PhysicalDevices physicalDevices{m_instance};
+    MU_CORE_ASSERT(physicalDevices.empty(), "failed to available get GPUs");
 
     Gpu::Spec gpuSpec{};
     gpuSpec.surface = m_surface;
-    gpuSpec.requiredDeviceExtensions =
-        std::unordered_set<const char *>(k_requiredDeviceExtensions.begin(), k_requiredDeviceExtensions.end());
-    gpuSpec.optionalDeviceExtensions =
-        std::unordered_set<const char *>(k_optionalDeviceExtensions.begin(), k_optionalDeviceExtensions.end());
 
-    std::vector<std::pair<Gpu, VkPhysicalDevice>> gpus{};
+    std::vector<std::pair<Gpu, vk::PhysicalDevice>> gpus{};
 
     for (const auto &physicalDevice : physicalDevices) {
         gpuSpec.physicalDevice = physicalDevice;
@@ -241,15 +240,8 @@ auto Context::SelectPhysicalDevice() -> void {
 
     if (gpus.size() >= 1) {
         auto &[gpu, physicalDevice] = gpus.front();
-        m_physicalDevice = physicalDevice;
-        m_enabledExtensions = gpu.GetSupportedExtensions();
+        m_physicalDevice = vk::raii::PhysicalDevice{m_instance, physicalDevice};
     }
-
-    for (const auto &extension : m_enabledExtensions) {
-        MU_CORE_TRACE("device extension: `{}` enabled", extension);
-    }
-
-    MU_CORE_ASSERT(m_physicalDevice, "unable to select a suitable GPU");
 }
 
 auto Context::CreateLogicalDevice() -> void {
@@ -257,24 +249,6 @@ auto Context::CreateLogicalDevice() -> void {
     MU_CORE_ASSERT(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
     MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
 
-    for (const auto &family : queueInfo.GetFamilyInfo()) {
-        if (family.queueCount < 1) {
-            continue;
-        }
-
-        MU_CORE_TRACE(
-            "queue family info:\n\t"
-            "queue count: {}\n\t"
-            "present capable: {}\n\t"
-            "graphics capable: {}\n\t"
-            "compute capable: {}\n\t"
-            "transfer capable: {}\n\t"
-            "video decode capable: {}\n\t"
-            "video encode capable: {}",
-            family.queueCount, family.IsPresentCapable(), family.IsGraphicsCapable(), family.IsComputeCapable(),
-            family.IsTransferCapable(), family.IsVideoDecodeCapable(), family.IsVideoEncodeCapable()
-        );
-    }
     const auto queueFamilies = queueInfo.GetFamilyInfo();
 
     auto graphicsFamily =
@@ -307,72 +281,59 @@ auto Context::CreateLogicalDevice() -> void {
     std::set<uint32_t> uniqueQueueFamilies = {graphicsFamily->index, computeFamily->index, transferFamily->index};
 
     std::vector<float> queuePriorities(uniqueQueueFamilies.size(), 1.0);
-    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
     uint32_t index = 0;
     for (const auto family : uniqueQueueFamilies) {
         auto &createInfo = queueCreateInfos[index];
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         createInfo.queueFamilyIndex = family;
         createInfo.queueCount = queueCounts[family];
         createInfo.pQueuePriorities = queuePriorities.data();
         index += 1;
     }
 
-    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES
-    };
-    bufferDeviceAddressFeatures.bufferDeviceAddress = true;
+    vk::PhysicalDeviceBufferDeviceAddressFeatures bdaFeatures;
+    bdaFeatures.bufferDeviceAddress = true;
 
-    VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT};
-    meshShaderFeatures.meshShader = true;
-    meshShaderFeatures.taskShader = true;
-    meshShaderFeatures.pNext = &bufferDeviceAddressFeatures;
+    vk::PhysicalDeviceMeshShaderFeaturesEXT msFeatures;
+    msFeatures.meshShader = true;
+    msFeatures.taskShader = true;
+    msFeatures.pNext = &bdaFeatures;
 
-    VkPhysicalDeviceSynchronization2Features syncFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
+    vk::PhysicalDeviceSynchronization2Features syncFeatures;
     syncFeatures.synchronization2 = true;
-    syncFeatures.pNext = &meshShaderFeatures;
+    syncFeatures.pNext = &msFeatures;
 
-    VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES
-    };
-    dynamicRenderingFeatures.dynamicRendering = true;
-    dynamicRenderingFeatures.pNext = &syncFeatures;
+    vk::PhysicalDeviceDynamicRenderingFeatures drFeatures;
+    drFeatures.dynamicRendering = true;
+    drFeatures.pNext = &syncFeatures;
 
-    VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
-    indexingFeatures.descriptorBindingPartiallyBound = true;
-    indexingFeatures.shaderSampledImageArrayNonUniformIndexing = true;
-    indexingFeatures.runtimeDescriptorArray = true;
-    indexingFeatures.descriptorBindingVariableDescriptorCount = true;
-    indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
-    indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = true;
-    indexingFeatures.descriptorBindingStorageImageUpdateAfterBind = true;
-    indexingFeatures.descriptorBindingStorageTexelBufferUpdateAfterBind = true;
-    indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
-    indexingFeatures.descriptorBindingUniformTexelBufferUpdateAfterBind = true;
-    indexingFeatures.shaderUniformBufferArrayNonUniformIndexing = true;
-    indexingFeatures.shaderStorageBufferArrayNonUniformIndexing = true;
-    indexingFeatures.shaderStorageImageArrayNonUniformIndexing = true;
-    indexingFeatures.pNext = &dynamicRenderingFeatures;
+    vk::PhysicalDeviceDescriptorIndexingFeatures diFeatures;
+    diFeatures.descriptorBindingPartiallyBound = true;
+    diFeatures.shaderSampledImageArrayNonUniformIndexing = true;
+    diFeatures.runtimeDescriptorArray = true;
+    diFeatures.descriptorBindingVariableDescriptorCount = true;
+    diFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
+    diFeatures.descriptorBindingStorageBufferUpdateAfterBind = true;
+    diFeatures.descriptorBindingStorageImageUpdateAfterBind = true;
+    diFeatures.descriptorBindingStorageTexelBufferUpdateAfterBind = true;
+    diFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
+    diFeatures.descriptorBindingUniformTexelBufferUpdateAfterBind = true;
+    diFeatures.shaderUniformBufferArrayNonUniformIndexing = true;
+    diFeatures.shaderStorageBufferArrayNonUniformIndexing = true;
+    diFeatures.shaderStorageImageArrayNonUniformIndexing = true;
+    diFeatures.pNext = &drFeatures;
 
-    VkPhysicalDeviceFeatures2 deviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-    vkGetPhysicalDeviceFeatures2(m_physicalDevice, &deviceFeatures);
-    deviceFeatures.pNext = &indexingFeatures;
+    auto features = m_physicalDevice.getFeatures2();
+    features.pNext = &diFeatures;
 
-    std::vector<const char *> enabledExtensions;
-    enabledExtensions.reserve((m_enabledExtensions.size()));
-    for (const auto &extension : m_enabledExtensions) {
-        enabledExtensions.push_back(extension.c_str());
-    }
+    vk::DeviceCreateInfo deviceCi;
+    deviceCi.queueCreateInfoCount = queueCreateInfos.size();
+    deviceCi.pQueueCreateInfos = queueCreateInfos.data();
+    deviceCi.enabledExtensionCount = 0;
+    deviceCi.ppEnabledExtensionNames = nullptr;
+    deviceCi.pNext = &features;
 
-    VkDeviceCreateInfo createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
-    createInfo.queueCreateInfoCount = queueCreateInfos.size();
-    createInfo.pQueueCreateInfos = queueCreateInfos.data();
-    createInfo.enabledExtensionCount = enabledExtensions.size();
-    createInfo.ppEnabledExtensionNames = enabledExtensions.data();
-    createInfo.pNext = &deviceFeatures;
-
-    auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a logical device");
+    m_device = vk::raii::Device{m_physicalDevice, deviceCi};
 
     std::map<uint32_t, uint32_t> nextQueueIndices;
     nextQueueIndices[graphicsFamily->index] = 0;
@@ -380,7 +341,7 @@ auto Context::CreateLogicalDevice() -> void {
     nextQueueIndices[transferFamily->index] = 0;
 
     Queue::Spec graphicsSpec{};
-    graphicsSpec.device = m_device;
+    graphicsSpec.device = &m_device;
     graphicsSpec.queueFamilyIndex = graphicsFamily->index;
     graphicsSpec.queueIndex = nextQueueIndices[graphicsFamily->index]++;
     graphicsSpec.name = "graphics";
@@ -388,7 +349,7 @@ auto Context::CreateLogicalDevice() -> void {
     MU_CORE_ASSERT(m_graphicsQueue, "graphics queue must not be null");
 
     Queue::Spec computeSpec{};
-    computeSpec.device = m_device;
+    computeSpec.device = &m_device;
     computeSpec.queueFamilyIndex = computeFamily->index;
     computeSpec.queueIndex = nextQueueIndices[computeFamily->index]++;
     computeSpec.name = "compute";
@@ -396,7 +357,7 @@ auto Context::CreateLogicalDevice() -> void {
     MU_CORE_ASSERT(m_computeQueue, "compute queue must not be null");
 
     Queue::Spec transferSpec{};
-    transferSpec.device = m_device;
+    transferSpec.device = &m_device;
     transferSpec.queueFamilyIndex = transferFamily->index;
     transferSpec.queueIndex = nextQueueIndices[transferFamily->index]++;
     transferSpec.name = "transfer";
@@ -405,14 +366,16 @@ auto Context::CreateLogicalDevice() -> void {
 }
 
 auto Context::CreateAllocator() -> void {
-    VmaAllocatorCreateInfo createInfo{};
+    vma::AllocatorCreateInfo createInfo{};
     createInfo.instance = m_instance;
     createInfo.physicalDevice = m_physicalDevice;
     createInfo.device = m_device;
-    createInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    createInfo.flags = vma::AllocatorCreateFlagBits::eBufferDeviceAddress;
 
-    auto result = vmaCreateAllocator(&createInfo, &m_allocator);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create allocator");
+    auto result = vma::createAllocator(createInfo);
+    MU_CORE_ASSERT(result.result == vk::Result::eSuccess, "failed to create allocator");
+
+    m_allocator = result.value;
 }
 
 } // namespace muon::graphics
