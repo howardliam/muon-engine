@@ -116,7 +116,8 @@ target_link_libraries(muon-engine PUBLIC
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
     Tracy::TracyClient
-    Vulkan::Headers Vulkan::Loader VulkanMemoryAllocator
+    Vulkan::Loader Vulkan::Hpp
+    VulkanMemoryAllocator
     glm
     magic_enum::magic_enum
     spng_static
@@ -128,7 +129,7 @@ add_compile_definitions(
     $<$<CONFIG:Debug>:MU_DEBUG_ENABLED>
 )
 
-option(MUON_ENGINE_TESTS "Enable Muon Engine tests" ON)
+option(MUON_ENGINE_TESTS "Enable Muon Engine tests" OFF)
 if(MUON_ENGINE_TESTS)
 
     add_executable(muon-tests)

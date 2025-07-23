@@ -50,6 +50,7 @@ add_subdirectory(external/glslang)
 
 add_subdirectory(external/vulkan-headers)
 add_subdirectory(external/vulkan-loader)
+add_subdirectory(external/vulkan-hpp)
 add_subdirectory(external/vulkan-memory-allocator)
 
 # maths
