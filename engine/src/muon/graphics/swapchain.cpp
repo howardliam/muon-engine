@@ -6,6 +6,7 @@
 #include "vulkan/vulkan_handles.hpp"
 
 #include <algorithm>
+#include <array>
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
@@ -148,18 +149,21 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     swapchainCi.imageArrayLayers = 1;
     swapchainCi.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
     swapchainCi.imageSharingMode = vk::SharingMode::eExclusive;
-    swapchainCi.queueFamilyIndexCount = 0;
-    swapchainCi.pQueueFamilyIndices = nullptr;
     swapchainCi.preTransform = capabilities.currentTransform;
     swapchainCi.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
     swapchainCi.presentMode = presentMode;
     swapchainCi.clipped = true;
 
-    swapchainCi.oldSwapchain = m_oldSwapchain->m_swapchain;
+    std::array<uint32_t, 1> queueFamilyIndices = {m_context.GetGraphicsQueue().GetFamilyIndex()};
+    swapchainCi.queueFamilyIndexCount = queueFamilyIndices.size();
+    swapchainCi.pQueueFamilyIndices = queueFamilyIndices.data();
+
+    if (m_oldSwapchain == nullptr) {
+        swapchainCi.oldSwapchain = nullptr;
+    }
 
     auto swapchainCreateResult = m_context.GetDevice().createSwapchainKHR(swapchainCi);
     MU_CORE_ASSERT(swapchainCreateResult, "failed to create the swapchain");
-
     m_swapchain = std::move(*swapchainCreateResult);
 
     m_images = m_swapchain.getImages();
