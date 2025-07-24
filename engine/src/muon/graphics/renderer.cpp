@@ -27,6 +27,7 @@ auto Renderer::BeginFrame() -> std::optional<vk::raii::CommandBuffer *> {
             return {std::nullopt};
         }
     }
+    m_currentImageIndex = *acquireResult;
 
     m_frameInProgress = true;
 
