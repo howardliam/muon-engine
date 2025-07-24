@@ -302,7 +302,7 @@ auto Context::CreateLogicalDevice() -> void {
     vk::DeviceCreateInfo deviceCi;
     deviceCi.queueCreateInfoCount = queueCreateInfos.size();
     deviceCi.pQueueCreateInfos = queueCreateInfos.data();
-    deviceCi.enabledExtensionCount = 1;
+    deviceCi.enabledExtensionCount = k_requiredDeviceExtensions.size();
     deviceCi.ppEnabledExtensionNames = k_requiredDeviceExtensions.data();
     deviceCi.pNext = &features;
 
