@@ -1,6 +1,6 @@
 #include "muon/graphics/renderer.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
 #include <algorithm>
@@ -18,7 +18,7 @@ Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_context(*spec.c
 Renderer::~Renderer() {}
 
 auto Renderer::BeginFrame() -> std::optional<vk::raii::CommandBuffer *> {
-    MU_CORE_ASSERT(!m_frameInProgress, "cannot begin frame while frame is in progress");
+    core::expect(!m_frameInProgress, "cannot begin frame while frame is in progress");
 
     auto acquireResult = m_swapchain->AcquireNextImage();
     if (!acquireResult) {
@@ -40,7 +40,7 @@ auto Renderer::BeginFrame() -> std::optional<vk::raii::CommandBuffer *> {
 }
 
 auto Renderer::EndFrame() -> void {
-    MU_CORE_ASSERT(m_frameInProgress, "cannot end frame if a frame has not been started");
+    core::expect(m_frameInProgress, "cannot end frame if a frame has not been started");
 
     const auto &commandBuffer = m_commandBuffers[m_currentFrameIndex];
     commandBuffer.end();
@@ -57,7 +57,7 @@ auto Renderer::EndFrame() -> void {
 }
 
 auto Renderer::RebuildSwapchain() -> void {
-    MU_CORE_ASSERT(!m_frameInProgress, "cannot rebuild swapchain while frame is in progress");
+    core::expect(!m_frameInProgress, "cannot rebuild swapchain while frame is in progress");
     CreateSwapchain();
 }
 
@@ -79,7 +79,7 @@ auto Renderer::GetActiveSurfaceFormat() const -> const SurfaceFormat & { return 
 auto Renderer::SetActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void {
     auto pred = [&colorSpace](const SurfaceFormat &surfaceFormat) { return surfaceFormat.colorSpace == colorSpace; };
     auto it = std::ranges::find_if(m_availableSurfaceFormats, pred);
-    MU_CORE_ASSERT(it != m_availableSurfaceFormats.end(), "the requested color space must be available");
+    core::expect(it != m_availableSurfaceFormats.end(), "the requested color space must be available");
     m_activeSurfaceFormat = it.base();
 }
 
@@ -92,13 +92,13 @@ auto Renderer::GetAvailablePresentModes() const -> const std::unordered_set<vk::
 auto Renderer::GetActivePresentMode() const -> const vk::PresentModeKHR & { return *m_activePresentMode; }
 
 auto Renderer::SetActivePresentMode(vk::PresentModeKHR presentMode) const -> void {
-    MU_CORE_ASSERT(m_availablePresentModes.contains(presentMode), "the requested present mode must be available");
+    core::expect(m_availablePresentModes.contains(presentMode), "the requested present mode must be available");
     m_activePresentMode = &*m_availablePresentModes.find(presentMode);
 }
 
 auto Renderer::ProbeSurfaceFormats() -> void {
     auto surfaceFormats = m_context.GetPhysicalDevice().getSurfaceFormatsKHR(m_context.GetSurface());
-    MU_CORE_ASSERT(!surfaceFormats.empty(), "failed to get surface formats");
+    core::expect(!surfaceFormats.empty(), "failed to get surface formats");
 
     for (const auto &surfaceFormat : surfaceFormats) {
         bool candidateColorSpace = false;
@@ -158,7 +158,7 @@ auto Renderer::ProbeSurfaceFormats() -> void {
 
 auto Renderer::ProbePresentModes() -> void {
     auto presentModes = m_context.GetPhysicalDevice().getSurfacePresentModesKHR(m_context.GetSurface());
-    MU_CORE_ASSERT(!presentModes.empty(), "failed to get surface present mode count");
+    core::expect(!presentModes.empty(), "failed to get surface present mode count");
 
     for (const auto &presentMode : presentModes) {
         switch (presentMode) {
@@ -208,7 +208,7 @@ auto Renderer::CreateCommandBuffers() -> void {
     commandBufferAi.commandBufferCount = k_maxFramesInFlight;
 
     auto commandBufferResult = m_context.GetDevice().allocateCommandBuffers(commandBufferAi);
-    MU_CORE_ASSERT(commandBufferResult, "failed to allocate command buffers");
+    core::expect(commandBufferResult, "failed to allocate command buffers");
 
     m_commandBuffers = std::move(*commandBufferResult);
 }
