@@ -59,6 +59,7 @@ target_sources(
         src/muon/core/base.hpp
         src/muon/core/entry_point.hpp
         src/muon/core/errors.hpp
+        src/muon/core/expect.hpp
         src/muon/core/hash.hpp
         src/muon/core/layer.hpp
         src/muon/core/layer_stack.hpp
@@ -67,6 +68,7 @@ target_sources(
         src/muon/core/no_move.hpp
         src/muon/core/platform_detection.hpp
         src/muon/core/project.hpp
+        src/muon/core/signals.hpp
         src/muon/core/window.hpp
 
         src/muon/event/dispatcher.hpp
@@ -106,6 +108,24 @@ target_sources(
         src/muon/utils/literals.hpp
         src/muon/utils/pretty_print.hpp
 )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+    target_sources(
+        muon-engine
+        PRIVATE
+            src/muon/core/signals_posix.cpp
+    )
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+
+    target_sources(
+        muon-engine
+        PRIVATE
+            src/muon/core/signals_win32.cpp
+    )
+
+endif()
 
 target_link_libraries(muon-engine PRIVATE
     spirv-reflect-static SPIRV-Tools glslang

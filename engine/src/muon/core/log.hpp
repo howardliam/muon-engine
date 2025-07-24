@@ -7,6 +7,11 @@
 
 namespace muon {
 
+enum class Logger {
+    Core,
+    Client,
+};
+
 class Log {
 public:
     static auto Init() -> void;
@@ -22,6 +27,64 @@ private:
     static inline std::shared_ptr<spdlog::logger> s_clientLogger{nullptr};
     static inline std::shared_ptr<spdlog::logger> s_vulkanLogger{nullptr};
 };
+
+namespace core {
+
+template <typename... Args>
+constexpr inline auto trace(std::string_view message, Args &&...args) -> void {
+    Log::GetCoreLogger()->trace(message, args...);
+}
+
+template <typename... Args>
+constexpr inline auto debug(std::string_view message, Args &&...args) -> void {
+    Log::GetCoreLogger()->debug(message, args...);
+}
+
+template <typename... Args>
+constexpr inline auto info(std::string_view message, Args &&...args) -> void {
+    Log::GetCoreLogger()->info(message, args...);
+}
+
+template <typename... Args>
+constexpr inline auto warn(std::string_view message, Args &&...args) -> void {
+    Log::GetCoreLogger()->warn(message, args...);
+}
+
+template <typename... Args>
+constexpr inline auto error(std::string_view message, Args &&...args) -> void {
+    Log::GetCoreLogger()->error(message, args...);
+}
+
+} // namespace core
+
+namespace client {
+
+template <typename... Args>
+constexpr auto trace(std::string_view message, Args &&...args) -> void {
+    Log::GetClientLogger()->trace(message, args...);
+}
+
+template <typename... Args>
+constexpr auto debug(std::string_view message, Args &&...args) -> void {
+    Log::GetClientLogger()->debug(message, args...);
+}
+
+template <typename... Args>
+constexpr auto info(std::string_view message, Args &&...args) -> void {
+    Log::GetClientLogger()->info(message, args...);
+}
+
+template <typename... Args>
+constexpr auto warn(std::string_view message, Args &&...args) -> void {
+    Log::GetClientLogger()->warn(message, args...);
+}
+
+template <typename... Args>
+constexpr auto error(std::string_view message, Args &&...args) -> void {
+    Log::GetClientLogger()->error(message, args...);
+}
+
+} // namespace client
 
 } // namespace muon
 
