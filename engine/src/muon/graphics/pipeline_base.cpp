@@ -2,56 +2,56 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/fs/fs.hpp"
+#include "vulkan/vulkan_enums.hpp"
+
+#include <utility>
 
 namespace muon::graphics {
+
+auto PipelineBase::Get() -> vk::raii::Pipeline & { return m_pipeline; }
+auto PipelineBase::Get() const -> const vk::raii::Pipeline & { return m_pipeline; }
 
 PipelineBase::PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout)
     : m_context(context), m_layout(layout) {
     CreateCache();
 }
 
-PipelineBase::~PipelineBase() {
-    vkDestroyPipeline(m_context.GetDevice(), m_pipeline, nullptr);
-    for (const auto &shader : m_shaders) {
-        vkDestroyShaderModule(m_context.GetDevice(), shader, nullptr);
-    }
-    vkDestroyPipelineCache(m_context.GetDevice(), m_cache, nullptr);
-}
-
 auto PipelineBase::CreateCache() -> void {
-    VkPipelineCacheCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-    createInfo.flags = 0;
-    createInfo.initialDataSize = 0;
-    createInfo.pInitialData = nullptr;
+    VkPipelineCacheCreateInfo pipelineCacheCi;
+    pipelineCacheCi.flags = 0;
+    pipelineCacheCi.initialDataSize = 0;
+    pipelineCacheCi.pInitialData = nullptr;
 
-    auto result = vkCreatePipelineCache(m_context.GetDevice(), &createInfo, nullptr, &m_cache);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create pipeline cache");
+    auto pipelineCacheResult = m_context.GetDevice().createPipelineCache(pipelineCacheCi);
+    MU_CORE_ASSERT(pipelineCacheResult, "failed to create pipeline cache");
+
+    m_cache = std::move(*pipelineCacheResult);
 }
 
-auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, VkShaderModule &shaderModule) const -> void {
+auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, vk::raii::ShaderModule &shaderModule) const -> void {
     auto byteCode = fs::ReadFileBinary(path);
-    MU_CORE_ASSERT(byteCode.has_value(), "code does not have value");
+    MU_CORE_ASSERT(byteCode, "code does not have value");
 
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = byteCode->size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(byteCode->data());
+    vk::ShaderModuleCreateInfo shaderModuleCi;
+    shaderModuleCi.codeSize = byteCode->size();
+    shaderModuleCi.pCode = reinterpret_cast<const uint32_t *>(byteCode->data());
 
-    auto result = vkCreateShaderModule(m_context.GetDevice(), &createInfo, nullptr, &shaderModule);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create shader module");
+    auto shaderModuleResult = m_context.GetDevice().createShaderModule(shaderModuleCi);
+    MU_CORE_ASSERT(shaderModuleResult, "failed to create shader module");
+
+    shaderModule = std::move(*shaderModuleResult);
 }
 
 auto PipelineBase::CreateShaderStageInfo(
-    const VkShaderStageFlagBits stage, const VkShaderModule &shaderModule, const std::string_view entryPoint
-) const -> VkPipelineShaderStageCreateInfo {
-    VkPipelineShaderStageCreateInfo info{};
-    info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    info.stage = stage;
-    info.module = shaderModule;
-    info.pName = entryPoint.data();
-    info.flags = 0;
-    return info;
+    const vk::ShaderStageFlagBits stage, const vk::raii::ShaderModule &shaderModule, const std::string_view entryPoint
+) const -> vk::PipelineShaderStageCreateInfo {
+    vk::PipelineShaderStageCreateInfo shaderStageCi;
+    shaderStageCi.stage = stage;
+    shaderStageCi.module = shaderModule;
+    shaderStageCi.pName = entryPoint.data();
+    shaderStageCi.flags = vk::PipelineShaderStageCreateFlags{};
+
+    return shaderStageCi;
 }
 
 } // namespace muon::graphics
