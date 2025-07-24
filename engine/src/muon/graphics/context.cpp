@@ -214,8 +214,9 @@ auto Context::CreateDebugMessenger() -> void {
 #endif
 
 auto Context::CreateSurface(const Window &window) -> void {
-    auto result = window.CreateSurface(m_instance, m_surface);
-    MU_CORE_ASSERT(!result, "failed to create window surface");
+    auto surfaceResult = window.CreateSurface(m_instance);
+    MU_CORE_ASSERT(surfaceResult, "failed to create window surface");
+    m_surface = std::move(*surfaceResult);
 }
 
 auto Context::SelectPhysicalDevice() -> void {
