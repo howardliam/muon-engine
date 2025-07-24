@@ -1,6 +1,6 @@
 #include "muon/graphics/texture.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
@@ -12,8 +12,8 @@
 namespace muon::graphics {
 
 Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format) {
-    MU_CORE_ASSERT(spec.commandBuffer != nullptr, "there must be a valid command buffer");
-    MU_CORE_ASSERT(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
+    core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
+    core::expect(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
     CreateImage();
     CreateImageView();
@@ -25,12 +25,10 @@ Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.ext
 
     UploadData(*spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
 
-    MU_CORE_DEBUG(
-        "created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_size)
-    );
+    core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_size));
 }
 
-Texture::~Texture() { MU_CORE_DEBUG("destroyed texture"); }
+Texture::~Texture() { core::debug("destroyed texture"); }
 
 auto Texture::Get() -> vk::raii::Image & { return m_image; }
 auto Texture::Get() const -> const vk::raii::Image & { return m_image; }
@@ -58,7 +56,7 @@ auto Texture::CreateImage() -> void {
     imageCi.flags = vk::ImageCreateFlags{};
 
     auto imageResult = m_context.GetDevice().createImage(imageCi);
-    MU_CORE_ASSERT(imageResult, "failed to create texture image");
+    core::expect(imageResult, "failed to create texture image");
     m_image = std::move(*imageResult);
 
     auto memoryRequirements = m_image.getMemoryRequirements();
@@ -70,10 +68,10 @@ auto Texture::CreateImage() -> void {
     vma::AllocationInfo allocInfo{};
 
     auto allocationResult = m_context.GetAllocator().allocateMemory(memoryRequirements, allocCi, &allocInfo);
-    MU_CORE_ASSERT(allocationResult.result == vk::Result::eSuccess, "failed to allocate texture image memory");
+    core::expect(allocationResult.result == vk::Result::eSuccess, "failed to allocate texture image memory");
 
     auto bindResult = m_context.GetAllocator().bindImageMemory(m_allocation, m_image);
-    MU_CORE_ASSERT(bindResult == vk::Result::eSuccess, "failed to bind texture image memory");
+    core::expect(bindResult == vk::Result::eSuccess, "failed to bind texture image memory");
 
     m_size = allocInfo.size;
 }
@@ -93,7 +91,7 @@ auto Texture::CreateImageView() -> void {
     imageViewCi.subresourceRange.layerCount = 1;
 
     auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
-    MU_CORE_ASSERT(imageViewResult, "failed to create texture image view");
+    core::expect(imageViewResult, "failed to create texture image view");
     m_imageView = std::move(*imageViewResult);
 }
 
@@ -115,7 +113,7 @@ auto Texture::CreateSampler() -> void {
     samplerCi.borderColor = vk::BorderColor::eFloatOpaqueWhite;
 
     auto samplerResult = m_context.GetDevice().createSampler(samplerCi);
-    MU_CORE_ASSERT(samplerResult, "failed to create texture samper");
+    core::expect(samplerResult, "failed to create texture samper");
     m_sampler = std::move(*samplerResult);
 }
 
@@ -155,7 +153,7 @@ auto Texture::UploadData(
     Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
 
     auto result = stagingBuffer.Map();
-    MU_CORE_ASSERT(result, "failed to map texture staging buffer");
+    core::expect(result, "failed to map texture staging buffer");
 
     stagingBuffer.Write(textureData.data());
 

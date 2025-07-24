@@ -1,6 +1,6 @@
 #include "muon/asset/manager.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
@@ -17,12 +17,12 @@ Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{s
     commandBufferAi.commandBufferCount = 1;
 
     auto commandBufferResult = m_context.GetDevice().allocateCommandBuffers(commandBufferAi);
-    MU_CORE_ASSERT(commandBufferResult, "failed to allocate command buffers");
+    core::expect(commandBufferResult, "failed to allocate command buffers");
     m_commandBuffer = std::move((*commandBufferResult)[0]);
 
     vk::FenceCreateInfo fenceCi;
     auto fenceResult = m_context.GetDevice().createFence(fenceCi);
-    MU_CORE_ASSERT(fenceResult, "failed to create upload fence");
+    core::expect(fenceResult, "failed to create upload fence");
     m_uploadFence = std::move(*fenceResult);
 
     for (auto &loader : spec.loaders) {
@@ -38,7 +38,7 @@ auto Manager::RegisterLoader(Loader *loader) -> void {
     });
 
     if (it != m_loaders.end()) {
-        MU_CORE_WARN("loader already exists for: {} files, skipping", fmt::join(loader->GetFileTypes(), ", "));
+        core::warn("loader already exists for: {} files, skipping", fmt::join(loader->GetFileTypes(), ", "));
         return;
     }
 
@@ -48,11 +48,11 @@ auto Manager::RegisterLoader(Loader *loader) -> void {
         m_fileTypes[fileType.data()] = l.get();
     }
 
-    MU_CORE_DEBUG("registered loader for: {} files", fmt::join(loader->GetFileTypes(), ", "));
+    core::debug("registered loader for: {} files", fmt::join(loader->GetFileTypes(), ", "));
 }
 
 auto Manager::BeginLoading() -> void {
-    MU_CORE_ASSERT(!m_loadingInProgress, "cannot begin loading while loading is in progress");
+    core::expect(!m_loadingInProgress, "cannot begin loading while loading is in progress");
 
     vk::CommandBufferBeginInfo commandBufferBi;
     m_commandBuffer.begin(commandBufferBi);
@@ -61,7 +61,7 @@ auto Manager::BeginLoading() -> void {
 }
 
 auto Manager::EndLoading() -> void {
-    MU_CORE_ASSERT(m_loadingInProgress, "cannot end loading if loading has not been started");
+    core::expect(m_loadingInProgress, "cannot end loading if loading has not been started");
 
     m_commandBuffer.end();
 
@@ -75,7 +75,7 @@ auto Manager::EndLoading() -> void {
     m_loadingInProgress = false;
 
     auto waitResult = m_context.GetDevice().waitForFences({m_uploadFence}, true, 30'000'000);
-    MU_CORE_ASSERT(waitResult == vk::Result::eSuccess, "failed to wait for upload fence to be signalled");
+    core::expect(waitResult == vk::Result::eSuccess, "failed to wait for upload fence to be signalled");
 
     m_context.GetDevice().resetFences({m_uploadFence});
 
@@ -83,22 +83,22 @@ auto Manager::EndLoading() -> void {
 }
 
 auto Manager::LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
-    MU_CORE_ASSERT(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
+    core::expect(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
 
     auto loader = GetLoader(fileType);
-    MU_CORE_ASSERT(loader != nullptr, "no loader found");
+    core::expect(loader, "no loader found");
 
     loader->FromMemory(data);
 }
 
 auto Manager::LoadFromFile(const std::filesystem::path &path) -> void {
-    MU_CORE_ASSERT(m_loadingInProgress, "cannot load from file if loading hasn't begun");
+    core::expect(m_loadingInProgress, "cannot load from file if loading hasn't begun");
 
-    MU_CORE_ASSERT(path.has_extension(), "file must have an extension");
+    core::expect(path.has_extension(), "file must have an extension");
     auto extension = path.extension();
 
     auto loader = GetLoader(extension.c_str());
-    MU_CORE_ASSERT(loader != nullptr, "no loader found");
+    core::expect(loader, "no loader found");
 
     loader->FromFile(path);
 }

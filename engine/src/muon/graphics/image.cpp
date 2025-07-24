@@ -1,6 +1,6 @@
 #include "muon/graphics/image.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/context.hpp"
 #include "muon/utils/pretty_print.hpp"
@@ -8,24 +8,22 @@
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_structs.hpp"
 
-#include <vulkan/vulkan_core.h>
-
 namespace muon::graphics {
 
 Image::Image(const Spec &spec)
     : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout),
       m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
-    MU_CORE_ASSERT(spec.commandBuffer != nullptr, "there must be a valid command buffer");
+    core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
 
     CreateImage();
     CreateImageView();
 
     TransitionLayout(*spec.commandBuffer);
 
-    MU_CORE_DEBUG("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
+    core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
 }
 
-Image::~Image() { MU_CORE_DEBUG("destroyed image"); }
+Image::~Image() { core::debug("destroyed image"); }
 
 auto Image::Get() -> vk::raii::Image & { return m_image; }
 auto Image::Get() const -> const vk::raii::Image & { return m_image; }
@@ -56,7 +54,7 @@ auto Image::CreateImage() -> void {
     imageCi.initialLayout = vk::ImageLayout::eUndefined;
 
     auto imageResult = m_context.GetDevice().createImage(imageCi);
-    MU_CORE_ASSERT(imageResult, "failed to create image");
+    core::expect(imageResult, "failed to create image");
     m_image = std::move(*imageResult);
 
     auto memoryRequirements = m_image.getMemoryRequirements();
@@ -67,10 +65,10 @@ auto Image::CreateImage() -> void {
 
     vma::AllocationInfo allocInfo;
     auto allocationResult = m_context.GetAllocator().allocateMemory(memoryRequirements, allocCi, allocInfo);
-    MU_CORE_ASSERT(allocationResult.result == vk::Result::eSuccess, "failed to allocate image memory");
+    core::expect(allocationResult.result == vk::Result::eSuccess, "failed to allocate image memory");
 
     auto bindResult = m_context.GetAllocator().bindImageMemory(m_allocation, m_image);
-    MU_CORE_ASSERT(bindResult == vk::Result::eSuccess, "failed to bind image memory");
+    core::expect(bindResult == vk::Result::eSuccess, "failed to bind image memory");
 
     m_bytes = allocInfo.size;
 }
@@ -118,7 +116,7 @@ auto Image::CreateImageView() -> void {
     imageViewCi.subresourceRange.layerCount = 1;
 
     auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
-    MU_CORE_ASSERT(imageViewResult, "failed to create image view");
+    core::expect(imageViewResult, "failed to create image view");
 
     m_imageView = std::move(*imageViewResult);
 

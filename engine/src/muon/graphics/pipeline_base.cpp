@@ -1,6 +1,6 @@
 #include "muon/graphics/pipeline_base.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/fs/fs.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
@@ -23,21 +23,21 @@ auto PipelineBase::CreateCache() -> void {
     pipelineCacheCi.pInitialData = nullptr;
 
     auto pipelineCacheResult = m_context.GetDevice().createPipelineCache(pipelineCacheCi);
-    MU_CORE_ASSERT(pipelineCacheResult, "failed to create pipeline cache");
+    core::expect(pipelineCacheResult, "failed to create pipeline cache");
 
     m_cache = std::move(*pipelineCacheResult);
 }
 
 auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, vk::raii::ShaderModule &shaderModule) const -> void {
     auto byteCode = fs::ReadFileBinary(path);
-    MU_CORE_ASSERT(byteCode, "code does not have value");
+    core::expect(byteCode, "code does not have value");
 
     vk::ShaderModuleCreateInfo shaderModuleCi;
     shaderModuleCi.codeSize = byteCode->size();
     shaderModuleCi.pCode = reinterpret_cast<const uint32_t *>(byteCode->data());
 
     auto shaderModuleResult = m_context.GetDevice().createShaderModule(shaderModuleCi);
-    MU_CORE_ASSERT(shaderModuleResult, "failed to create shader module");
+    core::expect(shaderModuleResult, "failed to create shader module");
 
     shaderModule = std::move(*shaderModuleResult);
 }

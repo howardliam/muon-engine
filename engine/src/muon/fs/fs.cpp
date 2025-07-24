@@ -11,7 +11,7 @@ auto ReadFile(const std::filesystem::path &path) -> std::optional<std::string> {
     std::ifstream file{path};
 
     if (!file.is_open()) {
-        MU_CORE_ERROR("failed to open file for reading: {}", path.string());
+        core::error("failed to open file for reading: {}", path.string());
         return std::nullopt;
     }
 
@@ -25,7 +25,7 @@ auto ReadFileBinary(const std::filesystem::path &path) -> std::optional<std::vec
     std::ifstream file{path, std::ios::ate | std::ios::binary};
 
     if (!file.is_open()) {
-        MU_CORE_ERROR("failed to open file for reading: {}", path.string());
+        core::error("failed to open file for reading: {}", path.string());
         return std::nullopt;
     }
 

@@ -1,6 +1,6 @@
 #include "muon/graphics/context.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/graphics/device_extensions.hpp"
@@ -30,22 +30,22 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugCallback(
 ) {
     switch (messageSeverity) {
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose: {
-            MU_VK_DEBUG(callbackData->pMessage);
+            muon::core::debug(callbackData->pMessage);
             break;
         }
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo: {
-            MU_VK_INFO(callbackData->pMessage);
+            muon::core::info(callbackData->pMessage);
             break;
         }
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning: {
-            MU_VK_WARN(callbackData->pMessage);
+            muon::core::warn(callbackData->pMessage);
             break;
         }
 
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError: {
-            MU_VK_ERROR(callbackData->pMessage);
+            muon::core::error(callbackData->pMessage);
             break;
         }
 
@@ -61,7 +61,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugCallback(
 namespace muon::graphics {
 
 Context::Context(const Spec &spec) {
-    MU_CORE_ASSERT(spec.window, "a window must be present");
+    core::expect(spec.window, "a window must be present");
 
     m_context = vk::raii::Context();
 
@@ -74,7 +74,7 @@ Context::Context(const Spec &spec) {
     CreateLogicalDevice();
     CreateAllocator();
 
-    MU_CORE_DEBUG("created device");
+    core::debug("created device");
 }
 
 Context::~Context() {
@@ -83,7 +83,7 @@ Context::~Context() {
     m_computeQueue.reset();
     m_transferQueue.reset();
 
-    MU_CORE_DEBUG("destroyed device");
+    core::debug("destroyed device");
 }
 
 auto Context::DeviceWaitIdle() -> std::expected<void, vk::Result> {
@@ -150,12 +150,12 @@ auto Context::CreateInstance(const Window &window) -> void {
         instanceCi.enabledLayerCount = 1;
         instanceCi.ppEnabledLayerNames = &validationLayer;
     } else {
-        MU_CORE_WARN("the validation layer is not available");
+        core::warn("the validation layer is not available");
     }
 #endif
 
     auto instanceResult = m_context.createInstance(instanceCi);
-    MU_CORE_ASSERT(instanceResult, "failed to create instance");
+    core::expect(instanceResult, "failed to create instance");
     m_instance = std::move(*instanceResult);
 }
 
@@ -173,7 +173,7 @@ auto Context::CreateDebugMessenger() -> void {
                                         vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
     auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
-    MU_CORE_ASSERT(debugMessengerResult, "failed to create debug messenger");
+    core::expect(debugMessengerResult, "failed to create debug messenger");
 
     m_debugMessenger = std::move(*debugMessengerResult);
 }
@@ -181,14 +181,14 @@ auto Context::CreateDebugMessenger() -> void {
 
 auto Context::CreateSurface(const Window &window) -> void {
     auto surfaceResult = window.CreateSurface(m_instance);
-    MU_CORE_ASSERT(surfaceResult, "failed to create window surface");
+    core::expect(surfaceResult, "failed to create window surface");
     m_surface = std::move(*surfaceResult);
-    MU_CORE_ASSERT(*m_surface, "surface must not be null");
+    core::expect(*m_surface, "surface must not be null");
 }
 
 auto Context::SelectPhysicalDevice() -> void {
     auto physicalDevicesResult = m_instance.enumeratePhysicalDevices();
-    MU_CORE_ASSERT(physicalDevicesResult, "failed to get available GPUs");
+    core::expect(physicalDevicesResult, "failed to get available GPUs");
     auto physicalDevices = *physicalDevicesResult;
 
     Gpu::Spec gpuSpec{};
@@ -209,25 +209,27 @@ auto Context::SelectPhysicalDevice() -> void {
     auto sort = [](const GpuPair &a, const GpuPair &b) -> bool { return a.first.GetMemorySize() > b.first.GetMemorySize(); };
     std::sort(gpus.begin(), gpus.end(), sort);
 
+    bool gpuSelected = false;
+
     if (gpus.size() >= 1) {
         auto &[gpu, physicalDevice] = gpus.front();
         m_physicalDevice = *physicalDevice;
-    } else {
-        MU_CORE_ASSERT("failed to select a suitable GPU");
+        gpuSelected = true;
     }
+    core::expect(gpuSelected, "failed to select a suitable GPU");
 }
 
 auto Context::CreateLogicalDevice() -> void {
     const QueueInfo queueInfo{m_physicalDevice, m_surface};
-    MU_CORE_ASSERT(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
-    MU_CORE_ASSERT(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
+    core::expect(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
+    core::expect(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
 
     const auto queueFamilies = queueInfo.GetFamilyInfo();
 
     auto graphicsFamily =
         std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsGraphicsCapable(); });
-    MU_CORE_ASSERT(graphicsFamily != queueFamilies.end(), "there must be a graphics capable queue family");
-    MU_CORE_ASSERT(graphicsFamily->IsPresentCapable(), "the graphics capable queue family must support presentation");
+    core::expect(graphicsFamily != queueFamilies.end(), "there must be a graphics capable queue family");
+    core::expect(graphicsFamily->IsPresentCapable(), "the graphics capable queue family must support presentation");
 
     auto computeFamily =
         std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeDedicated(); });
@@ -236,7 +238,7 @@ auto Context::CreateLogicalDevice() -> void {
             return info.IsComputeCapable() && info.queueCount > 1;
         });
     }
-    MU_CORE_ASSERT(computeFamily != queueFamilies.end(), "there must be a compute capable queue family");
+    core::expect(computeFamily != queueFamilies.end(), "there must be a compute capable queue family");
 
     auto transferFamily =
         std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferDedicated(); });
@@ -245,7 +247,7 @@ auto Context::CreateLogicalDevice() -> void {
             return info.IsTransferCapable() && info.queueCount > 1;
         });
     }
-    MU_CORE_ASSERT(transferFamily != queueFamilies.end(), "there must be a transfer capable queue family");
+    core::expect(transferFamily != queueFamilies.end(), "there must be a transfer capable queue family");
 
     std::map<uint32_t, uint32_t> queueCounts;
     queueCounts[graphicsFamily->index] += 1;
@@ -307,7 +309,7 @@ auto Context::CreateLogicalDevice() -> void {
     deviceCi.pNext = &features;
 
     auto deviceResult = m_physicalDevice.createDevice(deviceCi);
-    MU_CORE_ASSERT(deviceResult, "failed to create device");
+    core::expect(deviceResult, "failed to create device");
     m_device = std::move(*deviceResult);
 
     std::map<uint32_t, uint32_t> nextQueueIndices;
@@ -321,7 +323,7 @@ auto Context::CreateLogicalDevice() -> void {
     graphicsSpec.queueIndex = nextQueueIndices[graphicsFamily->index]++;
     graphicsSpec.name = "graphics";
     m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
-    MU_CORE_ASSERT(m_graphicsQueue, "graphics queue must not be null");
+    core::expect(m_graphicsQueue, "graphics queue must not be null");
 
     Queue::Spec computeSpec{};
     computeSpec.device = &m_device;
@@ -329,7 +331,7 @@ auto Context::CreateLogicalDevice() -> void {
     computeSpec.queueIndex = nextQueueIndices[computeFamily->index]++;
     computeSpec.name = "compute";
     m_computeQueue = std::make_unique<Queue>(computeSpec);
-    MU_CORE_ASSERT(m_computeQueue, "compute queue must not be null");
+    core::expect(m_computeQueue, "compute queue must not be null");
 
     Queue::Spec transferSpec{};
     transferSpec.device = &m_device;
@@ -337,7 +339,7 @@ auto Context::CreateLogicalDevice() -> void {
     transferSpec.queueIndex = nextQueueIndices[transferFamily->index]++;
     transferSpec.name = "transfer";
     m_transferQueue = std::make_unique<Queue>(transferSpec);
-    MU_CORE_ASSERT(m_transferQueue, "transfer queue must not be null");
+    core::expect(m_transferQueue, "transfer queue must not be null");
 }
 
 auto Context::CreateAllocator() -> void {
@@ -348,7 +350,7 @@ auto Context::CreateAllocator() -> void {
     createInfo.flags = vma::AllocatorCreateFlagBits::eBufferDeviceAddress;
 
     auto result = vma::createAllocator(createInfo);
-    MU_CORE_ASSERT(result.result == vk::Result::eSuccess, "failed to create allocator");
+    core::expect(result.result == vk::Result::eSuccess, "failed to create allocator");
 
     m_allocator = result.value;
 }

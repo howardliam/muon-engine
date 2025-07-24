@@ -1,6 +1,6 @@
 #include "muon/graphics/swapchain.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_handles.hpp"
@@ -21,17 +21,17 @@ Swapchain::Swapchain(const Spec &spec)
     CreateSyncObjects();
 
     if (spec.oldSwapchain) {
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", m_extent.width, m_extent.height);
+        core::debug("created swapchain with dimensions: {}x{} from old swapchain", m_extent.width, m_extent.height);
     } else {
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", m_extent.width, m_extent.height);
+        core::debug("created swapchain with dimensions: {}x{}", m_extent.width, m_extent.height);
     }
 }
 
-Swapchain::~Swapchain() { MU_CORE_DEBUG("destroyed swapchain"); }
+Swapchain::~Swapchain() { core::debug("destroyed swapchain"); }
 
 auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
     auto waitResult = m_context.GetDevice().waitForFences({m_inFlightFences[m_currentFrame]}, true, k_waitDuration);
-    MU_CORE_ASSERT(waitResult == vk::Result::eSuccess, "failed to wait for fences");
+    core::expect(waitResult == vk::Result::eSuccess, "failed to wait for fences");
 
     vk::AcquireNextImageInfoKHR acquireInfo;
     acquireInfo.swapchain = m_swapchain;
@@ -51,7 +51,7 @@ auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffe
     -> std::expected<void, vk::Result> {
     if (m_imagesInFlight[imageIndex] != nullptr) {
         auto waitResult = m_context.GetDevice().waitForFences({m_imagesInFlight[imageIndex]}, true, k_waitDuration);
-        MU_CORE_ASSERT(waitResult == vk::Result::eSuccess, "failed to wait for fences");
+        core::expect(waitResult == vk::Result::eSuccess, "failed to wait for fences");
     }
     m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
@@ -86,7 +86,7 @@ auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffe
     presentInfo.pImageIndices = &imageIndex;
 
     auto presentResult = m_graphicsQueue.Get().presentKHR(presentInfo);
-    MU_CORE_ASSERT(presentResult == vk::Result::eSuccess, "failed to present queue");
+    core::expect(presentResult == vk::Result::eSuccess, "failed to present queue");
 
     m_currentFrame = (m_currentFrame + 1) % k_maxFramesInFlight;
 
@@ -164,11 +164,11 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     }
 
     auto swapchainCreateResult = m_context.GetDevice().createSwapchainKHR(swapchainCi);
-    MU_CORE_ASSERT(swapchainCreateResult, "failed to create the swapchain");
+    core::expect(swapchainCreateResult, "failed to create the swapchain");
     m_swapchain = std::move(*swapchainCreateResult);
 
     m_images = m_swapchain.getImages();
-    MU_CORE_ASSERT(m_images.size() > 0, "failed to get swapchain images");
+    core::expect(m_images.size() > 0, "failed to get swapchain images");
     m_imageCount = m_images.size();
 
     m_extent = extent;
@@ -200,7 +200,7 @@ auto Swapchain::CreateImageViews() -> void {
         imageViewCi.subresourceRange.layerCount = 1;
 
         auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
-        MU_CORE_ASSERT(imageViewResult, "failed to create a swapchain image view");
+        core::expect(imageViewResult, "failed to create a swapchain image view");
 
         m_imageViews.emplace_back(std::move(*imageViewResult));
     }
@@ -214,17 +214,17 @@ auto Swapchain::CreateSyncObjects() -> void {
 
     for (uint32_t i = 0; i < k_maxFramesInFlight; i++) {
         auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
-        MU_CORE_ASSERT(semaphoreResult, "failed to create image available semaphores");
+        core::expect(semaphoreResult, "failed to create image available semaphores");
         m_imageAvailableSemaphores.emplace_back(std::move(*semaphoreResult));
 
         auto fenceResult = m_context.GetDevice().createFence(fenceCi);
-        MU_CORE_ASSERT(fenceResult, "failed to create in flight fences");
+        core::expect(fenceResult, "failed to create in flight fences");
         m_inFlightFences.emplace_back(std::move(*fenceResult));
     }
 
     for (uint32_t i = 0; i < m_imageCount; i++) {
         auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
-        MU_CORE_ASSERT(semaphoreResult, "failed to create render finished semaphores");
+        core::expect(semaphoreResult, "failed to create render finished semaphores");
         m_renderFinishedSemaphores.emplace_back(std::move(*semaphoreResult));
     }
 

@@ -1,16 +1,16 @@
 #include "muon/graphics/buffer.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/utils/alignment.hpp"
 #include "muon/utils/pretty_print.hpp"
 #include "vk_mem_alloc.hpp"
 #include "vk_mem_alloc_enums.hpp"
+#include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_raii.hpp"
 #include "vulkan/vulkan_structs.hpp"
 
 #include <cstring>
-#include <vulkan/vulkan_enums.hpp>
 
 namespace muon::graphics {
 
@@ -31,10 +31,10 @@ Buffer::Buffer(const Spec &spec)
 
     vma::AllocationInfo allocationInfo;
 
-    auto result = m_context.GetAllocator().createBuffer(bufferCi, allocationCi, allocationInfo);
-    MU_CORE_ASSERT(result.result == vk::Result::eSuccess, "failed to create buffer");
+    auto bufferResult = m_context.GetAllocator().createBuffer(bufferCi, allocationCi, allocationInfo);
+    core::expect(bufferResult.result == vk::Result::eSuccess, "failed to create buffer");
 
-    auto [buffer, allocation] = result.value;
+    auto [buffer, allocation] = bufferResult.value;
     buffer = vk::raii::Buffer{m_context.GetDevice(), buffer};
     m_allocation = allocation;
 
@@ -49,13 +49,13 @@ Buffer::Buffer(const Spec &spec)
     m_descriptorInfo.range = m_size;
     m_descriptorInfo.offset = 0;
 
-    MU_CORE_DEBUG("created buffer with size: {}", pp::PrintBytes(m_size));
+    core::debug("created buffer with size: {}", pp::PrintBytes(m_size));
 }
 
 Buffer::~Buffer() {
     Unmap();
     m_context.GetAllocator().destroyBuffer(m_buffer, m_allocation);
-    MU_CORE_DEBUG("destroyed buffer");
+    core::debug("destroyed buffer");
 }
 
 Buffer::Buffer(Buffer &&other) noexcept
@@ -114,7 +114,7 @@ auto Buffer::Unmap() -> void {
 }
 
 auto Buffer::Write(const void *data, vk::DeviceSize size, vk::DeviceSize offset) -> void {
-    if (size == VK_WHOLE_SIZE) {
+    if (size == vk::WholeSize) {
         std::memcpy(m_mapped, data, m_size);
     } else {
         auto memoryOffset = static_cast<uint8_t *>(m_mapped);
@@ -139,7 +139,7 @@ auto Buffer::GetSize() const -> vk::DeviceSize { return m_size; }
 auto Buffer::GetMappedMemory() const -> void * { return m_mapped; }
 
 auto Buffer::GetDeviceAddress() const -> VkDeviceAddress {
-    MU_CORE_ASSERT(
+    core::expect(
         m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress, "buffer must be created with shader context address usage"
     );
     return m_deviceAddress;

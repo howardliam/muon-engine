@@ -1,6 +1,6 @@
 #include "muon/graphics/pipeline_layout.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 
 #include <utility>
 
@@ -21,7 +21,7 @@ PipelineLayout::PipelineLayout(const Spec &spec) : m_context(*spec.context) {
     }
 
     auto pipelineLayoutResult = m_context.GetDevice().createPipelineLayout(pipelineLayoutCi);
-    MU_CORE_ASSERT(pipelineLayoutResult, "failed to create pipeline layout");
+    core::expect(pipelineLayoutResult, "failed to create pipeline layout");
 
     m_layout = std::move(*pipelineLayoutResult);
 }

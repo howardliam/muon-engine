@@ -1,24 +1,16 @@
 #include "muon/graphics/pipeline_compute.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
 namespace muon::graphics {
 
 PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase(*spec.context, spec.layout) {
-    // MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Compute, "must be compute pipeline config");
-
-    // const auto &shaderInfo = spec.pipelineInfo.shaders.find(VK_SHADER_STAGE_COMPUTE_BIT)->second;
-    // auto shader = m_shaders.emplace_back(nullptr);
-    // CreateShaderModule(shaderInfo, shader);
-    // const auto stageInfo = CreateShaderStageInfo(VK_SHADER_STAGE_COMPUTE_BIT, shader, shaderInfo.entryPoint);
-    // CreatePipeline(stageInfo);
-
-    MU_CORE_DEBUG("created compute pipeline");
+    core::debug("created compute pipeline");
 }
 
-PipelineCompute::~PipelineCompute() { MU_CORE_DEBUG("destroyed compute pipeline"); }
+PipelineCompute::~PipelineCompute() { core::debug("destroyed compute pipeline"); }
 
 auto PipelineCompute::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void {
     commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute, m_layout->Get(), 0, sets, {});
@@ -37,7 +29,7 @@ auto PipelineCompute::CreatePipeline(const vk::PipelineShaderStageCreateInfo &st
     computePipelineCi.basePipelineHandle = nullptr;
 
     auto createPipelineResult = m_context.GetDevice().createComputePipeline(m_cache, computePipelineCi);
-    MU_CORE_ASSERT(createPipelineResult, "failed to create compute pipeline");
+    core::expect(createPipelineResult, "failed to create compute pipeline");
 
     m_pipeline = std::move(*createPipelineResult);
 }

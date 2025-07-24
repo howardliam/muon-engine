@@ -1,6 +1,6 @@
 #include "muon/graphics/mesh.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "vulkan/vulkan_enums.hpp"
@@ -10,8 +10,8 @@
 namespace muon::graphics {
 
 Mesh::Mesh(const Spec &spec) : m_context(*spec.context) {
-    MU_CORE_ASSERT(spec.commandBuffer != nullptr, "there must be a valid command buffer");
-    MU_CORE_ASSERT(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
+    core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
+    core::expect(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
     CreateBuffer(
         *spec.commandBuffer, spec.uploadBuffers, spec.vertexData->data(), spec.vertexStride,
@@ -23,10 +23,10 @@ Mesh::Mesh(const Spec &spec) : m_context(*spec.context) {
         vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer
     );
 
-    MU_CORE_DEBUG("created mesh with: {} vertices", m_vertexCount);
+    core::debug("created mesh with: {} vertices", m_vertexCount);
 }
 
-Mesh::~Mesh() { MU_CORE_DEBUG("destroyed mesh"); }
+Mesh::~Mesh() { core::debug("destroyed mesh"); }
 
 auto Mesh::Bind(vk::raii::CommandBuffer &commandBuffer) -> void {
     const auto &buffer = m_vertexBuffer->Get();
@@ -50,7 +50,7 @@ auto Mesh::CreateBuffer(
     Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
 
     auto result = stagingBuffer.Map();
-    MU_CORE_ASSERT(!result, "failed to map staging buffer");
+    core::expect(!result, "failed to map staging buffer");
 
     stagingBuffer.Write(data);
 

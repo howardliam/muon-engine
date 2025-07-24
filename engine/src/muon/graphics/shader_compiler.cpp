@@ -1,6 +1,6 @@
 #include "muon/graphics/shader_compiler.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/hash.hpp"
 #include "muon/core/log.hpp"
 
@@ -184,7 +184,7 @@ namespace muon::graphics {
 
 ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE) {
     bool success = glslang::InitializeProcess();
-    MU_CORE_ASSERT(success, "failed to initialise shader compiler");
+    core::expect(success, "failed to initialise shader compiler");
 
     m_hashStore.exec(R"(
         create table if not exists hash_store (
@@ -196,15 +196,15 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePat
     )");
 
     m_worker = std::thread([this]() {
-        MU_CORE_DEBUG("shader compilation worker thread spawned");
+        core::debug("shader compilation worker thread spawned");
 
         while (true) {
-            MU_CORE_TRACE("waiting for work");
+            core::trace("waiting for work");
             std::unique_lock<std::mutex> lock{m_workMutex};
             m_conVar.wait(lock, [this]() { return !m_workQueue.empty() || m_terminate.load(); });
 
             if (m_terminate.load()) {
-                MU_CORE_TRACE("terminate received");
+                core::trace("terminate received");
                 break;
             }
 
@@ -214,10 +214,10 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePat
             Compile(request);
         }
 
-        MU_CORE_DEBUG("shader compilation worker thread done");
+        core::debug("shader compilation worker thread done");
     });
 
-    MU_CORE_DEBUG("created shader compiler");
+    core::debug("created shader compiler");
 }
 
 ShaderCompiler::~ShaderCompiler() {
@@ -226,7 +226,7 @@ ShaderCompiler::~ShaderCompiler() {
     m_worker.join();
 
     glslang::FinalizeProcess();
-    MU_CORE_DEBUG("destroyed shader compiler");
+    core::debug("destroyed shader compiler");
 }
 
 auto ShaderCompiler::SubmitWork(ShaderCompilationRequest request) -> void {
@@ -236,11 +236,11 @@ auto ShaderCompiler::SubmitWork(ShaderCompilationRequest request) -> void {
 }
 
 auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
-    MU_CORE_TRACE("beginning compilation");
+    core::trace("beginning compilation");
 
     std::ifstream file{request.path, std::ios::binary};
     if (!file.is_open()) {
-        MU_CORE_ERROR("failed to open file: {}", request.path.generic_string());
+        core::error("failed to open file: {}", request.path.generic_string());
         return;
     }
 
@@ -259,18 +259,18 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
 
     std::optional sourceHash = HashFile(file);
     if (!sourceHash.has_value()) {
-        MU_CORE_ERROR("failed to hash file contents: {}", request.path.generic_string());
+        core::error("failed to hash file contents: {}", request.path.generic_string());
         return;
     }
 
     if (hash == *sourceHash) {
-        MU_CORE_TRACE("identical hashes, skipping: {}", request.path.generic_string());
+        core::trace("identical hashes, skipping: {}", request.path.generic_string());
         return;
     }
 
     auto stage = ExtensionToStage(request.path.extension().generic_string());
     if (!stage.has_value()) {
-        MU_CORE_ERROR("failed to parse file extension: {}", request.path.extension().generic_string());
+        core::error("failed to parse file extension: {}", request.path.extension().generic_string());
         return;
     }
 
@@ -292,7 +292,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
 
     auto success = shader.parse(&k_defaultTBuiltInResource, 450, false, messages);
     if (!success) {
-        MU_CORE_ERROR("failed to parse GLSL source: \n{}", shader.getInfoLog());
+        core::error("failed to parse GLSL source: \n{}", shader.getInfoLog());
         return;
     }
 
@@ -300,7 +300,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     program.addShader(&shader);
     success = program.link(messages);
     if (!success) {
-        MU_CORE_ERROR("failed to link shader program: \n{}", program.getInfoLog());
+        core::error("failed to link shader program: \n{}", program.getInfoLog());
         return;
     }
 
@@ -317,7 +317,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     outPath.append(".spv");
     std::ofstream outFile{outPath, std::ios::binary};
     outFile.write(reinterpret_cast<char *>(spirv.data()), spirv.size() * sizeof(uint32_t));
-    MU_CORE_DEBUG("writing out SPIR-V to {}", outPath);
+    core::debug("writing out SPIR-V to {}", outPath);
 
     SQLite::Statement writeQuery{m_hashStore, R"(
         insert into hash_store values(null, :source_path, :source_hash, :spirv_path)
@@ -327,7 +327,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     writeQuery.bind(":spirv_path", outPath.c_str());
 
     uint32_t rows = writeQuery.exec();
-    MU_CORE_TRACE("updated {} rows", rows);
+    core::trace("updated {} rows", rows);
 
     writeQuery.reset();
 }

@@ -1,6 +1,6 @@
 #include "muon/graphics/pipeline_graphics.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_raii.hpp"
@@ -10,42 +10,10 @@
 namespace muon::graphics {
 
 PipelineGraphics::PipelineGraphics(const Spec &spec) : PipelineBase(*spec.context, spec.layout) {
-    // MU_CORE_ASSERT(spec.pipelineInfo.type == schematic::PipelineType::Graphics, "must be graphics pipeline config");
-    // MU_CORE_ASSERT(spec.pipelineInfo.state.has_value(), "pipeline state must exist for graphics pipeline");
-    // MU_CORE_ASSERT(
-    //     spec.pipelineInfo.state->inputAssembly.has_value(), "pipeline state must have input assembly info for graphics
-    //     pipeline"
-    // );
-
-    // const auto &state = *spec.pipelineInfo.state;
-    // m_state.inputAssemblyState = state.inputAssembly->ToVk();
-    // m_state.viewportState = state.viewport.ToVk();
-    // m_state.rasterizationState = state.rasterization.ToVk();
-    // m_state.multisampleState = state.multisample.ToVk();
-    // const auto [colorBlendState, colorBlendAttachments] = state.colorBlend.ToVk();
-    // m_state.colorBlendAttachments = colorBlendAttachments;
-    // m_state.colorBlendState = colorBlendState;
-    // m_state.depthStencilState = state.depthStencil.ToVk();
-    // const auto [dynamicState, dynamicStateEnables] = state.dynamic.ToVk();
-    // m_state.dynamicStateEnables = dynamicStateEnables;
-    // m_state.dynamicState = dynamicState;
-
-    // const auto &shaders = spec.pipelineInfo.shaders;
-    // m_shaders.reserve(shaders.size());
-    // m_shaderStages.reserve(shaders.size());
-
-    // for (const auto &[stage, shaderInfo] : shaders) {
-    //     auto shader = m_shaders.emplace_back(nullptr);
-    //     CreateShaderModule(shaderInfo, shader);
-
-    //     m_shaderStages.push_back(CreateShaderStageInfo(static_cast<VkShaderStageFlagBits>(stage), shader,
-    //     shaderInfo.entryPoint));
-    // }
-
-    MU_CORE_DEBUG("created graphics pipeline");
+    core::debug("created graphics pipeline");
 }
 
-PipelineGraphics::~PipelineGraphics() { MU_CORE_DEBUG("destroyed graphics pipeline"); }
+PipelineGraphics::~PipelineGraphics() { core::debug("destroyed graphics pipeline"); }
 
 auto PipelineGraphics::Bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
     CreatePipeline(renderingCreateInfo);
@@ -91,7 +59,7 @@ auto PipelineGraphics::CreatePipeline(const vk::PipelineRenderingCreateInfo &ren
     graphicsPipelineCi.basePipelineHandle = nullptr;
 
     auto createPipelineResult = m_context.GetDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
-    MU_CORE_ASSERT(createPipelineResult, "failed to create graphics pipeline");
+    core::expect(createPipelineResult, "failed to create graphics pipeline");
 
     m_pipeline = std::move(*createPipelineResult);
 }

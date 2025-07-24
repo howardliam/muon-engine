@@ -1,6 +1,6 @@
 #include "muon/graphics/queue.hpp"
 
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_raii.hpp"
 #include "vulkan/vulkan_structs.hpp"
@@ -12,7 +12,7 @@ namespace muon::graphics {
 
 Queue::Queue(const Spec &spec) : m_device(*spec.device), m_name(spec.name) {
     auto queueResult = m_device.getQueue(spec.queueFamilyIndex, spec.queueIndex);
-    MU_CORE_ASSERT(queueResult, "failed to get queue from device");
+    core::expect(queueResult, "failed to get queue from device");
     m_queue = std::move(*queueResult);
 
     vk::CommandPoolCreateInfo commandPoolCi;
@@ -20,13 +20,13 @@ Queue::Queue(const Spec &spec) : m_device(*spec.device), m_name(spec.name) {
     commandPoolCi.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
     auto commandPoolResult = m_device.createCommandPool(commandPoolCi);
-    MU_CORE_ASSERT(commandPoolResult, "failed to create command pool for queue");
+    core::expect(commandPoolResult, "failed to create command pool for queue");
     m_commandPool = std::move(*commandPoolResult);
 
-    MU_CORE_DEBUG("created {} queue", m_name);
+    core::debug("created {} queue", m_name);
 }
 
-Queue::~Queue() { MU_CORE_DEBUG("destroyed {} queue", m_name); }
+Queue::~Queue() { core::debug("destroyed {} queue", m_name); }
 
 auto Queue::ExecuteCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) {
     vk::CommandBufferAllocateInfo commandBufferAi;
@@ -35,7 +35,7 @@ auto Queue::ExecuteCommands(std::function<void(vk::raii::CommandBuffer &commandB
     commandBufferAi.commandBufferCount = 1;
 
     auto commandBufferResult = m_device.allocateCommandBuffers(commandBufferAi);
-    MU_CORE_ASSERT(commandBufferResult, "failed to allocate single time command buffer");
+    core::expect(commandBufferResult, "failed to allocate single time command buffer");
     auto &commandBuffer = (*commandBufferResult)[0];
 
     vk::CommandBufferBeginInfo commandBufferBi;
