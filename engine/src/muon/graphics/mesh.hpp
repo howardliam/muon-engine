@@ -4,11 +4,11 @@
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <cstdint>
 #include <deque>
 #include <memory>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -16,7 +16,7 @@ class Mesh : NoCopy, NoMove {
 public:
     struct Spec {
         const Context *context{nullptr};
-        VkCommandBuffer cmd{nullptr};
+        vk::raii::CommandBuffer *commandBuffer{nullptr};
         std::deque<Buffer> *uploadBuffers{nullptr};
 
         const std::vector<uint8_t> *vertexData{nullptr};
@@ -28,13 +28,13 @@ public:
     Mesh(const Spec &spec);
     ~Mesh();
 
-    auto Bind(VkCommandBuffer cmd) -> void;
-    auto Draw(VkCommandBuffer cmd) -> void;
+    auto Bind(vk::raii::CommandBuffer &commandBuffer) -> void;
+    auto Draw(vk::raii::CommandBuffer &commandBuffer) -> void;
 
 private:
     auto CreateBuffer(
-        VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const void *data, VkDeviceSize instanceSize, size_t instanceCount,
-        VkBufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
+        vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const void *data, vk::DeviceSize instanceSize,
+        size_t instanceCount, vk::BufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
     ) -> void;
 
 private:
