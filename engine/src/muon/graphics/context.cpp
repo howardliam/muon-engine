@@ -185,12 +185,13 @@ auto Context::CreateSurface(const Window &window) -> void {
     auto surfaceResult = window.CreateSurface(m_instance);
     MU_CORE_ASSERT(surfaceResult, "failed to create window surface");
     m_surface = std::move(*surfaceResult);
+    MU_CORE_ASSERT(*m_surface, "surface must not be null");
 }
 
 auto Context::SelectPhysicalDevice() -> void {
-    auto enumerationResult = m_instance.enumeratePhysicalDevices();
-    MU_CORE_ASSERT(enumerationResult, "failed to get available GPUs");
-    auto physicalDevices = enumerationResult.value();
+    auto physicalDevicesResult = m_instance.enumeratePhysicalDevices();
+    MU_CORE_ASSERT(physicalDevicesResult, "failed to get available GPUs");
+    auto physicalDevices = *physicalDevicesResult;
 
     Gpu::Spec gpuSpec{};
     gpuSpec.surface = &m_surface;
