@@ -32,25 +32,35 @@ inline auto trace(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetCoreLogger()->trace(message, std::forward<Args>(args)...);
 }
 
+inline auto trace(const char *message) -> void { Log::GetCoreLogger()->trace(message); }
+
 template <typename... Args>
 inline auto debug(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetCoreLogger()->debug(message, std::forward<Args>(args)...);
 }
+
+inline auto debug(const char *message) -> void { Log::GetCoreLogger()->debug(message); }
 
 template <typename... Args>
 inline auto info(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetCoreLogger()->info(message, std::forward<Args>(args)...);
 }
 
+inline auto info(const char *message) -> void { Log::GetCoreLogger()->info(message); }
+
 template <typename... Args>
 inline auto warn(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetCoreLogger()->warn(message, std::forward<Args>(args)...);
 }
 
+inline auto warn(const char *message) -> void { Log::GetCoreLogger()->warn(message); }
+
 template <typename... Args>
 inline auto error(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetCoreLogger()->error(message, std::forward<Args>(args)...);
 }
+
+inline auto error(const char *message) -> void { Log::GetCoreLogger()->error(message); }
 
 } // namespace core
 
@@ -61,25 +71,35 @@ inline auto trace(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetClientLogger()->trace(message, std::forward<Args>(args)...);
 }
 
+inline auto trace(const char *message) -> void { Log::GetClientLogger()->trace(message); }
+
 template <typename... Args>
 inline auto debug(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetClientLogger()->debug(message, std::forward<Args>(args)...);
 }
+
+inline auto debug(const char *message) -> void { Log::GetClientLogger()->debug(message); }
 
 template <typename... Args>
 inline auto info(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetClientLogger()->info(message, std::forward<Args>(args)...);
 }
 
+inline auto info(const char *message) -> void { Log::GetClientLogger()->info(message); }
+
 template <typename... Args>
 inline auto warn(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetClientLogger()->warn(message, std::forward<Args>(args)...);
 }
 
+inline auto warn(const char *message) -> void { Log::GetClientLogger()->warn(message); }
+
 template <typename... Args>
 inline auto error(fmt::format_string<Args...> message, Args &&...args) -> void {
     Log::GetClientLogger()->error(message, std::forward<Args>(args)...);
 }
+
+inline auto error(const char *message) -> void { Log::GetClientLogger()->error(message); }
 
 } // namespace client
 
