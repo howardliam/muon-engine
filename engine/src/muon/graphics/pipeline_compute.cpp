@@ -2,8 +2,7 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
-
-#include <vulkan/vulkan_core.h>
+#include "vulkan/vulkan_enums.hpp"
 
 namespace muon::graphics {
 
@@ -21,26 +20,26 @@ PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase(*spec.context,
 
 PipelineCompute::~PipelineCompute() { MU_CORE_DEBUG("destroyed compute pipeline"); }
 
-auto PipelineCompute::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const -> void {
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_layout->Get(), 0, sets.size(), sets.data(), 0, nullptr);
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
+auto PipelineCompute::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute, m_layout->Get(), 0, sets, {});
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, m_pipeline);
 }
 
-auto PipelineCompute::Dispatch(VkCommandBuffer cmd, const glm::uvec3 &groupCount) const -> void {
-    vkCmdDispatch(cmd, groupCount.x, groupCount.y, groupCount.z);
+auto PipelineCompute::Dispatch(vk::raii::CommandBuffer &commandBuffer, const glm::uvec3 &groupCount) const -> void {
+    commandBuffer.dispatch(groupCount.x, groupCount.y, groupCount.z);
 }
 
-auto PipelineCompute::Get() const -> VkPipeline { return m_pipeline; }
+auto PipelineCompute::CreatePipeline(const vk::PipelineShaderStageCreateInfo &stageInfo) -> void {
+    vk::ComputePipelineCreateInfo computePipelineCi;
+    computePipelineCi.stage = stageInfo;
+    computePipelineCi.layout = m_layout->Get();
+    computePipelineCi.basePipelineIndex = -1;
+    computePipelineCi.basePipelineHandle = nullptr;
 
-auto PipelineCompute::CreatePipeline(const VkPipelineShaderStageCreateInfo &stageInfo) -> void {
-    VkComputePipelineCreateInfo pipelineCreateInfo{VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
-    pipelineCreateInfo.stage = stageInfo;
-    pipelineCreateInfo.layout = m_layout->Get();
-    pipelineCreateInfo.basePipelineIndex = -1;
-    pipelineCreateInfo.basePipelineHandle = nullptr;
+    auto createPipelineResult = m_context.GetDevice().createComputePipeline(m_cache, computePipelineCi);
+    MU_CORE_ASSERT(createPipelineResult, "failed to create compute pipeline");
 
-    auto result = vkCreateComputePipelines(m_context.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create compute pipeline");
+    m_pipeline = std::move(*createPipelineResult);
 }
 
 } // namespace muon::graphics

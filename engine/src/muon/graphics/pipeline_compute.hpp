@@ -3,10 +3,10 @@
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_base.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <glm/vec3.hpp>
 #include <memory>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -21,14 +21,11 @@ public:
     PipelineCompute(const Spec &spec);
     ~PipelineCompute();
 
-    auto Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) const -> void;
-    auto Dispatch(VkCommandBuffer cmd, const glm::uvec3 &groupCount) const -> void;
-
-public:
-    auto Get() const -> VkPipeline;
+    auto Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void;
+    auto Dispatch(vk::raii::CommandBuffer &commandBuffer, const glm::uvec3 &groupCount) const -> void;
 
 private:
-    auto CreatePipeline(const VkPipelineShaderStageCreateInfo &stageInfo) -> void;
+    auto CreatePipeline(const vk::PipelineShaderStageCreateInfo &stageInfo) -> void;
 };
 
 } // namespace muon::graphics
