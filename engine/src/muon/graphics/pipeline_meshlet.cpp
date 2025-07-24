@@ -40,42 +40,36 @@ PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(*spec.context,
 
 PipelineMeshlet::~PipelineMeshlet() { MU_CORE_DEBUG("destroyed meshlet pipeline"); }
 
-auto PipelineMeshlet::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
-    if (m_pipeline) {
-        vkDestroyPipeline(m_context.GetDevice(), m_pipeline, nullptr);
-    }
+auto PipelineMeshlet::Bake(const vk::PipelineRenderingCreateInfo &renderingCi) -> void { CreatePipeline(renderingCi); }
 
-    CreatePipeline(renderingCreateInfo);
+auto PipelineMeshlet::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout->Get(), 0, sets, {});
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 }
 
-auto PipelineMeshlet::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) -> void {
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_layout->Get(), 0, sets.size(), sets.data(), 0, nullptr);
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-}
+auto PipelineMeshlet::CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void {
+    vk::GraphicsPipelineCreateInfo graphicsPipelineCi;
+    graphicsPipelineCi.stageCount = static_cast<uint32_t>(m_shaderStages.size());
+    graphicsPipelineCi.pStages = m_shaderStages.data();
+    graphicsPipelineCi.pVertexInputState = nullptr;
+    graphicsPipelineCi.pViewportState = &m_state.viewportState;
+    graphicsPipelineCi.pRasterizationState = &m_state.rasterizationState;
+    graphicsPipelineCi.pMultisampleState = &m_state.multisampleState;
+    graphicsPipelineCi.pColorBlendState = &m_state.colorBlendState;
+    graphicsPipelineCi.pDepthStencilState = &m_state.depthStencilState;
+    graphicsPipelineCi.pDynamicState = &m_state.dynamicState;
 
-auto PipelineMeshlet::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
-    VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
+    graphicsPipelineCi.layout = m_layout->Get();
+    graphicsPipelineCi.pNext = &renderingCi;
+    graphicsPipelineCi.subpass = 0;
 
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
-    pipelineCreateInfo.stageCount = static_cast<uint32_t>(m_shaderStages.size());
-    pipelineCreateInfo.pStages = m_shaderStages.data();
-    pipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
-    pipelineCreateInfo.pViewportState = &m_state.viewportState;
-    pipelineCreateInfo.pRasterizationState = &m_state.rasterizationState;
-    pipelineCreateInfo.pMultisampleState = &m_state.multisampleState;
-    pipelineCreateInfo.pColorBlendState = &m_state.colorBlendState;
-    pipelineCreateInfo.pDepthStencilState = &m_state.depthStencilState;
-    pipelineCreateInfo.pDynamicState = &m_state.dynamicState;
+    graphicsPipelineCi.basePipelineIndex = -1;
+    graphicsPipelineCi.basePipelineHandle = nullptr;
 
-    pipelineCreateInfo.layout = m_layout->Get();
-    pipelineCreateInfo.pNext = &renderingCreateInfo;
-    pipelineCreateInfo.subpass = 0;
+    auto createPipelineResult = m_context.GetDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
+    MU_CORE_ASSERT(createPipelineResult, "failed to create meshlet pipeline");
 
-    pipelineCreateInfo.basePipelineIndex = -1;
-    pipelineCreateInfo.basePipelineHandle = nullptr;
-
-    auto result = vkCreateGraphicsPipelines(m_context.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create meshlet pipeline");
+    m_pipeline = std::move(*createPipelineResult);
 }
 
 } // namespace muon::graphics

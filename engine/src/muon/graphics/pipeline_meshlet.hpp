@@ -3,9 +3,9 @@
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_base.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <memory>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -20,26 +20,26 @@ public:
     PipelineMeshlet(const Spec &spec);
     ~PipelineMeshlet();
 
-    auto Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;
-    auto Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) -> void;
+    auto Bake(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
+    auto Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void;
 
 private:
-    auto CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;
+    auto CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
 
 private:
     struct PipelineMeshletState {
-        VkPipelineViewportStateCreateInfo viewportState{};
-        VkPipelineRasterizationStateCreateInfo rasterizationState{};
-        VkPipelineMultisampleStateCreateInfo multisampleState{};
-        std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
-        VkPipelineColorBlendStateCreateInfo colorBlendState{};
-        VkPipelineDepthStencilStateCreateInfo depthStencilState{};
-        std::vector<VkDynamicState> dynamicStateEnables{};
-        VkPipelineDynamicStateCreateInfo dynamicState{};
+        vk::PipelineViewportStateCreateInfo viewportState{};
+        vk::PipelineRasterizationStateCreateInfo rasterizationState{};
+        vk::PipelineMultisampleStateCreateInfo multisampleState{};
+        std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments{};
+        vk::PipelineColorBlendStateCreateInfo colorBlendState{};
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
+        std::vector<vk::DynamicState> dynamicStateEnables{};
+        vk::PipelineDynamicStateCreateInfo dynamicState{};
     };
     PipelineMeshletState m_state{};
 
-    std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
+    std::vector<vk::PipelineShaderStageCreateInfo> m_shaderStages{};
 };
 
 } // namespace muon::graphics
