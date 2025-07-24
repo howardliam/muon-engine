@@ -1,5 +1,6 @@
 #include "muon/core/log.hpp"
 
+#include "fmt/format.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
@@ -13,8 +14,8 @@ auto Log::Init() -> void {
     sinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     sinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Muon.log", true));
 
-    sinks[0]->set_pattern("%^[%T] %4n: %v%$");
-    sinks[1]->set_pattern("[%T] [%l] %n: %v");
+    sinks[0]->set_pattern("%T%z [%4n] [%^%5l%$]: %v");
+    sinks[1]->set_pattern("%T%z [%4n] [%5l]: %v");
 
     s_coreLogger = std::make_shared<spdlog::logger>("MUON", sinks.begin(), sinks.end());
     spdlog::register_logger(s_coreLogger);
