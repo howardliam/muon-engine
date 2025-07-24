@@ -2,28 +2,31 @@
 
 #include "muon/core/assert.hpp"
 
+#include <utility>
+
 namespace muon::graphics {
 
 PipelineLayout::PipelineLayout(const Spec &spec) : m_context(*spec.context) {
-    VkPipelineLayoutCreateInfo createInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
-    createInfo.setLayoutCount = spec.setLayouts.size();
-    createInfo.pSetLayouts = spec.setLayouts.data();
+    vk::PipelineLayoutCreateInfo pipelineLayoutCi;
+    pipelineLayoutCi.setLayoutCount = spec.setLayouts.size();
+    pipelineLayoutCi.pSetLayouts = spec.setLayouts.data();
 
     if (spec.pushConstant) {
-        VkPushConstantRange range = spec.pushConstant.value();
-        createInfo.pushConstantRangeCount = 1;
-        createInfo.pPushConstantRanges = &range;
+        vk::PushConstantRange range = spec.pushConstant.value();
+        pipelineLayoutCi.pushConstantRangeCount = 1;
+        pipelineLayoutCi.pPushConstantRanges = &range;
     } else {
-        createInfo.pushConstantRangeCount = 0;
-        createInfo.pPushConstantRanges = nullptr;
+        pipelineLayoutCi.pushConstantRangeCount = 0;
+        pipelineLayoutCi.pPushConstantRanges = nullptr;
     }
 
-    auto result = vkCreatePipelineLayout(m_context.GetDevice(), &createInfo, nullptr, &m_layout);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create pipeline layout");
+    auto pipelineLayoutResult = m_context.GetDevice().createPipelineLayout(pipelineLayoutCi);
+    MU_CORE_ASSERT(pipelineLayoutResult, "failed to create pipeline layout");
+
+    m_layout = std::move(*pipelineLayoutResult);
 }
 
-PipelineLayout::~PipelineLayout() { vkDestroyPipelineLayout(m_context.GetDevice(), m_layout, nullptr); }
-
-VkPipelineLayout PipelineLayout::Get() const { return m_layout; }
+auto PipelineLayout::Get() -> vk::raii::PipelineLayout & { return m_layout; }
+auto PipelineLayout::Get() const -> const vk::raii::PipelineLayout & { return m_layout; }
 
 } // namespace muon::graphics
