@@ -33,7 +33,6 @@ target_sources(
         src/muon/graphics/queue_info.cpp
         src/muon/graphics/renderer.cpp
         src/muon/graphics/shader_compiler.cpp
-        src/muon/graphics/shader_reflection.cpp
         src/muon/graphics/swapchain.cpp
         src/muon/graphics/texture.cpp
 
@@ -92,7 +91,6 @@ target_sources(
         src/muon/graphics/queue_info.hpp
         src/muon/graphics/renderer.hpp
         src/muon/graphics/shader_compiler.hpp
-        src/muon/graphics/shader_reflection.hpp
         src/muon/graphics/swapchain.hpp
         src/muon/graphics/texture.hpp
 
