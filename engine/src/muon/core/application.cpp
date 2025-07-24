@@ -16,7 +16,6 @@
 
 #include <fmt/ranges.h>
 #include <memory>
-#include <vulkan/vulkan_core.h>
 
 namespace muon {
 
@@ -124,7 +123,9 @@ auto Application::Run() -> void {
     while (m_running) {
         m_window->PollEvents();
 
-        if (auto cmd = m_renderer->BeginFrame()) {
+        if (auto cmd = m_renderer->BeginFrame(); cmd) {
+            auto &commandBuffer = **cmd;
+
             m_renderer->EndFrame();
         }
     }
