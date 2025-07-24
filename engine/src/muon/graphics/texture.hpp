@@ -4,10 +4,10 @@
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
+#include "vk_mem_alloc.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <deque>
-#include <vk_mem_alloc.h>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -15,11 +15,11 @@ class Texture : NoCopy, NoMove {
 public:
     struct Spec {
         const Context *context{nullptr};
-        VkCommandBuffer cmd{nullptr};
+        vk::raii::CommandBuffer *commandBuffer{nullptr};
         std::deque<Buffer> *uploadBuffers{nullptr};
 
-        VkExtent2D extent{};
-        VkFormat format{};
+        vk::Extent2D extent{};
+        vk::Format format{};
         const std::vector<uint8_t> &textureData{};
         uint32_t pixelSize{};
     };
@@ -29,11 +29,16 @@ public:
     ~Texture();
 
 public:
-    [[nodiscard]] auto Get() const -> VkImage;
-    [[nodiscard]] auto GetView() const -> VkImageView;
-    [[nodiscard]] auto GetSampler() const -> VkSampler;
+    auto Get() -> vk::raii::Image &;
+    auto Get() const -> const vk::raii::Image &;
 
-    [[nodiscard]] auto GetDescriptorInfo() const -> const VkDescriptorImageInfo &;
+    auto GetView() -> vk::raii::ImageView &;
+    auto GetView() const -> const vk::raii::ImageView &;
+
+    auto GetSampler() -> vk::raii::Sampler &;
+    auto GetSampler() const -> const vk::raii::Sampler &;
+
+    auto GetDescriptorInfo() const -> const vk::DescriptorImageInfo &;
 
 private:
     auto CreateImage() -> void;
@@ -41,22 +46,23 @@ private:
     auto CreateSampler() -> void;
 
     auto UploadData(
-        VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
+        vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData,
+        uint32_t pixelSize
     ) -> void;
 
 private:
     const Context &m_context;
 
-    VkDeviceSize m_bytes{};
-    VkExtent2D m_extent{};
-    VkFormat m_format{};
+    vk::DeviceSize m_size;
+    vk::Extent2D m_extent;
+    vk::Format m_format;
 
-    VkImage m_image{nullptr};
-    VmaAllocation m_allocation{nullptr};
-    VkImageView m_imageView{nullptr};
-    VkSampler m_sampler{nullptr};
+    vk::raii::Image m_image{nullptr};
+    vma::Allocation m_allocation{nullptr};
+    vk::raii::ImageView m_imageView{nullptr};
+    vk::raii::Sampler m_sampler{nullptr};
 
-    VkDescriptorImageInfo m_descriptorInfo{};
+    vk::DescriptorImageInfo m_descriptorInfo;
 };
 
 } // namespace muon::graphics

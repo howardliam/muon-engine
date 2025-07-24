@@ -3,197 +3,200 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/graphics/buffer.hpp"
+#include "muon/graphics/context.hpp"
 #include "muon/utils/pretty_print.hpp"
-
-#include <vk_mem_alloc.h>
-#include <vulkan/vulkan_core.h>
+#include "vk_mem_alloc_enums.hpp"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace muon::graphics {
 
 Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format) {
-    MU_CORE_ASSERT(spec.cmd != nullptr, "there must be a valid command buffer");
+    MU_CORE_ASSERT(spec.commandBuffer != nullptr, "there must be a valid command buffer");
     MU_CORE_ASSERT(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
     CreateImage();
     CreateImageView();
     CreateSampler();
 
-    m_descriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    m_descriptorInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
     m_descriptorInfo.imageView = m_imageView;
     m_descriptorInfo.sampler = m_sampler;
 
-    UploadData(spec.cmd, spec.uploadBuffers, spec.textureData, spec.pixelSize);
+    UploadData(*spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
 
     MU_CORE_DEBUG(
-        "created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes)
+        "created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_size)
     );
 }
 
-Texture::~Texture() {
-    vkDestroySampler(m_context.GetDevice(), m_sampler, nullptr);
-    vkDestroyImageView(m_context.GetDevice(), m_imageView, nullptr);
-    vmaDestroyImage(m_context.GetAllocator(), m_image, m_allocation);
+Texture::~Texture() { MU_CORE_DEBUG("destroyed texture"); }
 
-    MU_CORE_DEBUG("destroyed texture");
-}
+auto Texture::Get() -> vk::raii::Image & { return m_image; }
+auto Texture::Get() const -> const vk::raii::Image & { return m_image; }
 
-auto Texture::Get() const -> VkImage { return m_image; }
+auto Texture::GetView() -> vk::raii::ImageView & { return m_imageView; }
+auto Texture::GetView() const -> const vk::raii::ImageView & { return m_imageView; }
 
-auto Texture::GetView() const -> VkImageView { return m_imageView; }
+auto Texture::GetSampler() -> vk::raii::Sampler & { return m_sampler; }
+auto Texture::GetSampler() const -> const vk::raii::Sampler & { return m_sampler; }
 
-auto Texture::GetSampler() const -> VkSampler { return m_sampler; }
-
-auto Texture::GetDescriptorInfo() const -> const VkDescriptorImageInfo & { return m_descriptorInfo; }
+auto Texture::GetDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
 
 auto Texture::CreateImage() -> void {
-    VkImageCreateInfo createInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-    createInfo.extent = {m_extent.width, m_extent.height, 1};
-    createInfo.mipLevels = 1;
-    createInfo.arrayLayers = 1;
-    createInfo.format = m_format;
-    createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.flags = 0;
+    vk::ImageCreateInfo imageCi;
+    imageCi.extent = vk::Extent3D{m_extent.width, m_extent.height, 1};
+    imageCi.mipLevels = 1;
+    imageCi.arrayLayers = 1;
+    imageCi.format = m_format;
+    imageCi.tiling = vk::ImageTiling::eOptimal;
+    imageCi.initialLayout = vk::ImageLayout::eUndefined;
+    imageCi.usage =
+        vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+    imageCi.samples = vk::SampleCountFlagBits::e1;
+    imageCi.sharingMode = vk::SharingMode::eExclusive;
+    imageCi.flags = vk::ImageCreateFlags{};
 
-    auto result = vkCreateImage(m_context.GetDevice(), &createInfo, nullptr, &m_image);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture image");
+    auto imageResult = m_context.GetDevice().createImage(imageCi);
+    MU_CORE_ASSERT(imageResult, "failed to create texture image");
+    m_image = std::move(*imageResult);
 
-    VkMemoryRequirements memoryRequirements{};
-    vkGetImageMemoryRequirements(m_context.GetDevice(), m_image, &memoryRequirements);
+    auto memoryRequirements = m_image.getMemoryRequirements();
 
-    VmaAllocationCreateInfo allocCreateInfo{};
-    allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-    allocCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    vma::AllocationCreateInfo allocCi;
+    allocCi.usage = vma::MemoryUsage::eAutoPreferDevice;
+    allocCi.requiredFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 
-    VmaAllocationInfo allocInfo{};
-    result = vmaAllocateMemory(m_context.GetAllocator(), &memoryRequirements, &allocCreateInfo, &m_allocation, &allocInfo);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate texture image memory");
+    vma::AllocationInfo allocInfo{};
 
-    result = vmaBindImageMemory(m_context.GetAllocator(), m_allocation, m_image);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to bind texture image memory");
+    auto allocationResult = m_context.GetAllocator().allocateMemory(memoryRequirements, allocCi, &allocInfo);
+    MU_CORE_ASSERT(allocationResult.result == vk::Result::eSuccess, "failed to allocate texture image memory");
 
-    m_bytes = allocInfo.size;
+    auto bindResult = m_context.GetAllocator().bindImageMemory(m_allocation, m_image);
+    MU_CORE_ASSERT(bindResult == vk::Result::eSuccess, "failed to bind texture image memory");
+
+    m_size = allocInfo.size;
 }
 
 auto Texture::CreateImageView() -> void {
-    VkImageViewCreateInfo createInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-    createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    createInfo.format = m_format;
-    createInfo.components.r = VK_COMPONENT_SWIZZLE_R;
-    createInfo.components.g = VK_COMPONENT_SWIZZLE_G;
-    createInfo.components.b = VK_COMPONENT_SWIZZLE_B;
-    createInfo.components.a = VK_COMPONENT_SWIZZLE_A;
-    createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    createInfo.subresourceRange.baseMipLevel = 0;
-    createInfo.subresourceRange.levelCount = 1;
-    createInfo.subresourceRange.baseArrayLayer = 0;
-    createInfo.subresourceRange.layerCount = 1;
+    vk::ImageViewCreateInfo imageViewCi;
+    imageViewCi.viewType = vk::ImageViewType::e2D;
+    imageViewCi.format = m_format;
+    imageViewCi.components.r = vk::ComponentSwizzle::eR;
+    imageViewCi.components.g = vk::ComponentSwizzle::eG;
+    imageViewCi.components.b = vk::ComponentSwizzle::eB;
+    imageViewCi.components.a = vk::ComponentSwizzle::eA;
+    imageViewCi.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    imageViewCi.subresourceRange.baseMipLevel = 0;
+    imageViewCi.subresourceRange.levelCount = 1;
+    imageViewCi.subresourceRange.baseArrayLayer = 0;
+    imageViewCi.subresourceRange.layerCount = 1;
 
-    auto result = vkCreateImageView(m_context.GetDevice(), &createInfo, nullptr, &m_imageView);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture image view");
+    auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
+    MU_CORE_ASSERT(imageViewResult, "failed to create texture image view");
+    m_imageView = std::move(*imageViewResult);
 }
 
 auto Texture::CreateSampler() -> void {
-    VkSamplerCreateInfo createInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
-    createInfo.minFilter = VK_FILTER_LINEAR;
-    createInfo.magFilter = VK_FILTER_LINEAR;
-    createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    createInfo.compareEnable = false;
-    createInfo.compareOp = VK_COMPARE_OP_NEVER;
-    createInfo.mipLodBias = 0.0;
-    createInfo.minLod = 0.0;
-    createInfo.maxLod = 0.0;
-    createInfo.anisotropyEnable = false;
-    createInfo.maxAnisotropy = 4.0;
-    createInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    vk::SamplerCreateInfo samplerCi;
+    samplerCi.minFilter = vk::Filter::eLinear;
+    samplerCi.magFilter = vk::Filter::eLinear;
+    samplerCi.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    samplerCi.addressModeU = vk::SamplerAddressMode::eRepeat;
+    samplerCi.addressModeV = vk::SamplerAddressMode::eRepeat;
+    samplerCi.addressModeW = vk::SamplerAddressMode::eRepeat;
+    samplerCi.compareEnable = false;
+    samplerCi.compareOp = vk::CompareOp::eNever;
+    samplerCi.mipLodBias = 0.0;
+    samplerCi.minLod = 0.0;
+    samplerCi.maxLod = 0.0;
+    samplerCi.anisotropyEnable = false;
+    samplerCi.maxAnisotropy = 4.0;
+    samplerCi.borderColor = vk::BorderColor::eFloatOpaqueWhite;
 
-    auto result = vkCreateSampler(m_context.GetDevice(), &createInfo, nullptr, &m_sampler);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create texture samper");
+    auto samplerResult = m_context.GetDevice().createSampler(samplerCi);
+    MU_CORE_ASSERT(samplerResult, "failed to create texture samper");
+    m_sampler = std::move(*samplerResult);
 }
 
 auto Texture::UploadData(
-    VkCommandBuffer cmd, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData, uint32_t pixelSize
+    vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData,
+    uint32_t pixelSize
 ) -> void {
-    VkImageMemoryBarrier2 copyBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-    copyBarrier.image = m_image;
-    copyBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    copyBarrier.subresourceRange.baseMipLevel = 0;
-    copyBarrier.subresourceRange.levelCount = 1;
-    copyBarrier.subresourceRange.baseArrayLayer = 0;
-    copyBarrier.subresourceRange.layerCount = 1;
+    vk::ImageMemoryBarrier2 copyImb;
+    copyImb.image = m_image;
+    copyImb.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    copyImb.subresourceRange.baseMipLevel = 0;
+    copyImb.subresourceRange.levelCount = 1;
+    copyImb.subresourceRange.baseArrayLayer = 0;
+    copyImb.subresourceRange.layerCount = 1;
 
-    copyBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    copyBarrier.srcAccessMask = VK_ACCESS_2_NONE;
-    copyBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    copyBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+    copyImb.oldLayout = vk::ImageLayout::eUndefined;
+    copyImb.srcAccessMask = vk::AccessFlagBits2::eNone;
+    copyImb.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+    copyImb.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
 
-    copyBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    copyBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-    copyBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    copyBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    copyImb.newLayout = vk::ImageLayout::eTransferDstOptimal;
+    copyImb.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
+    copyImb.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+    copyImb.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
 
-    VkDependencyInfo copyDepInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-    copyDepInfo.dependencyFlags = 0;
-    copyDepInfo.imageMemoryBarrierCount = 1;
-    copyDepInfo.pImageMemoryBarriers = &copyBarrier;
-    vkCmdPipelineBarrier2(cmd, &copyDepInfo);
+    vk::DependencyInfo copyDi;
+    copyDi.dependencyFlags = vk::DependencyFlags{};
+    copyDi.imageMemoryBarrierCount = 1;
+    copyDi.pImageMemoryBarriers = &copyImb;
+    commandBuffer.pipelineBarrier2(copyDi);
 
     Buffer::Spec stagingSpec{};
     stagingSpec.context = &m_context;
     stagingSpec.instanceSize = pixelSize;
     stagingSpec.instanceCount = textureData.size() / pixelSize;
-    stagingSpec.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stagingSpec.usageFlags = vk::BufferUsageFlagBits::eTransferSrc;
     Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
 
     auto result = stagingBuffer.Map();
-    MU_CORE_ASSERT(result == VK_SUCCESS, "faild to map texture staging buffer");
+    MU_CORE_ASSERT(result, "failed to map texture staging buffer");
 
     stagingBuffer.Write(textureData.data());
 
-    VkBufferImageCopy region{};
+    vk::BufferImageCopy region{};
     region.bufferOffset = 0;
     region.bufferRowLength = 0;
     region.bufferImageHeight = 0;
 
-    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
     region.imageSubresource.layerCount = 1;
 
-    region.imageOffset = {0, 0, 0};
-    region.imageExtent = {m_extent.width, m_extent.height, 1};
+    region.imageOffset = vk::Offset3D{0, 0, 0};
+    region.imageExtent = vk::Extent3D{m_extent.width, m_extent.height, 1};
 
-    vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    commandBuffer.copyBufferToImage(stagingBuffer.Get(), m_image, vk::ImageLayout::eTransferDstOptimal, {region});
 
-    VkImageMemoryBarrier2 finalBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-    finalBarrier.image = m_image;
-    finalBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    finalBarrier.subresourceRange.baseMipLevel = 0;
-    finalBarrier.subresourceRange.levelCount = 1;
-    finalBarrier.subresourceRange.baseArrayLayer = 0;
-    finalBarrier.subresourceRange.layerCount = 1;
+    vk::ImageMemoryBarrier2 shaderImb;
+    shaderImb.image = m_image;
+    shaderImb.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    shaderImb.subresourceRange.baseMipLevel = 0;
+    shaderImb.subresourceRange.levelCount = 1;
+    shaderImb.subresourceRange.baseArrayLayer = 0;
+    shaderImb.subresourceRange.layerCount = 1;
 
-    finalBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    finalBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-    finalBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    finalBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    shaderImb.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    shaderImb.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+    shaderImb.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+    shaderImb.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
 
-    finalBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    finalBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-    finalBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    finalBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+    shaderImb.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    shaderImb.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+    shaderImb.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+    shaderImb.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader;
 
-    VkDependencyInfo finalDepInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-    finalDepInfo.dependencyFlags = 0;
-    finalDepInfo.imageMemoryBarrierCount = 1;
-    finalDepInfo.pImageMemoryBarriers = &finalBarrier;
-    vkCmdPipelineBarrier2(cmd, &finalDepInfo);
+    vk::DependencyInfo shaderDi;
+    shaderDi.dependencyFlags = vk::DependencyFlags{};
+    shaderDi.imageMemoryBarrierCount = 1;
+    shaderDi.pImageMemoryBarriers = &shaderImb;
+    commandBuffer.pipelineBarrier2(shaderDi);
 }
 
 } // namespace muon::graphics
