@@ -1,21 +1,27 @@
 #include "muon/graphics/queue.hpp"
 
+#include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_raii.hpp"
 #include "vulkan/vulkan_structs.hpp"
 
+#include <utility>
 #include <vulkan/vulkan_enums.hpp>
 
 namespace muon::graphics {
 
 Queue::Queue(const Spec &spec) : m_device(*spec.device), m_name(spec.name) {
-    m_queue = vk::raii::Queue{m_device, spec.queueFamilyIndex, spec.queueIndex};
+    auto queueResult = m_device.getQueue(spec.queueFamilyIndex, spec.queueIndex);
+    MU_CORE_ASSERT(queueResult, "failed to get queue from device");
+    m_queue = std::move(*queueResult);
 
     vk::CommandPoolCreateInfo commandPoolCi;
     commandPoolCi.queueFamilyIndex = spec.queueFamilyIndex;
     commandPoolCi.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
-    m_commandPool = vk::raii::CommandPool{m_device, commandPoolCi};
+    auto commandPoolResult = m_device.createCommandPool(commandPoolCi);
+    MU_CORE_ASSERT(commandPoolResult, "failed to create command pool for queue");
+    m_commandPool = std::move(*commandPoolResult);
 
     MU_CORE_DEBUG("created {} queue", m_name);
 }
@@ -28,8 +34,9 @@ auto Queue::ExecuteCommands(std::function<void(vk::raii::CommandBuffer &commandB
     commandBufferAi.commandPool = m_commandPool;
     commandBufferAi.commandBufferCount = 1;
 
-    vk::raii::CommandBuffers commandBuffers{m_device, commandBufferAi};
-    auto &commandBuffer = commandBuffers[0];
+    auto commandBufferResult = m_device.allocateCommandBuffers(commandBufferAi);
+    MU_CORE_ASSERT(commandBufferResult, "failed to allocate single time command buffer");
+    auto &commandBuffer = (*commandBufferResult)[0];
 
     vk::CommandBufferBeginInfo commandBufferBi;
     commandBufferBi.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
