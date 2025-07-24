@@ -131,11 +131,8 @@ auto Context::CreateInstance(const Window &window) -> void {
 #ifdef MU_DEBUG_ENABLED
     const char *validationLayer = "VK_LAYER_KHRONOS_validation";
 
-    auto checkValidationLayerSupport = [&validationLayer]() -> bool {
-        uint32_t propertyCount = 0;
-        vkEnumerateInstanceLayerProperties(&propertyCount, nullptr);
-        std::vector<VkLayerProperties> availableLayers(propertyCount);
-        vkEnumerateInstanceLayerProperties(&propertyCount, availableLayers.data());
+    auto checkValidationLayerSupport = [&validationLayer](const vk::raii::Context &context) -> bool {
+        auto availableLayers = context.enumerateInstanceLayerProperties();
 
         auto it = std::ranges::find_if(availableLayers, [&](const VkLayerProperties &props) -> bool {
             return std::strcmp(props.layerName, validationLayer) == 0;
@@ -148,7 +145,7 @@ auto Context::CreateInstance(const Window &window) -> void {
         return true;
     };
 
-    if (checkValidationLayerSupport()) {
+    if (checkValidationLayerSupport(m_context)) {
         instanceCi.enabledLayerCount = 1;
         instanceCi.ppEnabledLayerNames = &validationLayer;
     } else {
