@@ -1,6 +1,7 @@
 #include "muon/core/window.hpp"
 
-#include "muon/core/assert.hpp"
+#include "GLFW/glfw3.h"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
@@ -10,26 +11,25 @@
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan_core.h>
-
 namespace muon {
 
 struct Window::WindowHandle {
     GLFWwindow *window;
 };
 
+inline auto test() -> void {};
+
 Window::Window(const Spec &spec) : m_handle(std::make_unique<WindowHandle>()) {
     m_data.dispatcher = spec.dispatcher;
     m_data.title = spec.title;
 
-    glfwSetErrorCallback([](int32_t code, const char *message) { MU_CORE_ERROR(message); });
+    glfwSetErrorCallback([](int32_t, const char *message) { core::error(message); });
 
     auto initialized = glfwInit();
-    MU_CORE_ASSERT(initialized, "GLFW must be initialised");
+    core::expect(initialized, "GLFW must be initialised");
 
     auto vkSupported = glfwVulkanSupported();
-    MU_CORE_ASSERT(vkSupported, "GLFW must support Vulkan");
+    core::expect(vkSupported, "GLFW must support Vulkan");
 
     const auto *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     m_data.refreshRate = mode->refreshRate;
@@ -43,7 +43,8 @@ Window::Window(const Spec &spec) : m_handle(std::make_unique<WindowHandle>()) {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     m_handle->window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
-    MU_CORE_ASSERT(m_handle->window, "window must exist");
+    core::expect(m_handle->window, "window must exist");
+
     glfwSetWindowSizeLimits(m_handle->window, 1280, 720, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
     glfwSetWindowUserPointer(m_handle->window, &m_data);
@@ -55,13 +56,13 @@ Window::Window(const Spec &spec) : m_handle(std::make_unique<WindowHandle>()) {
 
     ConfigureDispatchers();
 
-    MU_CORE_DEBUG("created window with dimensions: {}x{}", m_data.width, m_data.height);
+    core::debug("created window with dimensions: {}x{}", m_data.width, m_data.height);
 }
 
 Window::~Window() {
     glfwDestroyWindow(m_handle->window);
     glfwTerminate();
-    MU_CORE_DEBUG("destroyed window");
+    core::debug("destroyed window");
 }
 
 auto Window::PollEvents() const -> void { glfwPollEvents(); }

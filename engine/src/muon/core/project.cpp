@@ -1,12 +1,13 @@
 #include "muon/core/project.hpp"
 
-#include "muon/core/assert.hpp"
 #include "muon/core/errors.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <toml++/toml.hpp>
@@ -18,7 +19,7 @@ Project::Project(const Spec &spec) : m_name(spec.name), m_path(spec.path) {}
 
 Project::~Project() {
     auto success = Save();
-    MU_CORE_ASSERT(success, "failed to save project file to disk");
+    core::expect(success, "failed to save project file to disk");
 }
 
 auto Project::Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>, ProjectError> {
@@ -81,37 +82,37 @@ auto Project::Save() -> std::expected<void, ProjectError> {
 }
 
 auto Project::GetProjectDirectory() const -> const std::filesystem::path & {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return m_path;
 }
 
 auto Project::GetImagesDirectory() const -> std::filesystem::path {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return m_path / "images";
 }
 
 auto Project::GetModelsDirectory() const -> std::filesystem::path {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return m_path / "models";
 }
 
 auto Project::GetScenesDirectory() const -> std::filesystem::path {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return m_path / "scenes";
 }
 
 auto Project::GetScriptsDirectory() const -> std::filesystem::path {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return m_path / "scripts";
 }
 
 auto Project::GetShadersDirectory() const -> std::filesystem::path {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return m_path / "shaders";
 }
 
 auto Project::GetActiveProject() -> std::shared_ptr<Project> {
-    MU_CORE_ASSERT(s_activeProject, "there must be an active project");
+    core::expect(s_activeProject, "there must be an active project");
     return s_activeProject;
 }
 
