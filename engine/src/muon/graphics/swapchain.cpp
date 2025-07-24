@@ -2,6 +2,8 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_handles.hpp"
 
 #include <algorithm>
 #include <vulkan/vulkan_core.h>
@@ -11,113 +13,94 @@ namespace muon::graphics {
 constexpr uint64_t k_waitDuration = 30'000'000'000;
 
 Swapchain::Swapchain(const Spec &spec)
-    : m_context(*spec.context), m_graphicsQueue(m_context.GetGraphicsQueue()), m_swapchainColorSpace(spec.colorSpace),
-      m_swapchainFormat(spec.format) {
-    CreateSwapchain(spec.windowExtent, spec.presentMode, spec.oldSwapchain);
+    : m_context(*spec.context), m_graphicsQueue(m_context.GetGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
+      m_format(spec.format), m_colorSpace(spec.colorSpace) {
+    CreateSwapchain(spec.windowExtent, spec.presentMode);
     CreateImageViews();
     CreateSyncObjects();
 
     if (spec.oldSwapchain) {
-        MU_CORE_DEBUG(
-            "created swapchain with dimensions: {}x{} from old swapchain", m_swapchainExtent.width, m_swapchainExtent.height
-        );
+        MU_CORE_DEBUG("created swapchain with dimensions: {}x{} from old swapchain", m_extent.width, m_extent.height);
     } else {
-        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", m_swapchainExtent.width, m_swapchainExtent.height);
+        MU_CORE_DEBUG("created swapchain with dimensions: {}x{}", m_extent.width, m_extent.height);
     }
 }
 
-Swapchain::~Swapchain() {
-    for (auto semaphore : m_imageAvailableSemaphores) {
-        vkDestroySemaphore(m_context.GetDevice(), semaphore, nullptr);
+Swapchain::~Swapchain() { MU_CORE_DEBUG("destroyed swapchain"); }
+
+auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
+    auto waitResult = m_context.GetDevice().waitForFences({m_inFlightFences[m_currentFrame]}, true, k_waitDuration);
+    MU_CORE_ASSERT(waitResult == vk::Result::eSuccess, "failed to wait for fences");
+
+    vk::AcquireNextImageInfoKHR acquireInfo;
+    acquireInfo.swapchain = m_swapchain;
+    acquireInfo.semaphore = m_imageAvailableSemaphores[m_currentFrame];
+    acquireInfo.timeout = k_waitDuration;
+
+    auto acquireResult = m_context.GetDevice().acquireNextImage2KHR(acquireInfo);
+    if (acquireResult.first != vk::Result::eSuccess) {
+        return std::unexpected(acquireResult.first);
     }
 
-    for (auto fence : m_inFlightFences) {
-        vkDestroyFence(m_context.GetDevice(), fence, nullptr);
-    }
-
-    for (auto semaphore : m_renderFinishedSemaphores) {
-        vkDestroySemaphore(m_context.GetDevice(), semaphore, nullptr);
-    }
-
-    for (auto imageView : m_swapchainImageViews) {
-        vkDestroyImageView(m_context.GetDevice(), imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(m_context.GetDevice(), m_swapchain, nullptr);
-
-    MU_CORE_DEBUG("destroyed swapchain");
+    return acquireResult.second;
 }
 
-auto Swapchain::AcquireNextImage(uint32_t *imageIndex) -> VkResult {
-    auto result = vkWaitForFences(m_context.GetDevice(), 1, &m_inFlightFences[m_currentFrame], true, k_waitDuration);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
-
-    result = vkAcquireNextImageKHR(
-        m_context.GetDevice(), m_swapchain, k_waitDuration, m_imageAvailableSemaphores[m_currentFrame], nullptr, imageIndex
-    );
-
-    return result;
-}
-
-auto Swapchain::SubmitCommandBuffers(const VkCommandBuffer cmd, uint32_t imageIndex) -> VkResult {
+auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
+    -> std::expected<void, vk::Result> {
     if (m_imagesInFlight[imageIndex] != nullptr) {
-        auto result = vkWaitForFences(m_context.GetDevice(), 1, &m_imagesInFlight[imageIndex], true, k_waitDuration);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for fences");
+        auto waitResult = m_context.GetDevice().waitForFences({m_imagesInFlight[imageIndex]}, true, k_waitDuration);
+        MU_CORE_ASSERT(waitResult == vk::Result::eSuccess, "failed to wait for fences");
     }
     m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
-    auto result = vkResetFences(m_context.GetDevice(), 1, &m_inFlightFences[m_currentFrame]);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to reset fences");
+    m_context.GetDevice().resetFences({m_inFlightFences[m_currentFrame]});
 
-    VkSubmitInfo2 submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
+    vk::SubmitInfo2 submitInfo;
 
-    VkSemaphoreSubmitInfo waitSemaphores{VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO};
-    waitSemaphores.semaphore = m_imageAvailableSemaphores[m_currentFrame];
-    waitSemaphores.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    vk::SemaphoreSubmitInfo waitSemaphoreSi;
+    waitSemaphoreSi.semaphore = m_imageAvailableSemaphores[m_currentFrame];
+    waitSemaphoreSi.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
     submitInfo.waitSemaphoreInfoCount = 1;
-    submitInfo.pWaitSemaphoreInfos = &waitSemaphores;
+    submitInfo.pWaitSemaphoreInfos = &waitSemaphoreSi;
 
-    VkCommandBufferSubmitInfo commandBufferInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
-    commandBufferInfo.commandBuffer = cmd;
+    vk::CommandBufferSubmitInfo commandBufferSi;
+    commandBufferSi.commandBuffer = commandBuffer;
     submitInfo.commandBufferInfoCount = 1;
-    submitInfo.pCommandBufferInfos = &commandBufferInfo;
+    submitInfo.pCommandBufferInfos = &commandBufferSi;
 
-    VkSemaphoreSubmitInfo signalSemaphores{VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO};
-    signalSemaphores.semaphore = m_renderFinishedSemaphores[imageIndex];
-    signalSemaphores.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    vk::SemaphoreSubmitInfo signalSemaphoreSi;
+    signalSemaphoreSi.semaphore = m_renderFinishedSemaphores[imageIndex];
+    signalSemaphoreSi.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
     submitInfo.signalSemaphoreInfoCount = 1;
-    submitInfo.pSignalSemaphoreInfos = &signalSemaphores;
+    submitInfo.pSignalSemaphoreInfos = &signalSemaphoreSi;
 
-    result = vkQueueSubmit2(m_graphicsQueue.Get(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit to queue");
+    m_graphicsQueue.Get().submit2(submitInfo);
 
-    VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
+    vk::PresentInfoKHR presentInfo;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &signalSemaphores.semaphore;
+    presentInfo.pWaitSemaphores = &signalSemaphoreSi.semaphore;
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &m_swapchain;
+    presentInfo.pSwapchains = &(*m_swapchain);
     presentInfo.pImageIndices = &imageIndex;
 
-    result = vkQueuePresentKHR(m_graphicsQueue.Get(), &presentInfo);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to present queue");
+    auto presentResult = m_graphicsQueue.Get().presentKHR(presentInfo);
+    MU_CORE_ASSERT(presentResult == vk::Result::eSuccess, "failed to present queue");
 
     m_currentFrame = (m_currentFrame + 1) % k_maxFramesInFlight;
 
-    return result;
+    return {};
 }
 
-auto Swapchain::GetImageCount() const -> size_t { return m_imageCount; }
+auto Swapchain::Get() -> vk::raii::SwapchainKHR & { return m_swapchain; }
+auto Swapchain::Get() const -> const vk::raii::SwapchainKHR & { return m_swapchain; }
 
-auto Swapchain::Get() const -> VkSwapchainKHR { return m_swapchain; }
-
-auto Swapchain::GetFormat() const -> VkFormat { return m_swapchainFormat; }
-
+auto Swapchain::GetFormat() const -> vk::Format { return m_format; }
 auto Swapchain::IsImageHdr() const -> bool {
-    switch (m_swapchainColorSpace) {
-        case VK_COLOR_SPACE_BT2020_LINEAR_EXT:
-        case VK_COLOR_SPACE_HDR10_ST2084_EXT:
-        case VK_COLOR_SPACE_HDR10_HLG_EXT:
-        case VK_COLOR_SPACE_DISPLAY_NATIVE_AMD: {
+    switch (m_colorSpace) {
+        case vk::ColorSpaceKHR::eBt2020LinearEXT:
+        case vk::ColorSpaceKHR::eHdr10St2084EXT:
+        case vk::ColorSpaceKHR::eHdr10HlgEXT:
+        case vk::ColorSpaceKHR::eDisplayNativeAMD: {
             return true;
         }
 
@@ -127,24 +110,23 @@ auto Swapchain::IsImageHdr() const -> bool {
     }
 }
 
-auto Swapchain::GetImage(int32_t index) const -> VkImage { return m_swapchainImages[index]; }
+auto Swapchain::GetImageCount() const -> size_t { return m_imageCount; }
 
-auto Swapchain::GetImageView(int32_t index) const -> VkImageView { return m_swapchainImageViews[index]; }
+auto Swapchain::GetImage(size_t index) -> vk::Image & { return m_images[index]; }
+auto Swapchain::GetImage(size_t index) const -> const vk::Image & { return m_images[index]; }
 
-auto Swapchain::GetExtent() const -> VkExtent2D { return m_swapchainExtent; }
+auto Swapchain::GetImageView(size_t index) -> vk::raii::ImageView & { return m_imageViews[index]; }
+auto Swapchain::GetImageView(size_t index) const -> const vk::raii::ImageView & { return m_imageViews[index]; }
 
-auto Swapchain::GetWidth() const -> uint32_t { return m_swapchainExtent.width; }
+auto Swapchain::GetExtent() const -> vk::Extent2D { return m_extent; }
+auto Swapchain::GetWidth() const -> uint32_t { return m_extent.width; }
+auto Swapchain::GetHeight() const -> uint32_t { return m_extent.height; }
+auto Swapchain::GetAspectRatio() const -> float { return static_cast<float>(m_extent.width) / m_extent.height; }
 
-auto Swapchain::GetHeight() const -> uint32_t { return m_swapchainExtent.height; }
+auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void {
+    auto capabilities = m_context.GetPhysicalDevice().getSurfaceCapabilities2EXT(m_context.GetSurface());
 
-auto Swapchain::GetAspectRatio() const -> float { return static_cast<float>(m_swapchainExtent.width) / m_swapchainExtent.height; }
-
-auto Swapchain::CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presentMode, VkSwapchainKHR oldSwapchain) -> void {
-    VkSurfaceCapabilitiesKHR capabilities{};
-    auto result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_context.GetPhysicalDevice(), m_context.GetSurface(), &capabilities);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface capabilities");
-
-    VkExtent2D extent{};
+    vk::Extent2D extent{};
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         extent = capabilities.currentExtent;
     } else {
@@ -157,88 +139,92 @@ auto Swapchain::CreateSwapchain(VkExtent2D windowExtent, VkPresentModeKHR presen
         minImageCount = capabilities.maxImageCount;
     }
 
-    VkSwapchainCreateInfoKHR createInfo{VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR};
-    createInfo.surface = m_context.GetSurface();
-    createInfo.minImageCount = minImageCount;
-    createInfo.imageFormat = m_swapchainFormat;
-    createInfo.imageColorSpace = m_swapchainColorSpace;
-    createInfo.imageExtent = extent;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.queueFamilyIndexCount = 0;
-    createInfo.pQueueFamilyIndices = nullptr;
-    createInfo.preTransform = capabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = presentMode;
-    createInfo.clipped = true;
+    vk::SwapchainCreateInfoKHR swapchainCi;
+    swapchainCi.surface = m_context.GetSurface();
+    swapchainCi.minImageCount = minImageCount;
+    swapchainCi.imageFormat = m_format;
+    swapchainCi.imageColorSpace = m_colorSpace;
+    swapchainCi.imageExtent = extent;
+    swapchainCi.imageArrayLayers = 1;
+    swapchainCi.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
+    swapchainCi.imageSharingMode = vk::SharingMode::eExclusive;
+    swapchainCi.queueFamilyIndexCount = 0;
+    swapchainCi.pQueueFamilyIndices = nullptr;
+    swapchainCi.preTransform = capabilities.currentTransform;
+    swapchainCi.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+    swapchainCi.presentMode = presentMode;
+    swapchainCi.clipped = true;
 
-    createInfo.oldSwapchain = oldSwapchain;
+    swapchainCi.oldSwapchain = m_oldSwapchain->m_swapchain;
 
-    result = vkCreateSwapchainKHR(m_context.GetDevice(), &createInfo, nullptr, &m_swapchain);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create the swapchain");
+    auto swapchainCreateResult = m_context.GetDevice().createSwapchainKHR(swapchainCi);
+    MU_CORE_ASSERT(swapchainCreateResult, "failed to create the swapchain");
 
-    result = vkGetSwapchainImagesKHR(m_context.GetDevice(), m_swapchain, &m_imageCount, nullptr);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain image count");
-    m_swapchainImages.resize(m_imageCount);
-    result = vkGetSwapchainImagesKHR(m_context.GetDevice(), m_swapchain, &m_imageCount, m_swapchainImages.data());
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get swapchain images");
+    m_swapchain = std::move(*swapchainCreateResult);
 
-    m_swapchainExtent = extent;
+    m_images = m_swapchain.getImages();
+    MU_CORE_ASSERT(m_images.size() > 0, "failed to get swapchain images");
+
+    m_extent = extent;
+
+    m_oldSwapchain = nullptr;
 }
 
 auto Swapchain::CreateImageViews() -> void {
-    m_swapchainImageViews.resize(m_imageCount);
+    m_imageViews.reserve(m_imageCount);
 
     bool swizzle = false;
-    if (m_swapchainFormat == VK_FORMAT_B8G8R8A8_SRGB || m_swapchainFormat == VK_FORMAT_A2B10G10R10_UNORM_PACK32) {
+    if (m_format == vk::Format::eB8G8R8A8Srgb || m_format == vk::Format::eA2B10G10R10UnormPack32) {
         swizzle = true;
     }
 
     for (size_t i = 0; i < m_imageCount; i++) {
-        VkImageViewCreateInfo createInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-        createInfo.image = m_swapchainImages[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = m_swapchainFormat;
+        vk::ImageViewCreateInfo imageViewCi;
+        imageViewCi.image = m_images[i];
+        imageViewCi.viewType = vk::ImageViewType::e2D;
+        imageViewCi.format = m_format;
 
-        createInfo.components.r = swizzle ? VK_COMPONENT_SWIZZLE_B : VK_COMPONENT_SWIZZLE_R;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_G;
-        createInfo.components.b = swizzle ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_B;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+        imageViewCi.components.r = swizzle ? vk::ComponentSwizzle::eB : vk::ComponentSwizzle::eR;
+        imageViewCi.components.g = vk::ComponentSwizzle::eG;
+        imageViewCi.components.b = swizzle ? vk::ComponentSwizzle::eR : vk::ComponentSwizzle::eB;
+        imageViewCi.components.a = vk::ComponentSwizzle::eA;
 
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
+        imageViewCi.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imageViewCi.subresourceRange.baseMipLevel = 0;
+        imageViewCi.subresourceRange.levelCount = 1;
+        imageViewCi.subresourceRange.baseArrayLayer = 0;
+        imageViewCi.subresourceRange.layerCount = 1;
 
-        auto result = vkCreateImageView(m_context.GetDevice(), &createInfo, nullptr, &m_swapchainImageViews[i]);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create a swapchain image view");
+        auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
+        MU_CORE_ASSERT(imageViewResult, "failed to create a swapchain image view");
+
+        m_imageViews[i] = std::move(*imageViewResult);
     }
 }
 
 auto Swapchain::CreateSyncObjects() -> void {
-    VkSemaphoreCreateInfo semaphoreInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+    vk::SemaphoreCreateInfo semaphoreCi;
 
-    VkFenceCreateInfo fenceInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    vk::FenceCreateInfo fenceCi;
+    fenceCi.flags = vk::FenceCreateFlagBits::eSignaled;
 
-    VkResult result;
-
-    m_imageAvailableSemaphores.resize(k_maxFramesInFlight);
-    m_inFlightFences.resize(k_maxFramesInFlight);
+    m_imageAvailableSemaphores.reserve(k_maxFramesInFlight);
+    m_inFlightFences.reserve(k_maxFramesInFlight);
     for (uint32_t i = 0; i < k_maxFramesInFlight; i++) {
-        result = vkCreateSemaphore(m_context.GetDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create image available semaphores");
+        auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
+        MU_CORE_ASSERT(semaphoreResult, "failed to create image available semaphores");
+        m_imageAvailableSemaphores[i] = std::move(*semaphoreResult);
 
-        result = vkCreateFence(m_context.GetDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create in flight fences");
+        auto fenceResult = m_context.GetDevice().createFence(fenceCi);
+        MU_CORE_ASSERT(fenceResult, "failed to create in flight fences");
+        m_inFlightFences[i] = std::move(*fenceResult);
     }
 
-    m_renderFinishedSemaphores.resize(m_imageCount);
+    m_renderFinishedSemaphores.reserve(m_imageCount);
     for (uint32_t i = 0; i < m_imageCount; i++) {
-        auto result = vkCreateSemaphore(m_context.GetDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
-        MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create render finished semaphores");
+        auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
+        MU_CORE_ASSERT(semaphoreResult, "failed to create render finished semaphores");
+        m_renderFinishedSemaphores[i] = std::move(*semaphoreResult);
     }
 
     m_imagesInFlight.resize(m_imageCount, nullptr);
