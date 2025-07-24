@@ -30,8 +30,7 @@ public:
 
     auto RequestAttention() const -> void;
 
-    auto CreateSurface(const vk::raii::Instance &instance, vk::raii::SurfaceKHR &surface) const
-        -> std::expected<void, vk::Result>;
+    auto CreateSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result>;
 
 public:
     auto GetExtent() const -> VkExtent2D;
