@@ -3,6 +3,7 @@
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
+#include "muon/graphics/device_extensions.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/instance_extensions.hpp"
 #include "muon/graphics/queue.hpp"
@@ -301,8 +302,8 @@ auto Context::CreateLogicalDevice() -> void {
     vk::DeviceCreateInfo deviceCi;
     deviceCi.queueCreateInfoCount = queueCreateInfos.size();
     deviceCi.pQueueCreateInfos = queueCreateInfos.data();
-    deviceCi.enabledExtensionCount = 0;
-    deviceCi.ppEnabledExtensionNames = nullptr;
+    deviceCi.enabledExtensionCount = 1;
+    deviceCi.ppEnabledExtensionNames = k_requiredDeviceExtensions.data();
     deviceCi.pNext = &features;
 
     auto deviceResult = m_physicalDevice.createDevice(deviceCi);
