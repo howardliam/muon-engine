@@ -2,7 +2,7 @@
 
 #include "muon/asset/loaders/png.hpp"
 #include "muon/asset/manager.hpp"
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/project.hpp"
 #include "muon/core/window.hpp"
@@ -20,34 +20,34 @@
 namespace muon {
 
 Application::Application(const Spec &spec) {
-    MU_CORE_ASSERT(!s_instance, "application already exists");
+    core::expect(!s_instance, "application already exists");
     s_instance = this;
 
     auto result = Project::Load(spec.workingDirectory / "test-project");
     if (!result.has_value()) {
         switch (result.error()) {
             case ProjectError::FailedToCreateDirectory:
-                MU_CORE_ERROR("failed to create directory");
+                core::error("failed to create directory");
                 break;
 
             case ProjectError::PathIsNotDirectory:
-                MU_CORE_ERROR("path is not directory");
+                core::error("path is not directory");
                 break;
 
             case ProjectError::DirectoryIsNotEmpty:
-                MU_CORE_ERROR("directory is not empty");
+                core::error("directory is not empty");
                 break;
 
             case ProjectError::FailedToOpenProjectFile:
-                MU_CORE_ERROR("failed to open project file");
+                core::error("failed to open project file");
                 break;
 
             case ProjectError::ProjectFileDoesNotExist:
-                MU_CORE_ERROR("project file does not exist");
+                core::error("project file does not exist");
                 break;
 
             case ProjectError::MalformedProjectFile:
-                MU_CORE_ERROR("malformed project file");
+                core::error("malformed project file");
                 break;
         }
     }
@@ -79,7 +79,7 @@ Application::Application(const Spec &spec) {
     m_assetManager = std::make_unique<asset::Manager>(assetManagerSpec);
 
     m_onWindowClose = m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
-        MU_CORE_INFO("window closed received");
+        core::info("window closed received");
         m_running = false;
     });
 
@@ -90,30 +90,30 @@ Application::Application(const Spec &spec) {
 
     m_dispatcher->Subscribe<event::MouseButtonEvent>([](const auto &event) {
         if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
-            MU_CORE_INFO("hello!");
+            core::info("hello!");
         }
     });
 
     m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
         if (event.keycode == input::KeyCode::V && event.mods.IsCtrlDown()) {
-            MU_CORE_INFO("{}", m_window->GetClipboardContents());
+            core::info("{}", m_window->GetClipboardContents());
         }
     });
 
-    m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) { MU_CORE_INFO("{}", fmt::join(event.paths, ", ")); });
+    m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) { core::info("{}", fmt::join(event.paths, ", ")); });
 
-    MU_CORE_DEBUG("created application");
+    core::debug("created application");
 }
 
 Application::~Application() {
     profiling::Profiler::DestroyContext();
-    MU_CORE_DEBUG("destroyed application");
+    core::debug("destroyed application");
 }
 
 auto Application::Get() -> Application & { return *s_instance; }
 
 auto Application::Run() -> void {
-    MU_CORE_INFO("running application");
+    core::info("running application");
 
     graphics::ShaderCompiler::Spec compilerSpec{};
     compilerSpec.hashStorePath = Project::GetActiveProject()->GetProjectDirectory() / "hash_store.db";
