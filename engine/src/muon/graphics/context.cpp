@@ -55,36 +55,6 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugCallback(
 
     return false;
 }
-
-vk::Result CreateDebugUtilsMessenger(
-    vk::Instance instance, const vk::DebugUtilsMessengerCreateInfoEXT *createInfo, const vk::AllocationCallbacks *allocator,
-    vk::DebugUtilsMessengerEXT *debugMessenger
-) {
-    auto procAddr = vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    auto vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(procAddr);
-    if (vkCreateDebugUtilsMessengerEXT == nullptr) {
-        return vk::Result::eErrorExtensionNotPresent;
-    }
-
-    auto result = vkCreateDebugUtilsMessengerEXT(
-        instance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT *>(createInfo),
-        reinterpret_cast<const VkAllocationCallbacks *>(allocator), reinterpret_cast<VkDebugUtilsMessengerEXT *>(debugMessenger)
-    );
-
-    return static_cast<vk::Result>(result);
-}
-
-void DestroyDebugUtilsMessenger(
-    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *allocator
-) {
-    auto procAddr = vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(procAddr);
-    if (vkDestroyDebugUtilsMessengerEXT == nullptr) {
-        return;
-    }
-
-    return vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, allocator);
-}
 #endif
 
 namespace muon::graphics {
@@ -133,9 +103,7 @@ auto Context::GetDevice() -> vk::raii::Device & { return m_device; }
 auto Context::GetDevice() const -> const vk::raii::Device & { return m_device; }
 
 auto Context::GetGraphicsQueue() const -> Queue & { return *m_graphicsQueue; }
-
 auto Context::GetComputeQueue() const -> Queue & { return *m_computeQueue; }
-
 auto Context::GetTransferQueue() const -> Queue & { return *m_transferQueue; }
 
 auto Context::GetAllocator() const -> vma::Allocator { return m_allocator; }
