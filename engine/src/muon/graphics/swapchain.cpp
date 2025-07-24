@@ -212,23 +212,20 @@ auto Swapchain::CreateSyncObjects() -> void {
     vk::FenceCreateInfo fenceCi;
     fenceCi.flags = vk::FenceCreateFlagBits::eSignaled;
 
-    m_imageAvailableSemaphores.reserve(k_maxFramesInFlight);
-    m_inFlightFences.reserve(k_maxFramesInFlight);
     for (uint32_t i = 0; i < k_maxFramesInFlight; i++) {
         auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
         MU_CORE_ASSERT(semaphoreResult, "failed to create image available semaphores");
-        m_imageAvailableSemaphores[i] = std::move(*semaphoreResult);
+        m_imageAvailableSemaphores.emplace_back(std::move(*semaphoreResult));
 
         auto fenceResult = m_context.GetDevice().createFence(fenceCi);
         MU_CORE_ASSERT(fenceResult, "failed to create in flight fences");
-        m_inFlightFences[i] = std::move(*fenceResult);
+        m_inFlightFences.emplace_back(std::move(*fenceResult));
     }
 
-    m_renderFinishedSemaphores.reserve(m_imageCount);
     for (uint32_t i = 0; i < m_imageCount; i++) {
         auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
         MU_CORE_ASSERT(semaphoreResult, "failed to create render finished semaphores");
-        m_renderFinishedSemaphores[i] = std::move(*semaphoreResult);
+        m_renderFinishedSemaphores.emplace_back(std::move(*semaphoreResult));
     }
 
     m_imagesInFlight.resize(m_imageCount, nullptr);
