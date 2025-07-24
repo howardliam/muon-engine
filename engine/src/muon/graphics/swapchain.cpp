@@ -37,6 +37,7 @@ auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
     acquireInfo.swapchain = m_swapchain;
     acquireInfo.semaphore = m_imageAvailableSemaphores[m_currentFrame];
     acquireInfo.timeout = k_waitDuration;
+    acquireInfo.deviceMask = 1;
 
     auto acquireResult = m_context.GetDevice().acquireNextImage2KHR(acquireInfo);
     if (acquireResult.first != vk::Result::eSuccess) {
