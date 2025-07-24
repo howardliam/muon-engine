@@ -7,11 +7,6 @@
 
 namespace muon {
 
-enum class Logger {
-    Core,
-    Client,
-};
-
 class Log {
 public:
     static auto Init() -> void;
