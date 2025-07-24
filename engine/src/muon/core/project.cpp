@@ -35,14 +35,14 @@ auto Project::Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>
         return std::unexpected(result.error());
     }
 
-    MU_CORE_DEBUG("created new project");
+    core::debug("created new project");
 
     return s_activeProject;
 }
 
 auto Project::Load(const std::filesystem::path &projectPath) -> std::expected<std::shared_ptr<Project>, ProjectError> {
     if (!std::filesystem::exists(projectPath)) {
-        MU_CORE_TRACE("no project exists, attempting to create");
+        core::trace("no project exists, attempting to create");
         Spec spec{};
         spec.path = projectPath;
         return Create(spec);
@@ -66,7 +66,7 @@ auto Project::Load(const std::filesystem::path &projectPath) -> std::expected<st
 
     s_activeProject = std::make_shared<Project>(spec);
 
-    MU_CORE_DEBUG("loaded project from file");
+    core::debug("loaded project from file");
 
     return s_activeProject;
 }
@@ -77,7 +77,7 @@ auto Project::Save() -> std::expected<void, ProjectError> {
         return result;
     }
 
-    MU_CORE_DEBUG("saved project");
+    core::debug("saved project");
     return {};
 }
 
@@ -122,7 +122,7 @@ auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
         std::filesystem::create_directories(path, ec);
 
         if (ec.value() != 0) {
-            MU_CORE_ERROR("failed to create directory: {} with reason: {}", path.generic_string(), ec.message());
+            core::error("failed to create directory: {} with reason: {}", path.generic_string(), ec.message());
             return std::unexpected(ProjectError::FailedToCreateDirectory);
         }
 
@@ -130,7 +130,7 @@ auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
     };
 
     if (!std::filesystem::exists(m_path)) {
-        MU_CORE_TRACE("creating project directory at: {}", m_path.generic_string());
+        core::trace("creating project directory at: {}", m_path.generic_string());
         auto result = createDirectories(m_path);
         if (!result.has_value()) {
             return result;
@@ -150,7 +150,7 @@ auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
     };
 
     for (const auto &path : assetPaths) {
-        MU_CORE_TRACE("attempting to create: {}", path.generic_string());
+        core::trace("attempting to create: {}", path.generic_string());
 
         auto result = createDirectories(path);
         if (!result.has_value()) {
