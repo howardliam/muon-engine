@@ -54,8 +54,6 @@ target_sources(
 
         src/muon/core/arena.hpp
         src/muon/core/application.hpp
-        src/muon/core/assert.hpp
-        src/muon/core/base.hpp
         src/muon/core/entry_point.hpp
         src/muon/core/errors.hpp
         src/muon/core/expect.hpp
@@ -65,7 +63,6 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
-        src/muon/core/platform_detection.hpp
         src/muon/core/project.hpp
         src/muon/core/signals.hpp
         src/muon/core/window.hpp
