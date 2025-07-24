@@ -5,17 +5,18 @@
 #include "muon/core/window.hpp"
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/swapchain.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
+#include <optional>
 #include <unordered_set>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
 struct SurfaceFormat {
     bool isHdr{false};
-    VkFormat format{VK_FORMAT_UNDEFINED};
-    VkColorSpaceKHR colorSpace{VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+    vk::Format format{vk::Format::eUndefined};
+    vk::ColorSpaceKHR colorSpace{vk::ColorSpaceKHR::eSrgbNonlinear};
 };
 
 class Renderer : NoCopy, NoMove {
@@ -29,7 +30,7 @@ public:
     Renderer(const Spec &spec);
     ~Renderer();
 
-    [[nodiscard]] auto BeginFrame() -> VkCommandBuffer;
+    [[nodiscard]] auto BeginFrame() -> std::optional<vk::raii::CommandBuffer *>;
     auto EndFrame() -> void;
 
     auto RebuildSwapchain() -> void;
@@ -37,14 +38,14 @@ public:
 public:
     auto HasHdrSupport() const -> bool;
 
-    auto GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpaceKHR>;
+    auto GetAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR>;
     auto GetActiveSurfaceFormat() const -> const SurfaceFormat &;
-    auto SetActiveSurfaceFormat(VkColorSpaceKHR colorSpace) const -> void;
+    auto SetActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void;
     auto IsHdrEnabled() const -> bool;
 
-    auto GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> &;
-    auto GetActivePresentMode() const -> const VkPresentModeKHR &;
-    auto SetActivePresentMode(VkPresentModeKHR presentMode) const -> void;
+    auto GetAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> &;
+    auto GetActivePresentMode() const -> const vk::PresentModeKHR &;
+    auto SetActivePresentMode(vk::PresentModeKHR presentMode) const -> void;
 
 private:
     auto ProbeSurfaceFormats() -> void;
@@ -60,11 +61,11 @@ private:
     std::vector<SurfaceFormat> m_availableSurfaceFormats{};
     mutable const SurfaceFormat *m_activeSurfaceFormat{nullptr};
 
-    std::unordered_set<VkPresentModeKHR> m_availablePresentModes{};
-    mutable const VkPresentModeKHR *m_activePresentMode{nullptr};
+    std::unordered_set<vk::PresentModeKHR> m_availablePresentModes{};
+    mutable const vk::PresentModeKHR *m_activePresentMode{nullptr};
 
     std::unique_ptr<Swapchain> m_swapchain{nullptr};
-    std::vector<VkCommandBuffer> m_commandBuffers{};
+    std::vector<vk::raii::CommandBuffer> m_commandBuffers{};
 
     uint32_t m_currentImageIndex{0};
     uint32_t m_currentFrameIndex{0};

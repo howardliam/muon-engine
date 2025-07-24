@@ -1,7 +1,7 @@
 #include "muon/graphics/renderer.hpp"
 
 #include "muon/core/assert.hpp"
-#include "vulkan/vulkan_core.h"
+#include "vulkan/vulkan_enums.hpp"
 
 #include <algorithm>
 
@@ -15,47 +15,40 @@ Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_context(*spec.c
     CreateCommandBuffers();
 }
 
-Renderer::~Renderer() {
-    vkFreeCommandBuffers(
-        m_context.GetDevice(), m_context.GetGraphicsQueue().GetCommandPool(), m_commandBuffers.size(), m_commandBuffers.data()
-    );
-}
+Renderer::~Renderer() {}
 
-auto Renderer::BeginFrame() -> VkCommandBuffer {
+auto Renderer::BeginFrame() -> std::optional<vk::raii::CommandBuffer *> {
     MU_CORE_ASSERT(!m_frameInProgress, "cannot begin frame while frame is in progress");
 
-    auto result = m_swapchain->AcquireNextImage(&m_currentImageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        CreateSwapchain();
-        return nullptr;
+    auto acquireResult = m_swapchain->AcquireNextImage();
+    if (!acquireResult) {
+        if (acquireResult.error() == vk::Result::eErrorOutOfDateKHR) {
+            CreateSwapchain();
+            return {std::nullopt};
+        }
     }
-    MU_CORE_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "failed to acquire next swapchain image");
 
     m_frameInProgress = true;
 
-    const auto cmd = m_commandBuffers[m_currentFrameIndex];
+    auto &commandBuffer = m_commandBuffers[m_currentFrameIndex];
 
-    VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    vk::CommandBufferBeginInfo commandBufferBi;
+    commandBuffer.begin(commandBufferBi);
 
-    result = vkBeginCommandBuffer(cmd, &beginInfo);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to begin recording command buffer");
-
-    return cmd;
+    return {&commandBuffer};
 }
 
 auto Renderer::EndFrame() -> void {
     MU_CORE_ASSERT(m_frameInProgress, "cannot end frame if a frame has not been started");
 
-    const auto cmd = m_commandBuffers[m_currentFrameIndex];
-    vkEndCommandBuffer(cmd);
+    const auto &commandBuffer = m_commandBuffers[m_currentFrameIndex];
+    commandBuffer.end();
 
-    auto result = m_swapchain->SubmitCommandBuffers(cmd, m_currentImageIndex);
-    MU_CORE_ASSERT(
-        result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || result == VK_SUCCESS,
-        "failed to present swapchain image"
-    );
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-        CreateSwapchain();
+    auto result = m_swapchain->SubmitCommandBuffers(commandBuffer, m_currentImageIndex);
+    if (!result) {
+        if (result.error() == vk::Result::eErrorOutOfDateKHR || result.error() == vk::Result::eSuboptimalKHR) {
+            CreateSwapchain();
+        }
     }
 
     m_frameInProgress = false;
@@ -69,8 +62,8 @@ auto Renderer::RebuildSwapchain() -> void {
 
 auto Renderer::HasHdrSupport() const -> bool { return m_hdrSupport; }
 
-auto Renderer::GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpaceKHR> {
-    std::vector<VkColorSpaceKHR> colorSpaces{};
+auto Renderer::GetAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR> {
+    std::vector<vk::ColorSpaceKHR> colorSpaces{};
     for (const auto &surfaceFormat : m_availableSurfaceFormats) {
         if (surfaceFormat.isHdr != hdr) {
             continue;
@@ -82,7 +75,7 @@ auto Renderer::GetAvailableColorSpaces(bool hdr) const -> std::vector<VkColorSpa
 
 auto Renderer::GetActiveSurfaceFormat() const -> const SurfaceFormat & { return *m_activeSurfaceFormat; }
 
-auto Renderer::SetActiveSurfaceFormat(VkColorSpaceKHR colorSpace) const -> void {
+auto Renderer::SetActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void {
     auto pred = [&colorSpace](const SurfaceFormat &surfaceFormat) { return surfaceFormat.colorSpace == colorSpace; };
     auto it = std::ranges::find_if(m_availableSurfaceFormats, pred);
     MU_CORE_ASSERT(it != m_availableSurfaceFormats.end(), "the requested color space must be available");
@@ -91,45 +84,38 @@ auto Renderer::SetActiveSurfaceFormat(VkColorSpaceKHR colorSpace) const -> void 
 
 auto Renderer::IsHdrEnabled() const -> bool { return m_activeSurfaceFormat->isHdr; }
 
-auto Renderer::GetAvailablePresentModes() const -> const std::unordered_set<VkPresentModeKHR> & {
+auto Renderer::GetAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> & {
     return m_availablePresentModes;
 }
 
-auto Renderer::GetActivePresentMode() const -> const VkPresentModeKHR & { return *m_activePresentMode; }
+auto Renderer::GetActivePresentMode() const -> const vk::PresentModeKHR & { return *m_activePresentMode; }
 
-auto Renderer::SetActivePresentMode(VkPresentModeKHR presentMode) const -> void {
+auto Renderer::SetActivePresentMode(vk::PresentModeKHR presentMode) const -> void {
     MU_CORE_ASSERT(m_availablePresentModes.contains(presentMode), "the requested present mode must be available");
     m_activePresentMode = &*m_availablePresentModes.find(presentMode);
 }
 
 auto Renderer::ProbeSurfaceFormats() -> void {
-    uint32_t surfaceFormatCount = 0;
-    auto result =
-        vkGetPhysicalDeviceSurfaceFormatsKHR(m_context.GetPhysicalDevice(), m_context.GetSurface(), &surfaceFormatCount, nullptr);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface format count");
-    std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-    result = vkGetPhysicalDeviceSurfaceFormatsKHR(
-        m_context.GetPhysicalDevice(), m_context.GetSurface(), &surfaceFormatCount, surfaceFormats.data()
-    );
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface formats");
+    auto surfaceFormats = m_context.GetPhysicalDevice().getSurfaceFormatsKHR();
+    MU_CORE_ASSERT(!surfaceFormats.empty(), "failed to get surface formats");
 
     for (const auto &surfaceFormat : surfaceFormats) {
         bool candidateColorSpace = false;
         bool hdrColorSpace = false;
 
         switch (surfaceFormat.colorSpace) {
-            case VK_COLOR_SPACE_BT2020_LINEAR_EXT:
-            case VK_COLOR_SPACE_HDR10_ST2084_EXT:
-            case VK_COLOR_SPACE_HDR10_HLG_EXT:
-            case VK_COLOR_SPACE_DISPLAY_NATIVE_AMD: {
+            case vk::ColorSpaceKHR::eBt2020LinearEXT:
+            case vk::ColorSpaceKHR::eHdr10St2084EXT:
+            case vk::ColorSpaceKHR::eHdr10HlgEXT:
+            case vk::ColorSpaceKHR::eDisplayNativeAMD: {
                 hdrColorSpace = true;
                 candidateColorSpace = true;
                 break;
             }
 
-            case VK_COLOR_SPACE_BT709_NONLINEAR_EXT:
-            case VK_COLOR_SPACE_BT709_LINEAR_EXT:
-            case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: {
+            case vk::ColorSpaceKHR::eBt709NonlinearEXT:
+            case vk::ColorSpaceKHR::eBt709LinearEXT:
+            case vk::ColorSpaceKHR::eSrgbNonlinear: {
                 candidateColorSpace = true;
                 break;
             }
@@ -141,10 +127,10 @@ auto Renderer::ProbeSurfaceFormats() -> void {
 
         if (candidateColorSpace) {
             switch (surfaceFormat.format) {
-                case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-                case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-                case VK_FORMAT_R8G8B8A8_SRGB:
-                case VK_FORMAT_B8G8R8A8_SRGB: {
+                case vk::Format::eA2B10G10R10UnormPack32:
+                case vk::Format::eA2R10G10B10UnormPack32:
+                case vk::Format::eB8G8R8A8Srgb:
+                case vk::Format::eR8G8B8A8Srgb: {
                     if (hdrColorSpace) {
                         m_hdrSupport = true;
                     }
@@ -170,22 +156,14 @@ auto Renderer::ProbeSurfaceFormats() -> void {
 }
 
 auto Renderer::ProbePresentModes() -> void {
-    uint32_t presentModeCount = 0;
-    auto result = vkGetPhysicalDeviceSurfacePresentModesKHR(
-        m_context.GetPhysicalDevice(), m_context.GetSurface(), &presentModeCount, nullptr
-    );
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present modes");
-    std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    result = vkGetPhysicalDeviceSurfacePresentModesKHR(
-        m_context.GetPhysicalDevice(), m_context.GetSurface(), &presentModeCount, presentModes.data()
-    );
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to get surface present mode count");
+    auto presentModes = m_context.GetPhysicalDevice().getSurfacePresentModesKHR(m_context.GetSurface());
+    MU_CORE_ASSERT(!presentModes.empty(), "failed to get surface present mode count");
 
     for (const auto &presentMode : presentModes) {
         switch (presentMode) {
-            case VK_PRESENT_MODE_MAILBOX_KHR:
-            case VK_PRESENT_MODE_FIFO_KHR:
-            case VK_PRESENT_MODE_FIFO_RELAXED_KHR: {
+            case vk::PresentModeKHR::eMailbox:
+            case vk::PresentModeKHR::eFifo:
+            case vk::PresentModeKHR::eFifoRelaxed: {
                 m_availablePresentModes.insert(presentMode);
                 break;
             }
@@ -197,10 +175,10 @@ auto Renderer::ProbePresentModes() -> void {
     }
 
     // hard code for the moment
-    if (m_availablePresentModes.contains(VK_PRESENT_MODE_MAILBOX_KHR)) {
-        SetActivePresentMode(VK_PRESENT_MODE_MAILBOX_KHR);
+    if (m_availablePresentModes.contains(vk::PresentModeKHR::eMailbox)) {
+        SetActivePresentMode(vk::PresentModeKHR::eMailbox);
     } else {
-        SetActivePresentMode(VK_PRESENT_MODE_FIFO_KHR);
+        SetActivePresentMode(vk::PresentModeKHR::eFifo);
     }
 }
 
@@ -217,21 +195,21 @@ auto Renderer::CreateSwapchain() -> void {
         m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
     } else {
         std::unique_ptr oldSwapChain = std::move(m_swapchain);
-        swapchainSpec.oldSwapchain = oldSwapChain->Get();
+        swapchainSpec.oldSwapchain = std::move(oldSwapChain);
         m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
     }
 }
 
 auto Renderer::CreateCommandBuffers() -> void {
-    m_commandBuffers.resize(k_maxFramesInFlight);
+    vk::CommandBufferAllocateInfo commandBufferAi;
+    commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
+    commandBufferAi.commandPool = m_context.GetGraphicsQueue().GetCommandPool();
+    commandBufferAi.commandBufferCount = k_maxFramesInFlight;
 
-    VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = m_context.GetGraphicsQueue().GetCommandPool();
-    allocInfo.commandBufferCount = m_commandBuffers.size();
+    auto commandBufferResult = m_context.GetDevice().allocateCommandBuffers(commandBufferAi);
+    MU_CORE_ASSERT(commandBufferResult, "failed to allocate command buffers");
 
-    auto result = vkAllocateCommandBuffers(m_context.GetDevice(), &allocInfo, m_commandBuffers.data());
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to allocate command buffers");
+    m_commandBuffers = std::move(*commandBufferResult);
 }
 
 } // namespace muon::graphics
