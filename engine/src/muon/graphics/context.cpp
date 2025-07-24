@@ -7,9 +7,8 @@
 #include "muon/graphics/instance_extensions.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
-#include "vk_mem_alloc_enums.hpp"
-#include "vk_mem_alloc_funcs.hpp"
 #define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_handles.hpp"
@@ -203,9 +202,9 @@ auto Context::CreateDebugMessenger() -> void {
                                             vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
                                             vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-    debugUtilsMessengerCi.messageType =
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+    debugUtilsMessengerCi.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                                        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                                        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
     auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
     MU_CORE_ASSERT(debugMessengerResult, "failed to create debug messenger");
