@@ -76,7 +76,7 @@ auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffe
     submitInfo.signalSemaphoreInfoCount = 1;
     submitInfo.pSignalSemaphoreInfos = &signalSemaphoreSi;
 
-    m_graphicsQueue.Get().submit2(submitInfo);
+    m_graphicsQueue.Get().submit2(submitInfo, m_inFlightFences[m_currentFrame]);
 
     vk::PresentInfoKHR presentInfo;
     presentInfo.waitSemaphoreCount = 1;
