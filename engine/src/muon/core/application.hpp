@@ -1,7 +1,7 @@
 #pragma once
 
 #include "muon/asset/manager.hpp"
-#include "muon/core/assert.hpp"
+#include "muon/core/expect.hpp"
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
@@ -22,7 +22,7 @@ struct ApplicationCommandLineArgs {
     char **args{nullptr};
 
     auto operator[](int32_t index) const -> const char * {
-        MU_CORE_ASSERT(index < count);
+        core::expect(index < count, "index must be lower than count");
         return args[index];
     }
 };
