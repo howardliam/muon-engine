@@ -1,7 +1,9 @@
 #pragma once
 
+#include "fmt/base.h"
+#include "spdlog/logger.h"
+
 #include <memory>
-#include <spdlog/spdlog.h>
 
 // idea borrowed from https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.h
 
@@ -26,28 +28,28 @@ private:
 namespace core {
 
 template <typename... Args>
-constexpr inline auto trace(std::string_view message, Args &&...args) -> void {
-    Log::GetCoreLogger()->trace(message, args...);
+inline auto trace(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetCoreLogger()->trace(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr inline auto debug(std::string_view message, Args &&...args) -> void {
-    Log::GetCoreLogger()->debug(message, args...);
+inline auto debug(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetCoreLogger()->debug(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr inline auto info(std::string_view message, Args &&...args) -> void {
-    Log::GetCoreLogger()->info(message, args...);
+inline auto info(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetCoreLogger()->info(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr inline auto warn(std::string_view message, Args &&...args) -> void {
-    Log::GetCoreLogger()->warn(message, args...);
+inline auto warn(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetCoreLogger()->warn(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr inline auto error(std::string_view message, Args &&...args) -> void {
-    Log::GetCoreLogger()->error(message, args...);
+inline auto error(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetCoreLogger()->error(message, std::forward<Args>(args)...);
 }
 
 } // namespace core
@@ -55,28 +57,28 @@ constexpr inline auto error(std::string_view message, Args &&...args) -> void {
 namespace client {
 
 template <typename... Args>
-constexpr auto trace(std::string_view message, Args &&...args) -> void {
-    Log::GetClientLogger()->trace(message, args...);
+inline auto trace(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetClientLogger()->trace(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr auto debug(std::string_view message, Args &&...args) -> void {
-    Log::GetClientLogger()->debug(message, args...);
+inline auto debug(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetClientLogger()->debug(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr auto info(std::string_view message, Args &&...args) -> void {
-    Log::GetClientLogger()->info(message, args...);
+inline auto info(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetClientLogger()->info(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr auto warn(std::string_view message, Args &&...args) -> void {
-    Log::GetClientLogger()->warn(message, args...);
+inline auto warn(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetClientLogger()->warn(message, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr auto error(std::string_view message, Args &&...args) -> void {
-    Log::GetClientLogger()->error(message, args...);
+inline auto error(fmt::format_string<Args...> message, Args &&...args) -> void {
+    Log::GetClientLogger()->error(message, std::forward<Args>(args)...);
 }
 
 } // namespace client
