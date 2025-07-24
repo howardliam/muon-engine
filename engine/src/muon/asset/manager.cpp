@@ -2,34 +2,35 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 #include <algorithm>
 #include <fmt/ranges.h>
-#include <limits>
 #include <memory>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::asset {
 
 Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{spec.context->GetTransferQueue()} {
-    VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
-    allocInfo.commandPool = m_transferQueue.GetCommandPool();
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = 1;
-    vkAllocateCommandBuffers(m_context.GetDevice(), &allocInfo, &m_cmd);
+    vk::CommandBufferAllocateInfo commandBufferAi;
+    commandBufferAi.commandPool = m_transferQueue.GetCommandPool();
+    commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
+    commandBufferAi.commandBufferCount = 1;
 
-    VkFenceCreateInfo createInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-    vkCreateFence(m_context.GetDevice(), &createInfo, nullptr, &m_uploadFence);
+    auto commandBufferResult = m_context.GetDevice().allocateCommandBuffers(commandBufferAi);
+    MU_CORE_ASSERT(commandBufferResult, "failed to allocate command buffers");
+    m_commandBuffer = std::move((*commandBufferResult)[0]);
+
+    vk::FenceCreateInfo fenceCi;
+    auto fenceResult = m_context.GetDevice().createFence(fenceCi);
+    MU_CORE_ASSERT(fenceResult, "failed to create upload fence");
+    m_uploadFence = std::move(*fenceResult);
 
     for (auto &loader : spec.loaders) {
         RegisterLoader(loader);
     }
 }
 
-Manager::~Manager() {
-    vkDestroyFence(m_context.GetDevice(), m_uploadFence, nullptr);
-    vkFreeCommandBuffers(m_context.GetDevice(), m_transferQueue.GetCommandPool(), 1, &m_cmd);
-}
+Manager::~Manager() {}
 
 auto Manager::RegisterLoader(Loader *loader) -> void {
     auto it = std::ranges::find_if(m_loaders, [&l = loader](const std::unique_ptr<Loader> &loader) -> bool {
@@ -53,9 +54,8 @@ auto Manager::RegisterLoader(Loader *loader) -> void {
 auto Manager::BeginLoading() -> void {
     MU_CORE_ASSERT(!m_loadingInProgress, "cannot begin loading while loading is in progress");
 
-    VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-    auto result = vkBeginCommandBuffer(m_cmd, &beginInfo);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to begin recording command buffer");
+    vk::CommandBufferBeginInfo commandBufferBi;
+    m_commandBuffer.begin(commandBufferBi);
 
     m_loadingInProgress = true;
 }
@@ -63,24 +63,21 @@ auto Manager::BeginLoading() -> void {
 auto Manager::EndLoading() -> void {
     MU_CORE_ASSERT(m_loadingInProgress, "cannot end loading if loading has not been started");
 
-    auto result = vkEndCommandBuffer(m_cmd);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to end recording command buffer");
+    m_commandBuffer.end();
 
-    VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    vk::SubmitInfo submitInfo;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_cmd;
+    submitInfo.pCommandBuffers = &(*m_commandBuffer);
     submitInfo.waitSemaphoreCount = 0;
     submitInfo.signalSemaphoreCount = 0;
-    result = vkQueueSubmit(m_transferQueue.Get(), 1, &submitInfo, m_uploadFence);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to submit command buffer to queue");
+    m_transferQueue.Get().submit({submitInfo}, m_uploadFence);
 
     m_loadingInProgress = false;
 
-    result = vkWaitForFences(m_context.GetDevice(), 1, &m_uploadFence, true, std::numeric_limits<uint64_t>().max());
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to wait for upload fence to be signalled");
+    auto waitResult = m_context.GetDevice().waitForFences({m_uploadFence}, true, 30'000'000);
+    MU_CORE_ASSERT(waitResult == vk::Result::eSuccess, "failed to wait for upload fence to be signalled");
 
-    result = vkResetFences(m_context.GetDevice(), 1, &m_uploadFence);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to reset upload fence");
+    m_context.GetDevice().resetFences({m_uploadFence});
 
     m_uploadBuffers.clear();
 }
@@ -106,7 +103,8 @@ auto Manager::LoadFromFile(const std::filesystem::path &path) -> void {
     loader->FromFile(path);
 }
 
-auto Manager::GetCommandBuffer() -> VkCommandBuffer { return m_cmd; }
+auto Manager::GetCommandBuffer() -> vk::raii::CommandBuffer & { return m_commandBuffer; }
+auto Manager::GetCommandBuffer() const -> const vk::raii::CommandBuffer & { return m_commandBuffer; }
 
 auto Manager::GetUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
 

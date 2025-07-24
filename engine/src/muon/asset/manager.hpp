@@ -3,6 +3,7 @@
 #include "muon/asset/loader.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <deque>
 #include <filesystem>
@@ -10,7 +11,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::asset {
 
@@ -34,7 +34,9 @@ public:
     auto LoadFromFile(const std::filesystem::path &path) -> void;
 
 public:
-    auto GetCommandBuffer() -> VkCommandBuffer;
+    auto GetCommandBuffer() -> vk::raii::CommandBuffer &;
+    auto GetCommandBuffer() const -> const vk::raii::CommandBuffer &;
+
     auto GetUploadBuffers() -> std::deque<graphics::Buffer> *;
 
 private:
@@ -46,8 +48,8 @@ private:
 
     bool m_loadingInProgress{false};
 
-    VkCommandBuffer m_cmd{nullptr};
-    VkFence m_uploadFence{nullptr};
+    vk::raii::CommandBuffer m_commandBuffer{nullptr};
+    vk::raii::Fence m_uploadFence{nullptr};
     std::deque<graphics::Buffer> m_uploadBuffers{};
 
     std::unordered_map<std::string, Loader *> m_fileTypes{};
