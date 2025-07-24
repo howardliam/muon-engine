@@ -1,9 +1,8 @@
 #pragma once
 
 #include "muon/graphics/context.hpp"
-
-#include <tracy/TracyVulkan.hpp>
-#include <vulkan/vulkan_core.h>
+#include "tracy/TracyVulkan.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 namespace muon::profiling {
 
@@ -17,7 +16,7 @@ public:
     static auto CreateContext(const Spec &spec) -> void;
     static auto DestroyContext() -> void;
 
-    static auto Collect(VkCommandBuffer cmd) -> void;
+    static auto Collect(vk::raii::CommandBuffer &commandBuffer) -> void;
     static auto GetContext() -> const tracy::VkCtx *;
 
 private:
