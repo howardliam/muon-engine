@@ -96,7 +96,7 @@ auto Renderer::SetActivePresentMode(vk::PresentModeKHR presentMode) const -> voi
 }
 
 auto Renderer::ProbeSurfaceFormats() -> void {
-    auto surfaceFormats = m_context.GetPhysicalDevice().getSurfaceFormatsKHR();
+    auto surfaceFormats = m_context.GetPhysicalDevice().getSurfaceFormatsKHR(m_context.GetSurface());
     MU_CORE_ASSERT(!surfaceFormats.empty(), "failed to get surface formats");
 
     for (const auto &surfaceFormat : surfaceFormats) {
