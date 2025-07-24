@@ -169,6 +169,7 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
 
     m_images = m_swapchain.getImages();
     MU_CORE_ASSERT(m_images.size() > 0, "failed to get swapchain images");
+    m_imageCount = m_images.size();
 
     m_extent = extent;
 
@@ -176,8 +177,6 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
 }
 
 auto Swapchain::CreateImageViews() -> void {
-    m_imageViews.reserve(m_imageCount);
-
     bool swizzle = false;
     if (m_format == vk::Format::eB8G8R8A8Srgb || m_format == vk::Format::eA2B10G10R10UnormPack32) {
         swizzle = true;
@@ -203,7 +202,7 @@ auto Swapchain::CreateImageViews() -> void {
         auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
         MU_CORE_ASSERT(imageViewResult, "failed to create a swapchain image view");
 
-        m_imageViews[i] = std::move(*imageViewResult);
+        m_imageViews.emplace_back(std::move(*imageViewResult));
     }
 }
 
