@@ -2,6 +2,8 @@
 
 #include "muon/core/assert.hpp"
 #include "muon/core/log.hpp"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <vulkan/vulkan_core.h>
 
@@ -45,55 +47,53 @@ PipelineGraphics::PipelineGraphics(const Spec &spec) : PipelineBase(*spec.contex
 
 PipelineGraphics::~PipelineGraphics() { MU_CORE_DEBUG("destroyed graphics pipeline"); }
 
-auto PipelineGraphics::Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
-    if (m_pipeline) {
-        vkDestroyPipeline(m_context.GetDevice(), m_pipeline, nullptr);
-    }
-
+auto PipelineGraphics::Bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
     CreatePipeline(renderingCreateInfo);
 }
 
-auto PipelineGraphics::Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) -> void {
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_layout->Get(), 0, sets.size(), sets.data(), 0, nullptr);
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+auto PipelineGraphics::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout->Get(), 0, sets, {});
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 }
 
-auto PipelineGraphics::CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void {
-    VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
+auto PipelineGraphics::CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
+    vk::PipelineVertexInputStateCreateInfo vertexInputStateCi;
 
     if (m_bindingDescription) {
-        vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
-        vertexInputStateCreateInfo.pVertexBindingDescriptions = &m_bindingDescription.value();
-        vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(m_attributeDescriptions.size());
-        vertexInputStateCreateInfo.pVertexAttributeDescriptions = m_attributeDescriptions.data();
+        vertexInputStateCi.vertexBindingDescriptionCount = 1;
+        vertexInputStateCi.pVertexBindingDescriptions = &m_bindingDescription.value();
+        vertexInputStateCi.vertexAttributeDescriptionCount = static_cast<uint32_t>(m_attributeDescriptions.size());
+        vertexInputStateCi.pVertexAttributeDescriptions = m_attributeDescriptions.data();
     } else {
-        vertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
-        vertexInputStateCreateInfo.pVertexBindingDescriptions = nullptr;
-        vertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputStateCreateInfo.pVertexAttributeDescriptions = nullptr;
+        vertexInputStateCi.vertexBindingDescriptionCount = 0;
+        vertexInputStateCi.pVertexBindingDescriptions = nullptr;
+        vertexInputStateCi.vertexAttributeDescriptionCount = 0;
+        vertexInputStateCi.pVertexAttributeDescriptions = nullptr;
     }
 
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
-    pipelineCreateInfo.stageCount = static_cast<uint32_t>(m_shaderStages.size());
-    pipelineCreateInfo.pStages = m_shaderStages.data();
-    pipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
-    pipelineCreateInfo.pInputAssemblyState = &m_state.inputAssemblyState;
-    pipelineCreateInfo.pViewportState = &m_state.viewportState;
-    pipelineCreateInfo.pRasterizationState = &m_state.rasterizationState;
-    pipelineCreateInfo.pMultisampleState = &m_state.multisampleState;
-    pipelineCreateInfo.pColorBlendState = &m_state.colorBlendState;
-    pipelineCreateInfo.pDepthStencilState = &m_state.depthStencilState;
-    pipelineCreateInfo.pDynamicState = &m_state.dynamicState;
+    vk::GraphicsPipelineCreateInfo graphicsPipelineCi;
+    graphicsPipelineCi.stageCount = static_cast<uint32_t>(m_shaderStages.size());
+    graphicsPipelineCi.pStages = m_shaderStages.data();
+    graphicsPipelineCi.pVertexInputState = &vertexInputStateCi;
+    graphicsPipelineCi.pInputAssemblyState = &m_state.inputAssemblyState;
+    graphicsPipelineCi.pViewportState = &m_state.viewportState;
+    graphicsPipelineCi.pRasterizationState = &m_state.rasterizationState;
+    graphicsPipelineCi.pMultisampleState = &m_state.multisampleState;
+    graphicsPipelineCi.pColorBlendState = &m_state.colorBlendState;
+    graphicsPipelineCi.pDepthStencilState = &m_state.depthStencilState;
+    graphicsPipelineCi.pDynamicState = &m_state.dynamicState;
 
-    pipelineCreateInfo.layout = m_layout->Get();
-    pipelineCreateInfo.pNext = &renderingCreateInfo;
-    pipelineCreateInfo.subpass = 0;
+    graphicsPipelineCi.layout = m_layout->Get();
+    graphicsPipelineCi.pNext = &renderingCreateInfo;
+    graphicsPipelineCi.subpass = 0;
 
-    pipelineCreateInfo.basePipelineIndex = -1;
-    pipelineCreateInfo.basePipelineHandle = nullptr;
+    graphicsPipelineCi.basePipelineIndex = -1;
+    graphicsPipelineCi.basePipelineHandle = nullptr;
 
-    auto result = vkCreateGraphicsPipelines(m_context.GetDevice(), m_cache, 1, &pipelineCreateInfo, nullptr, &m_pipeline);
-    MU_CORE_ASSERT(result == VK_SUCCESS, "failed to create graphics pipeline");
+    auto createPipelineResult = m_context.GetDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
+    MU_CORE_ASSERT(createPipelineResult, "failed to create graphics pipeline");
+
+    m_pipeline = std::move(*createPipelineResult);
 }
 
 } // namespace muon::graphics

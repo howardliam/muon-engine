@@ -3,9 +3,9 @@
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/pipeline_base.hpp"
 #include "muon/graphics/pipeline_layout.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <memory>
-#include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
 
@@ -20,29 +20,29 @@ public:
     PipelineGraphics(const Spec &spec);
     ~PipelineGraphics();
 
-    auto Bake(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;
-    auto Bind(VkCommandBuffer cmd, const std::vector<VkDescriptorSet> &sets) -> void;
+    auto Bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
+    auto Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void;
 
 private:
-    auto CreatePipeline(const VkPipelineRenderingCreateInfo &renderingCreateInfo) -> void;
+    auto CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
 
 private:
     struct PipelineGraphicsState {
-        VkPipelineInputAssemblyStateCreateInfo inputAssemblyState{};
-        VkPipelineViewportStateCreateInfo viewportState{};
-        VkPipelineRasterizationStateCreateInfo rasterizationState{};
-        VkPipelineMultisampleStateCreateInfo multisampleState{};
-        std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
-        VkPipelineColorBlendStateCreateInfo colorBlendState{};
-        VkPipelineDepthStencilStateCreateInfo depthStencilState{};
-        std::vector<VkDynamicState> dynamicStateEnables{};
-        VkPipelineDynamicStateCreateInfo dynamicState{};
+        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState{};
+        vk::PipelineViewportStateCreateInfo viewportState{};
+        vk::PipelineRasterizationStateCreateInfo rasterizationState{};
+        vk::PipelineMultisampleStateCreateInfo multisampleState{};
+        std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments{};
+        vk::PipelineColorBlendStateCreateInfo colorBlendState{};
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
+        std::vector<vk::DynamicState> dynamicStateEnables{};
+        vk::PipelineDynamicStateCreateInfo dynamicState{};
     };
     PipelineGraphicsState m_state{};
 
-    std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
-    std::vector<VkVertexInputAttributeDescription> m_attributeDescriptions{};
-    std::optional<VkVertexInputBindingDescription> m_bindingDescription{std::nullopt};
+    std::vector<vk::PipelineShaderStageCreateInfo> m_shaderStages{};
+    std::vector<vk::VertexInputAttributeDescription> m_attributeDescriptions{};
+    std::optional<vk::VertexInputBindingDescription> m_bindingDescription{std::nullopt};
 };
 
 } // namespace muon::graphics
