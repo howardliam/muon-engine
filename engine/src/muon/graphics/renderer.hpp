@@ -47,6 +47,8 @@ public:
     auto getActivePresentMode() const -> const vk::PresentModeKHR &;
     auto setActivePresentMode(vk::PresentModeKHR presentMode) const -> void;
 
+    auto getCurrentSwapchainImage() -> vk::Image &;
+
 private:
     auto probeSurfaceFormats() -> void;
     auto probePresentModes() -> void;

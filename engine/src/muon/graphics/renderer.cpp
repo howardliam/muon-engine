@@ -96,6 +96,8 @@ auto Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const -> voi
     m_activePresentMode = &*m_availablePresentModes.find(presentMode);
 }
 
+auto Renderer::getCurrentSwapchainImage() -> vk::Image & { return m_swapchain->getImage(m_currentImageIndex); }
+
 auto Renderer::probeSurfaceFormats() -> void {
     auto surfaceFormats = m_context.getPhysicalDevice().getSurfaceFormatsKHR(m_context.getSurface());
     core::expect(!surfaceFormats.empty(), "failed to get surface formats");
