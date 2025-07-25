@@ -24,6 +24,8 @@ public:
     ~Context();
 
 public:
+    auto getVramUsage() const -> uint64_t;
+
     auto getInstance() -> vk::raii::Instance &;
     auto getInstance() const -> const vk::raii::Instance &;
 

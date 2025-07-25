@@ -9,6 +9,8 @@
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
+
+#include <numeric>
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
@@ -48,6 +50,15 @@ Context::~Context() {
     m_transferQueue.reset();
 
     core::debug("destroyed device");
+}
+
+auto Context::getVramUsage() const -> uint64_t {
+    auto chain =
+        m_physicalDevice.getMemoryProperties2<vk::PhysicalDeviceMemoryProperties2, vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+
+    auto memoryBudgetProps = chain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+
+    return std::accumulate(memoryBudgetProps.heapUsage.begin(), memoryBudgetProps.heapUsage.end(), 0);
 }
 
 auto Context::getInstance() -> vk::raii::Instance & { return m_instance; }
