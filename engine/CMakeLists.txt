@@ -10,7 +10,6 @@ target_sources(
         src/muon/asset/manager.cpp
 
         src/muon/core/application.cpp
-        src/muon/core/arena.cpp
         src/muon/core/layer_stack.cpp
         src/muon/core/log.cpp
         src/muon/core/window.cpp
@@ -52,7 +51,6 @@ target_sources(
         src/muon/asset/loader.hpp
         src/muon/asset/manager.hpp
 
-        src/muon/core/arena.hpp
         src/muon/core/application.hpp
         src/muon/core/entry_point.hpp
         src/muon/core/errors.hpp
