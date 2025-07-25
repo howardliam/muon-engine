@@ -58,10 +58,10 @@ auto Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandB
 auto Queue::get() -> vk::raii::Queue & { return m_queue; }
 auto Queue::get() const -> const vk::raii::Queue & { return m_queue; }
 
-auto Queue::getFamilyIndex() const -> uint32_t { return m_familyIndex; }
-auto Queue::getIndex() const -> uint32_t { return m_index; }
-
 auto Queue::getCommandPool() -> vk::raii::CommandPool & { return m_commandPool; }
 auto Queue::getCommandPool() const -> const vk::raii::CommandPool & { return m_commandPool; }
+
+auto Queue::getFamilyIndex() const -> uint32_t { return m_familyIndex; }
+auto Queue::getIndex() const -> uint32_t { return m_index; }
 
 } // namespace muon::graphics

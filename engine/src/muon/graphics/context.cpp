@@ -88,11 +88,17 @@ auto Context::getPhysicalDevice() const -> const vk::raii::PhysicalDevice & { re
 auto Context::getDevice() -> vk::raii::Device & { return m_device; }
 auto Context::getDevice() const -> const vk::raii::Device & { return m_device; }
 
-auto Context::getGraphicsQueue() const -> Queue & { return *m_graphicsQueue; }
-auto Context::getComputeQueue() const -> Queue & { return *m_computeQueue; }
-auto Context::getTransferQueue() const -> Queue & { return *m_transferQueue; }
+auto Context::getGraphicsQueue() -> Queue & { return *m_graphicsQueue; }
+auto Context::getGraphicsQueue() const -> const Queue & { return *m_graphicsQueue; }
 
-auto Context::getAllocator() const -> vma::Allocator { return m_allocator; }
+auto Context::getComputeQueue() -> Queue & { return *m_computeQueue; }
+auto Context::getComputeQueue() const -> const Queue & { return *m_computeQueue; }
+
+auto Context::getTransferQueue() -> Queue & { return *m_transferQueue; }
+auto Context::getTransferQueue() const -> const Queue & { return *m_transferQueue; }
+
+auto Context::getAllocator() -> vma::Allocator & { return m_allocator; }
+auto Context::getAllocator() const -> const vma::Allocator & { return m_allocator; }
 
 auto Context::createInstance(const Window &window, bool debug) -> void {
     auto extensions = window.getRequiredExtensions();

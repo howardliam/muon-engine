@@ -29,11 +29,11 @@ public:
     auto get() -> vk::raii::Queue &;
     auto get() const -> const vk::raii::Queue &;
 
-    auto getFamilyIndex() const -> uint32_t;
-    auto getIndex() const -> uint32_t;
-
     auto getCommandPool() -> vk::raii::CommandPool &;
     auto getCommandPool() const -> const vk::raii::CommandPool &;
+
+    auto getFamilyIndex() const -> uint32_t;
+    auto getIndex() const -> uint32_t;
 
 private:
     const vk::raii::Device &m_device;

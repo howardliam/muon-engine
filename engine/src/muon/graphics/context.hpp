@@ -36,11 +36,17 @@ public:
     auto getDevice() -> vk::raii::Device &;
     auto getDevice() const -> const vk::raii::Device &;
 
-    auto getGraphicsQueue() const -> Queue &;
-    auto getComputeQueue() const -> Queue &;
-    auto getTransferQueue() const -> Queue &;
+    auto getGraphicsQueue() -> Queue &;
+    auto getGraphicsQueue() const -> const Queue &;
 
-    auto getAllocator() const -> vma::Allocator;
+    auto getComputeQueue() -> Queue &;
+    auto getComputeQueue() const -> const Queue &;
+
+    auto getTransferQueue() -> Queue &;
+    auto getTransferQueue() const -> const Queue &;
+
+    auto getAllocator() -> vma::Allocator &;
+    auto getAllocator() const -> const vma::Allocator &;
 
 private:
     auto createInstance(const Window &window, bool debug) -> void;
