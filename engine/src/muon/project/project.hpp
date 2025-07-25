@@ -1,13 +1,20 @@
 #pragma once
 
-#include "muon/core/errors.hpp"
-
 #include <expected>
 #include <filesystem>
 #include <memory>
 #include <string>
 
-namespace muon {
+namespace muon::project {
+
+enum class ProjectError {
+    FailedToCreateDirectory,
+    PathIsNotDirectory,
+    DirectoryIsNotEmpty,
+    FailedToOpenProjectFile,
+    ProjectFileDoesNotExist,
+    MalformedProjectFile,
+};
 
 class Project {
 public:
@@ -45,4 +52,4 @@ private:
     static inline std::shared_ptr<Project> s_activeProject{nullptr};
 };
 
-} // namespace muon
+} // namespace muon::project

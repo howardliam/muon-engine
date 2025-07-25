@@ -13,7 +13,6 @@ target_sources(
         src/muon/core/arena.cpp
         src/muon/core/layer_stack.cpp
         src/muon/core/log.cpp
-        src/muon/core/project.cpp
         src/muon/core/window.cpp
 
         src/muon/fs/fs.cpp
@@ -39,6 +38,8 @@ target_sources(
 
         src/muon/profiling/profiler.cpp
 
+        src/muon/project/project.cpp
+
         src/muon/utils/color.cpp
         src/muon/utils/literals.cpp
         src/muon/utils/pretty_print.cpp
@@ -61,7 +62,6 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
-        src/muon/core/project.hpp
         src/muon/core/signals.hpp
         src/muon/core/window.hpp
 
@@ -97,6 +97,8 @@ target_sources(
         src/muon/input/mouse.hpp
 
         src/muon/profiling/profiler.hpp
+
+        src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
         src/muon/utils/color.hpp

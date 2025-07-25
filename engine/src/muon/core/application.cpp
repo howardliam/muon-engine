@@ -4,7 +4,6 @@
 #include "muon/asset/manager.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
-#include "muon/core/project.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
@@ -13,6 +12,7 @@
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
 #include "muon/profiling/profiler.hpp"
+#include "muon/project/project.hpp"
 
 #include <fmt/ranges.h>
 #include <memory>
@@ -23,30 +23,30 @@ Application::Application(const Spec &spec) {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
-    auto result = Project::Load(spec.workingDirectory / "test-project");
+    auto result = project::Project::Load(spec.workingDirectory / "test-project");
     if (!result.has_value()) {
         switch (result.error()) {
-            case ProjectError::FailedToCreateDirectory:
+            case project::ProjectError::FailedToCreateDirectory:
                 core::error("failed to create directory");
                 break;
 
-            case ProjectError::PathIsNotDirectory:
+            case project::ProjectError::PathIsNotDirectory:
                 core::error("path is not directory");
                 break;
 
-            case ProjectError::DirectoryIsNotEmpty:
+            case project::ProjectError::DirectoryIsNotEmpty:
                 core::error("directory is not empty");
                 break;
 
-            case ProjectError::FailedToOpenProjectFile:
+            case project::ProjectError::FailedToOpenProjectFile:
                 core::error("failed to open project file");
                 break;
 
-            case ProjectError::ProjectFileDoesNotExist:
+            case project::ProjectError::ProjectFileDoesNotExist:
                 core::error("project file does not exist");
                 break;
 
-            case ProjectError::MalformedProjectFile:
+            case project::ProjectError::MalformedProjectFile:
                 core::error("malformed project file");
                 break;
         }
@@ -116,9 +116,9 @@ auto Application::Run() -> void {
     core::info("running application");
 
     graphics::ShaderCompiler::Spec compilerSpec{};
-    compilerSpec.hashStorePath = Project::GetActiveProject()->GetProjectDirectory() / "hash_store.db";
+    compilerSpec.hashStorePath = project::Project::GetActiveProject()->GetProjectDirectory() / "hash_store.db";
     graphics::ShaderCompiler compiler{compilerSpec};
-    compiler.SubmitWork({Project::GetActiveProject()->GetProjectDirectory() / "shaders/test.vert"});
+    compiler.SubmitWork({project::Project::GetActiveProject()->GetProjectDirectory() / "shaders/test.vert"});
 
     while (m_running) {
         m_window->PollEvents();

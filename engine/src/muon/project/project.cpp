@@ -1,4 +1,4 @@
-#include "muon/core/project.hpp"
+#include "muon/project/project.hpp"
 
 #include "muon/core/errors.hpp"
 #include "muon/core/expect.hpp"
@@ -13,7 +13,7 @@
 #include <toml++/toml.hpp>
 #include <vector>
 
-namespace muon {
+namespace muon::project {
 
 Project::Project(const Spec &spec) : m_name(spec.name), m_path(spec.path) {}
 
@@ -177,4 +177,4 @@ auto Project::WriteProjectFile() -> std::expected<void, ProjectError> {
     return {};
 }
 
-} // namespace muon
+} // namespace muon::project
