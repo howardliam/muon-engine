@@ -16,7 +16,7 @@ auto printBytes(uint64_t byteCount) -> std::string {
         index += 1;
     }
 
-    return fmt::format("{} {}", size, k_byteSuffixes[index]);
+    return fmt::format("{:.2f} {}", size, k_byteSuffixes[index]);
 }
 
 } // namespace muon::pp
