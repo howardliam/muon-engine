@@ -60,7 +60,6 @@ auto Context::getVramUsage() const -> uint64_t {
 
     return std::accumulate(memoryBudgetProps.heapUsage.begin(), memoryBudgetProps.heapUsage.end(), 0);
 }
-
 auto Context::getVramCapacity() const -> uint64_t { return m_vramCapacity; }
 
 auto Context::getInstance() -> vk::raii::Instance & { return m_instance; }
@@ -276,8 +275,12 @@ auto Context::createLogicalDevice() -> void {
         index += 1;
     }
 
+    vk::PhysicalDeviceScalarBlockLayoutFeatures scbFeatures;
+    scbFeatures.scalarBlockLayout = true;
+
     vk::PhysicalDeviceBufferDeviceAddressFeatures bdaFeatures;
     bdaFeatures.bufferDeviceAddress = true;
+    bdaFeatures.pNext = scbFeatures;
 
     vk::PhysicalDeviceMeshShaderFeaturesEXT msFeatures;
     msFeatures.meshShader = true;
