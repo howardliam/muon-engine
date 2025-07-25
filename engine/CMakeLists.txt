@@ -70,11 +70,10 @@ target_sources(
 
         src/muon/graphics/buffer.hpp
         src/muon/graphics/context.hpp
-        src/muon/graphics/device_extensions.hpp
+        src/muon/graphics/extensions.hpp
         src/muon/graphics/gpu.hpp
         src/muon/graphics/image.hpp
         src/muon/graphics/mesh.hpp
-        src/muon/graphics/instance_extensions.hpp
         src/muon/graphics/pipeline_base.hpp
         src/muon/graphics/pipeline_compute.hpp
         src/muon/graphics/pipeline_graphics.hpp

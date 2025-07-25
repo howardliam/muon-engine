@@ -43,7 +43,7 @@ public:
     auto getAllocator() const -> vma::Allocator;
 
 private:
-    auto createInstance(const Window &window) -> void;
+    auto createInstance(const Window &window, bool debug) -> void;
     auto createDebugMessenger(bool debug) -> void;
     auto createSurface(const Window &window) -> void;
     auto selectPhysicalDevice() -> void;

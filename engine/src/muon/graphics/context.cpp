@@ -3,9 +3,8 @@
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
-#include "muon/graphics/device_extensions.hpp"
+#include "muon/graphics/extensions.hpp"
 #include "muon/graphics/gpu.hpp"
-#include "muon/graphics/instance_extensions.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
 #define VMA_IMPLEMENTATION
@@ -58,7 +57,7 @@ Context::Context(const Spec &spec) {
 
     m_context = vk::raii::Context();
 
-    createInstance(*spec.window);
+    createInstance(*spec.window, spec.debug);
     createDebugMessenger(spec.debug);
     createSurface(*spec.window);
     selectPhysicalDevice();
@@ -95,50 +94,50 @@ auto Context::getTransferQueue() const -> Queue & { return *m_transferQueue; }
 
 auto Context::getAllocator() const -> vma::Allocator { return m_allocator; }
 
-auto Context::createInstance(const Window &window) -> void {
+auto Context::createInstance(const Window &window, bool debug) -> void {
     auto extensions = window.getRequiredExtensions();
-    extensions.insert(extensions.end(), k_requiredInstanceExtensions.begin(), k_requiredInstanceExtensions.end());
+    extensions.insert(extensions.end(), k_instanceRequiredExtensions.begin(), k_instanceRequiredExtensions.end());
 
-#ifdef MU_DEBUG_ENABLED
-    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
+    if (debug) {
+        extensions.push_back("VK_EXT_debug_utils");
+    }
 
     vk::ApplicationInfo appInfo;
     appInfo.pApplicationName = "Muon";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.applicationVersion = vk::makeVersion(0, 1, 0);
     appInfo.pEngineName = "Muon";
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_3;
+    appInfo.engineVersion = vk::makeVersion(0, 1, 0);
+    appInfo.apiVersion = vk::ApiVersion13;
 
     vk::InstanceCreateInfo instanceCi;
     instanceCi.pApplicationInfo = &appInfo;
     instanceCi.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     instanceCi.ppEnabledExtensionNames = extensions.data();
 
-#ifdef MU_DEBUG_ENABLED
-    const char *validationLayer = "VK_LAYER_KHRONOS_validation";
+    if (debug) {
+        auto checkValidationLayerSupport = [](const vk::raii::Context &context, const char *layer) -> bool {
+            auto availableLayers = context.enumerateInstanceLayerProperties();
 
-    auto checkValidationLayerSupport = [&validationLayer](const vk::raii::Context &context) -> bool {
-        auto availableLayers = context.enumerateInstanceLayerProperties();
+            auto it = std::ranges::find_if(availableLayers, [&](const VkLayerProperties &props) -> bool {
+                return std::strcmp(props.layerName, layer) == 0;
+            });
 
-        auto it = std::ranges::find_if(availableLayers, [&](const VkLayerProperties &props) -> bool {
-            return std::strcmp(props.layerName, validationLayer) == 0;
-        });
+            if (it == availableLayers.end()) {
+                return false;
+            }
 
-        if (it == availableLayers.end()) {
-            return false;
+            return true;
+        };
+
+        const char *validationLayer = "VK_LAYER_KHRONOS_validation";
+
+        if (checkValidationLayerSupport(m_context, validationLayer)) {
+            instanceCi.enabledLayerCount = 1;
+            instanceCi.ppEnabledLayerNames = &validationLayer;
+        } else {
+            core::warn("the validation layer is not available");
         }
-
-        return true;
-    };
-
-    if (checkValidationLayerSupport(m_context)) {
-        instanceCi.enabledLayerCount = 1;
-        instanceCi.ppEnabledLayerNames = &validationLayer;
-    } else {
-        core::warn("the validation layer is not available");
     }
-#endif
 
     auto instanceResult = m_context.createInstance(instanceCi);
     core::expect(instanceResult, "failed to create instance");
@@ -293,8 +292,8 @@ auto Context::createLogicalDevice() -> void {
     vk::DeviceCreateInfo deviceCi;
     deviceCi.queueCreateInfoCount = queueCreateInfos.size();
     deviceCi.pQueueCreateInfos = queueCreateInfos.data();
-    deviceCi.enabledExtensionCount = k_requiredDeviceExtensions.size();
-    deviceCi.ppEnabledExtensionNames = k_requiredDeviceExtensions.data();
+    deviceCi.enabledExtensionCount = k_deviceRequiredExtensions.size();
+    deviceCi.ppEnabledExtensionNames = k_deviceRequiredExtensions.data();
     deviceCi.pNext = &features;
 
     auto deviceResult = m_physicalDevice.createDevice(deviceCi);
