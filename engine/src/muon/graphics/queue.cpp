@@ -28,7 +28,7 @@ Queue::Queue(const Spec &spec) : m_device(*spec.device), m_name(spec.name) {
 
 Queue::~Queue() { core::debug("destroyed {} queue", m_name); }
 
-auto Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) {
+auto Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) -> void {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
     commandBufferAi.commandPool = m_commandPool;

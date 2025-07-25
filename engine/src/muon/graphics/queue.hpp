@@ -23,7 +23,7 @@ public:
     ~Queue();
 
 public:
-    auto executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn);
+    auto executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) -> void;
 
 public:
     auto get() -> vk::raii::Queue &;
