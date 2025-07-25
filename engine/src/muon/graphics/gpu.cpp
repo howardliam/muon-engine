@@ -6,13 +6,13 @@ namespace muon::graphics {
 
 Gpu::Gpu(const Spec &spec) : m_physicalDevice(spec.physicalDevice) { determineSuitability(); }
 
-bool Gpu::isSuitable() const { return m_coreSuitabilities == 0b1110; }
+auto Gpu::isSuitable() const -> bool { return m_coreSuitabilities == 0b1110; }
 
-uint64_t Gpu::getMemorySize() const { return m_memorySize; }
+auto Gpu::getMemorySize() const -> uint64_t { return m_memorySize; }
 
 auto Gpu::getPhysicalDevice() const -> const vk::raii::PhysicalDevice & { return *m_physicalDevice; }
 
-void Gpu::determineSuitability() {
+auto Gpu::determineSuitability() -> void {
     auto deviceProperties = m_physicalDevice->getProperties();
 
     if (deviceProperties.apiVersion >= k_vulkanApiVersion) {
