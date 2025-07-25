@@ -15,7 +15,7 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 | ---- | ---- |
 | integers | use `cstdint`/`stdint.h` integer types: `int32_t`, `int64_t`, etc. |
 | classes, structs | named in PascalCase, e.g.: `FileManager`, `MaterialInfo` |
-| functions, methods | named in PascalCase with trailing return type, e.g.: `auto RenderModel() -> void` |
+| functions, methods | named in cascalCase with trailing return type, e.g.: `auto renderModel() -> void` |
 | variables, lambdas | named in camelCase, e.g.: `fileIndex` |
 | global constants | name begins with `k_`, e.g.: `constexpr uint64_t k_version = 3.14;` |
 | static variables | name begins with `s_`, e.g.: `static tracy::VkCtx *s_tracyContext;` |
