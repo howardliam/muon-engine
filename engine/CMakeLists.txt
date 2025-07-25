@@ -18,6 +18,9 @@ target_sources(
 
         src/muon/graphics/buffer.cpp
         src/muon/graphics/context.cpp
+        src/muon/graphics/descriptor_pool.cpp
+        src/muon/graphics/descriptor_set_layout.cpp
+        src/muon/graphics/descriptor_writer.cpp
         src/muon/graphics/gpu.cpp
         src/muon/graphics/image.cpp
         src/muon/graphics/mesh.cpp
@@ -71,6 +74,9 @@ target_sources(
         src/muon/graphics/api.hpp
         src/muon/graphics/buffer.hpp
         src/muon/graphics/context.hpp
+        src/muon/graphics/descriptor_pool.hpp
+        src/muon/graphics/descriptor_set_layout.hpp
+        src/muon/graphics/descriptor_writer.hpp
         src/muon/graphics/extensions.hpp
         src/muon/graphics/gpu.hpp
         src/muon/graphics/image.hpp
