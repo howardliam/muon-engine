@@ -1,6 +1,6 @@
 #include "muon/graphics/gpu.hpp"
 
-#include "vulkan/vulkan.hpp"
+#include "muon/graphics/api.hpp"
 
 namespace muon::graphics {
 
@@ -15,7 +15,7 @@ auto Gpu::getPhysicalDevice() const -> const vk::raii::PhysicalDevice & { return
 void Gpu::determineSuitability() {
     auto deviceProperties = m_physicalDevice->getProperties();
 
-    if (deviceProperties.apiVersion >= vk::ApiVersion13) {
+    if (deviceProperties.apiVersion >= k_vulkanApiVersion) {
         m_coreSuitabilities.set(3);
     }
 

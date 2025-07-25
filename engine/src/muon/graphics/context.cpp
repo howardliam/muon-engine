@@ -4,6 +4,7 @@
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
+#include "muon/graphics/api.hpp"
 #include "muon/graphics/extensions.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
@@ -105,7 +106,7 @@ auto Context::createInstance(const Window &window, bool debug) -> void {
     }
 
     vk::ApplicationInfo appInfo;
-    appInfo.apiVersion = vk::ApiVersion13;
+    appInfo.apiVersion = k_vulkanApiVersion;
 
     appInfo.pApplicationName = Application::get().getName().data();
     appInfo.applicationVersion = vk::makeVersion(0, 1, 0);
