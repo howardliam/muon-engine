@@ -61,6 +61,8 @@ auto Context::getVramUsage() const -> uint64_t {
     return std::accumulate(memoryBudgetProps.heapUsage.begin(), memoryBudgetProps.heapUsage.end(), 0);
 }
 
+auto Context::getVramCapacity() const -> uint64_t { return m_vramCapacity; }
+
 auto Context::getInstance() -> vk::raii::Instance & { return m_instance; }
 auto Context::getInstance() const -> const vk::raii::Instance & { return m_instance; }
 
@@ -220,6 +222,7 @@ auto Context::selectPhysicalDevice() -> void {
     if (gpus.size() >= 1) {
         auto &gpu = gpus.front();
         m_physicalDevice = gpu.getPhysicalDevice();
+        m_vramCapacity = gpu.getMemorySize();
         gpuSelected = true;
     }
 

@@ -7,9 +7,6 @@
 #include "vk_mem_alloc.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-#include <string>
-#include <unordered_set>
-
 namespace muon::graphics {
 
 class Context : NoCopy, NoMove {
@@ -25,6 +22,7 @@ public:
 
 public:
     auto getVramUsage() const -> uint64_t;
+    auto getVramCapacity() const -> uint64_t;
 
     auto getInstance() -> vk::raii::Instance &;
     auto getInstance() const -> const vk::raii::Instance &;
@@ -67,7 +65,7 @@ private:
     vk::raii::SurfaceKHR m_surface{nullptr};
 
     vk::raii::PhysicalDevice m_physicalDevice{nullptr};
-    std::unordered_set<std::string> m_enabledExtensions{};
+    uint64_t m_vramCapacity;
 
     vk::raii::Device m_device{nullptr};
 
