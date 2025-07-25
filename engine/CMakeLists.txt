@@ -16,8 +16,6 @@ target_sources(
         src/muon/core/project.cpp
         src/muon/core/window.cpp
 
-        src/muon/crypto/hash.cpp
-
         src/muon/fs/fs.cpp
 
         src/muon/graphics/buffer.cpp

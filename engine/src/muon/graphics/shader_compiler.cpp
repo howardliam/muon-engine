@@ -257,7 +257,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     }
     readQuery.reset();
 
-    std::optional sourceHash = crypto::hashFile(file);
+    std::expected sourceHash = crypto::hashFile<32>(file);
     if (!sourceHash.has_value()) {
         core::error("failed to hash file contents: {}", request.path.generic_string());
         return;
@@ -274,7 +274,6 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
         return;
     }
 
-    file.clear();
     file.seekg(0, std::ios::end);
     std::vector<char> buffer(file.tellg());
     file.seekg(0, std::ios::beg);
