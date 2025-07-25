@@ -2,20 +2,18 @@
 
 #include "vulkan/vulkan.hpp"
 
-#include <unordered_set>
-
 namespace muon::graphics {
 
-Gpu::Gpu(const Spec &spec) { determineSuitability(*spec.physicalDevice, *spec.surface); }
+Gpu::Gpu(const Spec &spec) : m_physicalDevice(spec.physicalDevice) { determineSuitability(); }
 
 bool Gpu::isSuitable() const { return m_coreSuitabilities == 0b1110; }
 
 uint64_t Gpu::getMemorySize() const { return m_memorySize; }
 
-const std::unordered_set<std::string> &Gpu::getSupportedExtensions() const { return m_supportedExtensions; }
+auto Gpu::getPhysicalDevice() const -> const vk::raii::PhysicalDevice & { return *m_physicalDevice; }
 
-void Gpu::determineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface) {
-    auto deviceProperties = physicalDevice.getProperties();
+void Gpu::determineSuitability() {
+    auto deviceProperties = m_physicalDevice->getProperties();
 
     if (deviceProperties.apiVersion >= vk::ApiVersion13) {
         m_coreSuitabilities.set(3);
@@ -29,7 +27,7 @@ void Gpu::determineSuitability(const vk::raii::PhysicalDevice &physicalDevice, c
         m_coreSuitabilities.set(1);
     }
 
-    auto memoryProperties = physicalDevice.getMemoryProperties();
+    auto memoryProperties = m_physicalDevice->getMemoryProperties();
 
     for (const auto &heap : memoryProperties.memoryHeaps) {
         if (heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal) {

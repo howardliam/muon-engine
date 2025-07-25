@@ -3,8 +3,6 @@
 #include "vulkan/vulkan_raii.hpp"
 
 #include <bitset>
-#include <string>
-#include <unordered_set>
 
 namespace muon::graphics {
 
@@ -12,7 +10,6 @@ class Gpu {
 public:
     struct Spec {
         const vk::raii::PhysicalDevice *physicalDevice{nullptr};
-        const vk::raii::SurfaceKHR *surface{nullptr};
     };
 
 public:
@@ -20,17 +17,19 @@ public:
     ~Gpu() = default;
 
 public:
-    bool isSuitable() const;
-    uint64_t getMemorySize() const;
-    const std::unordered_set<std::string> &getSupportedExtensions() const;
+    auto isSuitable() const -> bool;
+    auto getMemorySize() const -> uint64_t;
+
+    auto getPhysicalDevice() const -> const vk::raii::PhysicalDevice &;
 
 private:
-    void determineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface);
+    auto determineSuitability() -> void;
 
 private:
+    const vk::raii::PhysicalDevice *m_physicalDevice;
+
     std::bitset<4> m_coreSuitabilities{0};
     uint64_t m_memorySize{0};
-    std::unordered_set<std::string> m_supportedExtensions{};
 };
 
 } // namespace muon::graphics

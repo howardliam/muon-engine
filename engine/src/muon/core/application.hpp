@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <string_view>
 
 auto main(int32_t argc, char **argv) -> int32_t;
 
@@ -30,7 +31,7 @@ struct ApplicationCommandLineArgs {
 class Application : NoCopy, NoMove {
 public:
     struct Spec {
-        std::string name = "Muon Application";
+        std::string name{"Muon Application"};
         std::filesystem::path workingDirectory;
         ApplicationCommandLineArgs cliArgs;
     };
@@ -38,6 +39,9 @@ public:
 public:
     Application(const Spec &spec);
     virtual ~Application();
+
+public:
+    auto getName() -> const std::string_view;
 
     static auto get() -> Application &;
 
@@ -47,6 +51,8 @@ private:
     friend auto ::main(int32_t argc, char **argv) -> int32_t;
 
 protected:
+    std::string m_name;
+
     std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
     std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
 

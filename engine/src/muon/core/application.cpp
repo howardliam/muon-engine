@@ -19,7 +19,7 @@
 
 namespace muon {
 
-Application::Application(const Spec &spec) {
+Application::Application(const Spec &spec) : m_name{spec.name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
@@ -110,6 +110,8 @@ Application::~Application() {
     profiling::Profiler::destroyContext();
     core::debug("destroyed application");
 }
+
+auto Application::getName() -> const std::string_view { return m_name; }
 
 auto Application::get() -> Application & { return *s_instance; }
 

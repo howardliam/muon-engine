@@ -1,5 +1,6 @@
 #include "muon/graphics/context.hpp"
 
+#include "muon/core/application.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
@@ -21,34 +22,6 @@
 #include <memory>
 #include <set>
 #include <vector>
-
-static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
-    vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType,
-    const vk::DebugUtilsMessengerCallbackDataEXT *callbackData, void *userData
-) {
-    switch (messageSeverity) {
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-            muon::core::debug(callbackData->pMessage);
-            break;
-
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-            muon::core::info(callbackData->pMessage);
-            break;
-
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-            muon::core::warn(callbackData->pMessage);
-            break;
-
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-            muon::core::error(callbackData->pMessage);
-            break;
-
-        default:
-            break;
-    }
-
-    return false;
-}
 
 namespace muon::graphics {
 
@@ -101,26 +74,14 @@ auto Context::getAllocator() -> vma::Allocator & { return m_allocator; }
 auto Context::getAllocator() const -> const vma::Allocator & { return m_allocator; }
 
 auto Context::createInstance(const Window &window, bool debug) -> void {
-    auto extensions = window.getRequiredExtensions();
+    std::vector extensions = window.getRequiredExtensions();
     extensions.insert(extensions.end(), k_instanceRequiredExtensions.begin(), k_instanceRequiredExtensions.end());
+
+    std::vector<const char *> layers;
 
     if (debug) {
         extensions.push_back("VK_EXT_debug_utils");
-    }
 
-    vk::ApplicationInfo appInfo;
-    appInfo.pApplicationName = "Muon";
-    appInfo.applicationVersion = vk::makeVersion(0, 1, 0);
-    appInfo.pEngineName = "Muon";
-    appInfo.engineVersion = vk::makeVersion(0, 1, 0);
-    appInfo.apiVersion = vk::ApiVersion13;
-
-    vk::InstanceCreateInfo instanceCi;
-    instanceCi.pApplicationInfo = &appInfo;
-    instanceCi.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    instanceCi.ppEnabledExtensionNames = extensions.data();
-
-    if (debug) {
         auto checkValidationLayerSupport = [](const vk::raii::Context &context, const char *layer) -> bool {
             auto availableLayers = context.enumerateInstanceLayerProperties();
 
@@ -136,14 +97,30 @@ auto Context::createInstance(const Window &window, bool debug) -> void {
         };
 
         const char *validationLayer = "VK_LAYER_KHRONOS_validation";
-
         if (checkValidationLayerSupport(m_context, validationLayer)) {
-            instanceCi.enabledLayerCount = 1;
-            instanceCi.ppEnabledLayerNames = &validationLayer;
+            layers.push_back(validationLayer);
         } else {
-            core::warn("the validation layer is not available");
+            core::warn("`{}` is unavailable", validationLayer);
         }
     }
+
+    vk::ApplicationInfo appInfo;
+    appInfo.apiVersion = vk::ApiVersion13;
+
+    appInfo.pApplicationName = Application::get().getName().data();
+    appInfo.applicationVersion = vk::makeVersion(0, 1, 0);
+
+    appInfo.pEngineName = "Muon";
+    appInfo.engineVersion = vk::makeVersion(0, 1, 0);
+
+    vk::InstanceCreateInfo instanceCi;
+    instanceCi.enabledExtensionCount = extensions.size();
+    instanceCi.ppEnabledExtensionNames = extensions.data();
+
+    instanceCi.enabledLayerCount = layers.size();
+    instanceCi.ppEnabledLayerNames = layers.data();
+
+    instanceCi.pApplicationInfo = &appInfo;
 
     auto instanceResult = m_context.createInstance(instanceCi);
     core::expect(instanceResult, "failed to create instance");
@@ -154,6 +131,32 @@ auto Context::createDebugMessenger(bool debug) -> void {
     if (!debug) {
         return;
     }
+
+    auto debugCallback = [](vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
+                            const vk::DebugUtilsMessengerCallbackDataEXT *callbackData, void *userData) -> vk::Bool32 {
+        switch (severity) {
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
+                muon::core::debug(callbackData->pMessage);
+                break;
+
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
+                muon::core::info(callbackData->pMessage);
+                break;
+
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
+                muon::core::warn(callbackData->pMessage);
+                break;
+
+            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
+                muon::core::error(callbackData->pMessage);
+                break;
+
+            default:
+                break;
+        }
+
+        return false;
+    };
 
     vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCi;
     debugUtilsMessengerCi.pfnUserCallback = debugCallback;
@@ -168,7 +171,6 @@ auto Context::createDebugMessenger(bool debug) -> void {
 
     auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
     core::expect(debugMessengerResult, "failed to create debug messenger");
-
     m_debugMessenger = std::move(*debugMessengerResult);
 }
 
@@ -185,28 +187,27 @@ auto Context::selectPhysicalDevice() -> void {
     auto physicalDevices = *physicalDevicesResult;
 
     Gpu::Spec gpuSpec{};
-    gpuSpec.surface = &m_surface;
 
-    using GpuPair = std::pair<Gpu, const vk::raii::PhysicalDevice *>;
-    std::vector<GpuPair> gpus{};
+    std::vector<Gpu> gpus;
 
     for (const auto &physicalDevice : physicalDevices) {
         gpuSpec.physicalDevice = &physicalDevice;
-        Gpu gpu(gpuSpec);
+        Gpu gpu{gpuSpec};
 
         if (gpu.isSuitable()) {
-            gpus.push_back({gpu, &physicalDevice});
+            gpus.push_back(gpu);
         }
     }
 
-    auto sort = [](const GpuPair &a, const GpuPair &b) -> bool { return a.first.getMemorySize() > b.first.getMemorySize(); };
-    std::sort(gpus.begin(), gpus.end(), sort);
+    std::sort(gpus.begin(), gpus.end(), [](const Gpu &lhs, const Gpu &rhs) -> bool {
+        return lhs.getMemorySize() > rhs.getMemorySize();
+    });
 
     bool gpuSelected = false;
 
     if (gpus.size() >= 1) {
-        auto &[gpu, physicalDevice] = gpus.front();
-        m_physicalDevice = *physicalDevice;
+        auto &gpu = gpus.front();
+        m_physicalDevice = gpu.getPhysicalDevice();
         gpuSelected = true;
     }
 
