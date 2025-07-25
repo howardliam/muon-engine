@@ -5,8 +5,6 @@
 
 #include <memory>
 
-// idea borrowed from https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.h
-
 namespace muon {
 
 class Log {
