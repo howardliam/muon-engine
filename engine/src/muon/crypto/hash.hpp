@@ -25,11 +25,11 @@ auto initStateForSize() -> std::expected<hash_state, HashError> {
     hash_state state;
 
     int32_t result;
-    if (Size == 32) {
+    if constexpr (Size == 32) {
         result = blake2b_256_init(&state);
-    } else if (Size == 48) {
+    } else if constexpr (Size == 48) {
         result = blake2b_384_init(&state);
-    } else if (Size == 64) {
+    } else if constexpr (Size == 64) {
         result = blake2b_512_init(&state);
     }
 
