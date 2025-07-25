@@ -4,6 +4,7 @@
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_handles.hpp"
+#include "vulkan/vulkan_to_string.hpp"
 
 #include <algorithm>
 #include <array>
@@ -161,6 +162,8 @@ auto Swapchain::createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
 
     if (m_oldSwapchain == nullptr) {
         swapchainCi.oldSwapchain = nullptr;
+    } else {
+        swapchainCi.oldSwapchain = m_oldSwapchain->m_swapchain;
     }
 
     auto swapchainCreateResult = m_context.getDevice().createSwapchainKHR(swapchainCi);
