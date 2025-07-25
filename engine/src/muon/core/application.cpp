@@ -127,6 +127,54 @@ auto Application::run() -> void {
         if (auto cmd = m_renderer->beginFrame(); cmd) {
             auto &commandBuffer = **cmd;
 
+            vk::ImageMemoryBarrier2 resetImb;
+            resetImb.image = m_renderer->getCurrentSwapchainImage();
+            resetImb.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            resetImb.subresourceRange.baseMipLevel = 0;
+            resetImb.subresourceRange.levelCount = 1;
+            resetImb.subresourceRange.baseArrayLayer = 0;
+            resetImb.subresourceRange.layerCount = 1;
+
+            resetImb.oldLayout = vk::ImageLayout::eUndefined;
+            resetImb.srcAccessMask = vk::AccessFlagBits2::eNone;
+            resetImb.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+            resetImb.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
+
+            resetImb.newLayout = vk::ImageLayout::eTransferDstOptimal;
+            resetImb.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            resetImb.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+            resetImb.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
+
+            vk::DependencyInfo reset;
+            reset.dependencyFlags = vk::DependencyFlags{};
+            reset.imageMemoryBarrierCount = 1;
+            reset.pImageMemoryBarriers = &resetImb;
+            commandBuffer.pipelineBarrier2(reset);
+
+            vk::ImageMemoryBarrier2 presentImb;
+            presentImb.image = m_renderer->getCurrentSwapchainImage();
+            presentImb.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            presentImb.subresourceRange.baseMipLevel = 0;
+            presentImb.subresourceRange.levelCount = 1;
+            presentImb.subresourceRange.baseArrayLayer = 0;
+            presentImb.subresourceRange.layerCount = 1;
+
+            presentImb.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+            presentImb.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            presentImb.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
+            presentImb.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+
+            presentImb.newLayout = vk::ImageLayout::ePresentSrcKHR;
+            presentImb.dstAccessMask = vk::AccessFlagBits2::eNone;
+            presentImb.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+            presentImb.dstStageMask = vk::PipelineStageFlagBits2::eBottomOfPipe;
+
+            vk::DependencyInfo presentDi;
+            presentDi.dependencyFlags = vk::DependencyFlags{};
+            presentDi.imageMemoryBarrierCount = 1;
+            presentDi.pImageMemoryBarriers = &presentImb;
+            commandBuffer.pipelineBarrier2(presentDi);
+
             m_renderer->endFrame();
         }
     }
