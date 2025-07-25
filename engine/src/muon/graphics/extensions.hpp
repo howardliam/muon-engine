@@ -4,8 +4,8 @@
 
 namespace muon::graphics {
 
-constexpr std::array<const char *, 3> k_deviceRequiredExtensions = {
-    "VK_KHR_swapchain", "VK_EXT_mesh_shader", "VK_EXT_memory_budget"
+constexpr std::array<const char *, 4> k_deviceRequiredExtensions = {
+    "VK_KHR_swapchain", "VK_EXT_mesh_shader", "VK_EXT_memory_budget", "VK_EXT_extended_dynamic_state3"
 };
 
 constexpr std::array<const char *, 4> k_instanceRequiredExtensions = {

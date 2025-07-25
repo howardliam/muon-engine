@@ -275,8 +275,12 @@ auto Context::createLogicalDevice() -> void {
         index += 1;
     }
 
+    vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT ds3Features;
+    ds3Features.extendedDynamicState3PolygonMode = true;
+
     vk::PhysicalDeviceScalarBlockLayoutFeatures scbFeatures;
     scbFeatures.scalarBlockLayout = true;
+    scbFeatures.pNext = ds3Features;
 
     vk::PhysicalDeviceBufferDeviceAddressFeatures bdaFeatures;
     bdaFeatures.bufferDeviceAddress = true;
