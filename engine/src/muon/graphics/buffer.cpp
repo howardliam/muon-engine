@@ -35,7 +35,8 @@ Buffer::Buffer(const Spec &spec)
     core::expect(bufferResult.result == vk::Result::eSuccess, "failed to create buffer");
 
     auto [buffer, allocation] = bufferResult.value;
-    buffer = vk::raii::Buffer{m_context.GetDevice(), buffer};
+    m_buffer = vk::raii::Buffer{m_context.GetDevice(), buffer};
+
     m_allocation = allocation;
 
     if (m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress) {
