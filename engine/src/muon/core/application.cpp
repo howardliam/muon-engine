@@ -62,6 +62,7 @@ Application::Application(const Spec &spec) {
 
     graphics::Context::Spec contextSpec{};
     contextSpec.window = m_window.get();
+    contextSpec.debug = true;
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     profiling::Profiler::Spec profilerSpec{};

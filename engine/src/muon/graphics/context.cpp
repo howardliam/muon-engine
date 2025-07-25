@@ -23,40 +23,33 @@
 #include <set>
 #include <vector>
 
-#ifdef MU_DEBUG_ENABLED
 static VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugCallback(
     vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType,
     const vk::DebugUtilsMessengerCallbackDataEXT *callbackData, void *userData
 ) {
     switch (messageSeverity) {
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
             muon::core::debug(callbackData->pMessage);
             break;
-        }
 
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
             muon::core::info(callbackData->pMessage);
             break;
-        }
 
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
             muon::core::warn(callbackData->pMessage);
             break;
-        }
 
-        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError: {
+        case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
             muon::core::error(callbackData->pMessage);
             break;
-        }
 
-        default: {
+        default:
             break;
-        }
     }
 
     return false;
 }
-#endif
 
 namespace muon::graphics {
 
@@ -65,14 +58,12 @@ Context::Context(const Spec &spec) {
 
     m_context = vk::raii::Context();
 
-    CreateInstance(*spec.window);
-#ifdef MU_DEBUG_ENABLED
-    CreateDebugMessenger();
-#endif
-    CreateSurface(*spec.window);
-    SelectPhysicalDevice();
-    CreateLogicalDevice();
-    CreateAllocator();
+    createInstance(*spec.window);
+    createDebugMessenger(spec.debug);
+    createSurface(*spec.window);
+    selectPhysicalDevice();
+    createLogicalDevice();
+    createAllocator();
 
     core::debug("created device");
 }
@@ -86,30 +77,25 @@ Context::~Context() {
     core::debug("destroyed device");
 }
 
-auto Context::DeviceWaitIdle() -> std::expected<void, vk::Result> {
-    m_device.waitIdle();
-    return {};
-}
+auto Context::getInstance() -> vk::raii::Instance & { return m_instance; }
+auto Context::getInstance() const -> const vk::raii::Instance & { return m_instance; }
 
-auto Context::GetInstance() -> vk::raii::Instance & { return m_instance; }
-auto Context::GetInstance() const -> const vk::raii::Instance & { return m_instance; }
+auto Context::getSurface() -> vk::raii::SurfaceKHR & { return m_surface; }
+auto Context::getSurface() const -> const vk::raii::SurfaceKHR & { return m_surface; }
 
-auto Context::GetSurface() -> vk::raii::SurfaceKHR & { return m_surface; }
-auto Context::GetSurface() const -> const vk::raii::SurfaceKHR & { return m_surface; }
+auto Context::getPhysicalDevice() -> vk::raii::PhysicalDevice & { return m_physicalDevice; }
+auto Context::getPhysicalDevice() const -> const vk::raii::PhysicalDevice & { return m_physicalDevice; }
 
-auto Context::GetPhysicalDevice() -> vk::raii::PhysicalDevice & { return m_physicalDevice; }
-auto Context::GetPhysicalDevice() const -> const vk::raii::PhysicalDevice & { return m_physicalDevice; }
+auto Context::getDevice() -> vk::raii::Device & { return m_device; }
+auto Context::getDevice() const -> const vk::raii::Device & { return m_device; }
 
-auto Context::GetDevice() -> vk::raii::Device & { return m_device; }
-auto Context::GetDevice() const -> const vk::raii::Device & { return m_device; }
+auto Context::getGraphicsQueue() const -> Queue & { return *m_graphicsQueue; }
+auto Context::getComputeQueue() const -> Queue & { return *m_computeQueue; }
+auto Context::getTransferQueue() const -> Queue & { return *m_transferQueue; }
 
-auto Context::GetGraphicsQueue() const -> Queue & { return *m_graphicsQueue; }
-auto Context::GetComputeQueue() const -> Queue & { return *m_computeQueue; }
-auto Context::GetTransferQueue() const -> Queue & { return *m_transferQueue; }
+auto Context::getAllocator() const -> vma::Allocator { return m_allocator; }
 
-auto Context::GetAllocator() const -> vma::Allocator { return m_allocator; }
-
-auto Context::CreateInstance(const Window &window) -> void {
+auto Context::createInstance(const Window &window) -> void {
     auto extensions = window.GetRequiredExtensions();
     extensions.insert(extensions.end(), k_requiredInstanceExtensions.begin(), k_requiredInstanceExtensions.end());
 
@@ -159,8 +145,11 @@ auto Context::CreateInstance(const Window &window) -> void {
     m_instance = std::move(*instanceResult);
 }
 
-#ifdef MU_DEBUG_ENABLED
-auto Context::CreateDebugMessenger() -> void {
+auto Context::createDebugMessenger(bool debug) -> void {
+    if (!debug) {
+        return;
+    }
+
     vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCi;
     debugUtilsMessengerCi.pfnUserCallback = DebugCallback;
 
@@ -177,16 +166,15 @@ auto Context::CreateDebugMessenger() -> void {
 
     m_debugMessenger = std::move(*debugMessengerResult);
 }
-#endif
 
-auto Context::CreateSurface(const Window &window) -> void {
+auto Context::createSurface(const Window &window) -> void {
     auto surfaceResult = window.CreateSurface(m_instance);
     core::expect(surfaceResult, "failed to create window surface");
     m_surface = std::move(*surfaceResult);
     core::expect(*m_surface, "surface must not be null");
 }
 
-auto Context::SelectPhysicalDevice() -> void {
+auto Context::selectPhysicalDevice() -> void {
     auto physicalDevicesResult = m_instance.enumeratePhysicalDevices();
     core::expect(physicalDevicesResult, "failed to get available GPUs");
     auto physicalDevices = *physicalDevicesResult;
@@ -216,10 +204,11 @@ auto Context::SelectPhysicalDevice() -> void {
         m_physicalDevice = *physicalDevice;
         gpuSelected = true;
     }
+
     core::expect(gpuSelected, "failed to select a suitable GPU");
 }
 
-auto Context::CreateLogicalDevice() -> void {
+auto Context::createLogicalDevice() -> void {
     const QueueInfo queueInfo{m_physicalDevice, m_surface};
     core::expect(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
     core::expect(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
@@ -342,7 +331,7 @@ auto Context::CreateLogicalDevice() -> void {
     core::expect(m_transferQueue, "transfer queue must not be null");
 }
 
-auto Context::CreateAllocator() -> void {
+auto Context::createAllocator() -> void {
     vma::AllocatorCreateInfo createInfo{};
     createInfo.instance = m_instance;
     createInfo.physicalDevice = m_physicalDevice;

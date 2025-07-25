@@ -5,10 +5,8 @@
 #include "muon/core/window.hpp"
 #include "muon/graphics/queue.hpp"
 #include "vk_mem_alloc.hpp"
-#include "vulkan/vulkan.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-#include <expected>
 #include <string>
 #include <unordered_set>
 
@@ -18,50 +16,45 @@ class Context : NoCopy, NoMove {
 public:
     struct Spec {
         const Window *window{nullptr};
+        bool debug{false};
     };
 
 public:
     Context(const Spec &spec);
     ~Context();
 
-    auto DeviceWaitIdle() -> std::expected<void, vk::Result>;
-
 public:
-    auto GetInstance() -> vk::raii::Instance &;
-    auto GetInstance() const -> const vk::raii::Instance &;
+    auto getInstance() -> vk::raii::Instance &;
+    auto getInstance() const -> const vk::raii::Instance &;
 
-    auto GetSurface() -> vk::raii::SurfaceKHR &;
-    auto GetSurface() const -> const vk::raii::SurfaceKHR &;
+    auto getSurface() -> vk::raii::SurfaceKHR &;
+    auto getSurface() const -> const vk::raii::SurfaceKHR &;
 
-    auto GetPhysicalDevice() -> vk::raii::PhysicalDevice &;
-    auto GetPhysicalDevice() const -> const vk::raii::PhysicalDevice &;
+    auto getPhysicalDevice() -> vk::raii::PhysicalDevice &;
+    auto getPhysicalDevice() const -> const vk::raii::PhysicalDevice &;
 
-    auto GetDevice() -> vk::raii::Device &;
-    auto GetDevice() const -> const vk::raii::Device &;
+    auto getDevice() -> vk::raii::Device &;
+    auto getDevice() const -> const vk::raii::Device &;
 
-    auto GetGraphicsQueue() const -> Queue &;
-    auto GetComputeQueue() const -> Queue &;
-    auto GetTransferQueue() const -> Queue &;
+    auto getGraphicsQueue() const -> Queue &;
+    auto getComputeQueue() const -> Queue &;
+    auto getTransferQueue() const -> Queue &;
 
-    auto GetAllocator() const -> vma::Allocator;
+    auto getAllocator() const -> vma::Allocator;
 
 private:
-    auto CreateInstance(const Window &window) -> void;
-#ifdef MU_DEBUG_ENABLED
-    auto CreateDebugMessenger() -> void;
-#endif
-    auto CreateSurface(const Window &window) -> void;
-    auto SelectPhysicalDevice() -> void;
-    auto CreateLogicalDevice() -> void;
-    auto CreateAllocator() -> void;
+    auto createInstance(const Window &window) -> void;
+    auto createDebugMessenger(bool debug) -> void;
+    auto createSurface(const Window &window) -> void;
+    auto selectPhysicalDevice() -> void;
+    auto createLogicalDevice() -> void;
+    auto createAllocator() -> void;
 
 private:
     vk::raii::Context m_context;
     vk::raii::Instance m_instance{nullptr};
 
-#ifdef MU_DEBUG_ENABLED
     vk::raii::DebugUtilsMessengerEXT m_debugMessenger{nullptr};
-#endif
 
     vk::raii::SurfaceKHR m_surface{nullptr};
 
