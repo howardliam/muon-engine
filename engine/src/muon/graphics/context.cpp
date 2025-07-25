@@ -366,10 +366,9 @@ auto Context::createAllocator() -> void {
     createInfo.device = m_device;
     createInfo.flags = vma::AllocatorCreateFlagBits::eBufferDeviceAddress;
 
-    auto result = vma::createAllocator(createInfo);
-    core::expect(result.result == vk::Result::eSuccess, "failed to create allocator");
-
-    m_allocator = result.value;
+    auto [result, allocator] = vma::createAllocator(createInfo);
+    core::expect(result == vk::Result::eSuccess, "failed to create allocator");
+    m_allocator = allocator;
 }
 
 } // namespace muon::graphics
