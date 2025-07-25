@@ -11,11 +11,12 @@ target_sources(
 
         src/muon/core/application.cpp
         src/muon/core/arena.cpp
-        src/muon/core/hash.cpp
         src/muon/core/layer_stack.cpp
         src/muon/core/log.cpp
         src/muon/core/project.cpp
         src/muon/core/window.cpp
+
+        src/muon/crypto/hash.cpp
 
         src/muon/fs/fs.cpp
 
@@ -57,7 +58,6 @@ target_sources(
         src/muon/core/entry_point.hpp
         src/muon/core/errors.hpp
         src/muon/core/expect.hpp
-        src/muon/core/hash.hpp
         src/muon/core/layer.hpp
         src/muon/core/layer_stack.hpp
         src/muon/core/log.hpp
@@ -66,6 +66,8 @@ target_sources(
         src/muon/core/project.hpp
         src/muon/core/signals.hpp
         src/muon/core/window.hpp
+
+        src/muon/crypto/hash.hpp
 
         src/muon/event/dispatcher.hpp
         src/muon/event/event.hpp

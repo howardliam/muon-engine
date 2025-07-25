@@ -1,8 +1,8 @@
 #include "muon/graphics/shader_compiler.hpp"
 
 #include "muon/core/expect.hpp"
-#include "muon/core/hash.hpp"
 #include "muon/core/log.hpp"
+#include "muon/crypto/hash.hpp"
 
 #include <SPIRV/GlslangToSpv.h>
 #include <SQLiteCpp/Database.h>
@@ -257,7 +257,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
     }
     readQuery.reset();
 
-    std::optional sourceHash = HashFile(file);
+    std::optional sourceHash = crypto::hashFile(file);
     if (!sourceHash.has_value()) {
         core::error("failed to hash file contents: {}", request.path.generic_string());
         return;

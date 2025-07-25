@@ -1,10 +1,13 @@
-#include "muon/core/hash.hpp"
+#include "muon/crypto/hash.hpp"
 
-#include <tomcrypt.h>
+#include "tomcrypt.h"
 
-namespace muon {
+#include <fstream>
+#include <string>
 
-auto HashString(const std::string_view string) -> std::optional<std::array<uint8_t, k_arraySize>> {
+namespace muon::crypto {
+
+auto hashString(const std::string_view string) -> std::optional<std::array<uint8_t, k_hashSize>> {
     hash_state state;
     blake2b_256_init(&state);
 
@@ -13,7 +16,7 @@ auto HashString(const std::string_view string) -> std::optional<std::array<uint8
         return std::nullopt;
     }
 
-    std::array<uint8_t, k_arraySize> output;
+    std::array<uint8_t, k_hashSize> output;
     result = blake2b_done(&state, output.data());
     if (result != (CRYPT_OK)) {
         return std::nullopt;
@@ -22,7 +25,7 @@ auto HashString(const std::string_view string) -> std::optional<std::array<uint8
     return output;
 }
 
-auto HashFile(std::ifstream &file) -> std::optional<std::array<uint8_t, k_arraySize>> {
+auto hashFile(std::ifstream &file) -> std::optional<std::array<uint8_t, k_hashSize>> {
     hash_state state;
     blake2b_256_init(&state);
 
@@ -36,7 +39,7 @@ auto HashFile(std::ifstream &file) -> std::optional<std::array<uint8_t, k_arrayS
         }
     }
 
-    std::array<uint8_t, k_arraySize> output;
+    std::array<uint8_t, k_hashSize> output;
     result = blake2b_done(&state, output.data());
     if (result != (CRYPT_OK)) {
         return std::nullopt;
@@ -45,4 +48,4 @@ auto HashFile(std::ifstream &file) -> std::optional<std::array<uint8_t, k_arrayS
     return output;
 }
 
-} // namespace muon
+} // namespace muon::crypto
