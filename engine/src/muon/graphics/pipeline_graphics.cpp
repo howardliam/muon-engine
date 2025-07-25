@@ -58,7 +58,7 @@ auto PipelineGraphics::CreatePipeline(const vk::PipelineRenderingCreateInfo &ren
     graphicsPipelineCi.basePipelineIndex = -1;
     graphicsPipelineCi.basePipelineHandle = nullptr;
 
-    auto createPipelineResult = m_context.GetDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
+    auto createPipelineResult = m_context.getDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
     core::expect(createPipelineResult, "failed to create graphics pipeline");
 
     m_pipeline = std::move(*createPipelineResult);

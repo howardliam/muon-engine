@@ -39,7 +39,7 @@ auto PipelineMeshlet::CreatePipeline(const vk::PipelineRenderingCreateInfo &rend
     graphicsPipelineCi.basePipelineIndex = -1;
     graphicsPipelineCi.basePipelineHandle = nullptr;
 
-    auto createPipelineResult = m_context.GetDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
+    auto createPipelineResult = m_context.getDevice().createGraphicsPipeline(m_cache, graphicsPipelineCi);
     core::expect(createPipelineResult, "failed to create meshlet pipeline");
 
     m_pipeline = std::move(*createPipelineResult);

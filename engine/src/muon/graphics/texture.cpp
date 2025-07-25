@@ -55,7 +55,7 @@ auto Texture::CreateImage() -> void {
     imageCi.sharingMode = vk::SharingMode::eExclusive;
     imageCi.flags = vk::ImageCreateFlags{};
 
-    auto imageResult = m_context.GetDevice().createImage(imageCi);
+    auto imageResult = m_context.getDevice().createImage(imageCi);
     core::expect(imageResult, "failed to create texture image");
     m_image = std::move(*imageResult);
 
@@ -67,10 +67,10 @@ auto Texture::CreateImage() -> void {
 
     vma::AllocationInfo allocInfo{};
 
-    auto allocationResult = m_context.GetAllocator().allocateMemory(memoryRequirements, allocCi, &allocInfo);
+    auto allocationResult = m_context.getAllocator().allocateMemory(memoryRequirements, allocCi, &allocInfo);
     core::expect(allocationResult.result == vk::Result::eSuccess, "failed to allocate texture image memory");
 
-    auto bindResult = m_context.GetAllocator().bindImageMemory(m_allocation, m_image);
+    auto bindResult = m_context.getAllocator().bindImageMemory(m_allocation, m_image);
     core::expect(bindResult == vk::Result::eSuccess, "failed to bind texture image memory");
 
     m_size = allocInfo.size;
@@ -90,7 +90,7 @@ auto Texture::CreateImageView() -> void {
     imageViewCi.subresourceRange.baseArrayLayer = 0;
     imageViewCi.subresourceRange.layerCount = 1;
 
-    auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
+    auto imageViewResult = m_context.getDevice().createImageView(imageViewCi);
     core::expect(imageViewResult, "failed to create texture image view");
     m_imageView = std::move(*imageViewResult);
 }
@@ -112,7 +112,7 @@ auto Texture::CreateSampler() -> void {
     samplerCi.maxAnisotropy = 4.0;
     samplerCi.borderColor = vk::BorderColor::eFloatOpaqueWhite;
 
-    auto samplerResult = m_context.GetDevice().createSampler(samplerCi);
+    auto samplerResult = m_context.getDevice().createSampler(samplerCi);
     core::expect(samplerResult, "failed to create texture samper");
     m_sampler = std::move(*samplerResult);
 }

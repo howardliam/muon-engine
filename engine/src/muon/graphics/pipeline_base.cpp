@@ -22,7 +22,7 @@ auto PipelineBase::CreateCache() -> void {
     pipelineCacheCi.initialDataSize = 0;
     pipelineCacheCi.pInitialData = nullptr;
 
-    auto pipelineCacheResult = m_context.GetDevice().createPipelineCache(pipelineCacheCi);
+    auto pipelineCacheResult = m_context.getDevice().createPipelineCache(pipelineCacheCi);
     core::expect(pipelineCacheResult, "failed to create pipeline cache");
 
     m_cache = std::move(*pipelineCacheResult);
@@ -36,7 +36,7 @@ auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, vk::rai
     shaderModuleCi.codeSize = byteCode->size();
     shaderModuleCi.pCode = reinterpret_cast<const uint32_t *>(byteCode->data());
 
-    auto shaderModuleResult = m_context.GetDevice().createShaderModule(shaderModuleCi);
+    auto shaderModuleResult = m_context.getDevice().createShaderModule(shaderModuleCi);
     core::expect(shaderModuleResult, "failed to create shader module");
 
     shaderModule = std::move(*shaderModuleResult);

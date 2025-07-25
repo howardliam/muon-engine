@@ -53,7 +53,7 @@ auto Image::CreateImage() -> void {
     imageCi.sharingMode = vk::SharingMode::eExclusive;
     imageCi.initialLayout = vk::ImageLayout::eUndefined;
 
-    auto imageResult = m_context.GetDevice().createImage(imageCi);
+    auto imageResult = m_context.getDevice().createImage(imageCi);
     core::expect(imageResult, "failed to create image");
     m_image = std::move(*imageResult);
 
@@ -64,10 +64,10 @@ auto Image::CreateImage() -> void {
     allocCi.requiredFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 
     vma::AllocationInfo allocInfo;
-    auto allocationResult = m_context.GetAllocator().allocateMemory(memoryRequirements, allocCi, allocInfo);
+    auto allocationResult = m_context.getAllocator().allocateMemory(memoryRequirements, allocCi, allocInfo);
     core::expect(allocationResult.result == vk::Result::eSuccess, "failed to allocate image memory");
 
-    auto bindResult = m_context.GetAllocator().bindImageMemory(m_allocation, m_image);
+    auto bindResult = m_context.getAllocator().bindImageMemory(m_allocation, m_image);
     core::expect(bindResult == vk::Result::eSuccess, "failed to bind image memory");
 
     m_bytes = allocInfo.size;
@@ -115,7 +115,7 @@ auto Image::CreateImageView() -> void {
     imageViewCi.subresourceRange.baseArrayLayer = 0;
     imageViewCi.subresourceRange.layerCount = 1;
 
-    auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
+    auto imageViewResult = m_context.getDevice().createImageView(imageViewCi);
     core::expect(imageViewResult, "failed to create image view");
 
     m_imageView = std::move(*imageViewResult);

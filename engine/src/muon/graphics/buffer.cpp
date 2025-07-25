@@ -31,11 +31,11 @@ Buffer::Buffer(const Spec &spec)
 
     vma::AllocationInfo allocationInfo;
 
-    auto bufferResult = m_context.GetAllocator().createBuffer(bufferCi, allocationCi, allocationInfo);
+    auto bufferResult = m_context.getAllocator().createBuffer(bufferCi, allocationCi, allocationInfo);
     core::expect(bufferResult.result == vk::Result::eSuccess, "failed to create buffer");
 
     auto [buffer, allocation] = bufferResult.value;
-    m_buffer = vk::raii::Buffer{m_context.GetDevice(), buffer};
+    m_buffer = vk::raii::Buffer{m_context.getDevice(), buffer};
 
     m_allocation = allocation;
 
@@ -43,7 +43,7 @@ Buffer::Buffer(const Spec &spec)
         vk::BufferDeviceAddressInfo bdaInfo;
         bdaInfo.buffer = m_buffer;
 
-        m_deviceAddress = m_context.GetDevice().getBufferAddress(bdaInfo);
+        m_deviceAddress = m_context.getDevice().getBufferAddress(bdaInfo);
     }
 
     m_descriptorInfo.buffer = m_buffer;
@@ -55,7 +55,7 @@ Buffer::Buffer(const Spec &spec)
 
 Buffer::~Buffer() {
     Unmap();
-    m_context.GetAllocator().destroyBuffer(m_buffer, m_allocation);
+    m_context.getAllocator().destroyBuffer(m_buffer, m_allocation);
     core::debug("destroyed buffer");
 }
 
@@ -95,7 +95,7 @@ auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
 }
 
 auto Buffer::Map() -> std::expected<void, vk::Result> {
-    auto result = m_context.GetAllocator().mapMemory(m_allocation);
+    auto result = m_context.getAllocator().mapMemory(m_allocation);
     if (result.result != vk::Result::eSuccess) {
         return std::unexpected(result.result);
     }
@@ -110,7 +110,7 @@ auto Buffer::Unmap() -> void {
         return;
     }
 
-    m_context.GetAllocator().unmapMemory(m_allocation);
+    m_context.getAllocator().unmapMemory(m_allocation);
     m_mapped = nullptr;
 }
 
@@ -125,11 +125,11 @@ auto Buffer::Write(const void *data, vk::DeviceSize size, vk::DeviceSize offset)
 }
 
 auto Buffer::Flush(vk::DeviceSize size, vk::DeviceSize offset) -> void {
-    vmaFlushAllocation(m_context.GetAllocator(), m_allocation, offset, size);
+    vmaFlushAllocation(m_context.getAllocator(), m_allocation, offset, size);
 }
 
 auto Buffer::Invalidate(vk::DeviceSize size, vk::DeviceSize offset) -> void {
-    vmaInvalidateAllocation(m_context.GetAllocator(), m_allocation, offset, size);
+    vmaInvalidateAllocation(m_context.getAllocator(), m_allocation, offset, size);
 }
 
 auto Buffer::Get() -> vk::raii::Buffer & { return m_buffer; }

@@ -14,7 +14,7 @@ namespace muon::graphics {
 constexpr uint64_t k_waitDuration = 30'000'000'000;
 
 Swapchain::Swapchain(const Spec &spec)
-    : m_context(*spec.context), m_graphicsQueue(m_context.GetGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
+    : m_context(*spec.context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
       m_format(spec.format), m_colorSpace(spec.colorSpace) {
     CreateSwapchain(spec.windowExtent, spec.presentMode);
     CreateImageViews();
@@ -30,7 +30,7 @@ Swapchain::Swapchain(const Spec &spec)
 Swapchain::~Swapchain() { core::debug("destroyed swapchain"); }
 
 auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
-    auto waitResult = m_context.GetDevice().waitForFences({m_inFlightFences[m_currentFrame]}, true, k_waitDuration);
+    auto waitResult = m_context.getDevice().waitForFences({m_inFlightFences[m_currentFrame]}, true, k_waitDuration);
     core::expect(waitResult == vk::Result::eSuccess, "failed to wait for fences");
 
     vk::AcquireNextImageInfoKHR acquireInfo;
@@ -39,7 +39,7 @@ auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
     acquireInfo.timeout = k_waitDuration;
     acquireInfo.deviceMask = 1;
 
-    auto acquireResult = m_context.GetDevice().acquireNextImage2KHR(acquireInfo);
+    auto acquireResult = m_context.getDevice().acquireNextImage2KHR(acquireInfo);
     if (acquireResult.first != vk::Result::eSuccess) {
         return std::unexpected(acquireResult.first);
     }
@@ -50,12 +50,12 @@ auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
 auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
     -> std::expected<void, vk::Result> {
     if (m_imagesInFlight[imageIndex] != nullptr) {
-        auto waitResult = m_context.GetDevice().waitForFences({m_imagesInFlight[imageIndex]}, true, k_waitDuration);
+        auto waitResult = m_context.getDevice().waitForFences({m_imagesInFlight[imageIndex]}, true, k_waitDuration);
         core::expect(waitResult == vk::Result::eSuccess, "failed to wait for fences");
     }
     m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
-    m_context.GetDevice().resetFences({m_inFlightFences[m_currentFrame]});
+    m_context.getDevice().resetFences({m_inFlightFences[m_currentFrame]});
 
     vk::SubmitInfo2 submitInfo;
 
@@ -126,7 +126,7 @@ auto Swapchain::GetHeight() const -> uint32_t { return m_extent.height; }
 auto Swapchain::GetAspectRatio() const -> float { return static_cast<float>(m_extent.width) / m_extent.height; }
 
 auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void {
-    auto capabilities = m_context.GetPhysicalDevice().getSurfaceCapabilities2EXT(m_context.GetSurface());
+    auto capabilities = m_context.getPhysicalDevice().getSurfaceCapabilities2EXT(m_context.getSurface());
 
     vk::Extent2D extent{};
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -142,7 +142,7 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     }
 
     vk::SwapchainCreateInfoKHR swapchainCi;
-    swapchainCi.surface = m_context.GetSurface();
+    swapchainCi.surface = m_context.getSurface();
     swapchainCi.minImageCount = minImageCount;
     swapchainCi.imageFormat = m_format;
     swapchainCi.imageColorSpace = m_colorSpace;
@@ -155,7 +155,7 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     swapchainCi.presentMode = presentMode;
     swapchainCi.clipped = true;
 
-    std::array<uint32_t, 1> queueFamilyIndices = {m_context.GetGraphicsQueue().GetFamilyIndex()};
+    std::array<uint32_t, 1> queueFamilyIndices = {m_context.getGraphicsQueue().GetFamilyIndex()};
     swapchainCi.queueFamilyIndexCount = queueFamilyIndices.size();
     swapchainCi.pQueueFamilyIndices = queueFamilyIndices.data();
 
@@ -163,7 +163,7 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
         swapchainCi.oldSwapchain = nullptr;
     }
 
-    auto swapchainCreateResult = m_context.GetDevice().createSwapchainKHR(swapchainCi);
+    auto swapchainCreateResult = m_context.getDevice().createSwapchainKHR(swapchainCi);
     core::expect(swapchainCreateResult, "failed to create the swapchain");
     m_swapchain = std::move(*swapchainCreateResult);
 
@@ -199,7 +199,7 @@ auto Swapchain::CreateImageViews() -> void {
         imageViewCi.subresourceRange.baseArrayLayer = 0;
         imageViewCi.subresourceRange.layerCount = 1;
 
-        auto imageViewResult = m_context.GetDevice().createImageView(imageViewCi);
+        auto imageViewResult = m_context.getDevice().createImageView(imageViewCi);
         core::expect(imageViewResult, "failed to create a swapchain image view");
 
         m_imageViews.emplace_back(std::move(*imageViewResult));
@@ -213,17 +213,17 @@ auto Swapchain::CreateSyncObjects() -> void {
     fenceCi.flags = vk::FenceCreateFlagBits::eSignaled;
 
     for (uint32_t i = 0; i < k_maxFramesInFlight; i++) {
-        auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
+        auto semaphoreResult = m_context.getDevice().createSemaphore(semaphoreCi);
         core::expect(semaphoreResult, "failed to create image available semaphores");
         m_imageAvailableSemaphores.emplace_back(std::move(*semaphoreResult));
 
-        auto fenceResult = m_context.GetDevice().createFence(fenceCi);
+        auto fenceResult = m_context.getDevice().createFence(fenceCi);
         core::expect(fenceResult, "failed to create in flight fences");
         m_inFlightFences.emplace_back(std::move(*fenceResult));
     }
 
     for (uint32_t i = 0; i < m_imageCount; i++) {
-        auto semaphoreResult = m_context.GetDevice().createSemaphore(semaphoreCi);
+        auto semaphoreResult = m_context.getDevice().createSemaphore(semaphoreCi);
         core::expect(semaphoreResult, "failed to create render finished semaphores");
         m_renderFinishedSemaphores.emplace_back(std::move(*semaphoreResult));
     }

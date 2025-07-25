@@ -97,7 +97,7 @@ auto Renderer::SetActivePresentMode(vk::PresentModeKHR presentMode) const -> voi
 }
 
 auto Renderer::ProbeSurfaceFormats() -> void {
-    auto surfaceFormats = m_context.GetPhysicalDevice().getSurfaceFormatsKHR(m_context.GetSurface());
+    auto surfaceFormats = m_context.getPhysicalDevice().getSurfaceFormatsKHR(m_context.getSurface());
     core::expect(!surfaceFormats.empty(), "failed to get surface formats");
 
     for (const auto &surfaceFormat : surfaceFormats) {
@@ -157,7 +157,7 @@ auto Renderer::ProbeSurfaceFormats() -> void {
 }
 
 auto Renderer::ProbePresentModes() -> void {
-    auto presentModes = m_context.GetPhysicalDevice().getSurfacePresentModesKHR(m_context.GetSurface());
+    auto presentModes = m_context.getPhysicalDevice().getSurfacePresentModesKHR(m_context.getSurface());
     core::expect(!presentModes.empty(), "failed to get surface present mode count");
 
     for (const auto &presentMode : presentModes) {
@@ -204,10 +204,10 @@ auto Renderer::CreateSwapchain() -> void {
 auto Renderer::CreateCommandBuffers() -> void {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
-    commandBufferAi.commandPool = m_context.GetGraphicsQueue().GetCommandPool();
+    commandBufferAi.commandPool = m_context.getGraphicsQueue().GetCommandPool();
     commandBufferAi.commandBufferCount = k_maxFramesInFlight;
 
-    auto commandBufferResult = m_context.GetDevice().allocateCommandBuffers(commandBufferAi);
+    auto commandBufferResult = m_context.getDevice().allocateCommandBuffers(commandBufferAi);
     core::expect(commandBufferResult, "failed to allocate command buffers");
 
     m_commandBuffers = std::move(*commandBufferResult);

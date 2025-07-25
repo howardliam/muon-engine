@@ -28,7 +28,7 @@ auto PipelineCompute::CreatePipeline(const vk::PipelineShaderStageCreateInfo &st
     computePipelineCi.basePipelineIndex = -1;
     computePipelineCi.basePipelineHandle = nullptr;
 
-    auto createPipelineResult = m_context.GetDevice().createComputePipeline(m_cache, computePipelineCi);
+    auto createPipelineResult = m_context.getDevice().createComputePipeline(m_cache, computePipelineCi);
     core::expect(createPipelineResult, "failed to create compute pipeline");
 
     m_pipeline = std::move(*createPipelineResult);

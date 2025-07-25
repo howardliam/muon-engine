@@ -20,7 +20,7 @@ PipelineLayout::PipelineLayout(const Spec &spec) : m_context(*spec.context) {
         pipelineLayoutCi.pPushConstantRanges = nullptr;
     }
 
-    auto pipelineLayoutResult = m_context.GetDevice().createPipelineLayout(pipelineLayoutCi);
+    auto pipelineLayoutResult = m_context.getDevice().createPipelineLayout(pipelineLayoutCi);
     core::expect(pipelineLayoutResult, "failed to create pipeline layout");
 
     m_layout = std::move(*pipelineLayoutResult);
