@@ -4,7 +4,6 @@
 #include "muon/core/log.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_handles.hpp"
-#include "vulkan/vulkan_to_string.hpp"
 
 #include <algorithm>
 #include <array>
@@ -40,12 +39,12 @@ auto Swapchain::acquireNextImage() -> std::expected<uint32_t, vk::Result> {
     acquireInfo.timeout = k_waitDuration;
     acquireInfo.deviceMask = 1;
 
-    auto acquireResult = m_context.getDevice().acquireNextImage2KHR(acquireInfo);
-    if (acquireResult.first != vk::Result::eSuccess) {
-        return std::unexpected(acquireResult.first);
+    auto [result, index] = m_context.getDevice().acquireNextImage2KHR(acquireInfo);
+    if (result != vk::Result::eSuccess) {
+        return std::unexpected(result);
     }
 
-    return acquireResult.second;
+    return index;
 }
 
 auto Swapchain::submitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
