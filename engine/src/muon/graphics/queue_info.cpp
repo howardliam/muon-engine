@@ -10,15 +10,15 @@ bool QueueFamilyInfo::operator==(const QueueFamilyInfo &other) const {
     return index == other.index && queueCount == other.queueCount && capabilities == other.capabilities;
 }
 
-bool QueueFamilyInfo::IsPresentCapable() const { return capabilities.test(0); }
-bool QueueFamilyInfo::IsGraphicsCapable() const { return capabilities.test(1); }
-bool QueueFamilyInfo::IsComputeCapable() const { return capabilities.test(2); }
-bool QueueFamilyInfo::IsTransferCapable() const { return capabilities.test(3); }
-bool QueueFamilyInfo::IsVideoDecodeCapable() const { return capabilities.test(4); }
-bool QueueFamilyInfo::IsVideoEncodeCapable() const { return capabilities.test(5); }
+bool QueueFamilyInfo::isPresentCapable() const { return capabilities.test(0); }
+bool QueueFamilyInfo::isGraphicsCapable() const { return capabilities.test(1); }
+bool QueueFamilyInfo::isComputeCapable() const { return capabilities.test(2); }
+bool QueueFamilyInfo::isTransferCapable() const { return capabilities.test(3); }
+bool QueueFamilyInfo::isVideoDecodeCapable() const { return capabilities.test(4); }
+bool QueueFamilyInfo::isVideoEncodeCapable() const { return capabilities.test(5); }
 
-bool QueueFamilyInfo::IsComputeDedicated() const { return !IsGraphicsCapable() && IsComputeCapable(); }
-bool QueueFamilyInfo::IsTransferDedicated() const { return !IsGraphicsCapable() && !IsComputeCapable() && IsTransferCapable(); }
+bool QueueFamilyInfo::isComputeDedicated() const { return !isGraphicsCapable() && isComputeCapable(); }
+bool QueueFamilyInfo::isTransferDedicated() const { return !isGraphicsCapable() && !isComputeCapable() && isTransferCapable(); }
 
 QueueInfo::QueueInfo(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface) {
     auto queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
@@ -58,8 +58,8 @@ QueueInfo::QueueInfo(const vk::raii::PhysicalDevice &physicalDevice, const vk::r
     }
 }
 
-uint32_t QueueInfo::GetTotalQueueCount() const { return m_totalQueueCount; }
+auto QueueInfo::getTotalQueueCount() const -> uint32_t { return m_totalQueueCount; }
 
-const std::vector<QueueFamilyInfo> &QueueInfo::GetFamilyInfo() const { return m_families; }
+auto QueueInfo::getFamilyInfo() const -> const std::vector<QueueFamilyInfo> & { return m_families; }
 
 } // namespace muon::graphics

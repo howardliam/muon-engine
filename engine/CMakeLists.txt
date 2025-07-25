@@ -39,7 +39,6 @@ target_sources(
 
         src/muon/project/project.cpp
 
-        src/muon/utils/color.cpp
         src/muon/utils/literals.cpp
         src/muon/utils/pretty_print.cpp
 
@@ -53,7 +52,6 @@ target_sources(
 
         src/muon/core/application.hpp
         src/muon/core/entry_point.hpp
-        src/muon/core/errors.hpp
         src/muon/core/expect.hpp
         src/muon/core/layer.hpp
         src/muon/core/layer_stack.hpp
@@ -99,7 +97,6 @@ target_sources(
         src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
-        src/muon/utils/color.hpp
         src/muon/utils/literals.hpp
         src/muon/utils/pretty_print.hpp
 )

@@ -7,7 +7,7 @@
 
 namespace muon::fs {
 
-auto ReadFile(const std::filesystem::path &path) -> std::optional<std::string> {
+auto readFile(const std::filesystem::path &path) -> std::optional<std::string> {
     std::ifstream file{path};
 
     if (!file.is_open()) {
@@ -21,7 +21,7 @@ auto ReadFile(const std::filesystem::path &path) -> std::optional<std::string> {
     return buffer.str();
 }
 
-auto ReadFileBinary(const std::filesystem::path &path) -> std::optional<std::vector<uint8_t>> {
+auto readFileBinary(const std::filesystem::path &path) -> std::optional<std::vector<uint8_t>> {
     std::ifstream file{path, std::ios::ate | std::ios::binary};
 
     if (!file.is_open()) {
@@ -36,7 +36,7 @@ auto ReadFileBinary(const std::filesystem::path &path) -> std::optional<std::vec
     return buffer;
 }
 
-auto WriteFile(const uint8_t *data, size_t size, const std::filesystem::path &path) -> bool {
+auto writeFile(const uint8_t *data, size_t size, const std::filesystem::path &path) -> bool {
     std::ofstream file{path, std::ios::binary};
     if (!file.is_open()) {
         return false;

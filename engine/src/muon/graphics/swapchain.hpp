@@ -29,34 +29,34 @@ public:
     Swapchain(const Spec &spec);
     ~Swapchain();
 
-    auto AcquireNextImage() -> std::expected<uint32_t, vk::Result>;
-    auto SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
+    auto acquireNextImage() -> std::expected<uint32_t, vk::Result>;
+    auto submitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
         -> std::expected<void, vk::Result>;
 
 public:
-    auto Get() -> vk::raii::SwapchainKHR &;
-    auto Get() const -> const vk::raii::SwapchainKHR &;
+    auto get() -> vk::raii::SwapchainKHR &;
+    auto get() const -> const vk::raii::SwapchainKHR &;
 
-    auto GetFormat() const -> vk::Format;
-    auto IsImageHdr() const -> bool;
+    auto getFormat() const -> vk::Format;
+    auto isImageHdr() const -> bool;
 
-    auto GetImageCount() const -> size_t;
+    auto getImageCount() const -> size_t;
 
-    auto GetImage(size_t index) -> vk::Image &;
-    auto GetImage(size_t index) const -> const vk::Image &;
+    auto getImage(size_t index) -> vk::Image &;
+    auto getImage(size_t index) const -> const vk::Image &;
 
-    auto GetImageView(size_t index) -> vk::raii::ImageView &;
-    auto GetImageView(size_t index) const -> const vk::raii::ImageView &;
+    auto getImageView(size_t index) -> vk::raii::ImageView &;
+    auto getImageView(size_t index) const -> const vk::raii::ImageView &;
 
-    auto GetExtent() const -> vk::Extent2D;
-    auto GetWidth() const -> uint32_t;
-    auto GetHeight() const -> uint32_t;
-    auto GetAspectRatio() const -> float;
+    auto getExtent() const -> vk::Extent2D;
+    auto getWidth() const -> uint32_t;
+    auto getHeight() const -> uint32_t;
+    auto getAspectRatio() const -> float;
 
 private:
-    auto CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void;
-    auto CreateImageViews() -> void;
-    auto CreateSyncObjects() -> void;
+    auto createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void;
+    auto createImageViews() -> void;
+    auto createSyncObjects() -> void;
 
 private:
     const Context &m_context;

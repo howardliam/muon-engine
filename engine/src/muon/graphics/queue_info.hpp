@@ -15,25 +15,24 @@ struct QueueFamilyInfo {
 
     bool operator==(const QueueFamilyInfo &other) const;
 
-    bool IsPresentCapable() const;
-    bool IsGraphicsCapable() const;
-    bool IsComputeCapable() const;
-    bool IsTransferCapable() const;
-    bool IsVideoDecodeCapable() const;
-    bool IsVideoEncodeCapable() const;
+    bool isPresentCapable() const;
+    bool isGraphicsCapable() const;
+    bool isComputeCapable() const;
+    bool isTransferCapable() const;
+    bool isVideoDecodeCapable() const;
+    bool isVideoEncodeCapable() const;
 
-    bool IsComputeDedicated() const;
-    bool IsTransferDedicated() const;
+    bool isComputeDedicated() const;
+    bool isTransferDedicated() const;
 };
 
 class QueueInfo {
 public:
     QueueInfo(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface);
-    ~QueueInfo() = default;
 
 public:
-    uint32_t GetTotalQueueCount() const;
-    const std::vector<QueueFamilyInfo> &GetFamilyInfo() const;
+    auto getTotalQueueCount() const -> uint32_t;
+    auto getFamilyInfo() const -> const std::vector<QueueFamilyInfo> &;
 
 private:
     uint32_t m_totalQueueCount{0};

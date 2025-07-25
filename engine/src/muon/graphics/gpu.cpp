@@ -6,15 +6,15 @@
 
 namespace muon::graphics {
 
-Gpu::Gpu(const Spec &spec) { DetermineSuitability(*spec.physicalDevice, *spec.surface); }
+Gpu::Gpu(const Spec &spec) { determineSuitability(*spec.physicalDevice, *spec.surface); }
 
-bool Gpu::IsSuitable() const { return m_coreSuitabilities == 0b1110; }
+bool Gpu::isSuitable() const { return m_coreSuitabilities == 0b1110; }
 
-uint64_t Gpu::GetMemorySize() const { return m_memorySize; }
+uint64_t Gpu::getMemorySize() const { return m_memorySize; }
 
-const std::unordered_set<std::string> &Gpu::GetSupportedExtensions() const { return m_supportedExtensions; }
+const std::unordered_set<std::string> &Gpu::getSupportedExtensions() const { return m_supportedExtensions; }
 
-void Gpu::DetermineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface) {
+void Gpu::determineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface) {
     auto deviceProperties = physicalDevice.getProperties();
 
     if (deviceProperties.apiVersion >= vk::ApiVersion13) {

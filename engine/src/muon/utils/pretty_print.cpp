@@ -7,7 +7,7 @@ namespace muon::pp {
 
 constexpr std::array<const char *, 4> k_byteSuffixes = {"B", "kB", "MB", "GB"};
 
-auto PrintBytes(uint64_t byteCount) -> std::string {
+auto printBytes(uint64_t byteCount) -> std::string {
     double size = static_cast<double>(byteCount);
     size_t index = 0;
 

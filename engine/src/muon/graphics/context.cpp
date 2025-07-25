@@ -23,7 +23,7 @@
 #include <set>
 #include <vector>
 
-static VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugCallback(
+static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
     vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType,
     const vk::DebugUtilsMessengerCallbackDataEXT *callbackData, void *userData
 ) {
@@ -96,7 +96,7 @@ auto Context::getTransferQueue() const -> Queue & { return *m_transferQueue; }
 auto Context::getAllocator() const -> vma::Allocator { return m_allocator; }
 
 auto Context::createInstance(const Window &window) -> void {
-    auto extensions = window.GetRequiredExtensions();
+    auto extensions = window.getRequiredExtensions();
     extensions.insert(extensions.end(), k_requiredInstanceExtensions.begin(), k_requiredInstanceExtensions.end());
 
 #ifdef MU_DEBUG_ENABLED
@@ -151,7 +151,7 @@ auto Context::createDebugMessenger(bool debug) -> void {
     }
 
     vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCi;
-    debugUtilsMessengerCi.pfnUserCallback = DebugCallback;
+    debugUtilsMessengerCi.pfnUserCallback = debugCallback;
 
     debugUtilsMessengerCi.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
                                             vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
@@ -168,7 +168,7 @@ auto Context::createDebugMessenger(bool debug) -> void {
 }
 
 auto Context::createSurface(const Window &window) -> void {
-    auto surfaceResult = window.CreateSurface(m_instance);
+    auto surfaceResult = window.createSurface(m_instance);
     core::expect(surfaceResult, "failed to create window surface");
     m_surface = std::move(*surfaceResult);
     core::expect(*m_surface, "surface must not be null");
@@ -189,12 +189,12 @@ auto Context::selectPhysicalDevice() -> void {
         gpuSpec.physicalDevice = &physicalDevice;
         Gpu gpu(gpuSpec);
 
-        if (gpu.IsSuitable()) {
+        if (gpu.isSuitable()) {
             gpus.push_back({gpu, &physicalDevice});
         }
     }
 
-    auto sort = [](const GpuPair &a, const GpuPair &b) -> bool { return a.first.GetMemorySize() > b.first.GetMemorySize(); };
+    auto sort = [](const GpuPair &a, const GpuPair &b) -> bool { return a.first.getMemorySize() > b.first.getMemorySize(); };
     std::sort(gpus.begin(), gpus.end(), sort);
 
     bool gpuSelected = false;
@@ -210,30 +210,30 @@ auto Context::selectPhysicalDevice() -> void {
 
 auto Context::createLogicalDevice() -> void {
     const QueueInfo queueInfo{m_physicalDevice, m_surface};
-    core::expect(queueInfo.GetFamilyInfo().size() >= 1, "there must be at least one queue family");
-    core::expect(queueInfo.GetTotalQueueCount() >= 3, "there must be at least three queues available");
+    core::expect(queueInfo.getFamilyInfo().size() >= 1, "there must be at least one queue family");
+    core::expect(queueInfo.getTotalQueueCount() >= 3, "there must be at least three queues available");
 
-    const auto queueFamilies = queueInfo.GetFamilyInfo();
+    const auto queueFamilies = queueInfo.getFamilyInfo();
 
     auto graphicsFamily =
-        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsGraphicsCapable(); });
+        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.isGraphicsCapable(); });
     core::expect(graphicsFamily != queueFamilies.end(), "there must be a graphics capable queue family");
-    core::expect(graphicsFamily->IsPresentCapable(), "the graphics capable queue family must support presentation");
+    core::expect(graphicsFamily->isPresentCapable(), "the graphics capable queue family must support presentation");
 
     auto computeFamily =
-        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsComputeDedicated(); });
+        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.isComputeDedicated(); });
     if (computeFamily == queueFamilies.end()) {
         computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) {
-            return info.IsComputeCapable() && info.queueCount > 1;
+            return info.isComputeCapable() && info.queueCount > 1;
         });
     }
     core::expect(computeFamily != queueFamilies.end(), "there must be a compute capable queue family");
 
     auto transferFamily =
-        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.IsTransferDedicated(); });
+        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.isTransferDedicated(); });
     if (transferFamily == queueFamilies.end()) {
         transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) {
-            return info.IsTransferCapable() && info.queueCount > 1;
+            return info.isTransferCapable() && info.queueCount > 1;
         });
     }
     core::expect(transferFamily != queueFamilies.end(), "there must be a transfer capable queue family");

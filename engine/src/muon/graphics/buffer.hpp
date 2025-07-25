@@ -27,25 +27,25 @@ public:
     Buffer(Buffer &&other) noexcept;
     auto operator=(Buffer &&other) noexcept -> Buffer &;
 
-    auto Map() -> std::expected<void, vk::Result>;
-    auto Unmap() -> void;
+    auto map() -> std::expected<void, vk::Result>;
+    auto unmap() -> void;
 
-    auto Write(const void *data, vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
-    auto Flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
-    auto Invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
+    auto write(const void *data, vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
+    auto flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
+    auto invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
 
 public:
-    auto Get() -> vk::raii::Buffer &;
-    auto Get() const -> const vk::raii::Buffer &;
+    auto get() -> vk::raii::Buffer &;
+    auto get() const -> const vk::raii::Buffer &;
 
-    auto GetSize() const -> vk::DeviceSize;
-    auto GetMappedMemory() const -> void *;
-    auto GetDeviceAddress() const -> vk::DeviceAddress;
+    auto getSize() const -> vk::DeviceSize;
+    auto getMappedMemory() const -> void *;
+    auto getDeviceAddress() const -> vk::DeviceAddress;
 
-    auto GetInstanceCount() const -> uint32_t;
-    auto GetInstanceSize() const -> vk::DeviceSize;
+    auto getInstanceCount() const -> uint32_t;
+    auto getInstanceSize() const -> vk::DeviceSize;
 
-    auto GetDescriptorInfo() const -> const vk::DescriptorBufferInfo &;
+    auto getDescriptorInfo() const -> const vk::DescriptorBufferInfo &;
 
 private:
     const Context &m_context;

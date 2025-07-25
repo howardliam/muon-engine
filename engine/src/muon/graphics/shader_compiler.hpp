@@ -24,10 +24,10 @@ public:
     ShaderCompiler(const Spec &spec);
     ~ShaderCompiler();
 
-    auto SubmitWork(ShaderCompilationRequest request) -> void;
+    auto submitWork(ShaderCompilationRequest request) -> void;
 
 private:
-    auto Compile(const ShaderCompilationRequest &request) -> void;
+    auto compile(const ShaderCompilationRequest &request) -> void;
 
 private:
     SQLite::Database m_hashStore;

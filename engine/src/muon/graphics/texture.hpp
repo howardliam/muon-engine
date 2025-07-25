@@ -4,7 +4,6 @@
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
-#include "vk_mem_alloc.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
 #include <deque>
@@ -29,23 +28,23 @@ public:
     ~Texture();
 
 public:
-    auto Get() -> vk::raii::Image &;
-    auto Get() const -> const vk::raii::Image &;
+    auto get() -> vk::raii::Image &;
+    auto get() const -> const vk::raii::Image &;
 
-    auto GetView() -> vk::raii::ImageView &;
-    auto GetView() const -> const vk::raii::ImageView &;
+    auto getView() -> vk::raii::ImageView &;
+    auto getView() const -> const vk::raii::ImageView &;
 
-    auto GetSampler() -> vk::raii::Sampler &;
-    auto GetSampler() const -> const vk::raii::Sampler &;
+    auto getSampler() -> vk::raii::Sampler &;
+    auto getSampler() const -> const vk::raii::Sampler &;
 
-    auto GetDescriptorInfo() const -> const vk::DescriptorImageInfo &;
+    auto getDescriptorInfo() const -> const vk::DescriptorImageInfo &;
 
 private:
-    auto CreateImage() -> void;
-    auto CreateImageView() -> void;
-    auto CreateSampler() -> void;
+    auto createImage() -> void;
+    auto createImageView() -> void;
+    auto createSampler() -> void;
 
-    auto UploadData(
+    auto uploadData(
         vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData,
         uint32_t pixelSize
     ) -> void;

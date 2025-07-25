@@ -39,10 +39,10 @@ public:
     Application(const Spec &spec);
     virtual ~Application();
 
-    static auto Get() -> Application &;
+    static auto get() -> Application &;
 
 private:
-    auto Run() -> void;
+    auto run() -> void;
 
     friend auto ::main(int32_t argc, char **argv) -> int32_t;
 
@@ -60,6 +60,6 @@ protected:
     static inline Application *s_instance{nullptr};
 };
 
-auto CreateApplication(ApplicationCommandLineArgs args) -> Application *;
+auto createApplication(ApplicationCommandLineArgs args) -> Application *;
 
 } // namespace muon

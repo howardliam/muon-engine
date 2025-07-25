@@ -13,11 +13,11 @@ public:
     };
 
 public:
-    static auto CreateContext(const Spec &spec) -> void;
-    static auto DestroyContext() -> void;
+    static auto createContext(const Spec &spec) -> void;
+    static auto destroyContext() -> void;
 
-    static auto Collect(vk::raii::CommandBuffer &commandBuffer) -> void;
-    static auto GetContext() -> const tracy::VkCtx *;
+    static auto collect(vk::raii::CommandBuffer &commandBuffer) -> void;
+    static auto getContext() -> const tracy::VkCtx *;
 
 private:
     static inline tracy::VkCtx *s_tracyContext{nullptr};

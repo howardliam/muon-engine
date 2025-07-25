@@ -23,26 +23,28 @@ public:
     ~Queue();
 
 public:
-    auto ExecuteCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn);
+    auto executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn);
 
 public:
-    auto GetFamilyIndex() const -> uint32_t;
-    auto GetIndex() const -> uint32_t;
+    auto get() -> vk::raii::Queue &;
+    auto get() const -> const vk::raii::Queue &;
 
-    auto Get() -> vk::raii::Queue &;
-    auto Get() const -> const vk::raii::Queue &;
+    auto getFamilyIndex() const -> uint32_t;
+    auto getIndex() const -> uint32_t;
 
-    auto GetCommandPool() -> vk::raii::CommandPool &;
-    auto GetCommandPool() const -> const vk::raii::CommandPool &;
+    auto getCommandPool() -> vk::raii::CommandPool &;
+    auto getCommandPool() const -> const vk::raii::CommandPool &;
 
 private:
     const vk::raii::Device &m_device;
-    uint32_t m_familyIndex{std::numeric_limits<uint32_t>().max()};
-    uint32_t m_index{std::numeric_limits<uint32_t>().max()};
-    const char *m_name{nullptr};
 
     vk::raii::Queue m_queue{nullptr};
     vk::raii::CommandPool m_commandPool{nullptr};
+
+    uint32_t m_familyIndex{std::numeric_limits<uint32_t>().max()};
+    uint32_t m_index{std::numeric_limits<uint32_t>().max()};
+
+    const char *m_name{nullptr};
 };
 
 } // namespace muon::graphics

@@ -7,9 +7,9 @@
 
 namespace muon::asset {
 
-auto PngLoader::GetFileTypes() const -> std::set<std::string_view> { return {".png"}; }
+auto PngLoader::getFileTypes() const -> std::set<std::string_view> { return {".png"}; }
 
-auto PngLoader::FromMemory(const std::vector<uint8_t> &data) -> void {
+auto PngLoader::fromMemory(const std::vector<uint8_t> &data) -> void {
     core::debug("PngLoader::FromMemory successfully called");
     // spng_ctx *ctx = spng_ctx_new(0);
 
@@ -23,6 +23,6 @@ auto PngLoader::FromMemory(const std::vector<uint8_t> &data) -> void {
     // spng_ctx_free(ctx);
 }
 
-auto PngLoader::FromFile(const std::filesystem::path &path) -> void { core::debug("PngLoader::FromFile successfully called"); }
+auto PngLoader::fromFile(const std::filesystem::path &path) -> void { core::debug("PngLoader::FromFile successfully called"); }
 
 } // namespace muon::asset

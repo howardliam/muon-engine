@@ -15,33 +15,33 @@ Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.ext
     core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
     core::expect(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
 
-    CreateImage();
-    CreateImageView();
-    CreateSampler();
+    createImage();
+    createImageView();
+    createSampler();
 
     m_descriptorInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
     m_descriptorInfo.imageView = m_imageView;
     m_descriptorInfo.sampler = m_sampler;
 
-    UploadData(*spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
+    uploadData(*spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
 
-    core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_size));
+    core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_size));
 }
 
 Texture::~Texture() { core::debug("destroyed texture"); }
 
-auto Texture::Get() -> vk::raii::Image & { return m_image; }
-auto Texture::Get() const -> const vk::raii::Image & { return m_image; }
+auto Texture::get() -> vk::raii::Image & { return m_image; }
+auto Texture::get() const -> const vk::raii::Image & { return m_image; }
 
-auto Texture::GetView() -> vk::raii::ImageView & { return m_imageView; }
-auto Texture::GetView() const -> const vk::raii::ImageView & { return m_imageView; }
+auto Texture::getView() -> vk::raii::ImageView & { return m_imageView; }
+auto Texture::getView() const -> const vk::raii::ImageView & { return m_imageView; }
 
-auto Texture::GetSampler() -> vk::raii::Sampler & { return m_sampler; }
-auto Texture::GetSampler() const -> const vk::raii::Sampler & { return m_sampler; }
+auto Texture::getSampler() -> vk::raii::Sampler & { return m_sampler; }
+auto Texture::getSampler() const -> const vk::raii::Sampler & { return m_sampler; }
 
-auto Texture::GetDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
+auto Texture::getDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
 
-auto Texture::CreateImage() -> void {
+auto Texture::createImage() -> void {
     vk::ImageCreateInfo imageCi;
     imageCi.extent = vk::Extent3D{m_extent.width, m_extent.height, 1};
     imageCi.mipLevels = 1;
@@ -76,7 +76,7 @@ auto Texture::CreateImage() -> void {
     m_size = allocInfo.size;
 }
 
-auto Texture::CreateImageView() -> void {
+auto Texture::createImageView() -> void {
     vk::ImageViewCreateInfo imageViewCi;
     imageViewCi.viewType = vk::ImageViewType::e2D;
     imageViewCi.format = m_format;
@@ -95,7 +95,7 @@ auto Texture::CreateImageView() -> void {
     m_imageView = std::move(*imageViewResult);
 }
 
-auto Texture::CreateSampler() -> void {
+auto Texture::createSampler() -> void {
     vk::SamplerCreateInfo samplerCi;
     samplerCi.minFilter = vk::Filter::eLinear;
     samplerCi.magFilter = vk::Filter::eLinear;
@@ -117,7 +117,7 @@ auto Texture::CreateSampler() -> void {
     m_sampler = std::move(*samplerResult);
 }
 
-auto Texture::UploadData(
+auto Texture::uploadData(
     vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData,
     uint32_t pixelSize
 ) -> void {
@@ -152,10 +152,10 @@ auto Texture::UploadData(
     stagingSpec.usageFlags = vk::BufferUsageFlagBits::eTransferSrc;
     Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
 
-    auto result = stagingBuffer.Map();
+    auto result = stagingBuffer.map();
     core::expect(result, "failed to map texture staging buffer");
 
-    stagingBuffer.Write(textureData.data());
+    stagingBuffer.write(textureData.data());
 
     vk::BufferImageCopy region{};
     region.bufferOffset = 0;
@@ -170,7 +170,7 @@ auto Texture::UploadData(
     region.imageOffset = vk::Offset3D{0, 0, 0};
     region.imageExtent = vk::Extent3D{m_extent.width, m_extent.height, 1};
 
-    commandBuffer.copyBufferToImage(stagingBuffer.Get(), m_image, vk::ImageLayout::eTransferDstOptimal, {region});
+    commandBuffer.copyBufferToImage(stagingBuffer.get(), m_image, vk::ImageLayout::eTransferDstOptimal, {region});
 
     vk::ImageMemoryBarrier2 shaderImb;
     shaderImb.image = m_image;

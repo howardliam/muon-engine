@@ -10,48 +10,48 @@
 
 namespace muon::asset {
 
-Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{spec.context->GetTransferQueue()} {
+Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{m_context.getTransferQueue()} {
     vk::CommandBufferAllocateInfo commandBufferAi;
-    commandBufferAi.commandPool = m_transferQueue.GetCommandPool();
+    commandBufferAi.commandPool = m_transferQueue.getCommandPool();
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
     commandBufferAi.commandBufferCount = 1;
 
-    auto commandBufferResult = m_context.GetDevice().allocateCommandBuffers(commandBufferAi);
+    auto commandBufferResult = m_context.getDevice().allocateCommandBuffers(commandBufferAi);
     core::expect(commandBufferResult, "failed to allocate command buffers");
     m_commandBuffer = std::move((*commandBufferResult)[0]);
 
     vk::FenceCreateInfo fenceCi;
-    auto fenceResult = m_context.GetDevice().createFence(fenceCi);
+    auto fenceResult = m_context.getDevice().createFence(fenceCi);
     core::expect(fenceResult, "failed to create upload fence");
     m_uploadFence = std::move(*fenceResult);
 
     for (auto &loader : spec.loaders) {
-        RegisterLoader(loader);
+        registerLoader(loader);
     }
 }
 
 Manager::~Manager() {}
 
-auto Manager::RegisterLoader(Loader *loader) -> void {
+auto Manager::registerLoader(Loader *loader) -> void {
     auto it = std::ranges::find_if(m_loaders, [&l = loader](const std::unique_ptr<Loader> &loader) -> bool {
-        return loader->GetFileTypes() == l->GetFileTypes();
+        return loader->getFileTypes() == l->getFileTypes();
     });
 
     if (it != m_loaders.end()) {
-        core::warn("loader already exists for: {} files, skipping", fmt::join(loader->GetFileTypes(), ", "));
+        core::warn("loader already exists for: {} files, skipping", fmt::join(loader->getFileTypes(), ", "));
         return;
     }
 
     auto &l = m_loaders.emplace_back(loader);
 
-    for (const auto fileType : l->GetFileTypes()) {
+    for (const auto fileType : l->getFileTypes()) {
         m_fileTypes[fileType.data()] = l.get();
     }
 
-    core::debug("registered loader for: {} files", fmt::join(loader->GetFileTypes(), ", "));
+    core::debug("registered loader for: {} files", fmt::join(loader->getFileTypes(), ", "));
 }
 
-auto Manager::BeginLoading() -> void {
+auto Manager::beginLoading() -> void {
     core::expect(!m_loadingInProgress, "cannot begin loading while loading is in progress");
 
     vk::CommandBufferBeginInfo commandBufferBi;
@@ -60,7 +60,7 @@ auto Manager::BeginLoading() -> void {
     m_loadingInProgress = true;
 }
 
-auto Manager::EndLoading() -> void {
+auto Manager::endLoading() -> void {
     core::expect(m_loadingInProgress, "cannot end loading if loading has not been started");
 
     m_commandBuffer.end();
@@ -70,45 +70,45 @@ auto Manager::EndLoading() -> void {
     submitInfo.pCommandBuffers = &(*m_commandBuffer);
     submitInfo.waitSemaphoreCount = 0;
     submitInfo.signalSemaphoreCount = 0;
-    m_transferQueue.Get().submit({submitInfo}, m_uploadFence);
+    m_transferQueue.get().submit({submitInfo}, m_uploadFence);
 
     m_loadingInProgress = false;
 
-    auto waitResult = m_context.GetDevice().waitForFences({m_uploadFence}, true, 30'000'000);
+    auto waitResult = m_context.getDevice().waitForFences({m_uploadFence}, true, 30'000'000);
     core::expect(waitResult == vk::Result::eSuccess, "failed to wait for upload fence to be signalled");
 
-    m_context.GetDevice().resetFences({m_uploadFence});
+    m_context.getDevice().resetFences({m_uploadFence});
 
     m_uploadBuffers.clear();
 }
 
-auto Manager::LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
+auto Manager::loadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
     core::expect(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
 
-    auto loader = GetLoader(fileType);
+    auto loader = getLoader(fileType);
     core::expect(loader, "no loader found");
 
-    loader->FromMemory(data);
+    loader->fromMemory(data);
 }
 
-auto Manager::LoadFromFile(const std::filesystem::path &path) -> void {
+auto Manager::loadFromFile(const std::filesystem::path &path) -> void {
     core::expect(m_loadingInProgress, "cannot load from file if loading hasn't begun");
 
     core::expect(path.has_extension(), "file must have an extension");
     auto extension = path.extension();
 
-    auto loader = GetLoader(extension.c_str());
+    auto loader = getLoader(extension.c_str());
     core::expect(loader, "no loader found");
 
-    loader->FromFile(path);
+    loader->fromFile(path);
 }
 
-auto Manager::GetCommandBuffer() -> vk::raii::CommandBuffer & { return m_commandBuffer; }
-auto Manager::GetCommandBuffer() const -> const vk::raii::CommandBuffer & { return m_commandBuffer; }
+auto Manager::getCommandBuffer() -> vk::raii::CommandBuffer & { return m_commandBuffer; }
+auto Manager::getCommandBuffer() const -> const vk::raii::CommandBuffer & { return m_commandBuffer; }
 
-auto Manager::GetUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
+auto Manager::getUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
 
-auto Manager::GetLoader(const std::string_view fileType) -> Loader * {
+auto Manager::getLoader(const std::string_view fileType) -> Loader * {
     auto it = m_fileTypes.find(fileType.data());
     if (it == m_fileTypes.end()) {
         return nullptr;

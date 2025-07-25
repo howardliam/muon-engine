@@ -16,9 +16,9 @@ constexpr uint64_t k_waitDuration = 30'000'000'000;
 Swapchain::Swapchain(const Spec &spec)
     : m_context(*spec.context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
       m_format(spec.format), m_colorSpace(spec.colorSpace) {
-    CreateSwapchain(spec.windowExtent, spec.presentMode);
-    CreateImageViews();
-    CreateSyncObjects();
+    createSwapchain(spec.windowExtent, spec.presentMode);
+    createImageViews();
+    createSyncObjects();
 
     if (spec.oldSwapchain) {
         core::debug("created swapchain with dimensions: {}x{} from old swapchain", m_extent.width, m_extent.height);
@@ -29,7 +29,7 @@ Swapchain::Swapchain(const Spec &spec)
 
 Swapchain::~Swapchain() { core::debug("destroyed swapchain"); }
 
-auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
+auto Swapchain::acquireNextImage() -> std::expected<uint32_t, vk::Result> {
     auto waitResult = m_context.getDevice().waitForFences({m_inFlightFences[m_currentFrame]}, true, k_waitDuration);
     core::expect(waitResult == vk::Result::eSuccess, "failed to wait for fences");
 
@@ -47,7 +47,7 @@ auto Swapchain::AcquireNextImage() -> std::expected<uint32_t, vk::Result> {
     return acquireResult.second;
 }
 
-auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
+auto Swapchain::submitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
     -> std::expected<void, vk::Result> {
     if (m_imagesInFlight[imageIndex] != nullptr) {
         auto waitResult = m_context.getDevice().waitForFences({m_imagesInFlight[imageIndex]}, true, k_waitDuration);
@@ -76,7 +76,7 @@ auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffe
     submitInfo.signalSemaphoreInfoCount = 1;
     submitInfo.pSignalSemaphoreInfos = &signalSemaphoreSi;
 
-    m_graphicsQueue.Get().submit2(submitInfo, m_inFlightFences[m_currentFrame]);
+    m_graphicsQueue.get().submit2(submitInfo, m_inFlightFences[m_currentFrame]);
 
     vk::PresentInfoKHR presentInfo;
     presentInfo.waitSemaphoreCount = 1;
@@ -85,7 +85,7 @@ auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffe
     presentInfo.pSwapchains = &(*m_swapchain);
     presentInfo.pImageIndices = &imageIndex;
 
-    auto presentResult = m_graphicsQueue.Get().presentKHR(presentInfo);
+    auto presentResult = m_graphicsQueue.get().presentKHR(presentInfo);
     core::expect(presentResult == vk::Result::eSuccess, "failed to present queue");
 
     m_currentFrame = (m_currentFrame + 1) % k_maxFramesInFlight;
@@ -93,11 +93,11 @@ auto Swapchain::SubmitCommandBuffers(const vk::raii::CommandBuffer &commandBuffe
     return {};
 }
 
-auto Swapchain::Get() -> vk::raii::SwapchainKHR & { return m_swapchain; }
-auto Swapchain::Get() const -> const vk::raii::SwapchainKHR & { return m_swapchain; }
+auto Swapchain::get() -> vk::raii::SwapchainKHR & { return m_swapchain; }
+auto Swapchain::get() const -> const vk::raii::SwapchainKHR & { return m_swapchain; }
 
-auto Swapchain::GetFormat() const -> vk::Format { return m_format; }
-auto Swapchain::IsImageHdr() const -> bool {
+auto Swapchain::getFormat() const -> vk::Format { return m_format; }
+auto Swapchain::isImageHdr() const -> bool {
     switch (m_colorSpace) {
         case vk::ColorSpaceKHR::eBt2020LinearEXT:
         case vk::ColorSpaceKHR::eHdr10St2084EXT:
@@ -112,20 +112,20 @@ auto Swapchain::IsImageHdr() const -> bool {
     }
 }
 
-auto Swapchain::GetImageCount() const -> size_t { return m_imageCount; }
+auto Swapchain::getImageCount() const -> size_t { return m_imageCount; }
 
-auto Swapchain::GetImage(size_t index) -> vk::Image & { return m_images[index]; }
-auto Swapchain::GetImage(size_t index) const -> const vk::Image & { return m_images[index]; }
+auto Swapchain::getImage(size_t index) -> vk::Image & { return m_images[index]; }
+auto Swapchain::getImage(size_t index) const -> const vk::Image & { return m_images[index]; }
 
-auto Swapchain::GetImageView(size_t index) -> vk::raii::ImageView & { return m_imageViews[index]; }
-auto Swapchain::GetImageView(size_t index) const -> const vk::raii::ImageView & { return m_imageViews[index]; }
+auto Swapchain::getImageView(size_t index) -> vk::raii::ImageView & { return m_imageViews[index]; }
+auto Swapchain::getImageView(size_t index) const -> const vk::raii::ImageView & { return m_imageViews[index]; }
 
-auto Swapchain::GetExtent() const -> vk::Extent2D { return m_extent; }
-auto Swapchain::GetWidth() const -> uint32_t { return m_extent.width; }
-auto Swapchain::GetHeight() const -> uint32_t { return m_extent.height; }
-auto Swapchain::GetAspectRatio() const -> float { return static_cast<float>(m_extent.width) / m_extent.height; }
+auto Swapchain::getExtent() const -> vk::Extent2D { return m_extent; }
+auto Swapchain::getWidth() const -> uint32_t { return m_extent.width; }
+auto Swapchain::getHeight() const -> uint32_t { return m_extent.height; }
+auto Swapchain::getAspectRatio() const -> float { return static_cast<float>(m_extent.width) / m_extent.height; }
 
-auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void {
+auto Swapchain::createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void {
     auto capabilities = m_context.getPhysicalDevice().getSurfaceCapabilities2EXT(m_context.getSurface());
 
     vk::Extent2D extent{};
@@ -155,7 +155,7 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     swapchainCi.presentMode = presentMode;
     swapchainCi.clipped = true;
 
-    std::array<uint32_t, 1> queueFamilyIndices = {m_context.getGraphicsQueue().GetFamilyIndex()};
+    std::array<uint32_t, 1> queueFamilyIndices = {m_context.getGraphicsQueue().getFamilyIndex()};
     swapchainCi.queueFamilyIndexCount = queueFamilyIndices.size();
     swapchainCi.pQueueFamilyIndices = queueFamilyIndices.data();
 
@@ -176,7 +176,7 @@ auto Swapchain::CreateSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     m_oldSwapchain = nullptr;
 }
 
-auto Swapchain::CreateImageViews() -> void {
+auto Swapchain::createImageViews() -> void {
     bool swizzle = false;
     if (m_format == vk::Format::eB8G8R8A8Srgb || m_format == vk::Format::eA2B10G10R10UnormPack32) {
         swizzle = true;
@@ -206,7 +206,7 @@ auto Swapchain::CreateImageViews() -> void {
     }
 }
 
-auto Swapchain::CreateSyncObjects() -> void {
+auto Swapchain::createSyncObjects() -> void {
     vk::SemaphoreCreateInfo semaphoreCi;
 
     vk::FenceCreateInfo fenceCi;

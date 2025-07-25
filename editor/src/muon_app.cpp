@@ -10,7 +10,7 @@ public:
     MuonEditor(const Spec &spec) : Application(spec) {}
 };
 
-auto CreateApplication(ApplicationCommandLineArgs args) -> Application * {
+auto createApplication(ApplicationCommandLineArgs args) -> Application * {
     Application::Spec spec{};
     spec.name = "Muon Editor";
     spec.cliArgs = args;

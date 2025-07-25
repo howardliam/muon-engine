@@ -14,21 +14,22 @@ namespace muon::graphics {
 
 class PipelineBase : NoCopy, NoMove {
 public:
-    auto Get() -> vk::raii::Pipeline &;
-    auto Get() const -> const vk::raii::Pipeline &;
+    PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout);
+
+public:
+    auto get() -> vk::raii::Pipeline &;
+    auto get() const -> const vk::raii::Pipeline &;
 
 protected:
-    PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout);
-    ~PipelineBase() = default;
-
-    auto CreateCache() -> void;
-    auto CreateShaderModule(const std::filesystem::path &path, vk::raii::ShaderModule &shaderModule) const -> void;
-    [[nodiscard]] auto CreateShaderStageInfo(
+    auto createCache() -> void;
+    auto createShaderModule(const std::filesystem::path &path, vk::raii::ShaderModule &shaderModule) const -> void;
+    auto createShaderStageInfo(
         const vk::ShaderStageFlagBits stage, const vk::raii::ShaderModule &shaderModule, const std::string_view entryPoint
     ) const -> vk::PipelineShaderStageCreateInfo;
 
 protected:
     const Context &m_context;
+
     std::shared_ptr<PipelineLayout> m_layout{nullptr};
     vk::raii::PipelineCache m_cache{nullptr};
     std::vector<vk::raii::ShaderModule> m_shaders{};

@@ -28,11 +28,11 @@ public:
     Mesh(const Spec &spec);
     ~Mesh();
 
-    auto Bind(vk::raii::CommandBuffer &commandBuffer) -> void;
-    auto Draw(vk::raii::CommandBuffer &commandBuffer) -> void;
+    auto bind(vk::raii::CommandBuffer &commandBuffer) -> void;
+    auto draw(vk::raii::CommandBuffer &commandBuffer) -> void;
 
 private:
-    auto CreateBuffer(
+    auto createBuffer(
         vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const void *data, vk::DeviceSize instanceSize,
         size_t instanceCount, vk::BufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
     ) -> void;

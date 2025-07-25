@@ -3,7 +3,6 @@
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/graphics/context.hpp"
-#include "vk_mem_alloc.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
 namespace muon::graphics {
@@ -26,24 +25,24 @@ public:
     ~Image();
 
 public:
-    auto Get() -> vk::raii::Image &;
-    auto Get() const -> const vk::raii::Image &;
+    auto get() -> vk::raii::Image &;
+    auto get() const -> const vk::raii::Image &;
 
-    auto GetView() -> vk::raii::ImageView &;
-    auto GetView() const -> const vk::raii::ImageView &;
+    auto getView() -> vk::raii::ImageView &;
+    auto getView() const -> const vk::raii::ImageView &;
 
-    auto GetExtent() const -> vk::Extent2D;
-    auto GetFormat() const -> vk::Format;
-    auto GetLayout() const -> vk::ImageLayout;
-    auto GetUsageFlags() const -> vk::ImageUsageFlags;
-    auto GetAccessFlags() const -> vk::AccessFlags2;
-    auto GetStageFlags() const -> vk::PipelineStageFlags2;
-    auto GetDescriptorInfo() const -> const vk::DescriptorImageInfo &;
+    auto getExtent() const -> vk::Extent2D;
+    auto getFormat() const -> vk::Format;
+    auto getLayout() const -> vk::ImageLayout;
+    auto getUsageFlags() const -> vk::ImageUsageFlags;
+    auto getAccessFlags() const -> vk::AccessFlags2;
+    auto getStageFlags() const -> vk::PipelineStageFlags2;
+    auto getDescriptorInfo() const -> const vk::DescriptorImageInfo &;
 
 private:
-    auto CreateImage() -> void;
-    auto CreateImageView() -> void;
-    auto TransitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void;
+    auto createImage() -> void;
+    auto createImageView() -> void;
+    auto transitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void;
 
 private:
     const Context &m_context;

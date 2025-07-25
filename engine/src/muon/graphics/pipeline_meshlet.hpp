@@ -20,11 +20,11 @@ public:
     PipelineMeshlet(const Spec &spec);
     ~PipelineMeshlet();
 
-    auto Bake(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
-    auto Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void;
+    auto bake(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
+    auto bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void;
 
 private:
-    auto CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
+    auto createPipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
 
 private:
     struct PipelineMeshletState {

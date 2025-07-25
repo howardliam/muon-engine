@@ -4,15 +4,15 @@
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 
-extern auto muon::CreateApplication(ApplicationCommandLineArgs args) -> Application *;
+extern auto muon::createApplication(ApplicationCommandLineArgs args) -> Application *;
 
 auto main(int32_t argc, char **argv) -> int32_t {
-    muon::Log::Init();
+    muon::Log::init();
 
-    auto app = muon::CreateApplication({argc, argv});
+    auto app = muon::createApplication({argc, argv});
     muon::core::expect(app, "application must exist");
 
-    app->Run();
+    app->run();
 
     delete app;
 }

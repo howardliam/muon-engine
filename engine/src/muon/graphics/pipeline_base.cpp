@@ -8,15 +8,15 @@
 
 namespace muon::graphics {
 
-auto PipelineBase::Get() -> vk::raii::Pipeline & { return m_pipeline; }
-auto PipelineBase::Get() const -> const vk::raii::Pipeline & { return m_pipeline; }
-
 PipelineBase::PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout)
     : m_context(context), m_layout(layout) {
-    CreateCache();
+    createCache();
 }
 
-auto PipelineBase::CreateCache() -> void {
+auto PipelineBase::get() -> vk::raii::Pipeline & { return m_pipeline; }
+auto PipelineBase::get() const -> const vk::raii::Pipeline & { return m_pipeline; }
+
+auto PipelineBase::createCache() -> void {
     VkPipelineCacheCreateInfo pipelineCacheCi;
     pipelineCacheCi.flags = 0;
     pipelineCacheCi.initialDataSize = 0;
@@ -28,8 +28,8 @@ auto PipelineBase::CreateCache() -> void {
     m_cache = std::move(*pipelineCacheResult);
 }
 
-auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, vk::raii::ShaderModule &shaderModule) const -> void {
-    auto byteCode = fs::ReadFileBinary(path);
+auto PipelineBase::createShaderModule(const std::filesystem::path &path, vk::raii::ShaderModule &shaderModule) const -> void {
+    auto byteCode = fs::readFileBinary(path);
     core::expect(byteCode, "code does not have value");
 
     vk::ShaderModuleCreateInfo shaderModuleCi;
@@ -42,7 +42,7 @@ auto PipelineBase::CreateShaderModule(const std::filesystem::path &path, vk::rai
     shaderModule = std::move(*shaderModuleResult);
 }
 
-auto PipelineBase::CreateShaderStageInfo(
+auto PipelineBase::createShaderStageInfo(
     const vk::ShaderStageFlagBits stage, const vk::raii::ShaderModule &shaderModule, const std::string_view entryPoint
 ) const -> vk::PipelineShaderStageCreateInfo {
     vk::PipelineShaderStageCreateInfo shaderStageCi;

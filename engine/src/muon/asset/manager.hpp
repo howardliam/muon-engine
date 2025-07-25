@@ -25,22 +25,22 @@ public:
     Manager(const Spec &spec);
     ~Manager();
 
-    auto RegisterLoader(Loader *loader) -> void;
+    auto registerLoader(Loader *loader) -> void;
 
-    auto BeginLoading() -> void;
-    auto EndLoading() -> void;
+    auto beginLoading() -> void;
+    auto endLoading() -> void;
 
-    auto LoadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void;
-    auto LoadFromFile(const std::filesystem::path &path) -> void;
+    auto loadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void;
+    auto loadFromFile(const std::filesystem::path &path) -> void;
 
 public:
-    auto GetCommandBuffer() -> vk::raii::CommandBuffer &;
-    auto GetCommandBuffer() const -> const vk::raii::CommandBuffer &;
+    auto getCommandBuffer() -> vk::raii::CommandBuffer &;
+    auto getCommandBuffer() const -> const vk::raii::CommandBuffer &;
 
-    auto GetUploadBuffers() -> std::deque<graphics::Buffer> *;
+    auto getUploadBuffers() -> std::deque<graphics::Buffer> *;
 
 private:
-    auto GetLoader(const std::string_view fileType) -> Loader *;
+    auto getLoader(const std::string_view fileType) -> Loader *;
 
 private:
     const graphics::Context &m_context;

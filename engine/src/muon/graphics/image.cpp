@@ -15,31 +15,31 @@ Image::Image(const Spec &spec)
       m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
     core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
 
-    CreateImage();
-    CreateImageView();
+    createImage();
+    createImageView();
 
-    TransitionLayout(*spec.commandBuffer);
+    transitionLayout(*spec.commandBuffer);
 
-    core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::PrintBytes(m_bytes));
+    core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_bytes));
 }
 
 Image::~Image() { core::debug("destroyed image"); }
 
-auto Image::Get() -> vk::raii::Image & { return m_image; }
-auto Image::Get() const -> const vk::raii::Image & { return m_image; }
+auto Image::get() -> vk::raii::Image & { return m_image; }
+auto Image::get() const -> const vk::raii::Image & { return m_image; }
 
-auto Image::GetView() -> vk::raii::ImageView & { return m_imageView; }
-auto Image::GetView() const -> const vk::raii::ImageView & { return m_imageView; }
+auto Image::getView() -> vk::raii::ImageView & { return m_imageView; }
+auto Image::getView() const -> const vk::raii::ImageView & { return m_imageView; }
 
-auto Image::GetExtent() const -> vk::Extent2D { return m_extent; }
-auto Image::GetFormat() const -> vk::Format { return m_format; }
-auto Image::GetLayout() const -> vk::ImageLayout { return m_layout; }
-auto Image::GetUsageFlags() const -> vk::ImageUsageFlags { return m_usageFlags; }
-auto Image::GetAccessFlags() const -> vk::AccessFlags2 { return m_accessFlags; }
-auto Image::GetStageFlags() const -> vk::PipelineStageFlags2 { return m_stageFlags; }
-auto Image::GetDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
+auto Image::getExtent() const -> vk::Extent2D { return m_extent; }
+auto Image::getFormat() const -> vk::Format { return m_format; }
+auto Image::getLayout() const -> vk::ImageLayout { return m_layout; }
+auto Image::getUsageFlags() const -> vk::ImageUsageFlags { return m_usageFlags; }
+auto Image::getAccessFlags() const -> vk::AccessFlags2 { return m_accessFlags; }
+auto Image::getStageFlags() const -> vk::PipelineStageFlags2 { return m_stageFlags; }
+auto Image::getDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
 
-auto Image::CreateImage() -> void {
+auto Image::createImage() -> void {
     vk::ImageCreateInfo imageCi;
     imageCi.flags = vk::ImageCreateFlags{};
     imageCi.imageType = vk::ImageType::e2D;
@@ -73,7 +73,7 @@ auto Image::CreateImage() -> void {
     m_bytes = allocInfo.size;
 }
 
-auto Image::CreateImageView() -> void {
+auto Image::createImageView() -> void {
     m_aspectMask = [](vk::Format format) -> vk::ImageAspectFlags {
         switch (format) {
             case vk::Format::eUndefined: {
@@ -125,7 +125,7 @@ auto Image::CreateImageView() -> void {
     m_descriptorInfo.sampler = nullptr;
 }
 
-auto Image::TransitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void {
+auto Image::transitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void {
     vk::ImageMemoryBarrier2 barrier;
     barrier.image = m_image;
     barrier.subresourceRange.aspectMask = m_aspectMask;

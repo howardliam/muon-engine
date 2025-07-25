@@ -20,12 +20,12 @@ public:
     ~Gpu() = default;
 
 public:
-    bool IsSuitable() const;
-    uint64_t GetMemorySize() const;
-    const std::unordered_set<std::string> &GetSupportedExtensions() const;
+    bool isSuitable() const;
+    uint64_t getMemorySize() const;
+    const std::unordered_set<std::string> &getSupportedExtensions() const;
 
 private:
-    void DetermineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface);
+    void determineSuitability(const vk::raii::PhysicalDevice &physicalDevice, const vk::raii::SurfaceKHR &surface);
 
 private:
     std::bitset<4> m_coreSuitabilities{0};

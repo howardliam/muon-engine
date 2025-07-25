@@ -15,16 +15,16 @@ PipelineGraphics::PipelineGraphics(const Spec &spec) : PipelineBase(*spec.contex
 
 PipelineGraphics::~PipelineGraphics() { core::debug("destroyed graphics pipeline"); }
 
-auto PipelineGraphics::Bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
-    CreatePipeline(renderingCreateInfo);
+auto PipelineGraphics::bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
+    createPipeline(renderingCreateInfo);
 }
 
-auto PipelineGraphics::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void {
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout->Get(), 0, sets, {});
+auto PipelineGraphics::bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout->get(), 0, sets, {});
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 }
 
-auto PipelineGraphics::CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
+auto PipelineGraphics::createPipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void {
     vk::PipelineVertexInputStateCreateInfo vertexInputStateCi;
 
     if (m_bindingDescription) {
@@ -51,7 +51,7 @@ auto PipelineGraphics::CreatePipeline(const vk::PipelineRenderingCreateInfo &ren
     graphicsPipelineCi.pDepthStencilState = &m_state.depthStencilState;
     graphicsPipelineCi.pDynamicState = &m_state.dynamicState;
 
-    graphicsPipelineCi.layout = m_layout->Get();
+    graphicsPipelineCi.layout = m_layout->get();
     graphicsPipelineCi.pNext = &renderingCreateInfo;
     graphicsPipelineCi.subpass = 0;
 

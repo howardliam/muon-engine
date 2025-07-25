@@ -26,22 +26,22 @@ public:
     Window(const Spec &spec);
     ~Window();
 
-    auto PollEvents() const -> void;
+    auto pollEvents() const -> void;
 
-    auto RequestAttention() const -> void;
+    auto requestAttention() const -> void;
 
-    auto CreateSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result>;
+    auto createSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result>;
 
 public:
-    auto GetExtent() const -> VkExtent2D;
-    auto GetWidth() const -> uint32_t;
-    auto GetHeight() const -> uint32_t;
-    auto GetRefreshRate() const -> uint32_t;
-    auto GetRequiredExtensions() const -> std::vector<const char *>;
-    auto GetClipboardContents() const -> const char *;
+    auto getExtent() const -> VkExtent2D;
+    auto getWidth() const -> uint32_t;
+    auto getHeight() const -> uint32_t;
+    auto getRefreshRate() const -> uint32_t;
+    auto getRequiredExtensions() const -> std::vector<const char *>;
+    auto getClipboardContents() const -> const char *;
 
 private:
-    auto ConfigureDispatchers() -> void;
+    auto configureDispatchers() -> void;
 
 private:
     struct WindowHandle;

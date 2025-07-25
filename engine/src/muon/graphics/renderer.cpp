@@ -8,22 +8,22 @@
 namespace muon::graphics {
 
 Renderer::Renderer(const Spec &spec) : m_window(*spec.window), m_context(*spec.context) {
-    ProbeSurfaceFormats();
-    ProbePresentModes();
+    probeSurfaceFormats();
+    probePresentModes();
 
-    CreateSwapchain();
-    CreateCommandBuffers();
+    createSwapchain();
+    createCommandBuffers();
 }
 
 Renderer::~Renderer() {}
 
-auto Renderer::BeginFrame() -> std::optional<vk::raii::CommandBuffer *> {
+auto Renderer::beginFrame() -> std::optional<vk::raii::CommandBuffer *> {
     core::expect(!m_frameInProgress, "cannot begin frame while frame is in progress");
 
-    auto acquireResult = m_swapchain->AcquireNextImage();
+    auto acquireResult = m_swapchain->acquireNextImage();
     if (!acquireResult) {
         if (acquireResult.error() == vk::Result::eErrorOutOfDateKHR) {
-            CreateSwapchain();
+            createSwapchain();
             return {std::nullopt};
         }
     }
@@ -39,16 +39,16 @@ auto Renderer::BeginFrame() -> std::optional<vk::raii::CommandBuffer *> {
     return {&commandBuffer};
 }
 
-auto Renderer::EndFrame() -> void {
+auto Renderer::endFrame() -> void {
     core::expect(m_frameInProgress, "cannot end frame if a frame has not been started");
 
     const auto &commandBuffer = m_commandBuffers[m_currentFrameIndex];
     commandBuffer.end();
 
-    auto result = m_swapchain->SubmitCommandBuffers(commandBuffer, m_currentImageIndex);
+    auto result = m_swapchain->submitCommandBuffers(commandBuffer, m_currentImageIndex);
     if (!result) {
         if (result.error() == vk::Result::eErrorOutOfDateKHR || result.error() == vk::Result::eSuboptimalKHR) {
-            CreateSwapchain();
+            createSwapchain();
         }
     }
 
@@ -56,14 +56,14 @@ auto Renderer::EndFrame() -> void {
     m_currentFrameIndex = (m_currentFrameIndex + 1) % k_maxFramesInFlight;
 }
 
-auto Renderer::RebuildSwapchain() -> void {
+auto Renderer::rebuildSwapchain() -> void {
     core::expect(!m_frameInProgress, "cannot rebuild swapchain while frame is in progress");
-    CreateSwapchain();
+    createSwapchain();
 }
 
-auto Renderer::HasHdrSupport() const -> bool { return m_hdrSupport; }
+auto Renderer::hasHdrSupport() const -> bool { return m_hdrSupport; }
 
-auto Renderer::GetAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR> {
+auto Renderer::getAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR> {
     std::vector<vk::ColorSpaceKHR> colorSpaces{};
     for (const auto &surfaceFormat : m_availableSurfaceFormats) {
         if (surfaceFormat.isHdr != hdr) {
@@ -74,29 +74,29 @@ auto Renderer::GetAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorS
     return colorSpaces;
 }
 
-auto Renderer::GetActiveSurfaceFormat() const -> const SurfaceFormat & { return *m_activeSurfaceFormat; }
+auto Renderer::getActiveSurfaceFormat() const -> const SurfaceFormat & { return *m_activeSurfaceFormat; }
 
-auto Renderer::SetActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void {
+auto Renderer::setActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void {
     auto pred = [&colorSpace](const SurfaceFormat &surfaceFormat) { return surfaceFormat.colorSpace == colorSpace; };
     auto it = std::ranges::find_if(m_availableSurfaceFormats, pred);
     core::expect(it != m_availableSurfaceFormats.end(), "the requested color space must be available");
     m_activeSurfaceFormat = it.base();
 }
 
-auto Renderer::IsHdrEnabled() const -> bool { return m_activeSurfaceFormat->isHdr; }
+auto Renderer::isHdrEnabled() const -> bool { return m_activeSurfaceFormat->isHdr; }
 
-auto Renderer::GetAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> & {
+auto Renderer::getAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> & {
     return m_availablePresentModes;
 }
 
-auto Renderer::GetActivePresentMode() const -> const vk::PresentModeKHR & { return *m_activePresentMode; }
+auto Renderer::getActivePresentMode() const -> const vk::PresentModeKHR & { return *m_activePresentMode; }
 
-auto Renderer::SetActivePresentMode(vk::PresentModeKHR presentMode) const -> void {
+auto Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const -> void {
     core::expect(m_availablePresentModes.contains(presentMode), "the requested present mode must be available");
     m_activePresentMode = &*m_availablePresentModes.find(presentMode);
 }
 
-auto Renderer::ProbeSurfaceFormats() -> void {
+auto Renderer::probeSurfaceFormats() -> void {
     auto surfaceFormats = m_context.getPhysicalDevice().getSurfaceFormatsKHR(m_context.getSurface());
     core::expect(!surfaceFormats.empty(), "failed to get surface formats");
 
@@ -156,7 +156,7 @@ auto Renderer::ProbeSurfaceFormats() -> void {
     }
 }
 
-auto Renderer::ProbePresentModes() -> void {
+auto Renderer::probePresentModes() -> void {
     auto presentModes = m_context.getPhysicalDevice().getSurfacePresentModesKHR(m_context.getSurface());
     core::expect(!presentModes.empty(), "failed to get surface present mode count");
 
@@ -177,16 +177,16 @@ auto Renderer::ProbePresentModes() -> void {
 
     // hard code for the moment
     if (m_availablePresentModes.contains(vk::PresentModeKHR::eMailbox)) {
-        SetActivePresentMode(vk::PresentModeKHR::eMailbox);
+        setActivePresentMode(vk::PresentModeKHR::eMailbox);
     } else {
-        SetActivePresentMode(vk::PresentModeKHR::eFifo);
+        setActivePresentMode(vk::PresentModeKHR::eFifo);
     }
 }
 
-auto Renderer::CreateSwapchain() -> void {
+auto Renderer::createSwapchain() -> void {
     Swapchain::Spec swapchainSpec{};
     swapchainSpec.context = &m_context;
-    swapchainSpec.windowExtent = m_window.GetExtent();
+    swapchainSpec.windowExtent = m_window.getExtent();
     swapchainSpec.colorSpace = m_activeSurfaceFormat->colorSpace;
     swapchainSpec.format = m_activeSurfaceFormat->format;
     swapchainSpec.presentMode = *m_activePresentMode;
@@ -201,10 +201,10 @@ auto Renderer::CreateSwapchain() -> void {
     }
 }
 
-auto Renderer::CreateCommandBuffers() -> void {
+auto Renderer::createCommandBuffers() -> void {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
-    commandBufferAi.commandPool = m_context.getGraphicsQueue().GetCommandPool();
+    commandBufferAi.commandPool = m_context.getGraphicsQueue().getCommandPool();
     commandBufferAi.commandBufferCount = k_maxFramesInFlight;
 
     auto commandBufferResult = m_context.getDevice().allocateCommandBuffers(commandBufferAi);

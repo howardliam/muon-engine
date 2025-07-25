@@ -17,7 +17,7 @@ namespace muon::graphics {
 Buffer::Buffer(const Spec &spec)
     : m_context(*spec.context), m_usageFlags(spec.usageFlags), m_instanceSize(spec.instanceSize),
       m_instanceCount(spec.instanceCount) {
-    m_alignmentSize = spec.minOffsetAlignment > 0 ? Alignment(m_instanceSize, spec.minOffsetAlignment) : m_instanceSize;
+    m_alignmentSize = spec.minOffsetAlignment > 0 ? alignment(m_instanceSize, spec.minOffsetAlignment) : m_instanceSize;
     m_size = m_alignmentSize * m_instanceCount;
 
     vk::BufferCreateInfo bufferCi;
@@ -50,11 +50,11 @@ Buffer::Buffer(const Spec &spec)
     m_descriptorInfo.range = m_size;
     m_descriptorInfo.offset = 0;
 
-    core::debug("created buffer with size: {}", pp::PrintBytes(m_size));
+    core::debug("created buffer with size: {}", pp::printBytes(m_size));
 }
 
 Buffer::~Buffer() {
-    Unmap();
+    unmap();
     m_context.getAllocator().destroyBuffer(m_buffer, m_allocation);
     core::debug("destroyed buffer");
 }
@@ -66,7 +66,7 @@ Buffer::Buffer(Buffer &&other) noexcept
 
     m_buffer.swap(other.m_buffer);
 
-    other.Unmap();
+    other.unmap();
 
     other.m_buffer = nullptr;
     other.m_allocation = nullptr;
@@ -75,7 +75,7 @@ Buffer::Buffer(Buffer &&other) noexcept
 
 auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
     if (this != &other) {
-        other.Unmap();
+        other.unmap();
 
         m_instanceSize = other.m_instanceSize;
         m_instanceCount = other.m_instanceCount;
@@ -94,7 +94,7 @@ auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
     return *this;
 }
 
-auto Buffer::Map() -> std::expected<void, vk::Result> {
+auto Buffer::map() -> std::expected<void, vk::Result> {
     auto result = m_context.getAllocator().mapMemory(m_allocation);
     if (result.result != vk::Result::eSuccess) {
         return std::unexpected(result.result);
@@ -105,7 +105,7 @@ auto Buffer::Map() -> std::expected<void, vk::Result> {
     return {};
 }
 
-auto Buffer::Unmap() -> void {
+auto Buffer::unmap() -> void {
     if (m_mapped == nullptr) {
         return;
     }
@@ -114,7 +114,7 @@ auto Buffer::Unmap() -> void {
     m_mapped = nullptr;
 }
 
-auto Buffer::Write(const void *data, vk::DeviceSize size, vk::DeviceSize offset) -> void {
+auto Buffer::write(const void *data, vk::DeviceSize size, vk::DeviceSize offset) -> void {
     if (size == vk::WholeSize) {
         std::memcpy(m_mapped, data, m_size);
     } else {
@@ -124,32 +124,32 @@ auto Buffer::Write(const void *data, vk::DeviceSize size, vk::DeviceSize offset)
     }
 }
 
-auto Buffer::Flush(vk::DeviceSize size, vk::DeviceSize offset) -> void {
+auto Buffer::flush(vk::DeviceSize size, vk::DeviceSize offset) -> void {
     vmaFlushAllocation(m_context.getAllocator(), m_allocation, offset, size);
 }
 
-auto Buffer::Invalidate(vk::DeviceSize size, vk::DeviceSize offset) -> void {
+auto Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) -> void {
     vmaInvalidateAllocation(m_context.getAllocator(), m_allocation, offset, size);
 }
 
-auto Buffer::Get() -> vk::raii::Buffer & { return m_buffer; }
-auto Buffer::Get() const -> const vk::raii::Buffer & { return m_buffer; }
+auto Buffer::get() -> vk::raii::Buffer & { return m_buffer; }
+auto Buffer::get() const -> const vk::raii::Buffer & { return m_buffer; }
 
-auto Buffer::GetSize() const -> vk::DeviceSize { return m_size; }
+auto Buffer::getSize() const -> vk::DeviceSize { return m_size; }
 
-auto Buffer::GetMappedMemory() const -> void * { return m_mapped; }
+auto Buffer::getMappedMemory() const -> void * { return m_mapped; }
 
-auto Buffer::GetDeviceAddress() const -> VkDeviceAddress {
+auto Buffer::getDeviceAddress() const -> VkDeviceAddress {
     core::expect(
         m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress, "buffer must be created with shader context address usage"
     );
     return m_deviceAddress;
 }
 
-auto Buffer::GetInstanceCount() const -> uint32_t { return m_instanceCount; }
+auto Buffer::getInstanceCount() const -> uint32_t { return m_instanceCount; }
 
-auto Buffer::GetInstanceSize() const -> vk::DeviceSize { return m_instanceSize; }
+auto Buffer::getInstanceSize() const -> vk::DeviceSize { return m_instanceSize; }
 
-auto Buffer::GetDescriptorInfo() const -> const vk::DescriptorBufferInfo & { return m_descriptorInfo; }
+auto Buffer::getDescriptorInfo() const -> const vk::DescriptorBufferInfo & { return m_descriptorInfo; }
 
 } // namespace muon::graphics

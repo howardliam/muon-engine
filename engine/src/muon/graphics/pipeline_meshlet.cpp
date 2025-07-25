@@ -13,14 +13,14 @@ PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(*spec.context,
 
 PipelineMeshlet::~PipelineMeshlet() { core::debug("destroyed meshlet pipeline"); }
 
-auto PipelineMeshlet::Bake(const vk::PipelineRenderingCreateInfo &renderingCi) -> void { CreatePipeline(renderingCi); }
+auto PipelineMeshlet::bake(const vk::PipelineRenderingCreateInfo &renderingCi) -> void { createPipeline(renderingCi); }
 
-auto PipelineMeshlet::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void {
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout->Get(), 0, sets, {});
+auto PipelineMeshlet::bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_layout->get(), 0, sets, {});
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 }
 
-auto PipelineMeshlet::CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void {
+auto PipelineMeshlet::createPipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void {
     vk::GraphicsPipelineCreateInfo graphicsPipelineCi;
     graphicsPipelineCi.stageCount = static_cast<uint32_t>(m_shaderStages.size());
     graphicsPipelineCi.pStages = m_shaderStages.data();
@@ -32,7 +32,7 @@ auto PipelineMeshlet::CreatePipeline(const vk::PipelineRenderingCreateInfo &rend
     graphicsPipelineCi.pDepthStencilState = &m_state.depthStencilState;
     graphicsPipelineCi.pDynamicState = &m_state.dynamicState;
 
-    graphicsPipelineCi.layout = m_layout->Get();
+    graphicsPipelineCi.layout = m_layout->get();
     graphicsPipelineCi.pNext = &renderingCi;
     graphicsPipelineCi.subpass = 0;
 

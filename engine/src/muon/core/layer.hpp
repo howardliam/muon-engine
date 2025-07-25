@@ -6,9 +6,9 @@ class Layer {
 public:
     virtual ~Layer() = default;
 
-    virtual auto OnAttach() -> void;
-    virtual auto OnDetach() -> void;
-    virtual auto OnUpdate() -> void;
+    virtual auto onAttach() -> void;
+    virtual auto onDetach() -> void;
+    virtual auto onUpdate() -> void;
 };
 
 } // namespace muon

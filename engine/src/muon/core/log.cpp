@@ -9,7 +9,7 @@
 
 namespace muon {
 
-auto Log::Init() -> void {
+auto Log::init() -> void {
     std::vector<spdlog::sink_ptr> sinks;
     sinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     sinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Muon.log", true));
@@ -33,9 +33,9 @@ auto Log::Init() -> void {
     s_vulkanLogger->flush_on(spdlog::level::trace);
 }
 
-auto Log::GetCoreLogger() -> std::shared_ptr<spdlog::logger> & { return s_coreLogger; }
-auto Log::GetClientLogger() -> std::shared_ptr<spdlog::logger> & { return s_clientLogger; }
-auto Log::GetVulkanLogger() -> std::shared_ptr<spdlog::logger> & { return s_vulkanLogger; }
+auto Log::getCoreLogger() -> std::shared_ptr<spdlog::logger> & { return s_coreLogger; }
+auto Log::getClientLogger() -> std::shared_ptr<spdlog::logger> & { return s_clientLogger; }
+auto Log::getVulkanLogger() -> std::shared_ptr<spdlog::logger> & { return s_vulkanLogger; }
 
 auto Log::SetLogLevel(spdlog::level::level_enum level) -> void { spdlog::set_level(level); }
 

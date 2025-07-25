@@ -21,11 +21,11 @@ public:
     PipelineCompute(const Spec &spec);
     ~PipelineCompute();
 
-    auto Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void;
-    auto Dispatch(vk::raii::CommandBuffer &commandBuffer, const glm::uvec3 &groupCount) const -> void;
+    auto bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void;
+    auto dispatch(vk::raii::CommandBuffer &commandBuffer, const glm::uvec3 &groupCount) const -> void;
 
 private:
-    auto CreatePipeline(const vk::PipelineShaderStageCreateInfo &stageInfo) -> void;
+    auto createPipeline(const vk::PipelineShaderStageCreateInfo &stageInfo) -> void;
 };
 
 } // namespace muon::graphics

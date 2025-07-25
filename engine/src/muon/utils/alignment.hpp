@@ -6,7 +6,7 @@
 namespace muon {
 
 template <std::integral T>
-auto Alignment(T integer, size_t alignment) -> T {
+auto alignment(T integer, size_t alignment) -> T {
     return ((integer + alignment - 1) / alignment) * alignment;
 }
 

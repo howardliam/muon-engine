@@ -20,7 +20,7 @@
 
 namespace {
 
-constexpr auto Hash(const std::string_view string) -> uint64_t {
+constexpr auto hash(const std::string_view string) -> uint64_t {
     uint64_t hash = 0;
     for (char c : string) {
         hash = (hash * 131) + c;
@@ -28,10 +28,10 @@ constexpr auto Hash(const std::string_view string) -> uint64_t {
     return hash;
 }
 
-constexpr auto operator""_hash(const char *string, size_t length) -> uint64_t { return Hash(std::string_view(string, length)); }
+constexpr auto operator""_hash(const char *string, size_t length) -> uint64_t { return hash(std::string_view(string, length)); }
 
-auto ExtensionToStage(const std::string_view extension) -> std::optional<EShLanguage> {
-    switch (Hash(extension)) {
+auto extensionToStage(const std::string_view extension) -> std::optional<EShLanguage> {
+    switch (hash(extension)) {
         case ".vert"_hash:
             return EShLanguage::EShLangVertex;
 
@@ -211,7 +211,7 @@ ShaderCompiler::ShaderCompiler(const Spec &spec) : m_hashStore(spec.hashStorePat
             auto request = m_workQueue.front();
             m_workQueue.pop();
 
-            Compile(request);
+            compile(request);
         }
 
         core::debug("shader compilation worker thread done");
@@ -229,13 +229,13 @@ ShaderCompiler::~ShaderCompiler() {
     core::debug("destroyed shader compiler");
 }
 
-auto ShaderCompiler::SubmitWork(ShaderCompilationRequest request) -> void {
+auto ShaderCompiler::submitWork(ShaderCompilationRequest request) -> void {
     std::unique_lock<std::mutex> lock{m_workMutex};
     m_workQueue.push(request);
     m_conVar.notify_one();
 }
 
-auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
+auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
     core::trace("beginning compilation");
 
     std::ifstream file{request.path, std::ios::binary};
@@ -268,7 +268,7 @@ auto ShaderCompiler::Compile(const ShaderCompilationRequest &request) -> void {
         return;
     }
 
-    auto stage = ExtensionToStage(request.path.extension().generic_string());
+    auto stage = extensionToStage(request.path.extension().generic_string());
     if (!stage.has_value()) {
         core::error("failed to parse file extension: {}", request.path.extension().generic_string());
         return;

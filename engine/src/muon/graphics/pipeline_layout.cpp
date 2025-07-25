@@ -26,7 +26,7 @@ PipelineLayout::PipelineLayout(const Spec &spec) : m_context(*spec.context) {
     m_layout = std::move(*pipelineLayoutResult);
 }
 
-auto PipelineLayout::Get() -> vk::raii::PipelineLayout & { return m_layout; }
-auto PipelineLayout::Get() const -> const vk::raii::PipelineLayout & { return m_layout; }
+auto PipelineLayout::get() -> vk::raii::PipelineLayout & { return m_layout; }
+auto PipelineLayout::get() const -> const vk::raii::PipelineLayout & { return m_layout; }
 
 } // namespace muon::graphics

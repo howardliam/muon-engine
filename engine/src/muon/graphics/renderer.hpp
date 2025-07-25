@@ -30,28 +30,28 @@ public:
     Renderer(const Spec &spec);
     ~Renderer();
 
-    [[nodiscard]] auto BeginFrame() -> std::optional<vk::raii::CommandBuffer *>;
-    auto EndFrame() -> void;
+    [[nodiscard]] auto beginFrame() -> std::optional<vk::raii::CommandBuffer *>;
+    auto endFrame() -> void;
 
-    auto RebuildSwapchain() -> void;
+    auto rebuildSwapchain() -> void;
 
 public:
-    auto HasHdrSupport() const -> bool;
+    auto hasHdrSupport() const -> bool;
 
-    auto GetAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR>;
-    auto GetActiveSurfaceFormat() const -> const SurfaceFormat &;
-    auto SetActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void;
-    auto IsHdrEnabled() const -> bool;
+    auto getAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR>;
+    auto getActiveSurfaceFormat() const -> const SurfaceFormat &;
+    auto setActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void;
+    auto isHdrEnabled() const -> bool;
 
-    auto GetAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> &;
-    auto GetActivePresentMode() const -> const vk::PresentModeKHR &;
-    auto SetActivePresentMode(vk::PresentModeKHR presentMode) const -> void;
+    auto getAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> &;
+    auto getActivePresentMode() const -> const vk::PresentModeKHR &;
+    auto setActivePresentMode(vk::PresentModeKHR presentMode) const -> void;
 
 private:
-    auto ProbeSurfaceFormats() -> void;
-    auto ProbePresentModes() -> void;
-    auto CreateSwapchain() -> void;
-    auto CreateCommandBuffers() -> void;
+    auto probeSurfaceFormats() -> void;
+    auto probePresentModes() -> void;
+    auto createSwapchain() -> void;
+    auto createCommandBuffers() -> void;
 
 private:
     const Window &m_window;

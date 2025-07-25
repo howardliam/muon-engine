@@ -20,11 +20,11 @@ public:
     PipelineGraphics(const Spec &spec);
     ~PipelineGraphics();
 
-    auto Bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
-    auto Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void;
+    auto bake(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
+    auto bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) -> void;
 
 private:
-    auto CreatePipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
+    auto createPipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
 
 private:
     struct PipelineGraphicsState {

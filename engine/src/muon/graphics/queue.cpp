@@ -28,7 +28,7 @@ Queue::Queue(const Spec &spec) : m_device(*spec.device), m_name(spec.name) {
 
 Queue::~Queue() { core::debug("destroyed {} queue", m_name); }
 
-auto Queue::ExecuteCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) {
+auto Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
     commandBufferAi.commandPool = m_commandPool;
@@ -55,14 +55,13 @@ auto Queue::ExecuteCommands(std::function<void(vk::raii::CommandBuffer &commandB
     m_queue.waitIdle();
 }
 
-auto Queue::GetFamilyIndex() const -> uint32_t { return m_familyIndex; }
+auto Queue::get() -> vk::raii::Queue & { return m_queue; }
+auto Queue::get() const -> const vk::raii::Queue & { return m_queue; }
 
-auto Queue::GetIndex() const -> uint32_t { return m_index; }
+auto Queue::getFamilyIndex() const -> uint32_t { return m_familyIndex; }
+auto Queue::getIndex() const -> uint32_t { return m_index; }
 
-auto Queue::Get() -> vk::raii::Queue & { return m_queue; }
-auto Queue::Get() const -> const vk::raii::Queue & { return m_queue; }
-
-auto Queue::GetCommandPool() -> vk::raii::CommandPool & { return m_commandPool; }
-auto Queue::GetCommandPool() const -> const vk::raii::CommandPool & { return m_commandPool; }
+auto Queue::getCommandPool() -> vk::raii::CommandPool & { return m_commandPool; }
+auto Queue::getCommandPool() const -> const vk::raii::CommandPool & { return m_commandPool; }
 
 } // namespace muon::graphics

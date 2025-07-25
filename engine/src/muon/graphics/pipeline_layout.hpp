@@ -21,11 +21,10 @@ public:
 
 public:
     PipelineLayout(const Spec &spec);
-    ~PipelineLayout() = default;
 
 public:
-    auto Get() -> vk::raii::PipelineLayout &;
-    auto Get() const -> const vk::raii::PipelineLayout &;
+    auto get() -> vk::raii::PipelineLayout &;
+    auto get() const -> const vk::raii::PipelineLayout &;
 
 private:
     const Context &m_context;

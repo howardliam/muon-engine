@@ -1,6 +1,5 @@
 #include "muon/project/project.hpp"
 
-#include "muon/core/errors.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 
@@ -18,19 +17,19 @@ namespace muon::project {
 Project::Project(const Spec &spec) : m_name(spec.name), m_path(spec.path) {}
 
 Project::~Project() {
-    auto success = Save();
+    auto success = save();
     core::expect(success, "failed to save project file to disk");
 }
 
-auto Project::Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>, ProjectError> {
+auto Project::create(const Spec &spec) -> std::expected<std::shared_ptr<Project>, ProjectError> {
     s_activeProject = std::make_shared<Project>(spec);
 
-    auto result = s_activeProject->ConfigureProjectStructure();
+    auto result = s_activeProject->configureProjectStructure();
     if (!result.has_value()) {
         return std::unexpected(result.error());
     }
 
-    result = s_activeProject->WriteProjectFile();
+    result = s_activeProject->writeProjectFile();
     if (!result.has_value()) {
         return std::unexpected(result.error());
     }
@@ -40,12 +39,12 @@ auto Project::Create(const Spec &spec) -> std::expected<std::shared_ptr<Project>
     return s_activeProject;
 }
 
-auto Project::Load(const std::filesystem::path &projectPath) -> std::expected<std::shared_ptr<Project>, ProjectError> {
+auto Project::load(const std::filesystem::path &projectPath) -> std::expected<std::shared_ptr<Project>, ProjectError> {
     if (!std::filesystem::exists(projectPath)) {
         core::trace("no project exists, attempting to create");
         Spec spec{};
         spec.path = projectPath;
-        return Create(spec);
+        return create(spec);
     }
 
     auto projectConfigPath = projectPath / "project.toml";
@@ -71,8 +70,8 @@ auto Project::Load(const std::filesystem::path &projectPath) -> std::expected<st
     return s_activeProject;
 }
 
-auto Project::Save() -> std::expected<void, ProjectError> {
-    auto result = WriteProjectFile();
+auto Project::save() -> std::expected<void, ProjectError> {
+    auto result = writeProjectFile();
     if (!result.has_value()) {
         return result;
     }
@@ -81,42 +80,42 @@ auto Project::Save() -> std::expected<void, ProjectError> {
     return {};
 }
 
-auto Project::GetProjectDirectory() const -> const std::filesystem::path & {
+auto Project::getProjectDirectory() const -> const std::filesystem::path & {
     core::expect(s_activeProject, "there must be an active project");
     return m_path;
 }
 
-auto Project::GetImagesDirectory() const -> std::filesystem::path {
+auto Project::getImagesDirectory() const -> std::filesystem::path {
     core::expect(s_activeProject, "there must be an active project");
     return m_path / "images";
 }
 
-auto Project::GetModelsDirectory() const -> std::filesystem::path {
+auto Project::getModelsDirectory() const -> std::filesystem::path {
     core::expect(s_activeProject, "there must be an active project");
     return m_path / "models";
 }
 
-auto Project::GetScenesDirectory() const -> std::filesystem::path {
+auto Project::getScenesDirectory() const -> std::filesystem::path {
     core::expect(s_activeProject, "there must be an active project");
     return m_path / "scenes";
 }
 
-auto Project::GetScriptsDirectory() const -> std::filesystem::path {
+auto Project::getScriptsDirectory() const -> std::filesystem::path {
     core::expect(s_activeProject, "there must be an active project");
     return m_path / "scripts";
 }
 
-auto Project::GetShadersDirectory() const -> std::filesystem::path {
+auto Project::getShadersDirectory() const -> std::filesystem::path {
     core::expect(s_activeProject, "there must be an active project");
     return m_path / "shaders";
 }
 
-auto Project::GetActiveProject() -> std::shared_ptr<Project> {
+auto Project::getActiveProject() -> std::shared_ptr<Project> {
     core::expect(s_activeProject, "there must be an active project");
     return s_activeProject;
 }
 
-auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
+auto Project::configureProjectStructure() -> std::expected<void, ProjectError> {
     auto createDirectories = [](const std::filesystem::path &path) -> std::expected<void, ProjectError> {
         std::error_code ec;
         std::filesystem::create_directories(path, ec);
@@ -146,7 +145,7 @@ auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
     }
 
     std::vector<std::filesystem::path> assetPaths = {
-        GetImagesDirectory(), GetModelsDirectory(), GetScenesDirectory(), GetScriptsDirectory(), GetShadersDirectory(),
+        getImagesDirectory(), getModelsDirectory(), getScenesDirectory(), getScriptsDirectory(), getShadersDirectory(),
     };
 
     for (const auto &path : assetPaths) {
@@ -161,7 +160,7 @@ auto Project::ConfigureProjectStructure() -> std::expected<void, ProjectError> {
     return {};
 }
 
-auto Project::WriteProjectFile() -> std::expected<void, ProjectError> {
+auto Project::writeProjectFile() -> std::expected<void, ProjectError> {
     auto projectFilePath = m_path / "project.toml";
 
     toml::table projectConfig{

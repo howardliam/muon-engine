@@ -12,19 +12,19 @@ PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase(*spec.context,
 
 PipelineCompute::~PipelineCompute() { core::debug("destroyed compute pipeline"); }
 
-auto PipelineCompute::Bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void {
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute, m_layout->Get(), 0, sets, {});
+auto PipelineCompute::bind(vk::raii::CommandBuffer &commandBuffer, const std::vector<vk::DescriptorSet> &sets) const -> void {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute, m_layout->get(), 0, sets, {});
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, m_pipeline);
 }
 
-auto PipelineCompute::Dispatch(vk::raii::CommandBuffer &commandBuffer, const glm::uvec3 &groupCount) const -> void {
+auto PipelineCompute::dispatch(vk::raii::CommandBuffer &commandBuffer, const glm::uvec3 &groupCount) const -> void {
     commandBuffer.dispatch(groupCount.x, groupCount.y, groupCount.z);
 }
 
-auto PipelineCompute::CreatePipeline(const vk::PipelineShaderStageCreateInfo &stageInfo) -> void {
+auto PipelineCompute::createPipeline(const vk::PipelineShaderStageCreateInfo &stageInfo) -> void {
     vk::ComputePipelineCreateInfo computePipelineCi;
     computePipelineCi.stage = stageInfo;
-    computePipelineCi.layout = m_layout->Get();
+    computePipelineCi.layout = m_layout->get();
     computePipelineCi.basePipelineIndex = -1;
     computePipelineCi.basePipelineHandle = nullptr;
 

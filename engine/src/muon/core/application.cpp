@@ -23,7 +23,7 @@ Application::Application(const Spec &spec) {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
-    auto result = project::Project::Load(spec.workingDirectory / "test-project");
+    auto result = project::Project::load(spec.workingDirectory / "test-project");
     if (!result.has_value()) {
         switch (result.error()) {
             case project::ProjectError::FailedToCreateDirectory:
@@ -67,7 +67,7 @@ Application::Application(const Spec &spec) {
 
     profiling::Profiler::Spec profilerSpec{};
     profilerSpec.context = m_context.get();
-    profiling::Profiler::CreateContext(profilerSpec);
+    profiling::Profiler::createContext(profilerSpec);
 
     graphics::Renderer::Spec rendererSpec{};
     rendererSpec.window = m_window.get();
@@ -79,59 +79,59 @@ Application::Application(const Spec &spec) {
     assetManagerSpec.loaders = {new asset::PngLoader()};
     m_assetManager = std::make_unique<asset::Manager>(assetManagerSpec);
 
-    m_onWindowClose = m_dispatcher->Subscribe<event::WindowCloseEvent>([&](const auto &event) {
+    m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) {
         core::info("window closed received");
         m_running = false;
     });
 
-    m_dispatcher->Subscribe<event::WindowResizeEvent>([&](const auto &event) {
-        m_context->GetGraphicsQueue().Get().waitIdle();
-        m_renderer->RebuildSwapchain();
+    m_dispatcher->subscribe<event::WindowResizeEvent>([&](const auto &event) {
+        m_context->getGraphicsQueue().get().waitIdle();
+        m_renderer->rebuildSwapchain();
     });
 
-    m_dispatcher->Subscribe<event::MouseButtonEvent>([](const auto &event) {
+    m_dispatcher->subscribe<event::MouseButtonEvent>([](const auto &event) {
         if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
             core::info("hello!");
         }
     });
 
-    m_dispatcher->Subscribe<event::KeyEvent>([&](const auto &event) {
-        if (event.keycode == input::KeyCode::V && event.mods.IsCtrlDown()) {
-            core::info("{}", m_window->GetClipboardContents());
+    m_dispatcher->subscribe<event::KeyEvent>([&](const auto &event) {
+        if (event.keycode == input::KeyCode::V && event.mods.isCtrlDown()) {
+            core::info("{}", m_window->getClipboardContents());
         }
     });
 
-    m_dispatcher->Subscribe<event::FileDropEvent>([](const auto &event) { core::info("{}", fmt::join(event.paths, ", ")); });
+    m_dispatcher->subscribe<event::FileDropEvent>([](const auto &event) { core::info("{}", fmt::join(event.paths, ", ")); });
 
     core::debug("created application");
 }
 
 Application::~Application() {
-    profiling::Profiler::DestroyContext();
+    profiling::Profiler::destroyContext();
     core::debug("destroyed application");
 }
 
-auto Application::Get() -> Application & { return *s_instance; }
+auto Application::get() -> Application & { return *s_instance; }
 
-auto Application::Run() -> void {
+auto Application::run() -> void {
     core::info("running application");
 
     graphics::ShaderCompiler::Spec compilerSpec{};
-    compilerSpec.hashStorePath = project::Project::GetActiveProject()->GetProjectDirectory() / "hash_store.db";
+    compilerSpec.hashStorePath = project::Project::getActiveProject()->getProjectDirectory() / "hash_store.db";
     graphics::ShaderCompiler compiler{compilerSpec};
-    compiler.SubmitWork({project::Project::GetActiveProject()->GetProjectDirectory() / "shaders/test.vert"});
+    compiler.submitWork({project::Project::getActiveProject()->getProjectDirectory() / "shaders/test.vert"});
 
     while (m_running) {
-        m_window->PollEvents();
+        m_window->pollEvents();
 
-        if (auto cmd = m_renderer->BeginFrame(); cmd) {
+        if (auto cmd = m_renderer->beginFrame(); cmd) {
             auto &commandBuffer = **cmd;
 
-            m_renderer->EndFrame();
+            m_renderer->endFrame();
         }
     }
 
-    m_context->GetDevice().waitIdle();
+    m_context->getDevice().waitIdle();
 }
 
 } // namespace muon

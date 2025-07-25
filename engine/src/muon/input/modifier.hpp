@@ -8,15 +8,14 @@ namespace muon::input {
 class Modifier {
 public:
     Modifier(const uint8_t &modBitField);
-    ~Modifier() = default;
 
 public:
-    [[nodiscard]] bool IsShiftDown() const;
-    [[nodiscard]] bool IsCtrlDown() const;
-    [[nodiscard]] bool IsAltDown() const;
-    [[nodiscard]] bool IsSuperDown() const;
-    [[nodiscard]] bool IsCapsLockDown() const;
-    [[nodiscard]] bool IsNumLockDown() const;
+    auto isShiftDown() const -> bool;
+    auto isCtrlDown() const -> bool;
+    auto isAltDown() const -> bool;
+    auto isSuperDown() const -> bool;
+    auto isCapsLockDown() const -> bool;
+    auto isNumLockDown() const -> bool;
 
 private:
     std::bitset<6> m_mod;
