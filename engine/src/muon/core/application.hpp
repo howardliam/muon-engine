@@ -1,7 +1,6 @@
 #pragma once
 
 #include "muon/asset/manager.hpp"
-#include "muon/core/expect.hpp"
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
@@ -9,46 +8,30 @@
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/renderer.hpp"
 
-#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <string_view>
 
-auto main(int32_t argc, char **argv) -> int32_t;
-
 namespace muon {
-
-struct ApplicationCommandLineArgs {
-    int32_t count;
-    char **args{nullptr};
-
-    auto operator[](int32_t index) const -> const char * {
-        core::expect(index < count, "index must be lower than count");
-        return args[index];
-    }
-};
 
 class Application : NoCopy, NoMove {
 public:
     struct Spec {
         std::string name{"Muon Application"};
         std::filesystem::path workingDirectory;
-        ApplicationCommandLineArgs cliArgs;
+        std::vector<const char *> args;
     };
 
 public:
     Application(const Spec &spec);
     virtual ~Application();
 
+    auto run() -> void;
+
 public:
     auto getName() -> const std::string_view;
 
     static auto get() -> Application &;
-
-private:
-    auto run() -> void;
-
-    friend auto ::main(int32_t argc, char **argv) -> int32_t;
 
 protected:
     std::string m_name;
@@ -66,6 +49,6 @@ protected:
     static inline Application *s_instance{nullptr};
 };
 
-auto createApplication(ApplicationCommandLineArgs args) -> Application *;
+auto createApplication(const std::vector<const char *> &args) -> Application *;
 
 } // namespace muon

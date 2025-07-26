@@ -10,11 +10,11 @@ public:
     MuonEditor(const Spec &spec) : Application(spec) {}
 };
 
-auto createApplication(ApplicationCommandLineArgs args) -> Application * {
+auto createApplication(const std::vector<const char *> &args) -> Application * {
     Application::Spec spec{};
     spec.name = "Muon Editor";
-    spec.cliArgs = args;
     spec.workingDirectory = std::filesystem::current_path();
+    spec.args = args;
 
     return new MuonEditor(spec);
 }

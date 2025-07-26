@@ -7,7 +7,6 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "muon/graphics/shader_compiler.hpp"
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
@@ -111,17 +110,10 @@ Application::~Application() {
     core::debug("destroyed application");
 }
 
-auto Application::getName() -> const std::string_view { return m_name; }
-
-auto Application::get() -> Application & { return *s_instance; }
-
 auto Application::run() -> void {
+    core::expect(m_running, "application cannot already be running");
+    m_running = true;
     core::info("running application");
-
-    graphics::ShaderCompiler::Spec compilerSpec{};
-    compilerSpec.hashStorePath = project::Project::getActiveProject()->getProjectDirectory() / "hash_store.db";
-    graphics::ShaderCompiler compiler{compilerSpec};
-    compiler.submitWork({project::Project::getActiveProject()->getProjectDirectory() / "shaders/test.vert"});
 
     while (m_running) {
         m_window->pollEvents();
@@ -183,5 +175,9 @@ auto Application::run() -> void {
 
     m_context->getDevice().waitIdle();
 }
+
+auto Application::getName() -> const std::string_view { return m_name; }
+
+auto Application::get() -> Application & { return *s_instance; }
 
 } // namespace muon
