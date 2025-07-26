@@ -30,7 +30,7 @@ target_sources(
         src/muon/graphics/pipeline_layout.cpp
         src/muon/graphics/pipeline_meshlet.cpp
         src/muon/graphics/queue.cpp
-        src/muon/graphics/queue_info.cpp
+        src/muon/graphics/queue_family_info.cpp
         src/muon/graphics/renderer.cpp
         src/muon/graphics/shader_compiler.cpp
         src/muon/graphics/swapchain.cpp
@@ -87,7 +87,7 @@ target_sources(
         src/muon/graphics/pipeline_layout.hpp
         src/muon/graphics/pipeline_meshlet.hpp
         src/muon/graphics/queue.hpp
-        src/muon/graphics/queue_info.hpp
+        src/muon/graphics/queue_family_info.hpp
         src/muon/graphics/renderer.hpp
         src/muon/graphics/shader_compiler.hpp
         src/muon/graphics/swapchain.hpp

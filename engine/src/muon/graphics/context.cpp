@@ -8,7 +8,7 @@
 #include "muon/graphics/extensions.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
-#include "muon/graphics/queue_info.hpp"
+#include "muon/graphics/queue_family_info.hpp"
 #include "vulkan/vulkan.hpp"
 
 #include <numeric>
@@ -230,50 +230,62 @@ auto Context::selectPhysicalDevice() -> void {
 }
 
 auto Context::createLogicalDevice() -> void {
-    const QueueInfo queueInfo{m_physicalDevice, m_surface};
-    core::expect(queueInfo.getFamilyInfo().size() >= 1, "there must be at least one queue family");
-    core::expect(queueInfo.getTotalQueueCount() >= 3, "there must be at least three queues available");
+    std::optional<uint32_t> graphicsIndex;
+    std::optional<uint32_t> computeIndex;
+    std::optional<uint32_t> transferIndex;
 
-    const auto queueFamilies = queueInfo.getFamilyInfo();
+    for (const auto &family : generateQueueFamilyInfo(m_physicalDevice, m_surface)) {
+        uint32_t requestedQueueCount = 0;
 
-    auto graphicsFamily =
-        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.isGraphicsCapable(); });
-    core::expect(graphicsFamily != queueFamilies.end(), "there must be a graphics capable queue family");
-    core::expect(graphicsFamily->isPresentCapable(), "the graphics capable queue family must support presentation");
+        if (!graphicsIndex) {
+            if (family.isCapable(vk::QueueFlagBits::eGraphics) && family.supportsPresent()) {
+                graphicsIndex.emplace(family.getIndex());
+                requestedQueueCount += 1;
 
-    auto computeFamily =
-        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.isComputeDedicated(); });
-    if (computeFamily == queueFamilies.end()) {
-        computeFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) {
-            return info.isComputeCapable() && info.queueCount > 1;
-        });
+                core::trace("selected graphics queue family with index: {}", family.getIndex());
+            }
+        }
+
+        if (!computeIndex) {
+            if (family.isCapable(vk::QueueFlagBits::eCompute) && requestedQueueCount + 1 <= family.getQueueCount()) {
+                computeIndex.emplace(family.getIndex());
+                requestedQueueCount += 1;
+
+                core::trace("selected compute queue family with index: {}", family.getIndex());
+            }
+        }
+
+        if (!transferIndex) {
+            if (family.isCapable(vk::QueueFlagBits::eTransfer) && requestedQueueCount + 1 <= family.getQueueCount()) {
+                transferIndex.emplace(family.getIndex());
+                requestedQueueCount += 1;
+
+                core::trace("selected transfer queue family with index: {}", family.getIndex());
+            }
+        }
     }
-    core::expect(computeFamily != queueFamilies.end(), "there must be a compute capable queue family");
 
-    auto transferFamily =
-        std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) { return info.isTransferDedicated(); });
-    if (transferFamily == queueFamilies.end()) {
-        transferFamily = std::ranges::find_if(queueFamilies, [](const QueueFamilyInfo &info) {
-            return info.isTransferCapable() && info.queueCount > 1;
-        });
-    }
-    core::expect(transferFamily != queueFamilies.end(), "there must be a transfer capable queue family");
+    core::expect(graphicsIndex, "there must be a graphics capable queue family");
+    core::expect(computeIndex, "there must be a compute capable queue family");
+    core::expect(transferIndex, "there must be a transfer capable queue family");
 
     std::map<uint32_t, uint32_t> queueCounts;
-    queueCounts[graphicsFamily->index] += 1;
-    queueCounts[computeFamily->index] += 1;
-    queueCounts[transferFamily->index] += 1;
-    std::set<uint32_t> uniqueQueueFamilies = {graphicsFamily->index, computeFamily->index, transferFamily->index};
+    queueCounts[*graphicsIndex] += 1;
+    queueCounts[*computeIndex] += 1;
+    queueCounts[*transferIndex] += 1;
 
-    std::vector<float> queuePriorities(uniqueQueueFamilies.size(), 1.0);
-    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
-    uint32_t index = 0;
-    for (const auto family : uniqueQueueFamilies) {
-        auto &createInfo = queueCreateInfos[index];
-        createInfo.queueFamilyIndex = family;
-        createInfo.queueCount = queueCounts[family];
-        createInfo.pQueuePriorities = queuePriorities.data();
-        index += 1;
+    std::set<uint32_t> uniqueIndices = {*graphicsIndex, *computeIndex, *transferIndex};
+
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+
+    std::vector<float> queuePriorities(uniqueIndices.size(), 1.0);
+    for (const auto index : uniqueIndices) {
+        vk::DeviceQueueCreateInfo deviceQueueCi;
+        deviceQueueCi.queueFamilyIndex = index;
+        deviceQueueCi.queueCount = queueCounts[index];
+        deviceQueueCi.pQueuePriorities = queuePriorities.data();
+
+        queueCreateInfos.push_back(deviceQueueCi);
     }
 
     auto features = vk::StructureChain<
@@ -346,30 +358,30 @@ auto Context::createLogicalDevice() -> void {
     m_device = std::move(*deviceResult);
 
     std::map<uint32_t, uint32_t> nextQueueIndices;
-    nextQueueIndices[graphicsFamily->index] = 0;
-    nextQueueIndices[computeFamily->index] = 0;
-    nextQueueIndices[transferFamily->index] = 0;
+    nextQueueIndices[*graphicsIndex] = 0;
+    nextQueueIndices[*computeIndex] = 0;
+    nextQueueIndices[*transferIndex] = 0;
 
     Queue::Spec graphicsSpec{};
     graphicsSpec.device = &m_device;
-    graphicsSpec.queueFamilyIndex = graphicsFamily->index;
-    graphicsSpec.queueIndex = nextQueueIndices[graphicsFamily->index]++;
+    graphicsSpec.queueFamilyIndex = *graphicsIndex;
+    graphicsSpec.queueIndex = nextQueueIndices[*graphicsIndex]++;
     graphicsSpec.name = "graphics";
     m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
     core::expect(m_graphicsQueue, "graphics queue must not be null");
 
     Queue::Spec computeSpec{};
     computeSpec.device = &m_device;
-    computeSpec.queueFamilyIndex = computeFamily->index;
-    computeSpec.queueIndex = nextQueueIndices[computeFamily->index]++;
+    computeSpec.queueFamilyIndex = *computeIndex;
+    computeSpec.queueIndex = nextQueueIndices[*computeIndex]++;
     computeSpec.name = "compute";
     m_computeQueue = std::make_unique<Queue>(computeSpec);
     core::expect(m_computeQueue, "compute queue must not be null");
 
     Queue::Spec transferSpec{};
     transferSpec.device = &m_device;
-    transferSpec.queueFamilyIndex = transferFamily->index;
-    transferSpec.queueIndex = nextQueueIndices[transferFamily->index]++;
+    transferSpec.queueFamilyIndex = *transferIndex;
+    transferSpec.queueIndex = nextQueueIndices[*transferIndex]++;
     transferSpec.name = "transfer";
     m_transferQueue = std::make_unique<Queue>(transferSpec);
     core::expect(m_transferQueue, "transfer queue must not be null");
