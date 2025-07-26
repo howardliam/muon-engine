@@ -275,48 +275,61 @@ auto Context::createLogicalDevice() -> void {
         index += 1;
     }
 
+    vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT vidsState;
+    vidsState.vertexInputDynamicState = true;
+
     vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT ds3Features;
+    ds3Features.pNext = &vidsState;
+
     ds3Features.extendedDynamicState3PolygonMode = true;
 
-    vk::PhysicalDeviceScalarBlockLayoutFeatures scbFeatures;
-    scbFeatures.scalarBlockLayout = true;
-    scbFeatures.pNext = ds3Features;
-
-    vk::PhysicalDeviceBufferDeviceAddressFeatures bdaFeatures;
-    bdaFeatures.bufferDeviceAddress = true;
-    bdaFeatures.pNext = scbFeatures;
-
     vk::PhysicalDeviceMeshShaderFeaturesEXT msFeatures;
+    msFeatures.pNext = &ds3Features;
+
     msFeatures.meshShader = true;
     msFeatures.taskShader = true;
-    msFeatures.pNext = &bdaFeatures;
 
-    vk::PhysicalDeviceSynchronization2Features syncFeatures;
-    syncFeatures.synchronization2 = true;
-    syncFeatures.pNext = &msFeatures;
+    vk::PhysicalDeviceVulkan14Features vk14Features;
+    vk14Features.pNext = &msFeatures;
 
-    vk::PhysicalDeviceDynamicRenderingFeatures drFeatures;
-    drFeatures.dynamicRendering = true;
-    drFeatures.pNext = &syncFeatures;
+    vk14Features.pushDescriptor = true;
 
-    vk::PhysicalDeviceDescriptorIndexingFeatures diFeatures;
-    diFeatures.descriptorBindingPartiallyBound = true;
-    diFeatures.shaderSampledImageArrayNonUniformIndexing = true;
-    diFeatures.runtimeDescriptorArray = true;
-    diFeatures.descriptorBindingVariableDescriptorCount = true;
-    diFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
-    diFeatures.descriptorBindingStorageBufferUpdateAfterBind = true;
-    diFeatures.descriptorBindingStorageImageUpdateAfterBind = true;
-    diFeatures.descriptorBindingStorageTexelBufferUpdateAfterBind = true;
-    diFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
-    diFeatures.descriptorBindingUniformTexelBufferUpdateAfterBind = true;
-    diFeatures.shaderUniformBufferArrayNonUniformIndexing = true;
-    diFeatures.shaderStorageBufferArrayNonUniformIndexing = true;
-    diFeatures.shaderStorageImageArrayNonUniformIndexing = true;
-    diFeatures.pNext = &drFeatures;
+    vk::PhysicalDeviceVulkan13Features vk13Features;
+    vk13Features.pNext = &vk14Features;
+
+    vk13Features.synchronization2 = true;
+    vk13Features.dynamicRendering = true;
+
+    vk::PhysicalDeviceVulkan12Features vk12Features;
+    vk12Features.pNext = &vk13Features;
+
+    vk12Features.bufferDeviceAddress = true;
+    vk12Features.timelineSemaphore = true;
+    vk12Features.scalarBlockLayout = true;
+
+    vk12Features.shaderInputAttachmentArrayDynamicIndexing = true;
+    vk12Features.shaderUniformTexelBufferArrayDynamicIndexing = true;
+    vk12Features.shaderStorageTexelBufferArrayDynamicIndexing = true;
+    vk12Features.shaderUniformBufferArrayNonUniformIndexing = true;
+    vk12Features.shaderSampledImageArrayNonUniformIndexing = true;
+    vk12Features.shaderStorageBufferArrayNonUniformIndexing = true;
+    vk12Features.shaderStorageImageArrayNonUniformIndexing = true;
+    vk12Features.shaderInputAttachmentArrayNonUniformIndexing = true;
+    vk12Features.shaderUniformTexelBufferArrayNonUniformIndexing = true;
+    vk12Features.shaderStorageTexelBufferArrayNonUniformIndexing = true;
+    vk12Features.descriptorBindingUniformBufferUpdateAfterBind = true;
+    vk12Features.descriptorBindingSampledImageUpdateAfterBind = true;
+    vk12Features.descriptorBindingStorageImageUpdateAfterBind = true;
+    vk12Features.descriptorBindingStorageBufferUpdateAfterBind = true;
+    vk12Features.descriptorBindingUniformTexelBufferUpdateAfterBind = true;
+    vk12Features.descriptorBindingStorageTexelBufferUpdateAfterBind = true;
+    vk12Features.descriptorBindingUpdateUnusedWhilePending = true;
+    vk12Features.descriptorBindingPartiallyBound = true;
+    vk12Features.descriptorBindingVariableDescriptorCount = true;
+    vk12Features.runtimeDescriptorArray = true;
 
     auto features = m_physicalDevice.getFeatures2();
-    features.pNext = &diFeatures;
+    features.pNext = &vk12Features;
 
     vk::DeviceCreateInfo deviceCi;
     deviceCi.queueCreateInfoCount = queueCreateInfos.size();
