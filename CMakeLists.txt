@@ -5,8 +5,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(muon)
 
-add_subdirectory(engine)
-add_subdirectory(editor)
+add_subdirectory(muon-engine)
+add_subdirectory(muon-editor)
 
 # logging
 add_subdirectory(external/fmt)
