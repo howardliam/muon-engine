@@ -15,7 +15,7 @@ public:
     static auto getClientLogger() -> std::shared_ptr<spdlog::logger> &;
     static auto getVulkanLogger() -> std::shared_ptr<spdlog::logger> &;
 
-    static auto SetLogLevel(spdlog::level::level_enum level) -> void;
+    static auto setLogLevel(spdlog::level::level_enum level) -> void;
 
 private:
     static inline std::shared_ptr<spdlog::logger> s_coreLogger{nullptr};
