@@ -9,6 +9,7 @@
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"
 #include "muon/graphics/queue_info.hpp"
+#include "vulkan/vulkan.hpp"
 
 #include <numeric>
 #define VMA_IMPLEMENTATION
@@ -275,34 +276,29 @@ auto Context::createLogicalDevice() -> void {
         index += 1;
     }
 
-    vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT vidsState;
+    auto features = vk::StructureChain<
+        vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
+        vk::PhysicalDeviceVulkan14Features, vk::PhysicalDeviceMeshShaderFeaturesEXT,
+        vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>{};
+
+    auto &vidsState = features.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>();
     vidsState.vertexInputDynamicState = true;
 
-    vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT ds3Features;
-    ds3Features.pNext = &vidsState;
-
+    auto &ds3Features = features.get<vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT>();
     ds3Features.extendedDynamicState3PolygonMode = true;
 
-    vk::PhysicalDeviceMeshShaderFeaturesEXT msFeatures;
-    msFeatures.pNext = &ds3Features;
-
+    auto &msFeatures = features.get<vk::PhysicalDeviceMeshShaderFeaturesEXT>();
     msFeatures.meshShader = true;
     msFeatures.taskShader = true;
 
-    vk::PhysicalDeviceVulkan14Features vk14Features;
-    vk14Features.pNext = &msFeatures;
-
+    auto &vk14Features = features.get<vk::PhysicalDeviceVulkan14Features>();
     vk14Features.pushDescriptor = true;
 
-    vk::PhysicalDeviceVulkan13Features vk13Features;
-    vk13Features.pNext = &vk14Features;
-
+    auto &vk13Features = features.get<vk::PhysicalDeviceVulkan13Features>();
     vk13Features.synchronization2 = true;
     vk13Features.dynamicRendering = true;
 
-    vk::PhysicalDeviceVulkan12Features vk12Features;
-    vk12Features.pNext = &vk13Features;
-
+    auto &vk12Features = features.get<vk::PhysicalDeviceVulkan12Features>();
     vk12Features.bufferDeviceAddress = true;
     vk12Features.timelineSemaphore = true;
     vk12Features.scalarBlockLayout = true;
@@ -328,15 +324,15 @@ auto Context::createLogicalDevice() -> void {
     vk12Features.descriptorBindingVariableDescriptorCount = true;
     vk12Features.runtimeDescriptorArray = true;
 
-    auto features = m_physicalDevice.getFeatures2();
-    features.pNext = &vk12Features;
+    auto &deviceFeatures = features.get<vk::PhysicalDeviceFeatures2>().features;
+    deviceFeatures = m_physicalDevice.getFeatures();
 
     vk::DeviceCreateInfo deviceCi;
     deviceCi.queueCreateInfoCount = queueCreateInfos.size();
     deviceCi.pQueueCreateInfos = queueCreateInfos.data();
     deviceCi.enabledExtensionCount = k_deviceRequiredExtensions.size();
     deviceCi.ppEnabledExtensionNames = k_deviceRequiredExtensions.data();
-    deviceCi.pNext = &features;
+    deviceCi.pNext = &features.get<vk::PhysicalDeviceFeatures2>();
 
     auto deviceResult = m_physicalDevice.createDevice(deviceCi);
     core::expect(deviceResult, "failed to create device");
