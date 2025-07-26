@@ -38,8 +38,6 @@ target_sources(
 
         src/muon/input/modifier.cpp
 
-        src/muon/profiling/profiler.cpp
-
         src/muon/project/project.cpp
 
         src/muon/utils/literals.cpp
@@ -98,8 +96,6 @@ target_sources(
         src/muon/input/modifier.hpp
         src/muon/input/mouse.hpp
 
-        src/muon/profiling/profiler.hpp
-
         src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
@@ -133,7 +129,6 @@ target_link_libraries(muon-engine PUBLIC
     fmt::fmt spdlog::spdlog_header_only
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
-    Tracy::TracyClient
     Vulkan::Headers Vulkan::Loader Vulkan::Hpp
     VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
     glm

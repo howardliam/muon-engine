@@ -23,11 +23,6 @@ add_subdirectory(external/zlib)
 add_subdirectory(external/zstd/build/cmake zstd)
 target_include_directories(zstd PUBLIC external/zstd/lib/)
 
-# profiling
-option(TRACY_ENABLE "" ON)
-option(TRACY_ON_DEMAND "" ON)
-add_subdirectory(external/tracy)
-
 # windowing
 add_subdirectory(external/glfw)
 

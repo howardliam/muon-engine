@@ -10,7 +10,6 @@
 #include "muon/input/input_state.hpp"
 #include "muon/input/key_code.hpp"
 #include "muon/input/mouse.hpp"
-#include "muon/profiling/profiler.hpp"
 #include "muon/project/project.hpp"
 
 #include <fmt/ranges.h>
@@ -64,10 +63,6 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     contextSpec.debug = true;
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
-    profiling::Profiler::Spec profilerSpec{};
-    profilerSpec.context = m_context.get();
-    profiling::Profiler::createContext(profilerSpec);
-
     graphics::Renderer::Spec rendererSpec{};
     rendererSpec.window = m_window.get();
     rendererSpec.context = m_context.get();
@@ -105,10 +100,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     core::debug("created application");
 }
 
-Application::~Application() {
-    profiling::Profiler::destroyContext();
-    core::debug("destroyed application");
-}
+Application::~Application() { core::debug("destroyed application"); }
 
 auto Application::run() -> void {
     core::expect(m_running, "application cannot already be running");
