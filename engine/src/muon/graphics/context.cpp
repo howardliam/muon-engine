@@ -281,8 +281,8 @@ auto Context::createLogicalDevice() -> void {
         vk::PhysicalDeviceVulkan14Features, vk::PhysicalDeviceMeshShaderFeaturesEXT,
         vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>{};
 
-    auto &vidsState = features.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>();
-    vidsState.vertexInputDynamicState = true;
+    auto &vidsFeatures = features.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>();
+    vidsFeatures.vertexInputDynamicState = true;
 
     auto &ds3Features = features.get<vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT>();
     ds3Features.extendedDynamicState3PolygonMode = true;
