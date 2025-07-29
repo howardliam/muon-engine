@@ -25,6 +25,8 @@ public:
         const Window &window;
         const Context &context;
 
+        bool vsync{false};
+
         Spec(const Window &window, const Context &context) : window{window}, context{context} {}
     };
 
@@ -65,6 +67,7 @@ private:
     std::vector<SurfaceFormat> m_availableSurfaceFormats{};
     mutable const SurfaceFormat *m_activeSurfaceFormat{nullptr};
 
+    mutable bool m_vsync{false};
     std::unordered_set<vk::PresentModeKHR> m_availablePresentModes{};
     mutable const vk::PresentModeKHR *m_activePresentMode{nullptr};
 

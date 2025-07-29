@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-Renderer::Renderer(const Spec &spec) : m_window(spec.window), m_context(spec.context) {
+Renderer::Renderer(const Spec &spec) : m_window{spec.window}, m_context{spec.context}, m_vsync{spec.vsync} {
     probeSurfaceFormats();
     probePresentModes();
 
@@ -92,8 +92,11 @@ auto Renderer::getAvailablePresentModes() const -> const std::unordered_set<vk::
 auto Renderer::getActivePresentMode() const -> const vk::PresentModeKHR & { return *m_activePresentMode; }
 
 auto Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const -> void {
-    core::expect(m_availablePresentModes.contains(presentMode), "the requested present mode must be available");
-    m_activePresentMode = &*m_availablePresentModes.find(presentMode);
+    auto it = m_availablePresentModes.find(presentMode);
+    core::expect(it != m_availablePresentModes.end(), "the requested present mode must be available");
+
+    m_vsync = presentMode == vk::PresentModeKHR::eFifo;
+    m_activePresentMode = &*it;
 }
 
 auto Renderer::getCurrentSwapchainImage() -> vk::Image & { return m_swapchain->getImage(m_currentImageIndex); }
@@ -166,22 +169,23 @@ auto Renderer::probePresentModes() -> void {
         switch (presentMode) {
             case vk::PresentModeKHR::eMailbox:
             case vk::PresentModeKHR::eFifo:
-            case vk::PresentModeKHR::eFifoRelaxed: {
                 m_availablePresentModes.insert(presentMode);
                 break;
-            }
 
-            default: {
+            default:
                 break;
-            }
         }
     }
 
-    // hard code for the moment
-    if (m_availablePresentModes.contains(vk::PresentModeKHR::eMailbox)) {
-        setActivePresentMode(vk::PresentModeKHR::eMailbox);
-    } else {
+    if (m_vsync) {
         setActivePresentMode(vk::PresentModeKHR::eFifo);
+    } else {
+        if (m_availablePresentModes.contains(vk::PresentModeKHR::eMailbox)) {
+            setActivePresentMode(vk::PresentModeKHR::eMailbox);
+        } else {
+            setActivePresentMode(vk::PresentModeKHR::eFifo);
+            m_vsync = true;
+        }
     }
 }
 
