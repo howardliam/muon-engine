@@ -85,3 +85,6 @@
 [submodule "external/vulkan-memory-allocator-hpp"]
 	path = external/vulkan-memory-allocator-hpp
 	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp
+[submodule "external/argparse"]
+	path = external/argparse
+	url = https://github.com/p-ranav/argparse

@@ -8,6 +8,9 @@ project(muon)
 add_subdirectory(muon-engine)
 add_subdirectory(muon-editor)
 
+# argument parsing
+add_subdirectory(external/argparse)
+
 # logging
 add_subdirectory(external/fmt)
 add_subdirectory(external/spdlog)
