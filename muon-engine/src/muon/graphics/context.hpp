@@ -12,8 +12,10 @@ namespace muon::graphics {
 class Context : NoCopy, NoMove {
 public:
     struct Spec {
-        const Window *window{nullptr};
+        const Window &window;
         bool debug{false};
+
+        Spec(const Window &window) : window{window} {}
     };
 
 public:

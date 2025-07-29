@@ -11,7 +11,6 @@
 #include "muon/graphics/queue_family_info.hpp"
 #include "vulkan/vulkan.hpp"
 
-#include <numeric>
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 #include "vk_mem_alloc.hpp"
@@ -24,19 +23,18 @@
 #include <cstdint>
 #include <expected>
 #include <memory>
+#include <numeric>
 #include <set>
 #include <vector>
 
 namespace muon::graphics {
 
 Context::Context(const Spec &spec) {
-    core::expect(spec.window, "a window must be present");
-
     m_context = vk::raii::Context();
 
-    createInstance(*spec.window, spec.debug);
+    createInstance(spec.window, spec.debug);
     createDebugMessenger(spec.debug);
-    createSurface(*spec.window);
+    createSurface(spec.window);
     selectPhysicalDevice();
     createLogicalDevice();
     createAllocator();

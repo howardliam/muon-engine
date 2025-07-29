@@ -2,6 +2,8 @@
 
 #include "muon/event/dispatcher.hpp"
 #include "vulkan/vulkan_raii.hpp"
+#define INCLUDE_GLFW_AFTER_VULKAN
+#include "GLFW/glfw3.h"
 
 #include <cstdint>
 #include <expected>
@@ -15,11 +17,13 @@ namespace muon {
 class Window {
 public:
     struct Spec {
-        event::Dispatcher *dispatcher{nullptr};
+        const event::Dispatcher &dispatcher;
         uint32_t width{std::numeric_limits<uint32_t>().max()};
         uint32_t height{std::numeric_limits<uint32_t>().max()};
         std::string_view title{};
         std::filesystem::path icon{};
+
+        Spec(event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}
     };
 
 public:
@@ -44,19 +48,20 @@ private:
     auto configureDispatchers() -> void;
 
 private:
-    struct WindowHandle;
-    std::unique_ptr<WindowHandle> m_handle;
+    GLFWwindow *m_window;
 
-    struct WindowData {
-        const event::Dispatcher *dispatcher{nullptr};
+    struct Data {
+        const event::Dispatcher &dispatcher;
 
         std::string title{};
         uint32_t width{};
         uint32_t height{};
         uint32_t refreshRate{};
         bool rawMouseMotion{false};
+
+        Data(const event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}
     };
-    WindowData m_data{};
+    Data m_data;
 };
 
 } // namespace muon

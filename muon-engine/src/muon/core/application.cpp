@@ -60,13 +60,11 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
-    Window::Spec windowSpec{};
+    Window::Spec windowSpec{*m_dispatcher};
     windowSpec.title = spec.name;
-    windowSpec.dispatcher = m_dispatcher.get();
     m_window = std::make_unique<Window>(windowSpec);
 
-    graphics::Context::Spec contextSpec{};
-    contextSpec.window = m_window.get();
+    graphics::Context::Spec contextSpec{*m_window};
     if (m_debugMode) {
         contextSpec.debug = true;
     }
