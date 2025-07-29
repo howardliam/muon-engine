@@ -6,7 +6,7 @@
 
 namespace muon::graphics {
 
-PipelineLayout::PipelineLayout(const Spec &spec) : m_context(*spec.context) {
+PipelineLayout::PipelineLayout(const Spec &spec) : m_context(spec.context) {
     vk::PipelineLayoutCreateInfo pipelineLayoutCi;
     pipelineLayoutCi.setLayoutCount = spec.setLayouts.size();
     pipelineLayoutCi.pSetLayouts = spec.setLayouts.data();

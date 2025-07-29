@@ -12,10 +12,13 @@ namespace muon::graphics {
 class Queue : NoCopy, NoMove {
 public:
     struct Spec {
-        const vk::raii::Device *device{nullptr};
+        const vk::raii::Device &device;
+
         uint32_t queueFamilyIndex{std::numeric_limits<uint32_t>().max()};
         uint32_t queueIndex{std::numeric_limits<uint32_t>().max()};
         const char *name{nullptr};
+
+        Spec(const vk::raii::Device &device) : device{device} {}
     };
 
 public:

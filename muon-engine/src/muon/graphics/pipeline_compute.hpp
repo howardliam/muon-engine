@@ -13,8 +13,11 @@ namespace muon::graphics {
 class PipelineCompute : PipelineBase {
 public:
     struct Spec {
-        const Context *context{nullptr};
+        const Context &context;
+
         std::shared_ptr<PipelineLayout> layout{nullptr};
+
+        Spec(const Context &context) : context{context} {}
     };
 
 public:

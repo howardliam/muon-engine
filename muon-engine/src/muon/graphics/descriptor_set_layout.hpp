@@ -12,8 +12,10 @@ namespace muon::graphics {
 class DescriptorSetLayout {
 public:
     struct Spec {
-        const Context *context{nullptr};
+        const Context &context;
         std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
+
+        Spec(const Context &context) : context{context} {}
     };
 
 public:

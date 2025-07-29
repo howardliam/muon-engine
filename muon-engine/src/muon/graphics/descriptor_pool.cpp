@@ -5,7 +5,7 @@
 
 namespace muon::graphics {
 
-DescriptorPool::DescriptorPool(const Spec &spec) : m_context{*spec.context} {
+DescriptorPool::DescriptorPool(const Spec &spec) : m_context{spec.context} {
     vk::DescriptorPoolCreateInfo descriptorPoolCi;
     descriptorPoolCi.maxSets = spec.maxSets;
     descriptorPoolCi.poolSizeCount = spec.poolSizes.size();

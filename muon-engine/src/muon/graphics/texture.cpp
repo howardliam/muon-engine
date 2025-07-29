@@ -11,10 +11,7 @@
 
 namespace muon::graphics {
 
-Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format) {
-    core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
-    core::expect(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
-
+Texture::Texture(const Spec &spec) : m_context(spec.context), m_extent(spec.extent), m_format(spec.format) {
     createImage();
     createImageView();
     createSampler();
@@ -23,7 +20,7 @@ Texture::Texture(const Spec &spec) : m_context(*spec.context), m_extent(spec.ext
     m_descriptorInfo.imageView = m_imageView;
     m_descriptorInfo.sampler = m_sampler;
 
-    uploadData(*spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
+    uploadData(spec.commandBuffer, spec.uploadBuffers, *spec.textureData, spec.pixelSize);
 
     core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_size));
 }
@@ -145,8 +142,7 @@ auto Texture::uploadData(
     copyDi.pImageMemoryBarriers = &copyImb;
     commandBuffer.pipelineBarrier2(copyDi);
 
-    Buffer::Spec stagingSpec{};
-    stagingSpec.context = &m_context;
+    Buffer::Spec stagingSpec{m_context};
     stagingSpec.instanceSize = pixelSize;
     stagingSpec.instanceCount = textureData.size() / pixelSize;
     stagingSpec.usageFlags = vk::BufferUsageFlagBits::eTransferSrc;

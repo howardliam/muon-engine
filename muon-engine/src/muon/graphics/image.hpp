@@ -10,14 +10,17 @@ namespace muon::graphics {
 class Image : NoCopy, NoMove {
 public:
     struct Spec {
-        const Context *context{nullptr};
-        vk::raii::CommandBuffer *commandBuffer{nullptr};
+        const Context &context;
+        vk::raii::CommandBuffer &commandBuffer;
+
         vk::Extent2D extent;
         vk::Format format;
         vk::ImageLayout layout;
         vk::ImageUsageFlags usageFlags;
         vk::AccessFlags2 accessFlags;
         vk::PipelineStageFlags2 stageFlags;
+
+        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer) : context{context}, commandBuffer{commandBuffer} {}
     };
 
 public:

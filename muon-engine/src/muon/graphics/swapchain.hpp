@@ -17,12 +17,15 @@ constexpr uint32_t k_maxFramesInFlight = 2;
 class Swapchain : NoCopy, NoMove {
 public:
     struct Spec {
-        const Context *context{nullptr};
+        const Context &context;
+
         vk::Extent2D windowExtent{};
         vk::ColorSpaceKHR colorSpace{};
         vk::Format format{};
         vk::PresentModeKHR presentMode{};
         std::shared_ptr<Swapchain> oldSwapchain{nullptr};
+
+        Spec(const Context &context) : context{context} {}
     };
 
 public:

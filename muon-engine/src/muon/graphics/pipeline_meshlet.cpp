@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(*spec.context, spec.layout) {
+PipelineMeshlet::PipelineMeshlet(const Spec &spec) : PipelineBase(spec.context, spec.layout) {
     core::debug("created meshlet pipeline");
 }
 

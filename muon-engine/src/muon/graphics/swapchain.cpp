@@ -14,7 +14,7 @@ namespace muon::graphics {
 constexpr uint64_t k_waitDuration = 30'000'000'000;
 
 Swapchain::Swapchain(const Spec &spec)
-    : m_context(*spec.context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
+    : m_context(spec.context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
       m_format(spec.format), m_colorSpace(spec.colorSpace) {
     createSwapchain(spec.windowExtent, spec.presentMode);
     createImageViews();

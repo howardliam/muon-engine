@@ -9,7 +9,7 @@
 
 namespace muon::graphics {
 
-PipelineGraphics::PipelineGraphics(const Spec &spec) : PipelineBase(*spec.context, spec.layout) {
+PipelineGraphics::PipelineGraphics(const Spec &spec) : PipelineBase(spec.context, spec.layout) {
     core::debug("created graphics pipeline");
 }
 

@@ -15,13 +15,15 @@ namespace muon::graphics {
 class Mesh : NoCopy, NoMove {
 public:
     struct Spec {
-        const Context *context{nullptr};
-        vk::raii::CommandBuffer *commandBuffer{nullptr};
+        const Context &context;
+        vk::raii::CommandBuffer &commandBuffer;
         std::deque<Buffer> *uploadBuffers{nullptr};
 
         const std::vector<uint8_t> *vertexData{nullptr};
         uint32_t vertexStride{0};
         const std::vector<uint32_t> *indices{nullptr};
+
+        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer) : context{context}, commandBuffer{commandBuffer} {}
     };
 
 public:

@@ -11,14 +11,12 @@
 namespace muon::graphics {
 
 Image::Image(const Spec &spec)
-    : m_context(*spec.context), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout),
-      m_usageFlags(spec.usageFlags), m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
-    core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
-
+    : m_context(spec.context), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags),
+      m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
     createImage();
     createImageView();
 
-    transitionLayout(*spec.commandBuffer);
+    transitionLayout(spec.commandBuffer);
 
     core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_bytes));
 }

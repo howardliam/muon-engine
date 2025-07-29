@@ -14,9 +14,12 @@ class DescriptorSetLayout;
 class DescriptorWriter {
 public:
     struct Spec {
-        const Context *context{nullptr};
-        DescriptorPool *pool{nullptr};
-        DescriptorSetLayout *setLayout{nullptr};
+        const Context &context;
+        DescriptorPool &pool;
+        DescriptorSetLayout &setLayout;
+
+        Spec(const Context &context, DescriptorPool &pool, DescriptorSetLayout &setLayout)
+            : context{context}, pool{pool}, setLayout{setLayout} {}
     };
 
 public:

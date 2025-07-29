@@ -13,14 +13,16 @@ namespace muon::graphics {
 class Texture : NoCopy, NoMove {
 public:
     struct Spec {
-        const Context *context{nullptr};
-        vk::raii::CommandBuffer *commandBuffer{nullptr};
+        const Context &context;
+        vk::raii::CommandBuffer &commandBuffer;
         std::deque<Buffer> *uploadBuffers{nullptr};
 
         vk::Extent2D extent{};
         vk::Format format{};
-        const std::vector<uint8_t> &textureData{};
+        const std::vector<uint8_t> *textureData{nullptr};
         uint32_t pixelSize{};
+
+        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer) : context{context}, commandBuffer{commandBuffer} {}
     };
 
 public:

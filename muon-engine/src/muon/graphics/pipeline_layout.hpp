@@ -14,9 +14,12 @@ namespace muon::graphics {
 class PipelineLayout : NoCopy, NoMove {
 public:
     struct Spec {
-        const Context *context{nullptr};
+        const Context &context;
+
         std::vector<vk::DescriptorSetLayout> setLayouts{};
         std::optional<vk::PushConstantRange> pushConstant{std::nullopt};
+
+        Spec(const Context &context) : context{context} {}
     };
 
 public:

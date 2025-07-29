@@ -15,7 +15,7 @@
 namespace muon::graphics {
 
 Buffer::Buffer(const Spec &spec)
-    : m_context(*spec.context), m_usageFlags(spec.usageFlags), m_instanceSize(spec.instanceSize),
+    : m_context(spec.context), m_usageFlags(spec.usageFlags), m_instanceSize(spec.instanceSize),
       m_instanceCount(spec.instanceCount) {
     m_alignmentSize = spec.minOffsetAlignment > 0 ? alignment(m_instanceSize, spec.minOffsetAlignment) : m_instanceSize;
     m_size = m_alignmentSize * m_instanceCount;

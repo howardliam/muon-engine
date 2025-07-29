@@ -10,7 +10,7 @@
 
 namespace muon::graphics {
 
-Queue::Queue(const Spec &spec) : m_device(*spec.device), m_name(spec.name) {
+Queue::Queue(const Spec &spec) : m_device(spec.device), m_name(spec.name) {
     auto queueResult = m_device.getQueue(spec.queueFamilyIndex, spec.queueIndex);
     core::expect(queueResult, "failed to get queue from device");
     m_queue = std::move(*queueResult);

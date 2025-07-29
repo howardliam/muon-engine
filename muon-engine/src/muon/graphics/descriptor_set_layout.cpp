@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-DescriptorSetLayout::DescriptorSetLayout(const Spec &spec) : m_context{*spec.context}, m_bindings{spec.bindings} {
+DescriptorSetLayout::DescriptorSetLayout(const Spec &spec) : m_context{spec.context}, m_bindings{spec.bindings} {
     std::vector<vk::DescriptorSetLayoutBinding> setLayoutBindings(m_bindings.size());
 
     size_t index = 0;

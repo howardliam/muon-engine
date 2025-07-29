@@ -9,17 +9,14 @@
 
 namespace muon::graphics {
 
-Mesh::Mesh(const Spec &spec) : m_context(*spec.context) {
-    core::expect(spec.commandBuffer != nullptr, "there must be a valid command buffer");
-    core::expect(spec.uploadBuffers != nullptr, "there must be a valid upload buffer vector");
-
+Mesh::Mesh(const Spec &spec) : m_context(spec.context) {
     createBuffer(
-        *spec.commandBuffer, spec.uploadBuffers, spec.vertexData->data(), spec.vertexStride,
+        spec.commandBuffer, spec.uploadBuffers, spec.vertexData->data(), spec.vertexStride,
         spec.vertexData->size() / spec.vertexStride, vk::BufferUsageFlagBits::eVertexBuffer, m_vertexBuffer
     );
 
     createBuffer(
-        *spec.commandBuffer, spec.uploadBuffers, spec.indices->data(), sizeof(uint32_t), spec.indices->size(),
+        spec.commandBuffer, spec.uploadBuffers, spec.indices->data(), sizeof(uint32_t), spec.indices->size(),
         vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer
     );
 
@@ -42,8 +39,7 @@ auto Mesh::createBuffer(
     vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const void *data, VkDeviceSize instanceSize,
     size_t instanceCount, vk::BufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
 ) -> void {
-    Buffer::Spec stagingSpec{};
-    stagingSpec.context = &m_context;
+    Buffer::Spec stagingSpec{m_context};
     stagingSpec.instanceSize = instanceSize;
     stagingSpec.instanceCount = instanceCount;
     stagingSpec.usageFlags = vk::BufferUsageFlagBits::eTransferSrc;
@@ -54,8 +50,7 @@ auto Mesh::createBuffer(
 
     stagingBuffer.write(data);
 
-    Buffer::Spec spec{};
-    spec.context = &m_context;
+    Buffer::Spec spec{m_context};
     spec.instanceSize = instanceSize;
     spec.instanceCount = instanceCount;
     spec.usageFlags = bufferUsage | vk::BufferUsageFlagBits::eTransferDst;
