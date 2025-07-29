@@ -13,6 +13,7 @@ class DescriptorSetLayout {
 public:
     struct Spec {
         const Context &context;
+
         std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
 
         Spec(const Context &context) : context{context} {}

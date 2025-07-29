@@ -8,13 +8,7 @@ namespace muon::graphics {
 
 class Gpu {
 public:
-    struct Spec {
-        const vk::raii::PhysicalDevice *physicalDevice{nullptr};
-    };
-
-public:
-    Gpu(const Spec &spec);
-    ~Gpu() = default;
+    Gpu(const vk::raii::PhysicalDevice *physicalDevice);
 
 public:
     auto isSuitable() const -> bool;

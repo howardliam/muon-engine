@@ -4,7 +4,7 @@
 
 namespace muon::graphics {
 
-Gpu::Gpu(const Spec &spec) : m_physicalDevice(spec.physicalDevice) { determineSuitability(); }
+Gpu::Gpu(const vk::raii::PhysicalDevice *physicalDevice) : m_physicalDevice(physicalDevice) { determineSuitability(); }
 
 auto Gpu::isSuitable() const -> bool { return m_coreSuitabilities == 0b1110; }
 

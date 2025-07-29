@@ -186,8 +186,7 @@ auto Renderer::probePresentModes() -> void {
 }
 
 auto Renderer::createSwapchain() -> void {
-    Swapchain::Spec swapchainSpec{};
-    swapchainSpec.context = &m_context;
+    Swapchain::Spec swapchainSpec{m_context};
     swapchainSpec.windowExtent = m_window.getExtent();
     swapchainSpec.colorSpace = m_activeSurfaceFormat->colorSpace;
     swapchainSpec.format = m_activeSurfaceFormat->format;

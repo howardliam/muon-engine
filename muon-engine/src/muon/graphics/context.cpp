@@ -198,13 +198,10 @@ auto Context::selectPhysicalDevice() -> void {
     core::expect(physicalDevicesResult, "failed to get available GPUs");
     auto physicalDevices = *physicalDevicesResult;
 
-    Gpu::Spec gpuSpec{};
-
     std::vector<Gpu> gpus;
 
     for (const auto &physicalDevice : physicalDevices) {
-        gpuSpec.physicalDevice = &physicalDevice;
-        Gpu gpu{gpuSpec};
+        Gpu gpu{&physicalDevice};
 
         if (gpu.isSuitable()) {
             gpus.push_back(gpu);
@@ -360,24 +357,21 @@ auto Context::createLogicalDevice() -> void {
     nextQueueIndices[*computeIndex] = 0;
     nextQueueIndices[*transferIndex] = 0;
 
-    Queue::Spec graphicsSpec{};
-    graphicsSpec.device = &m_device;
+    Queue::Spec graphicsSpec{m_device};
     graphicsSpec.queueFamilyIndex = *graphicsIndex;
     graphicsSpec.queueIndex = nextQueueIndices[*graphicsIndex]++;
     graphicsSpec.name = "graphics";
     m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
     core::expect(m_graphicsQueue, "graphics queue must not be null");
 
-    Queue::Spec computeSpec{};
-    computeSpec.device = &m_device;
+    Queue::Spec computeSpec{m_device};
     computeSpec.queueFamilyIndex = *computeIndex;
     computeSpec.queueIndex = nextQueueIndices[*computeIndex]++;
     computeSpec.name = "compute";
     m_computeQueue = std::make_unique<Queue>(computeSpec);
     core::expect(m_computeQueue, "compute queue must not be null");
 
-    Queue::Spec transferSpec{};
-    transferSpec.device = &m_device;
+    Queue::Spec transferSpec{m_device};
     transferSpec.queueFamilyIndex = *transferIndex;
     transferSpec.queueIndex = nextQueueIndices[*transferIndex]++;
     transferSpec.name = "transfer";
