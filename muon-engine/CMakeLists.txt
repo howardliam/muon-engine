@@ -51,6 +51,8 @@ target_sources(
         src/muon/asset/loader.hpp
         src/muon/asset/manager.hpp
 
+        src/muon/config/application.hpp
+
         src/muon/core/application.hpp
         src/muon/core/entry_point.hpp
         src/muon/core/expect.hpp
@@ -59,6 +61,7 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
+        src/muon/core/serialization.hpp
         src/muon/core/signals.hpp
         src/muon/core/window.hpp
 

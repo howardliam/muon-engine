@@ -10,3 +10,4 @@ imgui.ini
 
 *.log
 *.db
+*.toml
