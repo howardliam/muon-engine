@@ -1,8 +1,10 @@
+#include "argparse/argparse.hpp"
+#include "fmt/ranges.h"
 #include "muon/core/application.hpp"
 #include "muon/core/entry_point.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/event/event.hpp"
-#include "fmt/ranges.h"
+#include "muon/input/input_state.hpp"
 
 #include <filesystem>
 
@@ -28,7 +30,7 @@ public:
         });
 
         m_dispatcher->subscribe<event::KeyEvent>([&](const auto &event) {
-            if (event.keycode == input::KeyCode::V && event.mods.isCtrlDown()) {
+            if (event.keycode == input::KeyCode::V && event.mods.isCtrlDown() && event.inputState == input::InputState::Pressed) {
                 core::info("{}", m_window->getClipboardContents());
             }
         });
@@ -39,11 +41,17 @@ public:
 private:
 };
 
-auto createApplication(const std::vector<std::string> &args) -> Application * {
-    Application::Spec spec{};
-    spec.name = "Muon Editor";
-    spec.workingDirectory = std::filesystem::current_path();
-    spec.args = args;
+auto createApplication(size_t argCount, char **argArray) -> Application * {
+    Application::Spec spec{"Muon Editor", std::filesystem::current_path()};
+
+    spec.argParser.add_argument("--debug").help("enables debug mode").default_value(false).implicit_value(true);
+
+    try {
+        spec.argParser.parse_args(argCount, argArray);
+    } catch (const std::exception &e) {
+        client::error("failed to parse arguments: {}", e.what());
+        debugBreak();
+    }
 
     return new MuonEditor(spec);
 }

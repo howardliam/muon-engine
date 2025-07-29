@@ -1,5 +1,6 @@
 #pragma once
 
+#include "argparse/argparse.hpp"
 #include "muon/asset/manager.hpp"
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
@@ -7,21 +8,22 @@
 #include "muon/event/dispatcher.hpp"
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/renderer.hpp"
-#include "argparse/argparse.hpp"
 
 #include <filesystem>
 #include <memory>
 #include <string_view>
-#include <vector>
 
 namespace muon {
 
 class Application : NoCopy, NoMove {
 public:
     struct Spec {
-        std::string name{"Muon Application"};
+        std::string name;
         std::filesystem::path workingDirectory;
-        std::vector<std::string> args;
+        argparse::ArgumentParser argParser{name};
+
+        Spec(const std::string_view name, const std::filesystem::path &workingDirectory)
+            : name{name}, workingDirectory{workingDirectory} {}
     };
 
 public:
@@ -36,7 +38,8 @@ public:
 
 protected:
     std::string m_name;
-    argparse::ArgumentParser m_argParser;
+
+    bool m_debugMode{false};
 
     std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
     event::Dispatcher::Handle m_onWindowClose{};
@@ -51,6 +54,6 @@ protected:
     static inline Application *s_instance{nullptr};
 };
 
-auto createApplication(const std::vector<std::string> &args) -> Application *;
+auto createApplication(size_t argCount, char **argArray) -> Application *;
 
 } // namespace muon

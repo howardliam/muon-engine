@@ -4,15 +4,12 @@
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 
-#include <string>
-
-extern auto muon::createApplication(const std::vector<std::string> &args) -> Application *;
+extern auto muon::createApplication(size_t argCount, char **argArray) -> Application *;
 
 auto main(int32_t argCount, char **argArray) -> int32_t {
     muon::Log::init();
 
-    std::vector<std::string> args = {argArray, argArray + argCount};
-    auto app = muon::createApplication(args);
+    auto app = muon::createApplication(argCount, argArray);
     muon::core::expect(app, "application must exist");
 
     app->run();

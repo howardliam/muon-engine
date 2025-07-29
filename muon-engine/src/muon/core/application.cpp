@@ -8,6 +8,7 @@
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
 #include "muon/project/project.hpp"
+#include "spdlog/common.h"
 
 #include <memory>
 
@@ -16,6 +17,16 @@ namespace muon {
 Application::Application(const Spec &spec) : m_name{spec.name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
+
+    if (spec.argParser["--debug"] == true) {
+        m_debugMode = true;
+    }
+
+    if (m_debugMode) {
+        Log::setLogLevel(spdlog::level::trace);
+    } else {
+        Log::setLogLevel(spdlog::level::info);
+    }
 
     auto result = project::Project::load(spec.workingDirectory / "test-project");
     if (!result.has_value()) {
@@ -56,7 +67,9 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
 
     graphics::Context::Spec contextSpec{};
     contextSpec.window = m_window.get();
-    contextSpec.debug = true;
+    if (m_debugMode) {
+        contextSpec.debug = true;
+    }
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     graphics::Renderer::Spec rendererSpec{};
