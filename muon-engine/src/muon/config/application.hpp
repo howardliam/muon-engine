@@ -30,22 +30,22 @@ struct Application {
 
         auto width = table["width"].value<uint32_t>();
         if (!width) {
-            std::unexpected(DeserializationError::FieldNotPresent);
+            return std::unexpected(DeserializationError::FieldNotPresent);
         }
 
         auto height = table["height"].value<uint32_t>();
         if (!height) {
-            std::unexpected(DeserializationError::FieldNotPresent);
+            return std::unexpected(DeserializationError::FieldNotPresent);
         }
 
         auto vsync = table["vsync"].value<bool>();
         if (!vsync) {
-            std::unexpected(DeserializationError::FieldNotPresent);
+            return std::unexpected(DeserializationError::FieldNotPresent);
         }
 
         auto windowMode = table["window-mode"].value<std::string>();
         if (!windowMode) {
-            std::unexpected(DeserializationError::FieldNotPresent);
+            return std::unexpected(DeserializationError::FieldNotPresent);
         }
 
         application.width = *width;
@@ -54,7 +54,7 @@ struct Application {
 
         auto windowModeResult = magic_enum::enum_cast<WindowMode>(*windowMode);
         if (!windowModeResult) {
-            std::unexpected(DeserializationError::FieldNotPresent);
+            return std::unexpected(DeserializationError::FieldNotPresent);
         }
         application.windowMode = *windowModeResult;
 
