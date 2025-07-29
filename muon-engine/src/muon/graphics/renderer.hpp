@@ -22,8 +22,10 @@ struct SurfaceFormat {
 class Renderer : NoCopy, NoMove {
 public:
     struct Spec {
-        const Window *window{nullptr};
-        const Context *context{nullptr};
+        const Window &window;
+        const Context &context;
+
+        Spec(const Window &window, const Context &context) : window{window}, context{context} {}
     };
 
 public:

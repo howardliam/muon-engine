@@ -70,9 +70,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     }
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
-    graphics::Renderer::Spec rendererSpec{};
-    rendererSpec.window = m_window.get();
-    rendererSpec.context = m_context.get();
+    graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     asset::Manager::Spec assetManagerSpec{};
