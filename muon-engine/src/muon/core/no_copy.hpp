@@ -2,13 +2,11 @@
 
 namespace muon {
 
-class NoCopy {
-protected:
+struct NoCopy {
     NoCopy() = default;
-    ~NoCopy() = default;
 
     NoCopy(const NoCopy &other) = delete;
-    NoCopy &operator=(const NoCopy &other) = delete;
+    auto operator=(const NoCopy &other) -> NoCopy & = delete;
 };
 
 } // namespace muon
