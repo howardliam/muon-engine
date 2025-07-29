@@ -10,7 +10,7 @@
 
 namespace muon::asset {
 
-Manager::Manager(const Spec &spec) : m_context{*spec.context}, m_transferQueue{m_context.getTransferQueue()} {
+Manager::Manager(const Spec &spec) : m_context{spec.context}, m_transferQueue{m_context.getTransferQueue()} {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.commandPool = m_transferQueue.getCommandPool();
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;

@@ -73,8 +73,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
-    asset::Manager::Spec assetManagerSpec{};
-    assetManagerSpec.context = m_context.get();
+    asset::Manager::Spec assetManagerSpec{*m_context};
     assetManagerSpec.loaders = {new asset::PngLoader()};
     m_assetManager = std::make_unique<asset::Manager>(assetManagerSpec);
 

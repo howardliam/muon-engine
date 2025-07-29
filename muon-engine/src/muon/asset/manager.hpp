@@ -17,8 +17,10 @@ namespace muon::asset {
 class Manager {
 public:
     struct Spec {
-        const graphics::Context *context{nullptr};
+        const graphics::Context &context;
         std::vector<Loader *> loaders{};
+
+        Spec(const graphics::Context &context) : context{context} {}
     };
 
 public:
