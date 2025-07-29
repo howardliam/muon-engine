@@ -90,7 +90,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
 Application::~Application() { core::debug("destroyed application"); }
 
 auto Application::run() -> void {
-    core::expect(m_running, "application cannot already be running");
+    core::expect(!m_running, "application cannot already be running");
     m_running = true;
     core::info("running application");
 

@@ -49,7 +49,7 @@ protected:
     std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
     std::unique_ptr<asset::Manager> m_assetManager{nullptr};
 
-    bool m_running{true};
+    bool m_running{false};
 
     static inline Application *s_instance{nullptr};
 };
