@@ -66,6 +66,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     if (config) {
         windowSpec.width = config->width;
         windowSpec.height = config->height;
+        windowSpec.mode = config->windowMode;
     }
     m_window = std::make_unique<Window>(windowSpec);
 

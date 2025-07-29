@@ -22,7 +22,8 @@ auto Renderer::beginFrame() -> std::optional<vk::raii::CommandBuffer *> {
 
     auto acquireResult = m_swapchain->acquireNextImage();
     if (!acquireResult) {
-        if (acquireResult.error() == vk::Result::eErrorOutOfDateKHR) {
+        // TODO: fix validation errors
+        if (acquireResult.error() == vk::Result::eErrorOutOfDateKHR || acquireResult.error() == vk::Result::eSuboptimalKHR) {
             createSwapchain();
             return {std::nullopt};
         }

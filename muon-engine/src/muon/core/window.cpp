@@ -1,5 +1,6 @@
 #include "muon/core/window.hpp"
 
+#include "GLFW/glfw3.h"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/event/dispatcher.hpp"
@@ -12,7 +13,7 @@
 
 namespace muon {
 
-Window::Window(const Spec &spec) : m_data{spec.dispatcher} {
+Window::Window(const Spec &spec) : m_data{spec.dispatcher}, m_mode{spec.mode} {
     m_data.title = spec.title;
 
     glfwSetErrorCallback([](int32_t, const char *message) { core::error(message); });
@@ -23,7 +24,8 @@ Window::Window(const Spec &spec) : m_data{spec.dispatcher} {
     auto vkSupported = glfwVulkanSupported();
     core::expect(vkSupported, "GLFW must support Vulkan");
 
-    const auto *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    m_monitor = glfwGetPrimaryMonitor();
+    const auto *mode = glfwGetVideoMode(m_monitor);
     m_data.refreshRate = mode->refreshRate;
     if (spec.width == std::numeric_limits<uint32_t>().max() || spec.height == std::numeric_limits<uint32_t>().max()) {
         m_data.width = (mode->width * 0.75);
@@ -38,6 +40,8 @@ Window::Window(const Spec &spec) : m_data{spec.dispatcher} {
     core::expect(m_window, "window must exist");
 
     glfwSetWindowSizeLimits(m_window, 1280, 720, GLFW_DONT_CARE, GLFW_DONT_CARE);
+
+    setMode(m_mode);
 
     glfwSetWindowUserPointer(m_window, &m_data);
 
@@ -73,14 +77,32 @@ auto Window::createSurface(const vk::raii::Instance &instance) const -> std::exp
     return vk::raii::SurfaceKHR{instance, rawSurface};
 }
 
-auto Window::getClipboardContents() const -> const char * { return glfwGetClipboardString(m_window); }
+auto Window::setMode(WindowMode mode) -> void {
+    GLFWmonitor *monitor = nullptr;
+
+    switch (mode) {
+        case WindowMode::Windowed:
+            glfwWindowHint(GLFW_DECORATED, true);
+            break;
+
+        case WindowMode::Fullscreen:
+            monitor = m_monitor;
+            break;
+
+        case WindowMode::BorderlessFullscreen:
+            const auto *mode = glfwGetVideoMode(m_monitor);
+            m_data.width = mode->width;
+            m_data.height = mode->height;
+            glfwWindowHint(GLFW_DECORATED, false);
+            break;
+    }
+
+    glfwSetWindowMonitor(m_window, monitor, 0, 0, m_data.width, m_data.height, m_data.refreshRate);
+}
 
 auto Window::getExtent() const -> VkExtent2D { return {m_data.width, m_data.height}; }
-
 auto Window::getWidth() const -> uint32_t { return m_data.width; }
-
 auto Window::getHeight() const -> uint32_t { return m_data.height; }
-
 auto Window::getRefreshRate() const -> uint32_t { return m_data.refreshRate; }
 
 auto Window::getRequiredExtensions() const -> std::vector<const char *> {
@@ -89,6 +111,8 @@ auto Window::getRequiredExtensions() const -> std::vector<const char *> {
     std::vector<const char *> extensions(glfwExtensions, glfwExtensions + count);
     return extensions;
 }
+
+auto Window::getClipboardContents() const -> const char * { return glfwGetClipboardString(m_window); }
 
 auto Window::configureDispatchers() -> void {
     /* window events */

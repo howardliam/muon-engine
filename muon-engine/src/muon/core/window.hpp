@@ -25,10 +25,11 @@ public:
     struct Spec {
         const event::Dispatcher &dispatcher;
 
+        std::string_view title;
+        std::filesystem::path icon;
         uint32_t width{std::numeric_limits<uint32_t>().max()};
         uint32_t height{std::numeric_limits<uint32_t>().max()};
-        std::string_view title{};
-        std::filesystem::path icon{};
+        WindowMode mode{WindowMode::Windowed};
 
         Spec(event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}
     };
@@ -44,6 +45,9 @@ public:
     auto createSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result>;
 
 public:
+    auto setMonitor() -> void;
+    auto setMode(WindowMode mode) -> void;
+
     auto getExtent() const -> VkExtent2D;
     auto getWidth() const -> uint32_t;
     auto getHeight() const -> uint32_t;
@@ -56,6 +60,9 @@ private:
 
 private:
     GLFWwindow *m_window;
+    GLFWmonitor *m_monitor;
+
+    WindowMode m_mode;
 
     struct Data {
         const event::Dispatcher &dispatcher;
