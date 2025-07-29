@@ -24,7 +24,7 @@ public:
     }
 
     template <typename Event>
-    [[nodiscard]] auto unsubscribe(const Handle handle) -> bool {
+    [[nodiscard]] auto unsubscribe(const Handle &handle) -> bool {
         return m_dispatcher.removeListener(typeid(Event), handle);
     }
 
