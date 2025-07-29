@@ -18,15 +18,10 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
-    if (spec.argParser["--debug"] == true) {
-        m_debugMode = true;
-    }
+    m_debugMode = spec.argParser["--debug"] == true;
 
-    if (m_debugMode) {
-        Log::setLogLevel(spdlog::level::trace);
-    } else {
-        Log::setLogLevel(spdlog::level::info);
-    }
+    auto logLevel = m_debugMode ? spdlog::level::trace : spdlog::level::info;
+    Log::setLogLevel(logLevel);
 
     auto result = project::Project::load(spec.workingDirectory / "test-project");
     if (!result.has_value()) {
@@ -65,9 +60,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     m_window = std::make_unique<Window>(windowSpec);
 
     graphics::Context::Spec contextSpec{*m_window};
-    if (m_debugMode) {
-        contextSpec.debug = true;
-    }
+    contextSpec.debug = m_debugMode;
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
