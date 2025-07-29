@@ -7,10 +7,12 @@
 #include "muon/event/dispatcher.hpp"
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/renderer.hpp"
+#include "argparse/argparse.hpp"
 
 #include <filesystem>
 #include <memory>
 #include <string_view>
+#include <vector>
 
 namespace muon {
 
@@ -19,7 +21,7 @@ public:
     struct Spec {
         std::string name{"Muon Application"};
         std::filesystem::path workingDirectory;
-        std::vector<const char *> args;
+        std::vector<std::string> args;
     };
 
 public:
@@ -34,6 +36,7 @@ public:
 
 protected:
     std::string m_name;
+    argparse::ArgumentParser m_argParser;
 
     std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
     event::Dispatcher::Handle m_onWindowClose{};
@@ -48,6 +51,6 @@ protected:
     static inline Application *s_instance{nullptr};
 };
 
-auto createApplication(const std::vector<const char *> &args) -> Application *;
+auto createApplication(const std::vector<std::string> &args) -> Application *;
 
 } // namespace muon

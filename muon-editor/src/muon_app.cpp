@@ -39,7 +39,7 @@ public:
 private:
 };
 
-auto createApplication(const std::vector<const char *> &args) -> Application * {
+auto createApplication(const std::vector<std::string> &args) -> Application * {
     Application::Spec spec{};
     spec.name = "Muon Editor";
     spec.workingDirectory = std::filesystem::current_path();

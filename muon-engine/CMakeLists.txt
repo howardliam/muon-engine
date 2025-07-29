@@ -126,6 +126,7 @@ target_link_libraries(muon-engine PRIVATE
 )
 
 target_link_libraries(muon-engine PUBLIC
+    argparse
     fmt::fmt spdlog::spdlog_header_only
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
