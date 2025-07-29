@@ -2,18 +2,14 @@
 
 #include "muon/asset/loaders/png.hpp"
 #include "muon/asset/manager.hpp"
-#include "muon/config/application.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "muon/project/project.hpp"
 #include "spdlog/common.h"
 #include "vulkan/vulkan_enums.hpp"
 
-#include <exception>
-#include <fstream>
 #include <memory>
 
 namespace muon {
@@ -123,42 +119,5 @@ auto Application::run() -> void {
 
 auto Application::getName() -> const std::string_view { return m_name; }
 auto Application::get() -> Application & { return *s_instance; }
-
-auto Application::loadConfig(const std::filesystem::path &configPath) const -> std::optional<config::Application> {
-    std::optional<config::Application> config;
-
-    std::ifstream file{configPath};
-    if (file.is_open()) {
-        try {
-            auto configToml = toml::parse(file);
-
-            auto result = config::Application::deserialize(configToml);
-            if (result) {
-                config.emplace(*result);
-            }
-        } catch (const std::exception &e) { core::error("failed to parse config file: {}", e.what()); }
-    }
-
-    return config;
-}
-
-auto Application::writeConfig(const std::filesystem::path &configPath) const -> bool {
-    config::Application config;
-
-    config.width = m_window->getWidth();
-    config.height = m_window->getHeight();
-    config.vsync = m_renderer->getActivePresentMode() == vk::PresentModeKHR::eFifo;
-    config.windowMode = WindowMode::Windowed;
-
-    auto result = config::Application::serialize(config);
-    if (result) {
-        std::ofstream configFile{configPath, std::ios::trunc};
-        configFile << *result << std::endl;
-
-        return true;
-    }
-
-    return false;
-}
 
 } // namespace muon

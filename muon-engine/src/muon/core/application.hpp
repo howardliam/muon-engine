@@ -2,7 +2,6 @@
 
 #include "argparse/argparse.hpp"
 #include "muon/asset/manager.hpp"
-#include "muon/config/application.hpp"
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
@@ -41,10 +40,6 @@ public:
 public:
     auto getName() -> const std::string_view;
     static auto get() -> Application &;
-
-private:
-    auto loadConfig(const std::filesystem::path &configPath) const -> std::optional<config::Application>;
-    auto writeConfig(const std::filesystem::path &configPath) const -> bool;
 
 protected:
     std::string m_name;
