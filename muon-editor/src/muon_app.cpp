@@ -3,6 +3,7 @@
 #include "muon/core/application.hpp"
 #include "muon/core/entry_point.hpp"
 #include "muon/core/expect.hpp"
+#include "muon/core/window.hpp"
 #include "muon/event/event.hpp"
 #include "muon/input/input_state.hpp"
 
@@ -43,6 +44,11 @@ private:
 
 auto createApplication(size_t argCount, char **argArray) -> Application * {
     Application::Spec spec{"Muon Editor", std::filesystem::current_path()};
+
+    spec.width = 1920;
+    spec.height = 1080;
+    spec.vsync = false;
+    spec.windowMode = WindowMode::Windowed;
 
     spec.argParser.add_argument("--debug").help("enables debug mode").default_value(false).implicit_value(true);
 

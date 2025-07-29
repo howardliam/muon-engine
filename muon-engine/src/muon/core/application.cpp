@@ -27,47 +27,13 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     auto logLevel = m_debugMode ? spdlog::level::trace : spdlog::level::info;
     Log::setLogLevel(logLevel);
 
-    auto result = project::Project::load(spec.workingDirectory / "test-project");
-    if (!result) {
-        switch (result.error()) {
-            case project::ProjectError::FailedToCreateDirectory:
-                core::error("failed to create directory");
-                break;
-
-            case project::ProjectError::PathIsNotDirectory:
-                core::error("path is not directory");
-                break;
-
-            case project::ProjectError::DirectoryIsNotEmpty:
-                core::error("directory is not empty");
-                break;
-
-            case project::ProjectError::FailedToOpenProjectFile:
-                core::error("failed to open project file");
-                break;
-
-            case project::ProjectError::ProjectFileDoesNotExist:
-                core::error("project file does not exist");
-                break;
-
-            case project::ProjectError::MalformedProjectFile:
-                core::error("malformed project file");
-                break;
-        }
-    }
-    std::shared_ptr project = *result;
-
-    auto config = loadConfig(project->getProjectDirectory() / (m_name + ".toml"));
-
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
     Window::Spec windowSpec{*m_dispatcher};
     windowSpec.title = m_name;
-    if (config) {
-        windowSpec.width = config->width;
-        windowSpec.height = config->height;
-        windowSpec.mode = config->windowMode;
-    }
+    windowSpec.width = spec.width;
+    windowSpec.height = spec.height;
+    windowSpec.mode = spec.windowMode;
     m_window = std::make_unique<Window>(windowSpec);
 
     graphics::Context::Spec contextSpec{*m_window};
@@ -75,9 +41,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
-    if (config) {
-        rendererSpec.vsync = config->vsync;
-    }
+    rendererSpec.vsync = spec.vsync;
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     asset::Manager::Spec assetManagerSpec{*m_context};
@@ -89,14 +53,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     core::debug("created application");
 }
 
-Application::~Application() {
-    auto success = writeConfig(project::Project::getActiveProject()->getProjectDirectory() / (m_name + ".toml"));
-    if (!success) {
-        core::error("failed to write application config");
-    }
-
-    core::debug("destroyed application");
-}
+Application::~Application() { core::debug("destroyed application"); }
 
 auto Application::run() -> void {
     core::expect(!m_running, "application cannot already be running");

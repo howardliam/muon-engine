@@ -20,6 +20,11 @@ class Application : NoCopy, NoMove {
 public:
     struct Spec {
         std::string name;
+        uint32_t width;
+        uint32_t height;
+        bool vsync{false};
+        WindowMode windowMode;
+
         std::filesystem::path workingDirectory;
         argparse::ArgumentParser argParser{name};
 
