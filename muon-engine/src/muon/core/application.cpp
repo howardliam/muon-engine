@@ -178,7 +178,6 @@ auto Application::loadConfig(const std::filesystem::path &configPath) const -> s
             if (result) {
                 config.emplace(*result);
             }
-
         } catch (const std::exception &e) { core::error("failed to parse config file: {}", e.what()); }
     }
 
@@ -191,6 +190,7 @@ auto Application::writeConfig(const std::filesystem::path &configPath) const -> 
     config.width = m_window->getWidth();
     config.height = m_window->getHeight();
     config.vsync = m_renderer->getActivePresentMode() == vk::PresentModeKHR::eFifo;
+    config.windowMode = WindowMode::Windowed;
 
     auto result = config::Application::serialize(config);
     if (result) {

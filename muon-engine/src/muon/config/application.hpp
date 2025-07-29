@@ -1,6 +1,8 @@
 #pragma once
 
+#include "magic_enum/magic_enum.hpp"
 #include "muon/core/serialization.hpp"
+#include "muon/core/window.hpp"
 
 #include <cstdint>
 
@@ -10,6 +12,7 @@ struct Application {
     uint32_t width{0};
     uint32_t height{0};
     bool vsync{false};
+    WindowMode windowMode;
 
     static auto serialize(const Application &application) -> SerializationResult {
         toml::table table;
@@ -17,6 +20,7 @@ struct Application {
         table.insert("width", application.width);
         table.insert("height", application.height);
         table.insert("vsync", application.vsync);
+        table.insert("window-mode", magic_enum::enum_name(application.windowMode));
 
         return table;
     }
@@ -39,9 +43,20 @@ struct Application {
             std::unexpected(DeserializationError::FieldNotPresent);
         }
 
+        auto windowMode = table["window-mode"].value<std::string>();
+        if (!windowMode) {
+            std::unexpected(DeserializationError::FieldNotPresent);
+        }
+
         application.width = *width;
         application.height = *height;
         application.vsync = *vsync;
+
+        auto windowModeResult = magic_enum::enum_cast<WindowMode>(*windowMode);
+        if (!windowModeResult) {
+            std::unexpected(DeserializationError::FieldNotPresent);
+        }
+        application.windowMode = *windowModeResult;
 
         return application;
     }

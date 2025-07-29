@@ -14,6 +14,12 @@
 
 namespace muon {
 
+enum class WindowMode {
+    Windowed,
+    Fullscreen,
+    BorderlessFullscreen,
+};
+
 class Window {
 public:
     struct Spec {
