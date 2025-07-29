@@ -2,6 +2,7 @@
 
 #include "muon/asset/loaders/png.hpp"
 #include "muon/asset/manager.hpp"
+#include "muon/config/application.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
@@ -9,7 +10,10 @@
 #include "muon/event/event.hpp"
 #include "muon/project/project.hpp"
 #include "spdlog/common.h"
+#include "vulkan/vulkan_enums.hpp"
 
+#include <exception>
+#include <fstream>
 #include <memory>
 
 namespace muon {
@@ -24,7 +28,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     Log::setLogLevel(logLevel);
 
     auto result = project::Project::load(spec.workingDirectory / "test-project");
-    if (!result.has_value()) {
+    if (!result) {
         switch (result.error()) {
             case project::ProjectError::FailedToCreateDirectory:
                 core::error("failed to create directory");
@@ -53,10 +57,16 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     }
     std::shared_ptr project = *result;
 
+    auto config = loadConfig(project->getProjectDirectory() / (m_name + ".toml"));
+
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
     Window::Spec windowSpec{*m_dispatcher};
     windowSpec.title = m_name;
+    if (config) {
+        windowSpec.width = config->width;
+        windowSpec.height = config->height;
+    }
     m_window = std::make_unique<Window>(windowSpec);
 
     graphics::Context::Spec contextSpec{*m_window};
@@ -64,6 +74,9 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
+    if (config) {
+        rendererSpec.vsync = config->vsync;
+    }
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     asset::Manager::Spec assetManagerSpec{*m_context};
@@ -75,7 +88,14 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     core::debug("created application");
 }
 
-Application::~Application() { core::debug("destroyed application"); }
+Application::~Application() {
+    auto success = writeConfig(project::Project::getActiveProject()->getProjectDirectory() / (m_name + ".toml"));
+    if (!success) {
+        core::error("failed to write application config");
+    }
+
+    core::debug("destroyed application");
+}
 
 auto Application::run() -> void {
     core::expect(!m_running, "application cannot already be running");
@@ -106,11 +126,11 @@ auto Application::run() -> void {
             resetImb.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
             resetImb.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
 
-            vk::DependencyInfo reset;
-            reset.dependencyFlags = vk::DependencyFlags{};
-            reset.imageMemoryBarrierCount = 1;
-            reset.pImageMemoryBarriers = &resetImb;
-            commandBuffer.pipelineBarrier2(reset);
+            vk::DependencyInfo resetDi;
+            resetDi.dependencyFlags = vk::DependencyFlags{};
+            resetDi.imageMemoryBarrierCount = 1;
+            resetDi.pImageMemoryBarriers = &resetImb;
+            commandBuffer.pipelineBarrier2(resetDi);
 
             vk::ImageMemoryBarrier2 presentImb;
             presentImb.image = m_renderer->getCurrentSwapchainImage();
@@ -145,5 +165,42 @@ auto Application::run() -> void {
 
 auto Application::getName() -> const std::string_view { return m_name; }
 auto Application::get() -> Application & { return *s_instance; }
+
+auto Application::loadConfig(const std::filesystem::path &configPath) const -> std::optional<config::Application> {
+    std::optional<config::Application> config;
+
+    std::ifstream file{configPath};
+    if (file.is_open()) {
+        try {
+            auto configToml = toml::parse(file);
+
+            auto result = config::Application::deserialize(configToml);
+            if (result) {
+                config.emplace(*result);
+            }
+
+        } catch (const std::exception &e) { core::error("failed to parse config file: {}", e.what()); }
+    }
+
+    return config;
+}
+
+auto Application::writeConfig(const std::filesystem::path &configPath) const -> bool {
+    config::Application config;
+
+    config.width = m_window->getWidth();
+    config.height = m_window->getHeight();
+    config.vsync = m_renderer->getActivePresentMode() == vk::PresentModeKHR::eFifo;
+
+    auto result = config::Application::serialize(config);
+    if (result) {
+        std::ofstream configFile{configPath, std::ios::trunc};
+        configFile << *result << std::endl;
+
+        return true;
+    }
+
+    return false;
+}
 
 } // namespace muon
