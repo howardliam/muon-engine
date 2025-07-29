@@ -30,14 +30,13 @@ public:
 
 public:
     auto getName() -> const std::string_view;
-
     static auto get() -> Application &;
 
 protected:
     std::string m_name;
 
     std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
-    std::optional<event::Dispatcher::Handle> m_onWindowClose{std::nullopt};
+    event::Dispatcher::Handle m_onWindowClose{};
 
     std::unique_ptr<Window> m_window{nullptr};
     std::unique_ptr<graphics::Context> m_context{nullptr};

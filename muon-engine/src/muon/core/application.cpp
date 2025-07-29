@@ -7,12 +7,8 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "muon/input/input_state.hpp"
-#include "muon/input/key_code.hpp"
-#include "muon/input/mouse.hpp"
 #include "muon/project/project.hpp"
 
-#include <fmt/ranges.h>
 #include <memory>
 
 namespace muon {
@@ -73,29 +69,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     assetManagerSpec.loaders = {new asset::PngLoader()};
     m_assetManager = std::make_unique<asset::Manager>(assetManagerSpec);
 
-    m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) {
-        core::info("window closed received");
-        m_running = false;
-    });
-
-    m_dispatcher->subscribe<event::WindowResizeEvent>([&](const auto &event) {
-        m_context->getGraphicsQueue().get().waitIdle();
-        m_renderer->rebuildSwapchain();
-    });
-
-    m_dispatcher->subscribe<event::MouseButtonEvent>([](const auto &event) {
-        if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
-            core::info("hello!");
-        }
-    });
-
-    m_dispatcher->subscribe<event::KeyEvent>([&](const auto &event) {
-        if (event.keycode == input::KeyCode::V && event.mods.isCtrlDown()) {
-            core::info("{}", m_window->getClipboardContents());
-        }
-    });
-
-    m_dispatcher->subscribe<event::FileDropEvent>([](const auto &event) { core::info("{}", fmt::join(event.paths, ", ")); });
+    m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) { m_running = false; });
 
     core::debug("created application");
 }
@@ -169,7 +143,6 @@ auto Application::run() -> void {
 }
 
 auto Application::getName() -> const std::string_view { return m_name; }
-
 auto Application::get() -> Application & { return *s_instance; }
 
 } // namespace muon
