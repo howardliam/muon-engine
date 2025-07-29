@@ -18,6 +18,7 @@ class Window {
 public:
     struct Spec {
         const event::Dispatcher &dispatcher;
+
         uint32_t width{std::numeric_limits<uint32_t>().max()};
         uint32_t height{std::numeric_limits<uint32_t>().max()};
         std::string_view title{};

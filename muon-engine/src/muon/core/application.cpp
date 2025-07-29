@@ -56,7 +56,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
     Window::Spec windowSpec{*m_dispatcher};
-    windowSpec.title = spec.name;
+    windowSpec.title = m_name;
     m_window = std::make_unique<Window>(windowSpec);
 
     graphics::Context::Spec contextSpec{*m_window};
