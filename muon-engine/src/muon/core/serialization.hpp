@@ -7,9 +7,7 @@
 
 namespace muon {
 
-enum class SerializationError {};
-
-using SerializationResult = std::expected<toml::table, SerializationError>;
+using SerializationResult = toml::table;
 
 template <class T>
 concept Serializable = requires(const T &t) {
