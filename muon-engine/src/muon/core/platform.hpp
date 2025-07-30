@@ -4,6 +4,6 @@ namespace muon {
 
 auto invokeDebugTrap() -> void;
 
-auto determineProcessElevation() -> bool;
+auto isRunAsRoot() -> bool;
 
 } // namespace muon

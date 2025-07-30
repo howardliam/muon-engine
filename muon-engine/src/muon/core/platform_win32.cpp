@@ -2,40 +2,27 @@
 #include "muon/core/platform.hpp"
 
 #include <aclapi.h>
-#include <sddl.h>
 #include <windows.h>
 
 namespace muon {
 
 auto invokeDebugTrap() -> void { __debugbreak(); }
 
-auto determineProcessElevation() -> bool {
-    auto cleanUp = [](HANDLE token) {
-        if (token) {
-            CloseHandle(token);
-        }
-    };
+auto isRunAsRoot() -> bool {
+    BOOL isAdmin = FALSE;
+    PSID administratorsGroup = nullptr;
+    SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_GROUP;
 
-    BOOL isElevated = FALSE;
-    HANDLE token = NULL;
-    TOKEN_ELEVATION elevation;
-    DWORD dwSize;
+    auto result = AllocateAndInitializeSid(
+        &ntAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &administratorsGroup
+    );
 
-    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) {
-        core::error("failed to get process token: {}", GetLastError());
-        cleanUp(token);
-        return false;
+    if (result) {
+        CheckTokenMembership(nullptr, administratorsGroup, &isAdmin);
+        FreeSid(administratorsGroup);
     }
 
-    if (!GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &dwSize)) {
-        core::error("failed to get token information: {}", GetLastError());
-        cleanUp(token);
-        return false;
-    }
-
-    isElevated = elevation.TokenIsElevated;
-
-    return static_cast<bool>(isElevated);
+    return static_cast<bool>(isAdmin);
 }
 
 } // namespace muon
