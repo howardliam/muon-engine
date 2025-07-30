@@ -11,10 +11,23 @@ namespace muon::graphics {
 
 class PipelineGraphics : PipelineBase {
 public:
+    struct State {
+        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+        vk::PipelineViewportStateCreateInfo viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizationState;
+        vk::PipelineMultisampleStateCreateInfo multisampleState;
+        std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments;
+        vk::PipelineColorBlendStateCreateInfo colorBlendState;
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+        std::vector<vk::DynamicState> dynamicStateEnables;
+        vk::PipelineDynamicStateCreateInfo dynamicState;
+    };
+
     struct Spec {
         const Context &context;
 
         std::shared_ptr<PipelineLayout> layout{nullptr};
+        State state;
 
         Spec(const Context &context) : context{context} {}
     };
@@ -30,18 +43,7 @@ private:
     auto createPipeline(const vk::PipelineRenderingCreateInfo &renderingCreateInfo) -> void;
 
 private:
-    struct PipelineGraphicsState {
-        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState{};
-        vk::PipelineViewportStateCreateInfo viewportState{};
-        vk::PipelineRasterizationStateCreateInfo rasterizationState{};
-        vk::PipelineMultisampleStateCreateInfo multisampleState{};
-        std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments{};
-        vk::PipelineColorBlendStateCreateInfo colorBlendState{};
-        vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
-        std::vector<vk::DynamicState> dynamicStateEnables{};
-        vk::PipelineDynamicStateCreateInfo dynamicState{};
-    };
-    PipelineGraphicsState m_state{};
+    State m_state;
 
     std::vector<vk::PipelineShaderStageCreateInfo> m_shaderStages{};
     std::vector<vk::VertexInputAttributeDescription> m_attributeDescriptions{};

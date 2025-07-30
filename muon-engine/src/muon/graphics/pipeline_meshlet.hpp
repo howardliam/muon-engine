@@ -11,10 +11,22 @@ namespace muon::graphics {
 
 class PipelineMeshlet : PipelineBase {
 public:
+    struct State {
+        vk::PipelineViewportStateCreateInfo viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizationState;
+        vk::PipelineMultisampleStateCreateInfo multisampleState;
+        std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments;
+        vk::PipelineColorBlendStateCreateInfo colorBlendState;
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+        std::vector<vk::DynamicState> dynamicStateEnables;
+        vk::PipelineDynamicStateCreateInfo dynamicState;
+    };
+
     struct Spec {
         const Context &context;
 
         std::shared_ptr<PipelineLayout> layout{nullptr};
+        State state;
 
         Spec(const Context &context) : context{context} {}
     };
@@ -30,17 +42,7 @@ private:
     auto createPipeline(const vk::PipelineRenderingCreateInfo &renderingCi) -> void;
 
 private:
-    struct PipelineMeshletState {
-        vk::PipelineViewportStateCreateInfo viewportState{};
-        vk::PipelineRasterizationStateCreateInfo rasterizationState{};
-        vk::PipelineMultisampleStateCreateInfo multisampleState{};
-        std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments{};
-        vk::PipelineColorBlendStateCreateInfo colorBlendState{};
-        vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
-        std::vector<vk::DynamicState> dynamicStateEnables{};
-        vk::PipelineDynamicStateCreateInfo dynamicState{};
-    };
-    PipelineMeshletState m_state{};
+    State m_state{};
 
     std::vector<vk::PipelineShaderStageCreateInfo> m_shaderStages{};
 };
