@@ -1,65 +1,32 @@
 #include "muon/graphics/shader_compiler.hpp"
 
+#include "SPIRV/GlslangToSpv.h"
+#include "SQLiteCpp/Database.h"
+#include "SQLiteCpp/Statement.h"
+#include "glslang/Include/ResourceLimits.h"
+#include "glslang/Public/ShaderLang.h"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/crypto/hash.hpp"
 
-#include <SPIRV/GlslangToSpv.h>
-#include <SQLiteCpp/Database.h>
-#include <SQLiteCpp/Statement.h>
 #include <algorithm>
 #include <array>
-#include <cstring>
 #include <fstream>
-#include <glslang/Include/ResourceLimits.h>
-#include <glslang/Public/ShaderLang.h>
 #include <mutex>
-#include <optional>
-#include <string_view>
 #include <thread>
 
 namespace {
 
-constexpr auto hash(const std::string_view string) -> uint64_t {
-    uint64_t hash = 0;
-    for (char c : string) {
-        hash = (hash * 131) + c;
-    }
-    return hash;
-}
-
-constexpr auto operator""_hash(const char *string, size_t length) -> uint64_t { return hash(std::string_view(string, length)); }
-
-auto extensionToStage(const std::string_view extension) -> std::optional<EShLanguage> {
-    switch (hash(extension)) {
-        case ".vert"_hash:
-            return EShLanguage::EShLangVertex;
-
-        case ".tesc"_hash:
-            return EShLanguage::EShLangTessControl;
-
-        case ".tese"_hash:
-            return EShLanguage::EShLangTessEvaluation;
-
-        case ".geom"_hash:
-            return EShLanguage::EShLangGeometry;
-
-        case ".frag"_hash:
-            return EShLanguage::EShLangFragment;
-
-        case ".task"_hash:
-            return EShLanguage::EShLangTask;
-
-        case ".mesh"_hash:
-            return EShLanguage::EShLangMesh;
-
-        case ".comp"_hash:
-            return EShLanguage::EShLangCompute;
-
-        default:
-            return std::nullopt;
-    }
-}
+const std::unordered_map<std::string, EShLanguage> k_extensions{
+    {".vert",         EShLanguage::EShLangVertex},
+    {".tesc",    EShLanguage::EShLangTessControl},
+    {".tese", EShLanguage::EShLangTessEvaluation},
+    {".geom",       EShLanguage::EShLangGeometry},
+    {".frag",       EShLanguage::EShLangFragment},
+    {".task",           EShLanguage::EShLangTask},
+    {".mesh",           EShLanguage::EShLangMesh},
+    {".comp",        EShLanguage::EShLangCompute},
+};
 
 const TBuiltInResource k_defaultTBuiltInResource = {
     .maxLights = 32,
@@ -240,7 +207,7 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
 
     std::ifstream file{request.path, std::ios::binary};
     if (!file.is_open()) {
-        core::error("failed to open file: {}", request.path.generic_string());
+        core::error("failed to open file: {}", request.path.string());
         return;
     }
 
@@ -249,7 +216,7 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
     SQLite::Statement readQuery{m_hashStore, R"(
         select * from hash_store where source_path = :path
     )"};
-    readQuery.bind(":path", request.path.c_str());
+    readQuery.bind(":path", request.path.string());
     while (readQuery.executeStep()) {
         const uint8_t *rawHash = static_cast<const uint8_t *>(readQuery.getColumn(2).getBlob());
         std::copy(rawHash, rawHash + 32, hash.begin());
@@ -259,20 +226,21 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
 
     std::expected sourceHash = crypto::hashFile<32>(file);
     if (!sourceHash.has_value()) {
-        core::error("failed to hash file contents: {}", request.path.generic_string());
+        core::error("failed to hash file contents: {}", request.path.string());
         return;
     }
 
     if (hash == *sourceHash) {
-        core::trace("identical hashes, skipping: {}", request.path.generic_string());
+        core::trace("identical hashes, skipping: {}", request.path.string());
         return;
     }
 
-    auto stage = extensionToStage(request.path.extension().generic_string());
-    if (!stage.has_value()) {
-        core::error("failed to parse file extension: {}", request.path.extension().generic_string());
+    auto it = k_extensions.find(request.path.extension().string());
+    if (it == k_extensions.end()) {
+        core::error("failed to parse file extension: {}", request.path.extension().string());
         return;
     }
+    auto [extension, stage] = *it;
 
     file.seekg(0, std::ios::end);
     std::vector<char> buffer(file.tellg());
@@ -281,9 +249,9 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
 
     std::vector<const char *> shaderSrc = {buffer.data()};
 
-    glslang::TShader shader(*stage);
+    glslang::TShader shader{stage};
     shader.setStrings(shaderSrc.data(), shaderSrc.size());
-    shader.setEnvInput(glslang::EShSource::EShSourceGlsl, *stage, glslang::EShClient::EShClientVulkan, 450);
+    shader.setEnvInput(glslang::EShSource::EShSourceGlsl, stage, glslang::EShClient::EShClientVulkan, 450);
     shader.setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetVulkan_1_3);
     shader.setEnvTarget(glslang::EShTargetLanguage::EShTargetSpv, glslang::EShTargetLanguageVersion::EShTargetSpv_1_6);
 
@@ -310,7 +278,7 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
     options.disableOptimizer = false;
     options.optimizeSize = true;
 
-    glslang::GlslangToSpv(*program.getIntermediate(*stage), spirv, &options);
+    glslang::GlslangToSpv(*program.getIntermediate(stage), spirv, &options);
 
     auto outPath = request.path.string();
     outPath.append(".spv");
@@ -321,7 +289,7 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
     SQLite::Statement writeQuery{m_hashStore, R"(
         insert into hash_store values(null, :source_path, :source_hash, :spirv_path)
     )"};
-    writeQuery.bind(":source_path", request.path.c_str());
+    writeQuery.bind(":source_path", request.path.string());
     writeQuery.bind(":source_hash", sourceHash->data(), sourceHash->size());
     writeQuery.bind(":spirv_path", outPath.c_str());
 
