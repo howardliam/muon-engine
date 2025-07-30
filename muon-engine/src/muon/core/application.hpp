@@ -2,6 +2,7 @@
 
 #include "argparse/argparse.hpp"
 #include "muon/asset/manager.hpp"
+#include "muon/core/layer_stack.hpp"
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
@@ -35,6 +36,8 @@ public:
     Application(const Spec &spec);
     virtual ~Application();
 
+    auto pushLayer(Layer *layer) -> void;
+
     auto run() -> void;
 
 public:
@@ -45,6 +48,8 @@ protected:
     std::string m_name;
 
     bool m_debugMode{false};
+
+    LayerStack m_layerStack;
 
     std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
     event::Dispatcher::Handle m_onWindowClose{};

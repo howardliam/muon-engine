@@ -51,6 +51,11 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
 
 Application::~Application() { core::debug("destroyed application"); }
 
+auto Application::pushLayer(Layer *layer) -> void {
+    m_layerStack.pushLayer(layer);
+    layer->onAttach();
+}
+
 auto Application::run() -> void {
     core::expect(!m_running, "application cannot already be running");
     m_running = true;
@@ -58,6 +63,10 @@ auto Application::run() -> void {
 
     while (m_running) {
         m_window->pollEvents();
+
+        for (auto &layer : m_layerStack) {
+            layer->onUpdate();
+        }
 
         if (auto cmd = m_renderer->beginFrame(); cmd) {
             auto &commandBuffer = **cmd;
