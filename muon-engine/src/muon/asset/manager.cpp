@@ -97,7 +97,7 @@ auto Manager::loadFromFile(const std::filesystem::path &path) -> void {
     core::expect(path.has_extension(), "file must have an extension");
     auto extension = path.extension();
 
-    auto loader = getLoader(extension.c_str());
+    auto loader = getLoader(extension.string());
     core::expect(loader, "no loader found");
 
     loader->fromFile(path);
