@@ -33,11 +33,6 @@ auto ConfigManager::write() -> void {
 
     std::shared_lock<std::shared_mutex> lock{m_mutex};
 
-    if (!m_dirty.load(std::memory_order::relaxed)) {
-        core::trace("skipped writing config; config updated by another thread");
-        return;
-    }
-
     std::ofstream configFile{m_path, std::ios::trunc};
     if (!configFile.is_open()) {
         return;
