@@ -2,6 +2,7 @@
 
 #include "toml++/toml.hpp"
 
+#include <atomic>
 #include <filesystem>
 #include <shared_mutex>
 
@@ -19,8 +20,9 @@ private:
     std::filesystem::path m_path;
 
     std::shared_mutex m_mutex;
+    std::atomic<bool> m_dirty{false};
+
     toml::table m_config;
-    bool m_dirty{false};
 };
 
 } // namespace muon::config
