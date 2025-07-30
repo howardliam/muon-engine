@@ -9,6 +9,8 @@ target_sources(
         src/muon/asset/loaders/png.cpp
         src/muon/asset/manager.cpp
 
+        src/muon/config/config_manager.cpp
+
         src/muon/core/application.cpp
         src/muon/core/layer_stack.cpp
         src/muon/core/log.cpp
@@ -52,6 +54,7 @@ target_sources(
         src/muon/asset/manager.hpp
 
         src/muon/config/application.hpp
+        src/muon/config/config_manager.hpp
 
         src/muon/core/application.hpp
         src/muon/core/entry_point.hpp
