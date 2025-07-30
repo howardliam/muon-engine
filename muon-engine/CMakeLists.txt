@@ -64,8 +64,8 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
+        src/muon/core/platform.hpp
         src/muon/core/serialization.hpp
-        src/muon/core/signals.hpp
         src/muon/core/window.hpp
 
         src/muon/crypto/hash.hpp
@@ -114,7 +114,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(
         muon-engine
         PRIVATE
-            src/muon/core/signals_posix.cpp
+            src/muon/core/platform_posix.cpp
     )
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -122,7 +122,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_sources(
         muon-engine
         PRIVATE
-            src/muon/core/signals_win32.cpp
+            src/muon/core/platform_win32.cpp
     )
 
 endif()
