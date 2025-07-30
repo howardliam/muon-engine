@@ -3,7 +3,7 @@
 #include "toml++/toml.hpp"
 
 #include <filesystem>
-#include <mutex>
+#include <shared_mutex>
 
 namespace muon::config {
 
@@ -18,7 +18,7 @@ public:
 private:
     std::filesystem::path m_path;
 
-    std::mutex m_mutex;
+    std::shared_mutex m_mutex;
     toml::table m_config;
     bool m_dirty{false};
 };

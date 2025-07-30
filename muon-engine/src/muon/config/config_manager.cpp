@@ -18,7 +18,7 @@ ConfigManager::~ConfigManager() {
 }
 
 auto ConfigManager::insert(const std::string_view key, const toml::table &table) -> void {
-    m_mutex.lock();
+    std::unique_lock<std::shared_mutex> lock{m_mutex};
 
     auto [_, inserted] = m_config.insert_or_assign(key, table);
     m_dirty = true;
@@ -27,14 +27,16 @@ auto ConfigManager::insert(const std::string_view key, const toml::table &table)
 }
 
 auto ConfigManager::write() -> void {
-    m_mutex.lock();
+    std::shared_lock<std::shared_mutex> lock{m_mutex};
 
     std::ofstream configFile{m_path, std::ios::trunc};
     if (!configFile.is_open()) {
         return;
     }
 
-    configFile << m_config << std::endl;
+    const auto &config = m_config;
+
+    configFile << config << std::endl;
     m_dirty = false;
 
     core::trace("wrote out config file to disk");
