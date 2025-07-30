@@ -54,10 +54,7 @@ auto createApplication(size_t argCount, char **argArray) -> Application * {
 
     try {
         spec.argParser.parse_args(argCount, argArray);
-    } catch (const std::exception &e) {
-        client::error("failed to parse arguments: {}", e.what());
-        debugBreak();
-    }
+    } catch (const std::exception &e) { client::expect(false, "failed to parse arguments: {}", e.what()); }
 
     return new MuonEditor(spec);
 }
