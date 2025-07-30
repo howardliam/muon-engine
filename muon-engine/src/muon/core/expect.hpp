@@ -19,7 +19,7 @@ namespace core {
 template <BooleanTestable Condition, typename... Args>
 auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
     if (!static_cast<bool>(std::forward<Condition>(condition))) {
-        core::error(message, args...);
+        Log::getCoreLogger()->error(message, std::forward<Args>(args)...);
         debugBreak();
     }
 }
@@ -31,7 +31,7 @@ namespace client {
 template <BooleanTestable Condition, typename... Args>
 auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
     if (!static_cast<bool>(std::forward<Condition>(condition))) {
-        client::error(message, args...);
+        Log::getClientLogger()->error(message, std::forward<Args>(args)...);
         debugBreak();
     }
 }
