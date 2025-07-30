@@ -1,7 +1,6 @@
 #include "muon/core/application.hpp"
 
 #include "muon/asset/loaders/png.hpp"
-#include "muon/asset/manager.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
@@ -40,9 +39,9 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     rendererSpec.vsync = spec.vsync;
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
-    asset::Manager::Spec assetManagerSpec{*m_context};
+    asset::AssetManager::Spec assetManagerSpec{*m_context};
     assetManagerSpec.loaders = {new asset::PngLoader()};
-    m_assetManager = std::make_unique<asset::Manager>(assetManagerSpec);
+    m_assetManager = std::make_unique<asset::AssetManager>(assetManagerSpec);
 
     m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) { m_running = false; });
 
