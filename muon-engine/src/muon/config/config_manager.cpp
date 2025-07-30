@@ -7,12 +7,16 @@
 
 namespace muon::config {
 
-ConfigManager::ConfigManager(const std::filesystem::path &configPath) : m_path{configPath} {
-    core::debug("created config manager");
+ConfigManager::ConfigManager(const std::filesystem::path &path) : m_path{path} {
+    core::debug("created config manager, with config file at: {}", m_path.c_str());
 }
 
 ConfigManager::~ConfigManager() {
-    write();
+    auto writeResult = write();
+    if (!writeResult) {
+        core::debug("config not written before destruction");
+    }
+
     core::debug("destroyed config manager");
 }
 
@@ -25,17 +29,18 @@ auto ConfigManager::insert(const std::string_view key, const toml::table &table)
     core::trace("{} data at key: {}", inserted ? "inserted" : "assigned", key);
 }
 
-auto ConfigManager::write() -> void {
+auto ConfigManager::write() -> std::expected<void, ConfigManagerError> {
     if (!m_dirty.load(std::memory_order::acquire)) {
         core::trace("skipped writing config; unchanged since last write");
-        return;
+        return std::unexpected(ConfigManagerError::ConfigNotModified);
     }
 
     std::shared_lock<std::shared_mutex> lock{m_mutex};
 
     std::ofstream configFile{m_path, std::ios::trunc};
     if (!configFile.is_open()) {
-        return;
+        core::trace("skipped writing config; failed to open file");
+        return std::unexpected(ConfigManagerError::FailedToOpenFile);
     }
 
     const auto &config = m_config;
@@ -44,6 +49,8 @@ auto ConfigManager::write() -> void {
     m_dirty.store(false, std::memory_order::release);
 
     core::trace("wrote out config file to disk");
+
+    return {};
 }
 
 } // namespace muon::config
