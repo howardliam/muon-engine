@@ -8,19 +8,27 @@
 
 namespace muon::graphics {
 
-PipelineBase::PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout)
+PipelineBase::PipelineBase(const Context &context, std::shared_ptr<PipelineLayout> layout, const std::vector<uint8_t> &cacheData)
     : m_context(context), m_layout(layout) {
-    createCache();
+    createCache(cacheData);
 }
 
 auto PipelineBase::get() -> vk::raii::Pipeline & { return m_pipeline; }
 auto PipelineBase::get() const -> const vk::raii::Pipeline & { return m_pipeline; }
 
-auto PipelineBase::createCache() -> void {
-    VkPipelineCacheCreateInfo pipelineCacheCi;
-    pipelineCacheCi.flags = 0;
-    pipelineCacheCi.initialDataSize = 0;
-    pipelineCacheCi.pInitialData = nullptr;
+auto PipelineBase::getCacheData() const -> std::vector<uint8_t> { return m_cache.getData(); }
+
+auto PipelineBase::createCache(const std::vector<uint8_t> &cacheData) -> void {
+    vk::PipelineCacheCreateInfo pipelineCacheCi;
+    pipelineCacheCi.flags = vk::PipelineCacheCreateFlags{};
+
+    if (cacheData.empty()) {
+        pipelineCacheCi.initialDataSize = 0;
+        pipelineCacheCi.pInitialData = nullptr;
+    } else {
+        pipelineCacheCi.initialDataSize = cacheData.size();
+        pipelineCacheCi.pInitialData = cacheData.data();
+    }
 
     auto pipelineCacheResult = m_context.getDevice().createPipelineCache(pipelineCacheCi);
     core::expect(pipelineCacheResult, "failed to create pipeline cache");

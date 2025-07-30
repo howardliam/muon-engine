@@ -6,7 +6,7 @@
 
 namespace muon::graphics {
 
-PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase(spec.context, spec.layout) {
+PipelineCompute::PipelineCompute(const Spec &spec) : PipelineBase{spec.context, spec.layout, {}} {
     core::debug("created compute pipeline");
 }
 
