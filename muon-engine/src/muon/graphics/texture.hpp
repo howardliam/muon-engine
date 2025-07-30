@@ -16,13 +16,14 @@ public:
         const Context &context;
         vk::raii::CommandBuffer &commandBuffer;
         std::deque<Buffer> *uploadBuffers{nullptr};
+        const std::vector<uint8_t> textureData;
 
         vk::Extent2D extent{};
         vk::Format format{};
-        const std::vector<uint8_t> *textureData{nullptr};
         uint32_t pixelSize{};
 
-        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer) : context{context}, commandBuffer{commandBuffer} {}
+        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer, std::vector<uint8_t> &&textureData)
+            : context{context}, commandBuffer{commandBuffer}, textureData{textureData} {}
     };
 
 public:
