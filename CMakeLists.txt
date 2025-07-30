@@ -35,36 +35,39 @@ add_subdirectory(external/eventpp)
 # graphics
 add_subdirectory(external/spirv-headers)
 
-set(SPIRV_REFLECT_EXECUTABLE OFF FORCE)
-set(SPIRV_REFLECT_STATIC_LIB ON FORCE)
+set(SPIRV_REFLECT_EXECUTABLE OFF)
+set(SPIRV_REFLECT_STATIC_LIB ON)
 add_subdirectory(external/spirv-reflect)
 
+set(SPIRV_SKIP_EXECUTABLES ON)
 add_subdirectory(external/spirv-tools)
 
-set(BUILD_EXTERNAL OFF FORCE)
-set(ENABLE_HLSL OFF FORCE)
-set(ENABLE_GLSLANG_BINARIES OFF FORCE)
+set(BUILD_EXTERNAL OFF)
+set(ENABLE_HLSL OFF)
+set(ENABLE_GLSLANG_BINARIES OFF)
 add_subdirectory(external/glslang)
 
 add_subdirectory(external/vulkan-headers)
 add_subdirectory(external/vulkan-loader)
-set(VULKAN_HPP_NO_EXCEPTIONS ON FORCE)
+
+set(VULKAN_HPP_NO_EXCEPTIONS ON)
 add_subdirectory(external/vulkan-hpp)
 
 add_subdirectory(external/vulkan-memory-allocator)
 add_subdirectory(external/vulkan-memory-allocator-hpp)
 
 # maths
-set(GLM_ENABLE_CXX_20 ON FORCE)
-set(GLM_ENABLE_SIMD_AVX2 ON FORCE)
+set(GLM_ENABLE_CXX_20 ON)
+set(GLM_ENABLE_SIMD_AVX2 ON)
 add_subdirectory(external/glm)
 
 # assets
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES OFF)
 add_subdirectory(external/libspng)
-set(KTX_FEATURE_TESTS OFF CACHE BOOL "" FORCE)
-set(KTX_FEATURE_TOOLS OFF CACHE BOOL "" FORCE)
-set(KTX_FEATURE_GL_UPLOAD OFF FORCE)
+
+set(KTX_FEATURE_TESTS OFF)
+set(KTX_FEATURE_TOOLS OFF)
+set(KTX_FEATURE_GL_UPLOAD OFF)
 add_subdirectory(external/libktx)
 
 # misc
