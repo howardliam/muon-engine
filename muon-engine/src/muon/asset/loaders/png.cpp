@@ -1,9 +1,10 @@
 #include "muon/asset/loaders/png.hpp"
 
-#include "muon/asset/manager.hpp"
+#include "muon/asset/asset_manager.hpp"
 #include "muon/core/log.hpp"
-
-#include <spng.h>
+#include "muon/graphics/texture.hpp"
+#include "spng.h"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace muon::asset {
 
@@ -11,16 +12,54 @@ auto PngLoader::getFileTypes() const -> std::set<std::string_view> { return {".p
 
 auto PngLoader::fromMemory(const std::vector<uint8_t> &data) -> void {
     core::debug("PngLoader::FromMemory successfully called");
-    // spng_ctx *ctx = spng_ctx_new(0);
+    spng_ctx *ctx = spng_ctx_new(0);
 
-    // spng_set_png_buffer(ctx, data.data(), data.size());
+    spng_set_png_buffer(ctx, data.data(), data.size());
 
-    // spng_ihdr ihdr;
-    // spng_get_ihdr(ctx, &ihdr);
+    spng_ihdr ihdr;
+    spng_get_ihdr(ctx, &ihdr);
 
-    // size_t imageSize;
+    spng_format format;
+    uint8_t channels = 0;
+    switch (ihdr.color_type) {
+        case SPNG_COLOR_TYPE_TRUECOLOR_ALPHA:
+            format = SPNG_FMT_RGBA8;
+            channels = 4;
+            break;
 
-    // spng_ctx_free(ctx);
+        case SPNG_COLOR_TYPE_TRUECOLOR:
+            format = SPNG_FMT_RGB8;
+            channels = 3;
+            break;
+
+        case SPNG_COLOR_TYPE_GRAYSCALE_ALPHA:
+            format = SPNG_FMT_GA8;
+            channels = 2;
+            break;
+
+        case SPNG_COLOR_TYPE_GRAYSCALE:
+            format = SPNG_FMT_G8;
+            channels = 1;
+            break;
+
+        default:
+            break;
+    }
+
+    size_t imageSize;
+    spng_decoded_image_size(ctx, format, &imageSize);
+
+    std::vector<uint8_t> decodedData(imageSize);
+    spng_decode_image(ctx, decodedData.data(), decodedData.size(), format, 0);
+
+    spng_ctx_free(ctx);
+
+    graphics::Texture::Spec spec{m_manager->getContext(), m_manager->getCommandBuffer(), std::move(decodedData)};
+    spec.uploadBuffers = m_manager->getUploadBuffers();
+    spec.extent = vk::Extent2D{ihdr.width, ihdr.height};
+    spec.pixelSize = channels;
+
+    m_manager->getTextures().emplace_back(spec);
 }
 
 auto PngLoader::fromFile(const std::filesystem::path &path) -> void { core::debug("PngLoader::FromFile successfully called"); }

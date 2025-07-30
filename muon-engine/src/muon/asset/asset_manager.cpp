@@ -1,4 +1,4 @@
-#include "muon/asset/manager.hpp"
+#include "muon/asset/asset_manager.hpp"
 
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
@@ -10,7 +10,7 @@
 
 namespace muon::asset {
 
-Manager::Manager(const Spec &spec) : m_context{spec.context}, m_transferQueue{m_context.getTransferQueue()} {
+AssetManager::AssetManager(const Spec &spec) : m_context{spec.context}, m_transferQueue{m_context.getTransferQueue()} {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.commandPool = m_transferQueue.getCommandPool();
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
@@ -26,19 +26,21 @@ Manager::Manager(const Spec &spec) : m_context{spec.context}, m_transferQueue{m_
     m_uploadFence = std::move(*fenceResult);
 
     for (auto &loader : spec.loaders) {
-        registerLoader(loader);
+        registerAssetLoader(loader);
     }
+
+    core::debug("created asset manager");
 }
 
-Manager::~Manager() {}
+AssetManager::~AssetManager() { core::debug("destroyed asset manager"); }
 
-auto Manager::registerLoader(Loader *loader) -> void {
-    auto it = std::ranges::find_if(m_loaders, [&l = loader](const std::unique_ptr<Loader> &loader) -> bool {
+auto AssetManager::registerAssetLoader(AssetLoader *loader) -> void {
+    auto it = std::ranges::find_if(m_loaders, [&l = loader](const std::unique_ptr<AssetLoader> &loader) -> bool {
         return loader->getFileTypes() == l->getFileTypes();
     });
 
     if (it != m_loaders.end()) {
-        core::warn("loader already exists for: {} files, skipping", fmt::join(loader->getFileTypes(), ", "));
+        core::warn("skipping; loader already exists for: {} files", fmt::join(loader->getFileTypes(), ", "));
         return;
     }
 
@@ -51,7 +53,7 @@ auto Manager::registerLoader(Loader *loader) -> void {
     core::debug("registered loader for: {} files", fmt::join(loader->getFileTypes(), ", "));
 }
 
-auto Manager::beginLoading() -> void {
+auto AssetManager::beginLoading() -> void {
     core::expect(!m_loadingInProgress, "cannot begin loading while loading is in progress");
 
     vk::CommandBufferBeginInfo commandBufferBi;
@@ -60,7 +62,7 @@ auto Manager::beginLoading() -> void {
     m_loadingInProgress = true;
 }
 
-auto Manager::endLoading() -> void {
+auto AssetManager::endLoading() -> void {
     core::expect(m_loadingInProgress, "cannot end loading if loading has not been started");
 
     m_commandBuffer.end();
@@ -82,33 +84,37 @@ auto Manager::endLoading() -> void {
     m_uploadBuffers.clear();
 }
 
-auto Manager::loadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
+auto AssetManager::loadFromMemory(const std::vector<uint8_t> &data, const std::string_view fileType) -> void {
     core::expect(m_loadingInProgress, "cannot load from memory if loading hasn't begun");
 
-    auto loader = getLoader(fileType);
+    auto loader = getAssetLoader(fileType);
     core::expect(loader, "no loader found");
 
     loader->fromMemory(data);
 }
 
-auto Manager::loadFromFile(const std::filesystem::path &path) -> void {
+auto AssetManager::loadFromFile(const std::filesystem::path &path) -> void {
     core::expect(m_loadingInProgress, "cannot load from file if loading hasn't begun");
 
     core::expect(path.has_extension(), "file must have an extension");
     auto extension = path.extension();
 
-    auto loader = getLoader(extension.string());
+    auto loader = getAssetLoader(extension.string());
     core::expect(loader, "no loader found");
 
     loader->fromFile(path);
 }
 
-auto Manager::getCommandBuffer() -> vk::raii::CommandBuffer & { return m_commandBuffer; }
-auto Manager::getCommandBuffer() const -> const vk::raii::CommandBuffer & { return m_commandBuffer; }
+auto AssetManager::getCommandBuffer() -> vk::raii::CommandBuffer & { return m_commandBuffer; }
+auto AssetManager::getCommandBuffer() const -> const vk::raii::CommandBuffer & { return m_commandBuffer; }
 
-auto Manager::getUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
+auto AssetManager::getUploadBuffers() -> std::deque<graphics::Buffer> * { return &m_uploadBuffers; }
 
-auto Manager::getLoader(const std::string_view fileType) -> Loader * {
+auto AssetManager::getContext() const -> const graphics::Context & { return m_context; }
+
+auto AssetManager::getTextures() -> std::vector<graphics::Texture> & { return m_textures; }
+
+auto AssetManager::getAssetLoader(const std::string_view fileType) -> AssetLoader * {
     auto it = m_fileTypes.find(fileType.data());
     if (it == m_fileTypes.end()) {
         return nullptr;

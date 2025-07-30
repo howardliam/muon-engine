@@ -7,7 +7,7 @@ target_sources(
     muon-engine
     PRIVATE
         src/muon/asset/loaders/png.cpp
-        src/muon/asset/manager.cpp
+        src/muon/asset/asset_manager.cpp
 
         src/muon/config/config_manager.cpp
 
@@ -50,8 +50,8 @@ target_sources(
     BASE_DIRS src/
     FILES
         src/muon/asset/loaders/png.hpp
-        src/muon/asset/loader.hpp
-        src/muon/asset/manager.hpp
+        src/muon/asset/asset_loader.hpp
+        src/muon/asset/asset_manager.hpp
 
         src/muon/config/application.hpp
         src/muon/config/config_manager.hpp

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "muon/asset/loader.hpp"
+#include "muon/asset/asset_loader.hpp"
 
 namespace muon::asset {
 
-class PngLoader final : public Loader {
+class PngLoader final : public AssetLoader {
 public:
     [[nodiscard]] virtual auto getFileTypes() const -> std::set<std::string_view> override;
 
