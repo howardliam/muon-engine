@@ -1,7 +1,6 @@
 #pragma once
 
 #include "muon/core/no_copy.hpp"
-#include "muon/core/no_move.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
 #include "vulkan/vulkan_raii.hpp"
@@ -10,7 +9,7 @@
 
 namespace muon::graphics {
 
-class Texture : NoCopy, NoMove {
+class Texture : NoCopy {
 public:
     struct Spec {
         const Context &context;
@@ -29,6 +28,9 @@ public:
 public:
     Texture(const Spec &spec);
     ~Texture();
+
+    Texture(Texture &&other);
+    auto operator=(Texture &&other) -> Texture &;
 
 public:
     auto get() -> vk::raii::Image &;

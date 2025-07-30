@@ -27,6 +27,26 @@ Texture::Texture(const Spec &spec) : m_context{spec.context}, m_extent{spec.exte
 
 Texture::~Texture() { core::debug("destroyed texture"); }
 
+Texture::Texture(Texture &&other)
+    : m_context{other.m_context}, m_size{other.m_size}, m_extent{other.m_extent}, m_format{other.m_format},
+      m_image{std::move(other.m_image)}, m_allocation{std::move(other.m_allocation)}, m_imageView{std::move(other.m_imageView)},
+      m_sampler{std::move(other.m_sampler)}, m_descriptorInfo{other.m_descriptorInfo} {}
+
+auto Texture::operator=(Texture &&other) -> Texture & {
+    if (this != &other) {
+        m_size = other.m_size;
+        m_extent = other.m_extent;
+        m_format = other.m_format;
+        m_image = std::move(other.m_image);
+        m_allocation = std::move(other.m_allocation);
+        m_imageView = std::move(other.m_imageView);
+        m_sampler = std::move(other.m_sampler);
+        m_descriptorInfo = other.m_descriptorInfo;
+    }
+
+    return *this;
+}
+
 auto Texture::get() -> vk::raii::Image & { return m_image; }
 auto Texture::get() const -> const vk::raii::Image & { return m_image; }
 
