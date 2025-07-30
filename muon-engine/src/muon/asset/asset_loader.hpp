@@ -14,7 +14,7 @@ public:
     virtual ~AssetLoader() = default;
 
     virtual auto getFileTypes() const -> std::set<std::string_view> = 0;
-    auto SetAssetManager(AssetManager *manager) -> void { m_manager = manager; }
+    auto setAssetManager(AssetManager *manager) -> void { m_manager = manager; }
 
     auto operator==(const AssetLoader *other) -> bool { return getFileTypes() == other->getFileTypes(); }
 

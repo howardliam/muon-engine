@@ -27,6 +27,7 @@ AssetManager::AssetManager(const Spec &spec) : m_context{spec.context}, m_transf
 
     for (auto &loader : spec.loaders) {
         registerAssetLoader(loader);
+        loader->setAssetManager(this);
     }
 
     core::debug("created asset manager");
