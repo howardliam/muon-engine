@@ -78,10 +78,6 @@ add_subdirectory(external/sqlitecpp)
 # testing
 add_subdirectory(external/catch2)
 
-# crypto
-add_subdirectory(external/libtommath)
-add_subdirectory(external/libtomcrypt)
-
 if(MSVC)
     #add_compile_options(/W4)
 else()

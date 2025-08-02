@@ -145,7 +145,6 @@ target_link_libraries(muon-engine PUBLIC
     glm
     magic_enum::magic_enum
     spng_static
-    libtomcrypt
     SQLiteCpp
 )
 
