@@ -107,6 +107,7 @@ target_sources(
         src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
+        src/muon/utils/library.hpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -115,6 +116,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         muon-engine
         PRIVATE
             src/muon/core/platform_posix.cpp
+            src/muon/utils/library_posix.cpp
     )
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -123,6 +125,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         muon-engine
         PRIVATE
             src/muon/core/platform_win32.cpp
+            src/muon/utils/library_win32.cpp
     )
 
 endif()
