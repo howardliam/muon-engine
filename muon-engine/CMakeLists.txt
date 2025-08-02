@@ -146,7 +146,7 @@ target_link_libraries(muon-engine PUBLIC
 )
 
 add_compile_definitions(
-    $<$<CONFIG:Debug>:MU_DEBUG_ENABLED>
+    $<$<CONFIG:Debug>:MU_DEBUG>
 )
 
 option(MUON_ENGINE_TESTS "Enable Muon Engine tests" OFF)
