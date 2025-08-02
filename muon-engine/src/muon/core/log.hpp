@@ -66,6 +66,12 @@ inline void error(fmt::format_string<Args...> message, Args &&...args) {
 }
 inline void error(const char *message) { Log::getCoreLogger()->error(message); }
 
+template <typename... Args>
+inline void critical(fmt::format_string<Args...> message, Args &&...args) {
+    Log::getCoreLogger()->critical(message, std::forward<Args>(args)...);
+}
+inline void critical(const char *message) { Log::getCoreLogger()->critical(message); }
+
 } // namespace core
 
 namespace client {
@@ -111,6 +117,12 @@ inline void error(fmt::format_string<Args...> message, Args &&...args) {
     Log::getClientLogger()->error(message, std::forward<Args>(args)...);
 }
 inline void error(const char *message) { Log::getClientLogger()->error(message); }
+
+template <typename... Args>
+inline void critical(fmt::format_string<Args...> message, Args &&...args) {
+    Log::getClientLogger()->critical(message, std::forward<Args>(args)...);
+}
+inline void critical(const char *message) { Log::getClientLogger()->critical(message); }
 
 } // namespace client
 
