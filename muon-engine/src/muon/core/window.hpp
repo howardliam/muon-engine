@@ -21,7 +21,12 @@ enum class WindowMode {
 
 class Window {
 public:
-    Window(const std::string_view title, const vk::Extent2D &extent, const WindowMode mode, const event::Dispatcher &dispatcher);
+    Window(
+        const std::string_view title,
+        const vk::Extent2D &extent,
+        const WindowMode mode,
+        const event::Dispatcher &dispatcher
+    );
     ~Window();
 
     auto pollEvents() const -> void;

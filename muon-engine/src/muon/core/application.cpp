@@ -14,8 +14,12 @@
 
 namespace muon {
 
-Application::Application(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
-    : m_name{name} {
+Application::Application(
+    const std::string_view name,
+    const vk::Extent2D &extent,
+    const bool vsync,
+    const WindowMode mode
+) : m_name{name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
