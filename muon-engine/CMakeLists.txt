@@ -42,7 +42,6 @@ target_sources(
 
         src/muon/project/project.cpp
 
-        src/muon/utils/literals.cpp
         src/muon/utils/pretty_print.cpp
 
     PUBLIC
@@ -106,7 +105,6 @@ target_sources(
         src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
-        src/muon/utils/literals.hpp
         src/muon/utils/pretty_print.hpp
 )
 
