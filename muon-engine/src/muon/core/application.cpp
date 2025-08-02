@@ -16,7 +16,7 @@ namespace muon {
 Application::Application(
     const std::string_view name,
     const vk::Extent2D &extent,
-    const bool vsync,
+    const bool vSync,
     const WindowMode mode
 ) : m_name{name} {
     core::expect(!s_instance, "application already exists");
@@ -28,7 +28,7 @@ Application::Application(
     m_dispatcher = std::make_unique<event::Dispatcher>();
     m_window = std::make_unique<Window>(m_name, extent, mode, *m_dispatcher);
     m_context = std::make_unique<graphics::Context>(*m_window);
-    m_renderer = std::make_unique<graphics::Renderer>(*m_window, *m_context, vsync);
+    m_renderer = std::make_unique<graphics::Renderer>(*m_window, *m_context, vSync);
 
     m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) { m_running = false; });
 

@@ -18,7 +18,7 @@ public:
     Application(
         const std::string_view name,
         const vk::Extent2D &extent,
-        const bool vsync,
+        const bool vSync,
         const WindowMode mode
     );
     virtual ~Application();

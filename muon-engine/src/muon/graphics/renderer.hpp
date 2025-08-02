@@ -21,7 +21,7 @@ struct SurfaceFormat {
 
 class Renderer : NoCopy, NoMove {
 public:
-    Renderer(const Window &window, const Context &context, bool vsync = false);
+    Renderer(const Window &window, const Context &context, bool vSync = false);
     ~Renderer();
 
     [[nodiscard]] auto beginFrame() -> std::optional<vk::raii::CommandBuffer *>;
@@ -57,7 +57,7 @@ private:
     std::vector<SurfaceFormat> m_availableSurfaceFormats{};
     mutable const SurfaceFormat *m_activeSurfaceFormat{nullptr};
 
-    mutable bool m_vsync{false};
+    mutable bool m_vSync{false};
     std::unordered_set<vk::PresentModeKHR> m_availablePresentModes{};
     mutable const vk::PresentModeKHR *m_activePresentMode{nullptr};
 

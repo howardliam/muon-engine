@@ -8,7 +8,7 @@
 
 namespace muon::graphics {
 
-Renderer::Renderer(const Window &window, const Context &context, bool vsync) : m_window{window}, m_context{context}, m_vsync{vsync} {
+Renderer::Renderer(const Window &window, const Context &context, bool vSync) : m_window{window}, m_context{context}, m_vSync{vSync} {
     probeSurfaceFormats();
     probePresentModes();
 
@@ -97,7 +97,7 @@ void Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const {
     auto it = m_availablePresentModes.find(presentMode);
     core::expect(it != m_availablePresentModes.end(), "the requested present mode must be available");
 
-    m_vsync = presentMode == vk::PresentModeKHR::eFifo;
+    m_vSync = presentMode == vk::PresentModeKHR::eFifo;
     m_activePresentMode = &*it;
 }
 
@@ -179,14 +179,14 @@ void Renderer::probePresentModes() {
         }
     }
 
-    if (m_vsync) {
+    if (m_vSync) {
         setActivePresentMode(vk::PresentModeKHR::eFifo);
     } else {
         if (m_availablePresentModes.contains(vk::PresentModeKHR::eMailbox)) {
             setActivePresentMode(vk::PresentModeKHR::eMailbox);
         } else {
             setActivePresentMode(vk::PresentModeKHR::eFifo);
-            m_vsync = true;
+            m_vSync = true;
         }
     }
 }
