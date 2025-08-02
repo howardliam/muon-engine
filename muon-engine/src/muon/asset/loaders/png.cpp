@@ -11,7 +11,6 @@ namespace muon::asset {
 auto PngLoader::getFileTypes() const -> std::set<std::string_view> { return {".png"}; }
 
 auto PngLoader::fromMemory(const std::vector<uint8_t> &data) -> void {
-    core::debug("PngLoader::FromMemory successfully called");
     spng_ctx *ctx = spng_ctx_new(0);
 
     spng_set_png_buffer(ctx, data.data(), data.size());
@@ -58,6 +57,24 @@ auto PngLoader::fromMemory(const std::vector<uint8_t> &data) -> void {
     spec.uploadBuffers = m_manager->getUploadBuffers();
     spec.extent = vk::Extent2D{ihdr.width, ihdr.height};
     spec.pixelSize = channels;
+    spec.format = [](const uint8_t &channels) -> vk::Format {
+        switch (channels) {
+            case 4:
+                return vk::Format::eR8G8B8A8Srgb;
+
+            case 3:
+                return vk::Format::eR8G8B8Srgb;
+
+            case 2:
+                return vk::Format::eR8G8Srgb;
+
+            case 1:
+                return vk::Format::eR8Srgb;
+
+            default:
+                return vk::Format::eUndefined;
+        }
+    }(channels);
 
     m_manager->getTextures().emplace_back(spec);
 }
