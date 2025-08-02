@@ -11,16 +11,7 @@ namespace muon::graphics {
 
 class Context : NoCopy, NoMove {
 public:
-    struct Spec {
-        const Window &window;
-
-        bool debug{false};
-
-        Spec(const Window &window) : window{window} {}
-    };
-
-public:
-    Context(const Spec &spec);
+    Context(const Window &window);
     ~Context();
 
 public:
@@ -52,8 +43,8 @@ public:
     auto getAllocator() const -> const vma::Allocator &;
 
 private:
-    auto createInstance(const Window &window, bool debug) -> void;
-    auto createDebugMessenger(bool debug) -> void;
+    auto createInstance(const Window &window) -> void;
+    auto createDebugMessenger() -> void;
     auto createSurface(const Window &window) -> void;
     auto selectPhysicalDevice() -> void;
     auto createLogicalDevice() -> void;

@@ -1,6 +1,7 @@
 #include "muon/graphics/context.hpp"
 
 #include "muon/core/application.hpp"
+#include "muon/core/debug.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
@@ -29,12 +30,12 @@
 
 namespace muon::graphics {
 
-Context::Context(const Spec &spec) {
+Context::Context(const Window &window) {
     m_context = vk::raii::Context();
 
-    createInstance(spec.window, spec.debug);
-    createDebugMessenger(spec.debug);
-    createSurface(spec.window);
+    createInstance(window);
+    createDebugMessenger();
+    createSurface(window);
     selectPhysicalDevice();
     createLogicalDevice();
     createAllocator();
@@ -85,13 +86,13 @@ auto Context::getTransferQueue() const -> const Queue & { return *m_transferQueu
 auto Context::getAllocator() -> vma::Allocator & { return m_allocator; }
 auto Context::getAllocator() const -> const vma::Allocator & { return m_allocator; }
 
-auto Context::createInstance(const Window &window, bool debug) -> void {
+auto Context::createInstance(const Window &window) -> void {
     std::vector extensions = window.getRequiredExtensions();
     extensions.insert(extensions.end(), k_instanceRequiredExtensions.begin(), k_instanceRequiredExtensions.end());
 
     std::vector<const char *> layers;
 
-    if (debug) {
+    if constexpr (k_debugEnabled) {
         extensions.push_back("VK_EXT_debug_utils");
 
         auto checkValidationLayerSupport = [](const vk::raii::Context &context, const char *layer) -> bool {
@@ -139,51 +140,55 @@ auto Context::createInstance(const Window &window, bool debug) -> void {
     m_instance = std::move(*instanceResult);
 }
 
-auto Context::createDebugMessenger(bool debug) -> void {
-    if (!debug) {
-        return;
+auto Context::createDebugMessenger() -> void {
+    if constexpr (k_debugEnabled) {
+        auto debugCallback = [](
+            vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
+            vk::DebugUtilsMessageTypeFlagsEXT type,
+            const vk::DebugUtilsMessengerCallbackDataEXT *callbackData,
+            void *userData
+        ) -> vk::Bool32 {
+            switch (severity) {
+                case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
+                    muon::core::debug(callbackData->pMessage);
+                    break;
+
+                case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
+                    muon::core::info(callbackData->pMessage);
+                    break;
+
+                case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
+                    muon::core::warn(callbackData->pMessage);
+                    break;
+
+                case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
+                    muon::core::error(callbackData->pMessage);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return false;
+        };
+
+        vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCi;
+        debugUtilsMessengerCi.pfnUserCallback = debugCallback;
+
+        debugUtilsMessengerCi.messageSeverity =
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+
+        debugUtilsMessengerCi.messageType =
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+
+        auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
+        core::expect(debugMessengerResult, "failed to create debug messenger");
+        m_debugMessenger = std::move(*debugMessengerResult);
     }
-
-    auto debugCallback = [](vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
-                            const vk::DebugUtilsMessengerCallbackDataEXT *callbackData, void *userData) -> vk::Bool32 {
-        switch (severity) {
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-                muon::core::debug(callbackData->pMessage);
-                break;
-
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-                muon::core::info(callbackData->pMessage);
-                break;
-
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-                muon::core::warn(callbackData->pMessage);
-                break;
-
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-                muon::core::error(callbackData->pMessage);
-                break;
-
-            default:
-                break;
-        }
-
-        return false;
-    };
-
-    vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCi;
-    debugUtilsMessengerCi.pfnUserCallback = debugCallback;
-
-    debugUtilsMessengerCi.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                                            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
-
-    debugUtilsMessengerCi.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                                        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                                        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-
-    auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
-    core::expect(debugMessengerResult, "failed to create debug messenger");
-    m_debugMessenger = std::move(*debugMessengerResult);
 }
 
 auto Context::createSurface(const Window &window) -> void {

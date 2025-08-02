@@ -30,9 +30,7 @@ Application::Application(
 
     m_window = std::make_unique<Window>(m_name, extent, mode, *m_dispatcher);
 
-    graphics::Context::Spec contextSpec{*m_window};
-    contextSpec.debug = k_debugEnabled;
-    m_context = std::make_unique<graphics::Context>(contextSpec);
+    m_context = std::make_unique<graphics::Context>(*m_window);
 
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
     rendererSpec.vsync = vsync;
