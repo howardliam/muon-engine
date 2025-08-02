@@ -68,6 +68,7 @@ target_sources(
         src/muon/core/serialization.hpp
         src/muon/core/window.hpp
 
+        src/muon/crypto/crypto.hpp
         src/muon/crypto/hash.hpp
 
         src/muon/event/dispatcher.hpp
@@ -116,6 +117,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         muon-engine
         PRIVATE
             src/muon/core/platform_posix.cpp
+            src/muon/crypto/crypto_posix.cpp
             src/muon/utils/library_posix.cpp
     )
 
