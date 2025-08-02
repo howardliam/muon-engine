@@ -43,12 +43,12 @@ public:
     auto getAllocator() const -> const vma::Allocator &;
 
 private:
-    auto createInstance(const Window &window) -> void;
-    auto createDebugMessenger() -> void;
-    auto createSurface(const Window &window) -> void;
-    auto selectPhysicalDevice() -> void;
-    auto createLogicalDevice() -> void;
-    auto createAllocator() -> void;
+    void createInstance(const Window &window);
+    void createDebugMessenger();
+    void createSurface(const Window &window);
+    void selectPhysicalDevice();
+    void createLogicalDevice();
+    void createAllocator();
 
 private:
     vk::raii::Context m_context;

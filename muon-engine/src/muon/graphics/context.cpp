@@ -86,7 +86,7 @@ auto Context::getTransferQueue() const -> const Queue & { return *m_transferQueu
 auto Context::getAllocator() -> vma::Allocator & { return m_allocator; }
 auto Context::getAllocator() const -> const vma::Allocator & { return m_allocator; }
 
-auto Context::createInstance(const Window &window) -> void {
+void Context::createInstance(const Window &window) {
     std::vector extensions = window.getRequiredExtensions();
     extensions.insert(extensions.end(), k_instanceRequiredExtensions.begin(), k_instanceRequiredExtensions.end());
 
@@ -140,7 +140,7 @@ auto Context::createInstance(const Window &window) -> void {
     m_instance = std::move(*instanceResult);
 }
 
-auto Context::createDebugMessenger() -> void {
+void Context::createDebugMessenger() {
     if constexpr (k_debugEnabled) {
         auto debugCallback = [](
             vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -191,14 +191,14 @@ auto Context::createDebugMessenger() -> void {
     }
 }
 
-auto Context::createSurface(const Window &window) -> void {
+void Context::createSurface(const Window &window) {
     auto surfaceResult = window.createSurface(m_instance);
     core::expect(surfaceResult, "failed to create window surface");
     m_surface = std::move(*surfaceResult);
     core::expect(*m_surface, "surface must not be null");
 }
 
-auto Context::selectPhysicalDevice() -> void {
+void Context::selectPhysicalDevice() {
     auto physicalDevicesResult = m_instance.enumeratePhysicalDevices();
     core::expect(physicalDevicesResult, "failed to get available GPUs");
     auto physicalDevices = *physicalDevicesResult;
@@ -229,7 +229,7 @@ auto Context::selectPhysicalDevice() -> void {
     core::expect(gpuSelected, "failed to select a suitable GPU");
 }
 
-auto Context::createLogicalDevice() -> void {
+void Context::createLogicalDevice() {
     std::optional<uint32_t> graphicsIndex;
     std::optional<uint32_t> computeIndex;
     std::optional<uint32_t> transferIndex;
@@ -384,7 +384,7 @@ auto Context::createLogicalDevice() -> void {
     core::expect(m_transferQueue, "transfer queue must not be null");
 }
 
-auto Context::createAllocator() -> void {
+void Context::createAllocator() {
     vma::AllocatorCreateInfo createInfo{};
     createInfo.instance = m_instance;
     createInfo.physicalDevice = m_physicalDevice;
