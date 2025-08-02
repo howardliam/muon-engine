@@ -1,6 +1,7 @@
 #include "muon/graphics/renderer.hpp"
 
 #include "muon/core/expect.hpp"
+#include "muon/graphics/constants.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
 #include <algorithm>

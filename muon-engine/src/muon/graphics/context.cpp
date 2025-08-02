@@ -5,7 +5,7 @@
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
-#include "muon/graphics/api.hpp"
+#include "muon/graphics/constants.hpp"
 #include "muon/graphics/extensions.hpp"
 #include "muon/graphics/gpu.hpp"
 #include "muon/graphics/queue.hpp"

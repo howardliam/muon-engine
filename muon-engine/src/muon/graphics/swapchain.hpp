@@ -12,8 +12,6 @@
 
 namespace muon::graphics {
 
-constexpr uint32_t k_maxFramesInFlight = 2;
-
 class Swapchain : NoCopy, NoMove {
 public:
     Swapchain(

@@ -1,6 +1,6 @@
 #include "muon/graphics/gpu.hpp"
 
-#include "muon/graphics/api.hpp"
+#include "muon/graphics/constants.hpp"
 
 namespace muon::graphics {
 

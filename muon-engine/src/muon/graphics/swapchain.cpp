@@ -2,6 +2,7 @@
 
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
+#include "muon/graphics/constants.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_handles.hpp"
 
@@ -10,8 +11,6 @@
 #include <vulkan/vulkan_core.h>
 
 namespace muon::graphics {
-
-constexpr uint64_t k_waitDuration = 30'000'000'000;
 
 Swapchain::Swapchain(
     const Context &context,

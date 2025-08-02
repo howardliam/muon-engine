@@ -77,8 +77,8 @@ target_sources(
 
         src/muon/fs/fs.hpp
 
-        src/muon/graphics/api.hpp
         src/muon/graphics/buffer.hpp
+        src/muon/graphics/constants.hpp
         src/muon/graphics/context.hpp
         src/muon/graphics/descriptor_pool.hpp
         src/muon/graphics/descriptor_set_layout.hpp
