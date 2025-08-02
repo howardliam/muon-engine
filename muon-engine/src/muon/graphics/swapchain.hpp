@@ -16,10 +16,10 @@ class Swapchain : NoCopy, NoMove {
 public:
     Swapchain(
         const Context &context,
-        vk::Extent2D extent,
-        vk::ColorSpaceKHR colorSpace,
-        vk::Format format,
-        vk::PresentModeKHR presentMode,
+        const vk::Extent2D &extent,
+        const vk::ColorSpaceKHR &colorSpace,
+        const vk::Format &format,
+        const vk::PresentModeKHR &presentMode,
         std::shared_ptr<Swapchain> oldSwapchain = nullptr
     );
     ~Swapchain();

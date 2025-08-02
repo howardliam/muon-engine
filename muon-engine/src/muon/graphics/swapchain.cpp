@@ -14,10 +14,10 @@ namespace muon::graphics {
 
 Swapchain::Swapchain(
     const Context &context,
-    vk::Extent2D extent,
-    vk::ColorSpaceKHR colorSpace,
-    vk::Format format,
-    vk::PresentModeKHR presentMode,
+    const vk::Extent2D &extent,
+    const vk::ColorSpaceKHR &colorSpace,
+    const vk::Format &format,
+    const vk::PresentModeKHR &presentMode,
     std::shared_ptr<Swapchain> oldSwapchain
 ) : m_context(context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(oldSwapchain),
 m_format(format), m_colorSpace(colorSpace) {
