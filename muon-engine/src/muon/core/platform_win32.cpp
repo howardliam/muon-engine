@@ -6,7 +6,7 @@
 
 namespace muon {
 
-auto invokeDebugTrap() -> void { __debugbreak(); }
+void invokeDebugTrap() { __debugbreak(); }
 
 auto isRunAsRoot() -> bool {
     BOOL isAdmin = FALSE;

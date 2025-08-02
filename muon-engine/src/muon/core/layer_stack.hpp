@@ -11,8 +11,8 @@ public:
     LayerStack();
     ~LayerStack();
 
-    auto pushLayer(Layer *layer) -> void;
-    auto popLayer(Layer *layer) -> void;
+    void pushLayer(Layer *layer);
+    void popLayer(Layer *layer);
 
     auto begin() -> std::vector<Layer *>::iterator { return m_layers.begin(); }
     auto end() -> std::vector<Layer *>::iterator { return m_layers.end(); }

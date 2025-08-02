@@ -5,7 +5,7 @@
 
 namespace muon {
 
-auto invokeDebugTrap() -> void { raise(SIGTRAP); }
+void invokeDebugTrap() { raise(SIGTRAP); }
 
 auto isRunAsRoot() -> bool { return geteuid() == 0; }
 

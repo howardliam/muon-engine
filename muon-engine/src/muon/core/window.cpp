@@ -60,9 +60,9 @@ Window::~Window() {
     core::debug("destroyed window");
 }
 
-auto Window::pollEvents() const -> void { glfwPollEvents(); }
+void Window::pollEvents() const { glfwPollEvents(); }
 
-auto Window::requestAttention() const -> void { glfwRequestWindowAttention(m_window); }
+void Window::requestAttention() const { glfwRequestWindowAttention(m_window); }
 
 auto Window::createSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result> {
     VkSurfaceKHR rawSurface;
@@ -76,7 +76,7 @@ auto Window::createSurface(const vk::raii::Instance &instance) const -> std::exp
     return vk::raii::SurfaceKHR{instance, rawSurface};
 }
 
-auto Window::setMode(WindowMode mode) -> void {
+void Window::setMode(WindowMode mode) {
     GLFWmonitor *monitor = nullptr;
 
     switch (mode) {
@@ -113,7 +113,7 @@ auto Window::getRequiredExtensions() const -> std::vector<const char *> {
 
 auto Window::getClipboardContents() const -> const char * { return glfwGetClipboardString(m_window); }
 
-auto Window::configureDispatchers() -> void {
+void Window::configureDispatchers() {
     /* window events */
     glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
         const auto &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));

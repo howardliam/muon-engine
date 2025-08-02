@@ -29,15 +29,15 @@ public:
     );
     ~Window();
 
-    auto pollEvents() const -> void;
+    void pollEvents() const;
 
-    auto requestAttention() const -> void;
+    void requestAttention() const;
 
     auto createSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result>;
 
 public:
-    auto setMonitor() -> void;
-    auto setMode(WindowMode mode) -> void;
+    void setMonitor();
+    void setMode(WindowMode mode);
 
     auto getExtent() const -> VkExtent2D;
     auto getWidth() const -> uint32_t;
@@ -47,7 +47,7 @@ public:
     auto getClipboardContents() const -> const char *;
 
 private:
-    auto configureDispatchers() -> void;
+    void configureDispatchers();
 
 private:
     GLFWwindow *m_window;

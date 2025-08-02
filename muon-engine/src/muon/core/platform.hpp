@@ -2,7 +2,7 @@
 
 namespace muon {
 
-auto invokeDebugTrap() -> void;
+void invokeDebugTrap();
 
 auto isRunAsRoot() -> bool;
 

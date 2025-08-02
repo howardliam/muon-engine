@@ -13,9 +13,9 @@ LayerStack::~LayerStack() {
     }
 }
 
-auto LayerStack::pushLayer(Layer *layer) -> void { m_layerInsert = m_layers.emplace(m_layerInsert, layer); }
+void LayerStack::pushLayer(Layer *layer) { m_layerInsert = m_layers.emplace(m_layerInsert, layer); }
 
-auto LayerStack::popLayer(Layer *layer) -> void {
+void LayerStack::popLayer(Layer *layer) {
     auto it = std::ranges::find(m_layers, layer);
     if (it != m_layers.end()) {
         layer->onDetach();

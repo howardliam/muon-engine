@@ -49,12 +49,12 @@ Application::Application(
 
 Application::~Application() { core::debug("destroyed application"); }
 
-auto Application::pushLayer(Layer *layer) -> void {
+void Application::pushLayer(Layer *layer) {
     m_layerStack.pushLayer(layer);
     layer->onAttach();
 }
 
-auto Application::run() -> void {
+void Application::run() {
     core::expect(!m_running, "application cannot already be running");
     m_running = true;
     core::info("running application");

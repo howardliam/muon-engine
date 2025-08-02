@@ -18,7 +18,7 @@ concept BooleanTestable = requires(T &&t) {
 namespace core {
 
 template <BooleanTestable Condition, typename... Args>
-auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
+void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             Log::getCoreLogger()->error(message, std::forward<Args>(args)...);
@@ -32,7 +32,7 @@ auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
 namespace client {
 
 template <BooleanTestable Condition, typename... Args>
-auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
+void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             Log::getClientLogger()->error(message, std::forward<Args>(args)...);

@@ -24,9 +24,9 @@ public:
     );
     virtual ~Application();
 
-    auto pushLayer(Layer *layer) -> void;
+    void pushLayer(Layer *layer);
 
-    auto run() -> void;
+    void run();
 
 public:
     auto getName() -> const std::string_view;
