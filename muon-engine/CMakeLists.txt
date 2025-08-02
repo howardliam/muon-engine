@@ -69,7 +69,6 @@ target_sources(
         src/muon/core/window.hpp
 
         src/muon/crypto/crypto.hpp
-        src/muon/crypto/hash.hpp
 
         src/muon/event/dispatcher.hpp
         src/muon/event/event.hpp

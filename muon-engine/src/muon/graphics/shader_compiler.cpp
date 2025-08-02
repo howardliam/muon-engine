@@ -7,7 +7,6 @@
 #include "glslang/Public/ShaderLang.h"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
-#include "muon/crypto/hash.hpp"
 
 #include <algorithm>
 #include <array>
@@ -224,13 +223,13 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
     }
     readQuery.reset();
 
-    std::expected sourceHash = crypto::hashFile<32>(file);
-    if (!sourceHash.has_value()) {
+    auto hashResult = m_crypto.hash(file);
+    if (!hashResult.has_value()) {
         core::error("failed to hash file contents: {}", request.path.string());
         return;
     }
 
-    if (hash == *sourceHash) {
+    if (hash == *hashResult) {
         core::trace("identical hashes, skipping: {}", request.path.string());
         return;
     }
@@ -290,7 +289,7 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
         insert into hash_store values(null, :source_path, :source_hash, :spirv_path)
     )"};
     writeQuery.bind(":source_path", request.path.string());
-    writeQuery.bind(":source_hash", sourceHash->data(), sourceHash->size());
+    writeQuery.bind(":source_hash", hashResult->data(), hashResult->size());
     writeQuery.bind(":spirv_path", outPath.c_str());
 
     uint32_t rows = writeQuery.exec();

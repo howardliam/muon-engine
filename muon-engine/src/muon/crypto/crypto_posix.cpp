@@ -1,7 +1,6 @@
 #include "muon/crypto/crypto.hpp"
 
 #include "muon/core/expect.hpp"
-#include "muon/core/log.hpp"
 #include "muon/utils/library.hpp"
 
 #include <openssl/evp.h>
