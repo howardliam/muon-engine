@@ -64,7 +64,7 @@ Buffer::Buffer(Buffer &&other) noexcept
       m_alignmentSize{other.m_alignmentSize}, m_size{other.m_size}, m_usageFlags{other.m_usageFlags},
       m_allocation{other.m_allocation}, m_deviceAddress{other.m_deviceAddress}, m_descriptorInfo{other.m_descriptorInfo} {
 
-    m_buffer.swap(other.m_buffer);
+    m_buffer = std::move(other.m_buffer);
 
     other.unmap();
 
@@ -84,7 +84,7 @@ auto Buffer::operator=(Buffer &&other) noexcept -> Buffer & {
 
         m_usageFlags = other.m_usageFlags;
 
-        m_buffer.swap(other.m_buffer);
+        m_buffer = std::move(other.m_buffer);
         m_allocation = other.m_allocation;
         m_deviceAddress = other.m_deviceAddress;
 
