@@ -3,6 +3,8 @@
 #include "muon/core/application.hpp"
 #include "muon/core/entry_point.hpp"
 #include "muon/core/expect.hpp"
+#include "muon/core/layer.hpp"
+#include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/event.hpp"
 #include "muon/input/input_state.hpp"
@@ -10,6 +12,15 @@
 #include <filesystem>
 
 namespace muon {
+
+class TestLayer final : public Layer {
+public:
+    TestLayer() {}
+
+    auto onAttach() -> void override { core::debug("attached test layer"); }
+    auto onDetach() -> void override { core::debug("detached test layer"); }
+    auto onUpdate() -> void override {}
+};
 
 class MuonEditor final : public Application {
 public:
@@ -37,6 +48,8 @@ public:
         });
 
         m_dispatcher->subscribe<event::FileDropEvent>([](const auto &event) { core::info("{}", fmt::join(event.paths, ", ")); });
+
+        pushLayer(new TestLayer{});
     }
 
 private:
