@@ -16,6 +16,8 @@ concept BooleanTestable = requires(T &&t) {
 
 namespace core {
 
+#ifdef MU_DEBUG
+
 template <BooleanTestable Condition, typename... Args>
 auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
     if (!static_cast<bool>(std::forward<Condition>(condition))) {
@@ -24,9 +26,18 @@ auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
     }
 }
 
+#else
+
+template <BooleanTestable Condition, typename... Args>
+auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {}
+
+#endif
+
 } // namespace core
 
 namespace client {
+
+#ifdef MU_DEBUG
 
 template <BooleanTestable Condition, typename... Args>
 auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
@@ -35,6 +46,13 @@ auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
         invokeDebugTrap();
     }
 }
+
+#else
+
+template <BooleanTestable Condition, typename... Args>
+auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {}
+
+#endif
 
 } // namespace client
 

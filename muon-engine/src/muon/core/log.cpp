@@ -26,16 +26,10 @@ auto Log::init() -> void {
     spdlog::register_logger(s_clientLogger);
     s_clientLogger->set_level(spdlog::level::trace);
     s_clientLogger->flush_on(spdlog::level::trace);
-
-    s_vulkanLogger = std::make_shared<spdlog::logger>("VULK", sinks.begin(), sinks.end());
-    spdlog::register_logger(s_vulkanLogger);
-    s_vulkanLogger->set_level(spdlog::level::trace);
-    s_vulkanLogger->flush_on(spdlog::level::trace);
 }
 
 auto Log::getCoreLogger() -> std::shared_ptr<spdlog::logger> & { return s_coreLogger; }
 auto Log::getClientLogger() -> std::shared_ptr<spdlog::logger> & { return s_clientLogger; }
-auto Log::getVulkanLogger() -> std::shared_ptr<spdlog::logger> & { return s_vulkanLogger; }
 
 auto Log::setLogLevel(spdlog::level::level_enum level) -> void { spdlog::set_level(level); }
 
