@@ -1,6 +1,7 @@
 #include "muon/core/application.hpp"
 
 #include "muon/asset/loaders/png.hpp"
+#include "muon/core/debug.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
@@ -11,19 +12,13 @@
 
 #include <memory>
 
-#ifdef MU_DEBUG
-constexpr bool k_debugMode = true;
-#else
-constexpr bool k_debugMode = false;
-#endif
-
 namespace muon {
 
 Application::Application(const Spec &spec) : m_name{spec.name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
-    auto logLevel = k_debugMode ? spdlog::level::trace : spdlog::level::info;
+    auto logLevel = k_debugEnabled ? spdlog::level::trace : spdlog::level::info;
     Log::setLogLevel(logLevel);
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
@@ -36,7 +31,7 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
     m_window = std::make_unique<Window>(windowSpec);
 
     graphics::Context::Spec contextSpec{*m_window};
-    contextSpec.debug = k_debugMode;
+    contextSpec.debug = k_debugEnabled;
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
