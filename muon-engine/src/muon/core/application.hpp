@@ -1,6 +1,5 @@
 #pragma once
 
-#include "argparse/argparse.hpp"
 #include "muon/asset/asset_manager.hpp"
 #include "muon/core/layer_stack.hpp"
 #include "muon/core/no_copy.hpp"
@@ -10,7 +9,6 @@
 #include "muon/graphics/context.hpp"
 #include "muon/graphics/renderer.hpp"
 
-#include <filesystem>
 #include <memory>
 #include <string_view>
 
@@ -18,22 +16,7 @@ namespace muon {
 
 class Application : NoCopy, NoMove {
 public:
-    struct Spec {
-        std::string name;
-        uint32_t width;
-        uint32_t height;
-        bool vsync{false};
-        WindowMode windowMode;
-
-        std::filesystem::path workingDirectory;
-        argparse::ArgumentParser argParser{name};
-
-        Spec(const std::string_view name, const std::filesystem::path &workingDirectory)
-            : name{name}, workingDirectory{workingDirectory} {}
-    };
-
-public:
-    Application(const Spec &spec);
+    Application(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode);
     virtual ~Application();
 
     auto pushLayer(Layer *layer) -> void;
@@ -46,8 +29,6 @@ public:
 
 protected:
     std::string m_name;
-
-    bool m_debugMode{false};
 
     LayerStack m_layerStack;
 

@@ -13,8 +13,14 @@
 
 namespace muon {
 
-Window::Window(const Spec &spec) : m_data{spec.dispatcher}, m_mode{spec.mode} {
-    m_data.title = spec.title;
+Window::Window(
+    const std::string_view title,
+    const vk::Extent2D &extent,
+    const WindowMode mode,
+    const event::Dispatcher &dispatcher
+) : m_mode{mode}, m_data{dispatcher} {
+    m_data.title = title;
+    m_data.extent = extent;
 
     glfwSetErrorCallback([](int32_t, const char *message) { core::error(message); });
 
@@ -25,18 +31,11 @@ Window::Window(const Spec &spec) : m_data{spec.dispatcher}, m_mode{spec.mode} {
     core::expect(vkSupported, "GLFW must support Vulkan");
 
     m_monitor = glfwGetPrimaryMonitor();
-    const auto *mode = glfwGetVideoMode(m_monitor);
-    m_data.refreshRate = mode->refreshRate;
-    if (spec.width == std::numeric_limits<uint32_t>().max() || spec.height == std::numeric_limits<uint32_t>().max()) {
-        m_data.width = (mode->width * 0.75);
-        m_data.height = (mode->height * 0.75);
-    } else {
-        m_data.width = spec.width;
-        m_data.height = spec.height;
-    }
+    const auto *videoMode = glfwGetVideoMode(m_monitor);
+    m_data.refreshRate = videoMode->refreshRate;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+    m_window = glfwCreateWindow(m_data.extent.width, m_data.extent.height, m_data.title.c_str(), nullptr, nullptr);
     core::expect(m_window, "window must exist");
 
     glfwSetWindowSizeLimits(m_window, 1280, 720, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -52,7 +51,7 @@ Window::Window(const Spec &spec) : m_data{spec.dispatcher}, m_mode{spec.mode} {
 
     configureDispatchers();
 
-    core::debug("created window with dimensions: {}x{}", m_data.width, m_data.height);
+    core::debug("created window with dimensions: {}x{}", m_data.extent.width, m_data.extent.height);
 }
 
 Window::~Window() {
@@ -91,18 +90,18 @@ auto Window::setMode(WindowMode mode) -> void {
 
         case WindowMode::BorderlessFullscreen:
             const auto *mode = glfwGetVideoMode(m_monitor);
-            m_data.width = mode->width;
-            m_data.height = mode->height;
+            m_data.extent.width = mode->width;
+            m_data.extent.height = mode->height;
             glfwWindowHint(GLFW_DECORATED, false);
             break;
     }
 
-    glfwSetWindowMonitor(m_window, monitor, 0, 0, m_data.width, m_data.height, m_data.refreshRate);
+    glfwSetWindowMonitor(m_window, monitor, 0, 0, m_data.extent.width, m_data.extent.height, m_data.refreshRate);
 }
 
-auto Window::getExtent() const -> VkExtent2D { return {m_data.width, m_data.height}; }
-auto Window::getWidth() const -> uint32_t { return m_data.width; }
-auto Window::getHeight() const -> uint32_t { return m_data.height; }
+auto Window::getExtent() const -> VkExtent2D { return m_data.extent; }
+auto Window::getWidth() const -> uint32_t { return m_data.extent.width; }
+auto Window::getHeight() const -> uint32_t { return m_data.extent.height; }
 auto Window::getRefreshRate() const -> uint32_t { return m_data.refreshRate; }
 
 auto Window::getRequiredExtensions() const -> std::vector<const char *> {
@@ -124,8 +123,8 @@ auto Window::configureDispatchers() -> void {
     glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height) {
         auto &data = *static_cast<Data *>(glfwGetWindowUserPointer(window));
 
-        data.width = static_cast<uint32_t>(width);
-        data.height = static_cast<uint32_t>(height);
+        data.extent.width = static_cast<uint32_t>(width);
+        data.extent.height = static_cast<uint32_t>(height);
 
         data.dispatcher.dispatch<event::WindowResizeEvent>({
             .width = static_cast<uint32_t>(width),

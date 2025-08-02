@@ -14,7 +14,8 @@
 
 namespace muon {
 
-Application::Application(const Spec &spec) : m_name{spec.name} {
+Application::Application(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
+    : m_name{name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
@@ -23,19 +24,14 @@ Application::Application(const Spec &spec) : m_name{spec.name} {
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
 
-    Window::Spec windowSpec{*m_dispatcher};
-    windowSpec.title = m_name;
-    windowSpec.width = spec.width;
-    windowSpec.height = spec.height;
-    windowSpec.mode = spec.windowMode;
-    m_window = std::make_unique<Window>(windowSpec);
+    m_window = std::make_unique<Window>(m_name, extent, mode, *m_dispatcher);
 
     graphics::Context::Spec contextSpec{*m_window};
     contextSpec.debug = k_debugEnabled;
     m_context = std::make_unique<graphics::Context>(contextSpec);
 
     graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
-    rendererSpec.vsync = spec.vsync;
+    rendererSpec.vsync = vsync;
     m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
 
     asset::AssetManager::Spec assetManagerSpec{*m_context};

@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <expected>
-#include <filesystem>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -22,20 +21,7 @@ enum class WindowMode {
 
 class Window {
 public:
-    struct Spec {
-        const event::Dispatcher &dispatcher;
-
-        std::string_view title;
-        std::filesystem::path icon;
-        uint32_t width{std::numeric_limits<uint32_t>().max()};
-        uint32_t height{std::numeric_limits<uint32_t>().max()};
-        WindowMode mode{WindowMode::Windowed};
-
-        Spec(event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}
-    };
-
-public:
-    Window(const Spec &spec);
+    Window(const std::string_view title, const vk::Extent2D &extent, const WindowMode mode, const event::Dispatcher &dispatcher);
     ~Window();
 
     auto pollEvents() const -> void;
@@ -67,10 +53,9 @@ private:
     struct Data {
         const event::Dispatcher &dispatcher;
 
-        std::string title{};
-        uint32_t width{};
-        uint32_t height{};
-        uint32_t refreshRate{};
+        std::string title;
+        vk::Extent2D extent;
+        uint32_t refreshRate;
         bool rawMouseMotion{false};
 
         Data(const event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}

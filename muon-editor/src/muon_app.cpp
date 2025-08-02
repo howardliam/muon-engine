@@ -1,4 +1,3 @@
-#include "argparse/argparse.hpp"
 #include "fmt/ranges.h"
 #include "muon/core/application.hpp"
 #include "muon/core/entry_point.hpp"
@@ -8,8 +7,6 @@
 #include "muon/core/window.hpp"
 #include "muon/event/event.hpp"
 #include "muon/input/input_state.hpp"
-
-#include <filesystem>
 
 namespace muon {
 
@@ -24,7 +21,8 @@ public:
 
 class MuonEditor final : public Application {
 public:
-    MuonEditor(const Spec &spec) : Application(spec) {
+    MuonEditor(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
+        : Application{name, extent, vsync, mode} {
         // override default window close handler if you need to
         auto success = m_dispatcher->unsubscribe<event::WindowCloseEvent>(m_onWindowClose);
         client::expect(success, "failed to unsubscribe from default window close event handler");
@@ -56,20 +54,10 @@ private:
 };
 
 auto createApplication(size_t argCount, char **argArray) -> Application * {
-    Application::Spec spec{"Muon Editor", std::filesystem::current_path()};
-
-    spec.width = 1920;
-    spec.height = 1080;
-    spec.vsync = false;
-    spec.windowMode = WindowMode::Windowed;
-
-    spec.argParser.add_argument("--debug").help("enables debug mode").default_value(false).implicit_value(true);
-
-    try {
-        spec.argParser.parse_args(argCount, argArray);
-    } catch (const std::exception &e) { client::expect(false, "failed to parse arguments: {}", e.what()); }
-
-    return new MuonEditor(spec);
+    return new MuonEditor{
+        "Muon Editor", {1920, 1080},
+         false, WindowMode::Windowed
+    };
 }
 
 } // namespace muon
