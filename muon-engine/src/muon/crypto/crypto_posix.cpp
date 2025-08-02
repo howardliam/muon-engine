@@ -80,14 +80,14 @@ Crypto::Crypto() {
 
 Crypto::~Crypto() {}
 
-auto Crypto::hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, 32>, CryptoError> {
-    std::array<uint8_t, 32> output;
+auto Crypto::hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
+    std::array<uint8_t, k_hashSize> output;
     sha256(data, size, output.data());
 
     return output;
 }
 
-auto Crypto::hash(std::ifstream &file) -> std::expected<std::array<uint8_t, 32>, CryptoError> {
+auto Crypto::hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
     const void *md = getDigestByName("sha256");
     void *ctx = mdCtxNew();
 
@@ -107,7 +107,7 @@ auto Crypto::hash(std::ifstream &file) -> std::expected<std::array<uint8_t, 32>,
         }
     }
 
-    std::array<uint8_t, 32> output;
+    std::array<uint8_t, k_hashSize> output;
     result = digestFinal(ctx, output.data(), nullptr);
     if (result == 0) {
         return std::unexpected(CryptoError::FinalizationFailure);
