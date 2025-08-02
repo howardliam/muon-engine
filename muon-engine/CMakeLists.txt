@@ -16,6 +16,8 @@ target_sources(
         src/muon/core/log.cpp
         src/muon/core/window.cpp
 
+        src/muon/format/bytes.cpp
+
         src/muon/fs/fs.cpp
 
         src/muon/graphics/buffer.cpp
@@ -41,8 +43,6 @@ target_sources(
         src/muon/input/modifier.cpp
 
         src/muon/project/project.cpp
-
-        src/muon/utils/pretty_print.cpp
 
     PUBLIC
     FILE_SET HEADERS
@@ -72,6 +72,8 @@ target_sources(
 
         src/muon/event/dispatcher.hpp
         src/muon/event/event.hpp
+
+        src/muon/format/bytes.hpp
 
         src/muon/fs/fs.hpp
 
@@ -105,7 +107,6 @@ target_sources(
         src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
-        src/muon/utils/pretty_print.hpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
