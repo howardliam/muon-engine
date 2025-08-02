@@ -6,6 +6,7 @@
 #include "muon/graphics/context.hpp"
 #include "muon/utils/pretty_print.hpp"
 #include "vk_mem_alloc_enums.hpp"
+#include "vulkan/vulkan.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_structs.hpp"
 
@@ -25,7 +26,10 @@ Texture::Texture(const Spec &spec) : m_context{spec.context}, m_extent{spec.exte
     core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_size));
 }
 
-Texture::~Texture() { core::debug("destroyed texture"); }
+Texture::~Texture() {
+    m_context.getAllocator().destroyImage(*m_image, m_allocation);
+    core::debug("destroyed texture");
+}
 
 Texture::Texture(Texture &&other)
     : m_context{other.m_context}, m_size{other.m_size}, m_extent{other.m_extent}, m_format{other.m_format},
@@ -61,6 +65,7 @@ auto Texture::getDescriptorInfo() const -> const vk::DescriptorImageInfo & { ret
 auto Texture::createImage() -> void {
     vk::ImageCreateInfo imageCi;
     imageCi.extent = vk::Extent3D{m_extent.width, m_extent.height, 1};
+    imageCi.imageType = vk::ImageType::e2D;
     imageCi.mipLevels = 1;
     imageCi.arrayLayers = 1;
     imageCi.format = m_format;
@@ -69,32 +74,34 @@ auto Texture::createImage() -> void {
     imageCi.usage =
         vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
     imageCi.samples = vk::SampleCountFlagBits::e1;
-    imageCi.sharingMode = vk::SharingMode::eExclusive;
     imageCi.flags = vk::ImageCreateFlags{};
+    imageCi.sharingMode = vk::SharingMode::eConcurrent;
 
-    auto imageResult = m_context.getDevice().createImage(imageCi);
-    core::expect(imageResult, "failed to create texture image");
-    m_image = std::move(*imageResult);
-
-    auto memoryRequirements = m_image.getMemoryRequirements();
+    std::array<uint32_t, 2> indices = {
+        m_context.getGraphicsQueue().getFamilyIndex(), m_context.getTransferQueue().getFamilyIndex()
+    };
+    imageCi.queueFamilyIndexCount = indices.size();
+    imageCi.pQueueFamilyIndices = indices.data();
 
     vma::AllocationCreateInfo allocCi;
-    allocCi.usage = vma::MemoryUsage::eAutoPreferDevice;
-    allocCi.requiredFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
+    allocCi.usage = vma::MemoryUsage::eAuto;
+    allocCi.flags = vma::AllocationCreateFlagBits::eDedicatedMemory;
 
     vma::AllocationInfo allocInfo{};
 
-    auto allocationResult = m_context.getAllocator().allocateMemory(memoryRequirements, allocCi, &allocInfo);
-    core::expect(allocationResult.result == vk::Result::eSuccess, "failed to allocate texture image memory");
+    auto [result, data] = m_context.getAllocator().createImage(imageCi, allocCi, &allocInfo);
+    core::expect(result == vk::Result::eSuccess, "failed to create texture image");
 
-    auto bindResult = m_context.getAllocator().bindImageMemory(m_allocation, m_image);
-    core::expect(bindResult == vk::Result::eSuccess, "failed to bind texture image memory");
+    auto [image, allocation] = data;
+    m_image = vk::raii::Image{m_context.getDevice(), image};
+    m_allocation = allocation;
 
     m_size = allocInfo.size;
 }
 
 auto Texture::createImageView() -> void {
     vk::ImageViewCreateInfo imageViewCi;
+    imageViewCi.image = *m_image;
     imageViewCi.viewType = vk::ImageViewType::e2D;
     imageViewCi.format = m_format;
     imageViewCi.components.r = vk::ComponentSwizzle::eR;
@@ -203,7 +210,7 @@ auto Texture::uploadData(
 
     shaderImb.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
     shaderImb.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-    shaderImb.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+    shaderImb.dstQueueFamilyIndex = m_context.getGraphicsQueue().getFamilyIndex();
     shaderImb.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader;
 
     vk::DependencyInfo shaderDi;
