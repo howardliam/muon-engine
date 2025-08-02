@@ -2,9 +2,9 @@
 
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
+#include "muon/format/bytes.hpp"
 #include "muon/graphics/buffer.hpp"
 #include "muon/graphics/context.hpp"
-#include "muon/utils/pretty_print.hpp"
 #include "vk_mem_alloc_enums.hpp"
 #include "vulkan/vulkan.hpp"
 #include "vulkan/vulkan_enums.hpp"
@@ -23,7 +23,7 @@ Texture::Texture(const Spec &spec) : m_context{spec.context}, m_extent{spec.exte
 
     uploadData(spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
 
-    core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_size));
+    core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, format::formatBytes(m_size));
 }
 
 Texture::~Texture() {

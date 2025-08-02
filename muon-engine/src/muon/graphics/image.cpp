@@ -2,8 +2,8 @@
 
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
+#include "muon/format/bytes.hpp"
 #include "muon/graphics/context.hpp"
-#include "muon/utils/pretty_print.hpp"
 #include "vk_mem_alloc_enums.hpp"
 #include "vulkan/vulkan_enums.hpp"
 #include "vulkan/vulkan_structs.hpp"
@@ -18,7 +18,7 @@ Image::Image(const Spec &spec)
 
     transitionLayout(spec.commandBuffer);
 
-    core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, pp::printBytes(m_bytes));
+    core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, format::formatBytes(m_bytes));
 }
 
 Image::~Image() { core::debug("destroyed image"); }

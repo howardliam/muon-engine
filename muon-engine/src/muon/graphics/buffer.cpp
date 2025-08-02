@@ -2,8 +2,8 @@
 
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
+#include "muon/format/bytes.hpp"
 #include "muon/utils/alignment.hpp"
-#include "muon/utils/pretty_print.hpp"
 #include "vk_mem_alloc.hpp"
 #include "vk_mem_alloc_enums.hpp"
 #include "vulkan/vulkan_enums.hpp"
@@ -50,7 +50,7 @@ Buffer::Buffer(const Spec &spec)
     m_descriptorInfo.range = m_size;
     m_descriptorInfo.offset = 0;
 
-    core::debug("created buffer with size: {}", pp::printBytes(m_size));
+    core::debug("created buffer with size: {}", format::formatBytes(m_size));
 }
 
 Buffer::~Buffer() {
