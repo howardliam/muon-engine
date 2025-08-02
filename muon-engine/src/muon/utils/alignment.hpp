@@ -3,7 +3,7 @@
 #include <concepts>
 #include <cstddef>
 
-namespace muon {
+namespace muon::utils {
 
 template <std::integral T>
 auto alignment(T integer, size_t alignment) -> T {
