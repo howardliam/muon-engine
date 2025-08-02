@@ -7,7 +7,7 @@
 
 namespace muon::graphics {
 
-Renderer::Renderer(const Spec &spec) : m_window{spec.window}, m_context{spec.context}, m_vsync{spec.vsync} {
+Renderer::Renderer(const Window &window, const Context &context, bool vsync) : m_window{window}, m_context{context}, m_vsync{vsync} {
     probeSurfaceFormats();
     probePresentModes();
 
@@ -40,7 +40,7 @@ auto Renderer::beginFrame() -> std::optional<vk::raii::CommandBuffer *> {
     return {&commandBuffer};
 }
 
-auto Renderer::endFrame() -> void {
+void Renderer::endFrame() {
     core::expect(m_frameInProgress, "cannot end frame if a frame has not been started");
 
     const auto &commandBuffer = m_commandBuffers[m_currentFrameIndex];
@@ -57,7 +57,7 @@ auto Renderer::endFrame() -> void {
     m_currentFrameIndex = (m_currentFrameIndex + 1) % k_maxFramesInFlight;
 }
 
-auto Renderer::rebuildSwapchain() -> void {
+void Renderer::rebuildSwapchain() {
     core::expect(!m_frameInProgress, "cannot rebuild swapchain while frame is in progress");
     createSwapchain();
 }
@@ -77,7 +77,7 @@ auto Renderer::getAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorS
 
 auto Renderer::getActiveSurfaceFormat() const -> const SurfaceFormat & { return *m_activeSurfaceFormat; }
 
-auto Renderer::setActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void {
+void Renderer::setActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const {
     auto pred = [&colorSpace](const SurfaceFormat &surfaceFormat) { return surfaceFormat.colorSpace == colorSpace; };
     auto it = std::ranges::find_if(m_availableSurfaceFormats, pred);
     core::expect(it != m_availableSurfaceFormats.end(), "the requested color space must be available");
@@ -92,7 +92,7 @@ auto Renderer::getAvailablePresentModes() const -> const std::unordered_set<vk::
 
 auto Renderer::getActivePresentMode() const -> const vk::PresentModeKHR & { return *m_activePresentMode; }
 
-auto Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const -> void {
+void Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const {
     auto it = m_availablePresentModes.find(presentMode);
     core::expect(it != m_availablePresentModes.end(), "the requested present mode must be available");
 
@@ -102,7 +102,7 @@ auto Renderer::setActivePresentMode(vk::PresentModeKHR presentMode) const -> voi
 
 auto Renderer::getCurrentSwapchainImage() -> vk::Image & { return m_swapchain->getImage(m_currentImageIndex); }
 
-auto Renderer::probeSurfaceFormats() -> void {
+void Renderer::probeSurfaceFormats() {
     auto surfaceFormats = m_context.getPhysicalDevice().getSurfaceFormatsKHR(m_context.getSurface());
     core::expect(!surfaceFormats.empty(), "failed to get surface formats");
 
@@ -141,7 +141,7 @@ auto Renderer::probeSurfaceFormats() -> void {
                     if (hdrColorSpace) {
                         m_hdrSupport = true;
                     }
-                    m_availableSurfaceFormats.emplace_back(hdrColorSpace, surfaceFormat.format, surfaceFormat.colorSpace);
+                    m_availableSurfaceFormats.emplace_back(hdrColorSpace, surfaceFormat.colorSpace, surfaceFormat.format);
                     break;
                 }
 
@@ -162,7 +162,7 @@ auto Renderer::probeSurfaceFormats() -> void {
     }
 }
 
-auto Renderer::probePresentModes() -> void {
+void Renderer::probePresentModes() {
     auto presentModes = m_context.getPhysicalDevice().getSurfacePresentModesKHR(m_context.getSurface());
     core::expect(!presentModes.empty(), "failed to get surface present mode count");
 
@@ -190,24 +190,31 @@ auto Renderer::probePresentModes() -> void {
     }
 }
 
-auto Renderer::createSwapchain() -> void {
-    Swapchain::Spec swapchainSpec{m_context};
-    swapchainSpec.windowExtent = m_window.getExtent();
-    swapchainSpec.colorSpace = m_activeSurfaceFormat->colorSpace;
-    swapchainSpec.format = m_activeSurfaceFormat->format;
-    swapchainSpec.presentMode = *m_activePresentMode;
+void Renderer::createSwapchain() {
+    const auto &[_, colorSpace, format] = *m_activeSurfaceFormat;
 
     if (m_swapchain == nullptr) {
-        swapchainSpec.oldSwapchain = nullptr;
-        m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
+        m_swapchain = std::make_unique<Swapchain>(
+            m_context,
+            m_window.getExtent(),
+            colorSpace,
+            format,
+            *m_activePresentMode
+        );
     } else {
         std::unique_ptr oldSwapChain = std::move(m_swapchain);
-        swapchainSpec.oldSwapchain = std::move(oldSwapChain);
-        m_swapchain = std::make_unique<Swapchain>(swapchainSpec);
+        m_swapchain = std::make_unique<Swapchain>(
+            m_context,
+            m_window.getExtent(),
+            colorSpace,
+            format,
+            *m_activePresentMode,
+            std::move(oldSwapChain)
+        );
     }
 }
 
-auto Renderer::createCommandBuffers() -> void {
+void Renderer::createCommandBuffers() {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
     commandBufferAi.commandPool = m_context.getGraphicsQueue().getCommandPool();

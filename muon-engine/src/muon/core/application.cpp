@@ -1,6 +1,5 @@
 #include "muon/core/application.hpp"
 
-#include "muon/asset/loaders/png.hpp"
 #include "muon/core/debug.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
@@ -27,18 +26,9 @@ Application::Application(
     Log::setLogLevel(logLevel);
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
-
     m_window = std::make_unique<Window>(m_name, extent, mode, *m_dispatcher);
-
     m_context = std::make_unique<graphics::Context>(*m_window);
-
-    graphics::Renderer::Spec rendererSpec{*m_window, *m_context};
-    rendererSpec.vsync = vsync;
-    m_renderer = std::make_unique<graphics::Renderer>(rendererSpec);
-
-    asset::AssetManager::Spec assetManagerSpec{*m_context};
-    assetManagerSpec.loaders = {new asset::PngLoader()};
-    m_assetManager = std::make_unique<asset::AssetManager>(assetManagerSpec);
+    m_renderer = std::make_unique<graphics::Renderer>(*m_window, *m_context, vsync);
 
     m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) { m_running = false; });
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "muon/asset/asset_manager.hpp"
 #include "muon/core/layer_stack.hpp"
 #include "muon/core/no_copy.hpp"
 #include "muon/core/no_move.hpp"
@@ -43,7 +42,6 @@ protected:
     std::unique_ptr<Window> m_window{nullptr};
     std::unique_ptr<graphics::Context> m_context{nullptr};
     std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
-    std::unique_ptr<asset::AssetManager> m_assetManager{nullptr};
 
     bool m_running{false};
 

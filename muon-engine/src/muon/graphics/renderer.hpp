@@ -15,49 +15,39 @@ namespace muon::graphics {
 
 struct SurfaceFormat {
     bool isHdr{false};
-    vk::Format format{vk::Format::eUndefined};
     vk::ColorSpaceKHR colorSpace{vk::ColorSpaceKHR::eSrgbNonlinear};
+    vk::Format format{vk::Format::eUndefined};
 };
 
 class Renderer : NoCopy, NoMove {
 public:
-    struct Spec {
-        const Window &window;
-        const Context &context;
-
-        bool vsync{false};
-
-        Spec(const Window &window, const Context &context) : window{window}, context{context} {}
-    };
-
-public:
-    Renderer(const Spec &spec);
+    Renderer(const Window &window, const Context &context, bool vsync = false);
     ~Renderer();
 
     [[nodiscard]] auto beginFrame() -> std::optional<vk::raii::CommandBuffer *>;
-    auto endFrame() -> void;
+    void endFrame();
 
-    auto rebuildSwapchain() -> void;
+    void rebuildSwapchain();
 
 public:
     auto hasHdrSupport() const -> bool;
 
     auto getAvailableColorSpaces(bool hdr) const -> std::vector<vk::ColorSpaceKHR>;
     auto getActiveSurfaceFormat() const -> const SurfaceFormat &;
-    auto setActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const -> void;
+    void setActiveSurfaceFormat(vk::ColorSpaceKHR colorSpace) const;
     auto isHdrEnabled() const -> bool;
 
     auto getAvailablePresentModes() const -> const std::unordered_set<vk::PresentModeKHR> &;
     auto getActivePresentMode() const -> const vk::PresentModeKHR &;
-    auto setActivePresentMode(vk::PresentModeKHR presentMode) const -> void;
+    void setActivePresentMode(vk::PresentModeKHR presentMode) const;
 
     auto getCurrentSwapchainImage() -> vk::Image &;
 
 private:
-    auto probeSurfaceFormats() -> void;
-    auto probePresentModes() -> void;
-    auto createSwapchain() -> void;
-    auto createCommandBuffers() -> void;
+    void probeSurfaceFormats();
+    void probePresentModes();
+    void createSwapchain();
+    void createCommandBuffers();
 
 private:
     const Window &m_window;

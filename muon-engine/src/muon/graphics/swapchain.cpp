@@ -13,14 +13,20 @@ namespace muon::graphics {
 
 constexpr uint64_t k_waitDuration = 30'000'000'000;
 
-Swapchain::Swapchain(const Spec &spec)
-    : m_context(spec.context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(spec.oldSwapchain),
-      m_format(spec.format), m_colorSpace(spec.colorSpace) {
-    createSwapchain(spec.windowExtent, spec.presentMode);
+Swapchain::Swapchain(
+    const Context &context,
+    vk::Extent2D extent,
+    vk::ColorSpaceKHR colorSpace,
+    vk::Format format,
+    vk::PresentModeKHR presentMode,
+    std::shared_ptr<Swapchain> oldSwapchain
+) : m_context(context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(oldSwapchain),
+m_format(format), m_colorSpace(colorSpace) {
+    createSwapchain(extent, presentMode);
     createImageViews();
     createSyncObjects();
 
-    if (spec.oldSwapchain) {
+    if (oldSwapchain) {
         core::debug("created swapchain with dimensions: {}x{} from old swapchain", m_extent.width, m_extent.height);
     } else {
         core::debug("created swapchain with dimensions: {}x{}", m_extent.width, m_extent.height);
@@ -125,7 +131,7 @@ auto Swapchain::getWidth() const -> uint32_t { return m_extent.width; }
 auto Swapchain::getHeight() const -> uint32_t { return m_extent.height; }
 auto Swapchain::getAspectRatio() const -> float { return static_cast<float>(m_extent.width) / m_extent.height; }
 
-auto Swapchain::createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) -> void {
+void Swapchain::createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR presentMode) {
     auto capabilities = m_context.getPhysicalDevice().getSurfaceCapabilities2EXT(m_context.getSurface());
 
     vk::Extent2D extent{};
@@ -178,7 +184,7 @@ auto Swapchain::createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     m_oldSwapchain = nullptr;
 }
 
-auto Swapchain::createImageViews() -> void {
+void Swapchain::createImageViews() {
     bool swizzle = false;
     if (m_format == vk::Format::eB8G8R8A8Srgb || m_format == vk::Format::eA2B10G10R10UnormPack32) {
         swizzle = true;
@@ -208,7 +214,7 @@ auto Swapchain::createImageViews() -> void {
     }
 }
 
-auto Swapchain::createSyncObjects() -> void {
+void Swapchain::createSyncObjects() {
     vk::SemaphoreCreateInfo semaphoreCi;
 
     vk::FenceCreateInfo fenceCi;
