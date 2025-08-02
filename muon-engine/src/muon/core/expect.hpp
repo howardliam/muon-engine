@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fmt/base.h"
+#include "muon/core/debug.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/platform.hpp"
 
@@ -16,43 +17,29 @@ concept BooleanTestable = requires(T &&t) {
 
 namespace core {
 
-#ifdef MU_DEBUG
-
 template <BooleanTestable Condition, typename... Args>
 auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
-    if (!static_cast<bool>(std::forward<Condition>(condition))) {
-        Log::getCoreLogger()->error(message, std::forward<Args>(args)...);
-        invokeDebugTrap();
+    if constexpr (k_debugEnabled) {
+        if (!static_cast<bool>(std::forward<Condition>(condition))) {
+            Log::getCoreLogger()->error(message, std::forward<Args>(args)...);
+            invokeDebugTrap();
+        }
     }
 }
-
-#else
-
-template <BooleanTestable Condition, typename... Args>
-auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {}
-
-#endif
 
 } // namespace core
 
 namespace client {
 
-#ifdef MU_DEBUG
-
 template <BooleanTestable Condition, typename... Args>
 auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {
-    if (!static_cast<bool>(std::forward<Condition>(condition))) {
-        Log::getClientLogger()->error(message, std::forward<Args>(args)...);
-        invokeDebugTrap();
+    if constexpr (k_debugEnabled) {
+        if (!static_cast<bool>(std::forward<Condition>(condition))) {
+            Log::getClientLogger()->error(message, std::forward<Args>(args)...);
+            invokeDebugTrap();
+        }
     }
 }
-
-#else
-
-template <BooleanTestable Condition, typename... Args>
-auto expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) -> void {}
-
-#endif
 
 } // namespace client
 

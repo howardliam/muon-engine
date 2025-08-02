@@ -57,6 +57,7 @@ target_sources(
         src/muon/config/config_manager.hpp
 
         src/muon/core/application.hpp
+        src/muon/core/debug.hpp
         src/muon/core/entry_point.hpp
         src/muon/core/expect.hpp
         src/muon/core/layer.hpp
