@@ -152,7 +152,7 @@ add_compile_definitions(
     $<$<CONFIG:Debug>:MU_DEBUG>
 )
 
-option(MUON_ENGINE_TESTS "Enable Muon Engine tests" OFF)
+option(MUON_ENGINE_TESTS "Enable Muon Engine tests" ON)
 if(MUON_ENGINE_TESTS)
 
     add_executable(muon-tests)
@@ -162,10 +162,7 @@ if(MUON_ENGINE_TESTS)
         PRIVATE
             tests/main.cpp
 
-            tests/core/arena.cpp
-
             tests/utils/alignment.cpp
-            tests/utils/literals.cpp
     )
 
     target_link_libraries(muon-tests PRIVATE

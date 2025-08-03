@@ -5,7 +5,7 @@
 #include <catch2/catch_session.hpp>
 
 auto main(int32_t count, char **arguments) -> int32_t {
-    muon::Log::Init();
+    muon::Log::init();
 
     return Catch::Session().run(count, arguments);
 }
