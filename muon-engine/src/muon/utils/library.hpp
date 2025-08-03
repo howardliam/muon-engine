@@ -6,8 +6,10 @@
 
 namespace muon::utils {
 
-struct DynamicLibraryError {
-    const char *message;
+enum class DynamicLibraryError {
+    LibraryOpenFailure,
+    SymbolLoadFailure,
+    LibraryCloseFailure,
 };
 
 auto openDynamicLibrary(const std::filesystem::path &path) -> std::expected<void *, DynamicLibraryError>;

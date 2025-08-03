@@ -1,3 +1,4 @@
+#include "muon/core/log.hpp"
 #include "muon/utils/library.hpp"
 
 #include <expected>
@@ -6,10 +7,29 @@
 
 namespace muon::utils {
 
+void printError(const DWORD errorCode) {
+    void *msgBuffer;
+    FormatMessage(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        errorCode,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        reinterpret_cast<char *>(&msgBuffer),
+        0,
+        nullptr
+    );
+
+    core::error("{}", static_cast<char *>(msgBuffer));
+
+    LocalFree(msgBuffer);
+}
+
+
 auto openDynamicLibrary(const std::filesystem::path &path) -> std::expected<void *, DynamicLibraryError> {
     void *handle = LoadLibrary(path.c_str());
     if (!handle) {
-        return std::unexpected(DynamicLibraryError{GetLastError()});
+        printError(GetLastError());
+        return std::unexpected(DynamicLibraryError::LibraryOpenFailure);
     }
 
     return handle;
@@ -18,7 +38,8 @@ auto openDynamicLibrary(const std::filesystem::path &path) -> std::expected<void
 auto loadSymbol(void *handle, const std::string_view name) -> std::expected<void *, DynamicLibraryError> {
     void *symbol = GetProcAddress(handle, name.data());
     if (!symbol) {
-        return std::unexpected(DynamicLibraryError{GetLastError()});
+        printError(GetLastError());
+        return std::unexpected(DynamicLibraryError::SymbolLoadFailure);
     }
 
     return symbol;
@@ -27,7 +48,8 @@ auto loadSymbol(void *handle, const std::string_view name) -> std::expected<void
 auto closeDynamicLibrary(void *handle) -> std::expected<void, DynamicLibraryError> {
     int32_t result = FreeLibrary(handle);
     if (result != 0) {
-        return std::unexpected(DynamicLibraryError{GetLastError()});
+        printError(GetLastError());
+        return std::unexpected(DynamicLibraryError::LibraryCloseFailure);
     }
 
     return {};
