@@ -39,10 +39,10 @@ public:
     void setMonitor();
     void setMode(WindowMode mode);
 
-    auto getExtent() const -> VkExtent2D;
+    auto getExtent() const -> vk::Extent2D;
     auto getWidth() const -> uint32_t;
     auto getHeight() const -> uint32_t;
-    auto getRefreshRate() const -> uint32_t;
+    auto getRefreshRate() const -> uint16_t;
     auto getRequiredExtensions() const -> std::vector<const char *>;
     auto getClipboardContents() const -> const char *;
 
@@ -60,7 +60,7 @@ private:
 
         std::string title;
         vk::Extent2D extent;
-        uint32_t refreshRate;
+        uint16_t refreshRate;
         bool rawMouseMotion{false};
 
         Data(const event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}

@@ -99,10 +99,10 @@ void Window::setMode(WindowMode mode) {
     glfwSetWindowMonitor(m_window, monitor, 0, 0, m_data.extent.width, m_data.extent.height, m_data.refreshRate);
 }
 
-auto Window::getExtent() const -> VkExtent2D { return m_data.extent; }
+auto Window::getExtent() const -> vk::Extent2D { return m_data.extent; }
 auto Window::getWidth() const -> uint32_t { return m_data.extent.width; }
 auto Window::getHeight() const -> uint32_t { return m_data.extent.height; }
-auto Window::getRefreshRate() const -> uint32_t { return m_data.refreshRate; }
+auto Window::getRefreshRate() const -> uint16_t { return m_data.refreshRate; }
 
 auto Window::getRequiredExtensions() const -> std::vector<const char *> {
     uint32_t count = 0;
