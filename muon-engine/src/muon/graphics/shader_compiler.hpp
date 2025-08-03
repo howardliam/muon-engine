@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SQLiteCpp/Database.h"
-#include "muon/crypto/crypto.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -33,7 +32,6 @@ private:
 
 private:
     SQLite::Database m_hashStore;
-    crypto::Crypto m_crypto;
 
     std::queue<ShaderCompilationRequest> m_workQueue{};
     std::mutex m_workMutex;

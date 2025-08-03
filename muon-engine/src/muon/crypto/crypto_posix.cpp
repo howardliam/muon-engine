@@ -34,11 +34,11 @@ using DigestFinalFn = int32_t (*)(void *, uint8_t *, uint32_t *);
 DigestFinalFn digestFinal;
 
 void loadFunctionPointers() {
-    auto loadResult = utils::openDynamicLibrary("libcrypto.so");
-    core::expect(loadResult, "failed to open library: libcrypto.so");
-    g_libraryHandle = *loadResult;
+    auto openResult = utils::openDynamicLibrary("libcrypto.so");
+    core::expect(openResult, "failed to open library: libcrypto.so");
+    g_libraryHandle = *openResult;
 
-    loadResult = utils::loadSymbol(g_libraryHandle, "OPENSSL_init_crypto");
+    auto loadResult = utils::loadSymbol(g_libraryHandle, "OPENSSL_init_crypto");
     core::expect(loadResult, "failed to load symbol: OPENSSL_init_crypto");
     initCrypto = reinterpret_cast<InitCryptoFn>(*loadResult);
 
@@ -73,20 +73,23 @@ void loadFunctionPointers() {
     digestFinal = reinterpret_cast<DigestFinalFn>(*loadResult);
 }
 
-Crypto::Crypto() {
+void init() {
     std::call_once(s_loadFlag, loadFunctionPointers);
 }
 
-Crypto::~Crypto() {}
+void cleanup() {
+    auto closeResult = utils::closeDynamicLibrary(g_libraryHandle);
+    core::expect(closeResult, "failed to close library: libcrypto.so");
+}
 
-auto Crypto::hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
+auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
     std::array<uint8_t, k_hashSize> output;
     sha256(data, size, output.data());
 
     return output;
 }
 
-auto Crypto::hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
+auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
     const void *md = getDigestByName("sha256");
     void *ctx = mdCtxNew();
 

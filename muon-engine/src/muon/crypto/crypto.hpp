@@ -6,6 +6,10 @@
 #include <fstream>
 #include <mutex>
 
+namespace {
+    static inline std::once_flag s_loadFlag;
+}
+
 namespace muon::crypto {
 
 constexpr size_t k_hashSize = 32;
@@ -16,17 +20,10 @@ enum class CryptoError {
     FinalizationFailure,
 };
 
-class Crypto {
-public:
-    Crypto();
-    ~Crypto();
+void init();
+void cleanup();
 
-    auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError>;
-    auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError>;
-
-private:
-    static inline std::once_flag s_loadFlag;
-};
-
+auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError>;
+auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError>;
 
 }

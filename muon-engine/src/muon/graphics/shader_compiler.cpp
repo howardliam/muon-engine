@@ -7,6 +7,7 @@
 #include "glslang/Public/ShaderLang.h"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
+#include "muon/crypto/crypto.hpp"
 
 #include <algorithm>
 #include <array>
@@ -223,7 +224,7 @@ auto ShaderCompiler::compile(const ShaderCompilationRequest &request) -> void {
     }
     readQuery.reset();
 
-    auto hashResult = m_crypto.hash(file);
+    auto hashResult = crypto::hash(file);
     if (!hashResult.has_value()) {
         core::error("failed to hash file contents: {}", request.path.string());
         return;
