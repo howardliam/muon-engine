@@ -7,7 +7,10 @@
 #include <mutex>
 
 namespace {
-    static inline std::once_flag s_loadFlag;
+    static inline std::once_flag s_initFlag;
+    static inline std::once_flag s_cleanupFlag;
+
+    constexpr const char *k_hashDigest = "sha256";
 }
 
 namespace muon::crypto {

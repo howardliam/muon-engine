@@ -30,53 +30,57 @@ DigestUpdateFn EVP_DigestUpdate;
 using DigestFinalFn = int32_t (*)(void *, uint8_t *, uint32_t *);
 DigestFinalFn EVP_DigestFinal_ex;
 
-void loadFunctionPointers() {
-    auto openResult = utils::openDynamicLibrary("libcrypto.so");
-    core::expect(openResult, "failed to open library: libcrypto.so");
-    g_libraryHandle = *openResult;
-
-    auto loadResult = utils::loadSymbol(g_libraryHandle, "OPENSSL_init_crypto");
-    core::expect(loadResult, "failed to load symbol: OPENSSL_init_crypto");
-    OPENSSL_init_crypto = reinterpret_cast<InitCryptoFn>(*loadResult);
-
-    OPENSSL_init_crypto(0x00000008, nullptr);
-
-    loadResult = utils::loadSymbol(g_libraryHandle, "EVP_get_digestbyname");
-    core::expect(loadResult, "failed to load symbol: EVP_get_digestbyname");
-    EVP_get_digestbyname = reinterpret_cast<GetDigestByNameFn>(*loadResult);
-
-    loadResult = utils::loadSymbol(g_libraryHandle, "EVP_MD_CTX_new");
-    core::expect(loadResult, "failed to load symbol: EVP_MD_CTX_new");
-    EVP_MD_CTX_new = reinterpret_cast<MdCtxNewFn>(*loadResult);
-
-    loadResult = utils::loadSymbol(g_libraryHandle, "EVP_MD_CTX_free");
-    core::expect(loadResult, "failed to load symbol: EVP_MD_CTX_free");
-    EVP_MD_CTX_free = reinterpret_cast<MdCtxFreeFn>(*loadResult);
-
-    loadResult = utils::loadSymbol(g_libraryHandle, "EVP_DigestInit_ex");
-    core::expect(loadResult, "failed to load symbol: EVP_DigestInit_ex");
-    EVP_DigestInit_ex = reinterpret_cast<DigestInitFn>(*loadResult);
-
-    loadResult = utils::loadSymbol(g_libraryHandle, "EVP_DigestUpdate");
-    core::expect(loadResult, "failed to load symbol: EVP_DigestUpdate");
-    EVP_DigestUpdate = reinterpret_cast<DigestUpdateFn>(*loadResult);
-
-    loadResult = utils::loadSymbol(g_libraryHandle, "EVP_DigestFinal_ex");
-    core::expect(loadResult, "failed to load symbol: EVP_DigestFinal_ex");
-    EVP_DigestFinal_ex = reinterpret_cast<DigestFinalFn>(*loadResult);
-}
-
 void init() {
-    std::call_once(s_loadFlag, loadFunctionPointers);
+    auto initLibrary = []() {
+        auto openResult = utils::openDynamicLibrary("libcrypto.so");
+        core::expect(openResult, "failed to open library: libcrypto.so");
+        g_libraryHandle = *openResult;
+
+        auto loadResult = utils::loadSymbol(g_libraryHandle, "OPENSSL_init_crypto");
+        core::expect(loadResult, "failed to load symbol: OPENSSL_init_crypto");
+        OPENSSL_init_crypto = reinterpret_cast<InitCryptoFn>(*loadResult);
+
+        OPENSSL_init_crypto(0x00000008, nullptr);
+
+        loadResult = utils::loadSymbol(g_libraryHandle, "EVP_get_digestbyname");
+        core::expect(loadResult, "failed to load symbol: EVP_get_digestbyname");
+        EVP_get_digestbyname = reinterpret_cast<GetDigestByNameFn>(*loadResult);
+
+        loadResult = utils::loadSymbol(g_libraryHandle, "EVP_MD_CTX_new");
+        core::expect(loadResult, "failed to load symbol: EVP_MD_CTX_new");
+        EVP_MD_CTX_new = reinterpret_cast<MdCtxNewFn>(*loadResult);
+
+        loadResult = utils::loadSymbol(g_libraryHandle, "EVP_MD_CTX_free");
+        core::expect(loadResult, "failed to load symbol: EVP_MD_CTX_free");
+        EVP_MD_CTX_free = reinterpret_cast<MdCtxFreeFn>(*loadResult);
+
+        loadResult = utils::loadSymbol(g_libraryHandle, "EVP_DigestInit_ex");
+        core::expect(loadResult, "failed to load symbol: EVP_DigestInit_ex");
+        EVP_DigestInit_ex = reinterpret_cast<DigestInitFn>(*loadResult);
+
+        loadResult = utils::loadSymbol(g_libraryHandle, "EVP_DigestUpdate");
+        core::expect(loadResult, "failed to load symbol: EVP_DigestUpdate");
+        EVP_DigestUpdate = reinterpret_cast<DigestUpdateFn>(*loadResult);
+
+        loadResult = utils::loadSymbol(g_libraryHandle, "EVP_DigestFinal_ex");
+        core::expect(loadResult, "failed to load symbol: EVP_DigestFinal_ex");
+        EVP_DigestFinal_ex = reinterpret_cast<DigestFinalFn>(*loadResult);
+    };
+
+    std::call_once(s_initFlag, initLibrary);
 }
 
 void cleanup() {
-    auto closeResult = utils::closeDynamicLibrary(g_libraryHandle);
-    core::expect(closeResult, "failed to close library: libcrypto.so");
+    auto cleanupLibrary = []() {
+        auto closeResult = utils::closeDynamicLibrary(g_libraryHandle);
+        core::expect(closeResult, "failed to close library: libcrypto.so");
+    };
+
+    std::call_once(s_cleanupFlag, cleanupLibrary);
 }
 
 auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
-    const void *md = EVP_get_digestbyname("sha256");
+    const void *md = EVP_get_digestbyname(k_hashDigest);
     void *ctx = EVP_MD_CTX_new();
 
     int32_t result = EVP_DigestInit_ex(ctx, md, nullptr);
@@ -101,7 +105,7 @@ auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t,
 }
 
 auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, CryptoError> {
-    const void *md = EVP_get_digestbyname("sha256");
+    const void *md = EVP_get_digestbyname(k_hashDigest);
     void *ctx = EVP_MD_CTX_new();
 
     int32_t result = EVP_DigestInit_ex(ctx, md, nullptr);
