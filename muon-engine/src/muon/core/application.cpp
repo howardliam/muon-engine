@@ -6,7 +6,7 @@
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "spdlog/common.h"
+#include "spdlog/spdlog.h"
 #include "vulkan/vulkan_enums.hpp"
 
 #include <memory>
@@ -23,9 +23,9 @@ Application::Application(
     s_instance = this;
 
     if constexpr (k_debugEnabled) {
-        Log::setLogLevel(spdlog::level::trace);
+        spdlog::set_level(spdlog::level::trace);
     } else {
-        Log::setLogLevel(spdlog::level::info);
+        spdlog::set_level(spdlog::level::info);
     }
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
