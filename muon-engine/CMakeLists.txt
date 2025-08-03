@@ -140,7 +140,7 @@ target_link_libraries(muon-engine PUBLIC
     fmt::fmt spdlog::spdlog_header_only
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
     glfw eventpp::eventpp
-    Vulkan::Headers Vulkan::Loader Vulkan::Hpp
+    Vulkan::Headers Vulkan::Hpp
     VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
     glm
     magic_enum::magic_enum
