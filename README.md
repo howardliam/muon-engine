@@ -36,21 +36,33 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 - madler/zlib
 - facebook/zstd
 
-### Configuration
-- nlohmann/json
-- jbeder/yaml-cpp
-
 ### Crypto
-- libtom/libtommath
-- libtom/libtomcrypt
+- jedisct1/libsodium
 
 ### Events
 - wqking/eventpp
 
-### Game
-- skypjack/entt
+### Images
+- randy408/libspng
 
-### Graphics
+### Logging
+- fmtlib/fmt
+- gabime/spdlog
+
+### Maths
+- g-truc/glm
+
+### Serialization
+- nlohmann/json
+- jbeder/yaml-cpp
+
+### Testing
+- catchorg/catch2
+
+### Utils
+- Neargye/magic_enum
+
+### Vulkan
 - KhronosGroup/SPIRV-Headers
 - KhronosGroup/SPIRV-Reflect
 - KhronosGroup/SPIRV-Tools
@@ -58,21 +70,6 @@ Muon is an experimental game engine built for curiosity and learning graphics pr
 - KhronosGroup/Vulkan-Headers
 - KhronosGroup/Vulkan-Loader
 - GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-- g-truc/glm
-
-### Images
-- randy408/libspng
-- KhronosGroup/KTX-Software
-
-### Logging
-- fmtlib/fmt
-- gabime/spdlog
-
-### Profiling
-- wolfpld/tracy
-
-### Testing
-- catchorg/catch2
 
 ### Windowing
 - glfw/glfw
