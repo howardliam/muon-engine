@@ -7,7 +7,7 @@
 #include "glslang/Public/ShaderLang.h"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
-#include "muon/crypto/crypto.hpp"
+#include "muon/crypto/hash.hpp"
 
 #include <algorithm>
 #include <array>

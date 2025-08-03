@@ -16,6 +16,8 @@ target_sources(
         src/muon/core/log.cpp
         src/muon/core/window.cpp
 
+        src/muon/crypto/hash.cpp
+
         src/muon/format/bytes.cpp
 
         src/muon/fs/fs.cpp
@@ -68,7 +70,7 @@ target_sources(
         src/muon/core/serialization.hpp
         src/muon/core/window.hpp
 
-        src/muon/crypto/crypto.hpp
+        src/muon/crypto/hash.hpp
 
         src/muon/event/dispatcher.hpp
         src/muon/event/event.hpp
@@ -116,7 +118,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         muon-engine
         PRIVATE
             src/muon/core/platform_posix.cpp
-            src/muon/crypto/crypto_posix.cpp
             src/muon/utils/library_posix.cpp
     )
 
@@ -133,6 +134,7 @@ endif()
 
 target_link_libraries(muon-engine PRIVATE
     spirv-reflect-static SPIRV-Tools glslang
+    sodium
 )
 
 target_link_libraries(muon-engine PUBLIC
