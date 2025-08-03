@@ -39,7 +39,7 @@ auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, 32>, HashErr
     file.seekg(0, std::ios::beg);
 
     std::array<uint8_t, 32> output;
-    crypto_generichash_final(&state, output.data(), output.size());
+    result = crypto_generichash_final(&state, output.data(), output.size());
     if (result != 0) {
         return std::unexpected(HashError::FinalizationFailure);
     }
