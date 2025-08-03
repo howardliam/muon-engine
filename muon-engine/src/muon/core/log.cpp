@@ -44,8 +44,6 @@ void init() {
     std::call_once(g_loggerInit, initSpdlog);
 }
 
-void setLogLevel(spdlog::level::level_enum level) { spdlog::set_level(level); }
-
 } // namespace log
 
 } // namespace muon

@@ -18,7 +18,6 @@ extern std::shared_ptr<spdlog::logger> s_clientLogger;
 } // namespace internal
 
 void init();
-void setLogLevel(spdlog::level::level_enum level);
 
 } // namespace log
 
