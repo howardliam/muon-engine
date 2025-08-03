@@ -121,10 +121,10 @@ void Context::createInstance(const Window &window) {
     appInfo.apiVersion = k_vulkanApiVersion;
 
     appInfo.pApplicationName = Application::get().getName().data();
-    appInfo.applicationVersion = vk::makeVersion(0, 1, 0);
+    appInfo.applicationVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
 
     appInfo.pEngineName = "Muon";
-    appInfo.engineVersion = vk::makeVersion(0, 1, 0);
+    appInfo.engineVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
 
     vk::InstanceCreateInfo instanceCi;
     instanceCi.enabledExtensionCount = extensions.size();
