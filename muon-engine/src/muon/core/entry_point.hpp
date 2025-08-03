@@ -9,7 +9,7 @@
 extern auto muon::createApplication(size_t argCount, char **argArray) -> Application *;
 
 auto main(int32_t argCount, char **argArray) -> int32_t {
-    muon::Log::init();
+    muon::log::init();
 
     if (muon::isRunAsRoot()) {
         muon::core::error("cannot be run with elevated privileges");

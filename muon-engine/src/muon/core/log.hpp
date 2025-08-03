@@ -8,69 +8,69 @@
 
 namespace muon {
 
-class Log {
-public:
-    static void init();
+namespace log {
 
-    static auto getCoreLogger() -> std::shared_ptr<spdlog::logger> &;
-    static auto getClientLogger() -> std::shared_ptr<spdlog::logger> &;
+namespace internal {
 
-    static void setLogLevel(spdlog::level::level_enum level);
+extern std::shared_ptr<spdlog::logger> s_coreLogger;
+extern std::shared_ptr<spdlog::logger> s_clientLogger;
 
-private:
-    static inline std::shared_ptr<spdlog::logger> s_coreLogger{nullptr};
-    static inline std::shared_ptr<spdlog::logger> s_clientLogger{nullptr};
-};
+} // namespace internal
+
+void init();
+void setLogLevel(spdlog::level::level_enum level);
+
+} // namespace log
 
 namespace core {
 
 template <typename... Args>
 inline void trace(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
-        Log::getCoreLogger()->trace(message, std::forward<Args>(args)...);
+        log::internal::s_coreLogger->trace(message, std::forward<Args>(args)...);
     }
 }
 inline void trace(const char *message) {
     if constexpr (k_debugEnabled) {
-        Log::getCoreLogger()->trace(message);
+        log::internal::s_coreLogger->trace(message);
     }
 }
 
 template <typename... Args>
 inline void debug(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
-        Log::getCoreLogger()->debug(message, std::forward<Args>(args)...);
+        log::internal::s_coreLogger->debug(message, std::forward<Args>(args)...);
     }
 }
 inline void debug(const char *message) {
     if constexpr (k_debugEnabled) {
-        Log::getCoreLogger()->debug(message);
+        log::internal::s_coreLogger->debug(message);
     }
 }
 
 template <typename... Args>
 inline void info(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getCoreLogger()->info(message, std::forward<Args>(args)...);
+    log::internal::s_coreLogger->info(message, std::forward<Args>(args)...);
 }
-inline void info(const char *message) { Log::getCoreLogger()->info(message); }
+inline void info(const char *message) { log::internal::s_coreLogger->info(message); }
 
 template <typename... Args>
 inline void warn(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getCoreLogger()->warn(message, std::forward<Args>(args)...);
+    log::internal::s_coreLogger->warn(message, std::forward<Args>(args)...);
 }
-inline void warn(const char *message) { Log::getCoreLogger()->warn(message); }
+inline void warn(const char *message) { log::internal::s_coreLogger->warn(message); }
 
 template <typename... Args>
 inline void error(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getCoreLogger()->error(message, std::forward<Args>(args)...);
+    log::internal::s_coreLogger->error(message, std::forward<Args>(args)...);
 }
-inline void error(const char *message) { Log::getCoreLogger()->error(message); }
+inline void error(const char *message) { log::internal::s_coreLogger->error(message); }
 
 template <typename... Args>
 inline void critical(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getCoreLogger()->critical(message, std::forward<Args>(args)...);
+    log::internal::s_coreLogger->critical(message, std::forward<Args>(args)...);
 }
-inline void critical(const char *message) { Log::getCoreLogger()->critical(message); }
+inline void critical(const char *message) { log::internal::s_coreLogger->critical(message); }
 
 } // namespace core
 
@@ -79,50 +79,50 @@ namespace client {
 template <typename... Args>
 inline void trace(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
-        Log::getClientLogger()->trace(message, std::forward<Args>(args)...);
+        log::internal::s_clientLogger->trace(message, std::forward<Args>(args)...);
     }
 }
 inline void trace(const char *message) {
     if constexpr (k_debugEnabled) {
-        Log::getClientLogger()->trace(message);
+        log::internal::s_clientLogger->trace(message);
     }
 }
 
 template <typename... Args>
 inline void debug(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
-        Log::getClientLogger()->debug(message, std::forward<Args>(args)...);
+        log::internal::s_clientLogger->debug(message, std::forward<Args>(args)...);
     }
 }
 inline void debug(const char *message) {
     if constexpr (k_debugEnabled) {
-        Log::getClientLogger()->debug(message);
+        log::internal::s_clientLogger->debug(message);
     }
 }
 
 template <typename... Args>
 inline void info(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getClientLogger()->info(message, std::forward<Args>(args)...);
+    log::internal::s_clientLogger->info(message, std::forward<Args>(args)...);
 }
-inline void info(const char *message) { Log::getClientLogger()->info(message); }
+inline void info(const char *message) { log::internal::s_clientLogger->info(message); }
 
 template <typename... Args>
 inline void warn(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getClientLogger()->warn(message, std::forward<Args>(args)...);
+    log::internal::s_clientLogger->warn(message, std::forward<Args>(args)...);
 }
-inline void warn(const char *message) { Log::getClientLogger()->warn(message); }
+inline void warn(const char *message) { log::internal::s_clientLogger->warn(message); }
 
 template <typename... Args>
 inline void error(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getClientLogger()->error(message, std::forward<Args>(args)...);
+    log::internal::s_clientLogger->error(message, std::forward<Args>(args)...);
 }
-inline void error(const char *message) { Log::getClientLogger()->error(message); }
+inline void error(const char *message) { log::internal::s_clientLogger->error(message); }
 
 template <typename... Args>
 inline void critical(fmt::format_string<Args...> message, Args &&...args) {
-    Log::getClientLogger()->critical(message, std::forward<Args>(args)...);
+    log::internal::s_clientLogger->critical(message, std::forward<Args>(args)...);
 }
-inline void critical(const char *message) { Log::getClientLogger()->critical(message); }
+inline void critical(const char *message) { log::internal::s_clientLogger->critical(message); }
 
 } // namespace client
 
