@@ -22,8 +22,11 @@ Application::Application(
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
-    auto logLevel = k_debugEnabled ? spdlog::level::trace : spdlog::level::info;
-    Log::setLogLevel(logLevel);
+    if constexpr (k_debugEnabled) {
+        Log::setLogLevel(spdlog::level::trace);
+    } else {
+        Log::setLogLevel(spdlog::level::info);
+    }
 
     m_dispatcher = std::make_unique<event::Dispatcher>();
     m_window = std::make_unique<Window>(m_name, extent, mode, *m_dispatcher);
