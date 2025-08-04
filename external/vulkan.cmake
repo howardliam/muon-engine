@@ -42,13 +42,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(vulkan-headers)
 
-# FetchContent_Declare(
-#     vulkan-loader
-#     GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Loader.git
-#     GIT_TAG         ${VULKAN_TAG}
-# )
-# FetchContent_MakeAvailable(vulkan-loader)
-
 FetchContent_Declare(
     vulkan-hpp
     GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Hpp.git
