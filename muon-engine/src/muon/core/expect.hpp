@@ -3,7 +3,7 @@
 #include "fmt/base.h"
 #include "muon/core/debug.hpp"
 #include "muon/core/log.hpp"
-#include "muon/core/platform.hpp"
+#include "muon/utils/platform.hpp"
 
 #include <concepts>
 #include <utility>
@@ -22,7 +22,7 @@ void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
     if constexpr (k_debugEnabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::s_coreLogger->error(message, std::forward<Args>(args)...);
-            invokeDebugTrap();
+            utils::invokeDebugTrap();
         }
     }
 }
@@ -36,7 +36,7 @@ void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
     if constexpr (k_debugEnabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::s_clientLogger->error(message, std::forward<Args>(args)...);
-            invokeDebugTrap();
+            utils::invokeDebugTrap();
         }
     }
 }

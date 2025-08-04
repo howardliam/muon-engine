@@ -1,10 +1,10 @@
-#include "muon/utils/library.hpp"
+#include "muon/utils/platform.hpp"
 
 #include "muon/core/log.hpp"
 
+#include <csignal>
 #include <dlfcn.h>
-#include <expected>
-#include <filesystem>
+#include <unistd.h>
 
 namespace muon::utils {
 
@@ -38,4 +38,8 @@ auto closeDynamicLibrary(void *handle) -> std::expected<void, DynamicLibraryErro
     return {};
 }
 
-}
+void invokeDebugTrap() { raise(SIGTRAP); }
+
+auto isRunAsRoot() -> bool { return geteuid() == 0; }
+
+} // namespace muon

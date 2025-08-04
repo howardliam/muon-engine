@@ -66,7 +66,6 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
-        src/muon/core/platform.hpp
         src/muon/core/serialization.hpp
         src/muon/core/window.hpp
 
@@ -108,7 +107,7 @@ target_sources(
         src/muon/project/project.hpp
 
         src/muon/utils/alignment.hpp
-        src/muon/utils/library.hpp
+        src/muon/utils/platform.hpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -116,8 +115,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(
         muon-engine
         PRIVATE
-            src/muon/core/platform_posix.cpp
-            src/muon/utils/library_posix.cpp
+            src/muon/utils/platform_posix.cpp
     )
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -125,8 +123,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_sources(
         muon-engine
         PRIVATE
-            src/muon/core/platform_win32.cpp
-            src/muon/utils/library_win32.cpp
+            src/muon/utils/platform_win32.cpp
     )
 
 endif()
