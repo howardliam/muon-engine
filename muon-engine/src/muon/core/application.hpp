@@ -9,6 +9,7 @@
 #include "muon/graphics/renderer.hpp"
 
 #include <memory>
+#include <mutex>
 #include <string_view>
 
 namespace muon {
@@ -43,7 +44,8 @@ protected:
     std::unique_ptr<graphics::Context> m_context{nullptr};
     std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
 
-    bool m_running{false};
+    std::mutex m_runMutex;
+    bool m_running{true};
 
     static inline Application *s_instance{nullptr};
 };

@@ -46,8 +46,8 @@ void Application::pushLayer(Layer *layer) {
 }
 
 void Application::run() {
-    core::expect(!m_running, "application cannot already be running");
-    m_running = true;
+    std::unique_lock<std::mutex> lock{m_runMutex};
+
     core::info("running application");
 
     while (m_running) {
