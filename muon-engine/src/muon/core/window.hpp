@@ -30,11 +30,7 @@ public:
 
     void pollEvents();
 
-    void requestAttention() const;
-
-    auto createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR>;
-
-public:
+public: // class getters/setters
     auto getTitle() -> const std::string_view;
     void setTitle(const std::string_view title);
 
@@ -46,8 +42,17 @@ public:
 
     void setMode(WindowMode mode);
 
-    auto getClipboardText() const -> const char *;
+public: // underlying SDL API re-exposure
+    void requestAttention() const;
 
+    auto getClipboardText() const -> std::optional<std::string>;
+    void setClipboardText(const std::string_view text) const;
+
+    void beginTextInput();
+    void endTextInput();
+
+public: // Vulkan
+    auto createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR>;
     auto getRequiredExtensions() const -> std::vector<const char *>;
 
 private:
@@ -71,6 +76,8 @@ private:
 
     SDL_Window *m_window;
     SDL_DisplayID m_display;
+
+    bool m_textInput{false};
 };
 
 } // namespace muon

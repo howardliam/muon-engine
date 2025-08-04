@@ -4,6 +4,8 @@
 #include "SDL3/SDL_error.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_init.h"
+#include "SDL3/SDL_keyboard.h"
+#include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_vulkan.h"
 #include "muon/core/expect.hpp"
@@ -14,6 +16,7 @@
 #include "muon/input/modifier.hpp"
 #include "muon/input/mouse.hpp"
 #include "vulkan/vulkan_raii.hpp"
+#include <cstring>
 
 namespace muon {
 
@@ -80,23 +83,6 @@ void Window::pollEvents() {
     }
 }
 
-void Window::requestAttention() const {
-    if (!SDL_FlashWindow(m_window, SDL_FLASH_UNTIL_FOCUSED)) {
-        handleErrors();
-    }
-}
-
-auto Window::createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR> {
-    VkSurfaceKHR surface;
-
-    if (!SDL_Vulkan_CreateSurface(m_window, *instance, nullptr, &surface)) {
-        handleErrors();
-        return std::nullopt;
-    }
-
-    return vk::raii::SurfaceKHR{instance, surface};
-}
-
 auto Window::getTitle() -> const std::string_view { return m_title; }
 void Window::setTitle(const std::string_view title) {
     m_title = title;
@@ -121,7 +107,63 @@ void Window::setMode(WindowMode mode) {
     }
 }
 
-auto Window::getClipboardText() const -> const char * { return SDL_GetClipboardText(); }
+void Window::requestAttention() const {
+    if (!SDL_FlashWindow(m_window, SDL_FLASH_UNTIL_FOCUSED)) {
+        handleErrors();
+    }
+}
+
+auto Window::getClipboardText() const -> std::optional<std::string> {
+    if (!SDL_HasClipboardText()) {
+        return std::nullopt;
+    }
+
+    char *rawText =  SDL_GetClipboardText();
+    if (std::strcmp(rawText, "") == 0) {
+        SDL_free(rawText);
+        return std::nullopt;
+    }
+
+    std::string text{rawText};
+    SDL_free(rawText);
+    return text;
+}
+
+void Window::setClipboardText(const std::string_view text) const {
+    SDL_SetClipboardText(text.data());
+}
+
+void Window::beginTextInput() {
+    core::expect(!m_textInput, "cannot begin text input while already accepting text input");
+
+    if (SDL_StartTextInput(m_window)) {
+        m_textInput = true;
+    } else {
+        handleErrors();
+
+    }
+}
+
+void Window::endTextInput() {
+    core::expect(m_textInput, "cannot end text input while not accepting text input");
+
+    if (!SDL_StopTextInput(m_window)) {
+        m_textInput = false;
+    } else {
+        handleErrors();
+    }
+}
+
+auto Window::createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR> {
+    VkSurfaceKHR surface;
+
+    if (!SDL_Vulkan_CreateSurface(m_window, *instance, nullptr, &surface)) {
+        handleErrors();
+        return std::nullopt;
+    }
+
+    return vk::raii::SurfaceKHR{instance, surface};
+}
 
 auto Window::getRequiredExtensions() const -> std::vector<const char *> {
     uint32_t count = 0;
