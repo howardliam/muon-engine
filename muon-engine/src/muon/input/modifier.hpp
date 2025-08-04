@@ -7,7 +7,7 @@ namespace muon::input {
 
 class Modifier {
 public:
-    Modifier(const uint8_t &modBitField);
+    Modifier(const uint16_t modBitField);
 
 public:
     auto isShiftDown() const -> bool;

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "SDL3/SDL_scancode.h"
+#include "SDL3/SDL_video.h"
 #include "muon/event/dispatcher.hpp"
 #include "vulkan/vulkan_raii.hpp"
-#define INCLUDE_GLFW_AFTER_VULKAN
-#include "GLFW/glfw3.h"
 
 #include <cstdint>
-#include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -15,7 +15,6 @@ namespace muon {
 
 enum class WindowMode {
     Windowed,
-    Fullscreen,
     BorderlessFullscreen,
 };
 
@@ -29,43 +28,49 @@ public:
     );
     ~Window();
 
-    void pollEvents() const;
+    void pollEvents();
 
     void requestAttention() const;
 
-    auto createSurface(const vk::raii::Instance &instance) const -> std::expected<vk::raii::SurfaceKHR, vk::Result>;
+    auto createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR>;
 
 public:
-    void setMonitor();
-    void setMode(WindowMode mode);
+    auto getTitle() -> const std::string_view;
+    void setTitle(const std::string_view title);
 
     auto getExtent() const -> vk::Extent2D;
     auto getWidth() const -> uint32_t;
     auto getHeight() const -> uint32_t;
+
     auto getRefreshRate() const -> uint16_t;
+
+    void setMode(WindowMode mode);
+
+    auto getClipboardText() const -> const char *;
+
     auto getRequiredExtensions() const -> std::vector<const char *>;
-    auto getClipboardContents() const -> const char *;
 
 private:
-    void configureDispatchers();
+    void handleErrors() const;
+
+    void onWindowQuit();
+    void onWindowResize(const uint32_t width, const uint32_t height);
+    void onWindowFocusChange(const bool focused);
+
+    void onKeyboard(const SDL_Scancode scancode, const bool down, const bool held, const uint16_t mods);
+
+    void onMouseButton(const uint8_t button, const bool down, const uint8_t clicks);
+    void onMouseMotion(const float x, const float y);
 
 private:
-    GLFWwindow *m_window;
-    GLFWmonitor *m_monitor;
-
+    std::string m_title;
+    vk::Extent2D m_extent;
+    uint16_t m_refreshRate;
     WindowMode m_mode;
+    const event::Dispatcher &m_dispatcher;
 
-    struct Data {
-        const event::Dispatcher &dispatcher;
-
-        std::string title;
-        vk::Extent2D extent;
-        uint16_t refreshRate;
-        bool rawMouseMotion{false};
-
-        Data(const event::Dispatcher &dispatcher) : dispatcher{dispatcher} {}
-    };
-    Data m_data;
+    SDL_Window *m_window;
+    SDL_DisplayID m_display;
 };
 
 } // namespace muon

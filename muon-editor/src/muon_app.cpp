@@ -6,7 +6,7 @@
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/event.hpp"
-#include "muon/input/input_state.hpp"
+#include "muon/input/key.hpp"
 
 namespace muon {
 
@@ -24,9 +24,9 @@ public:
     MuonEditor(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
         : Application{name, extent, vsync, mode} {
         // override default window close handler if you need to
-        auto success = m_dispatcher->unsubscribe<event::WindowCloseEvent>(m_onWindowClose);
+        auto success = m_dispatcher->unsubscribe<event::WindowQuitEvent>(m_onWindowClose);
         client::expect(success, "failed to unsubscribe from default window close event handler");
-        m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) { m_running = false; });
+        m_onWindowClose = m_dispatcher->subscribe<event::WindowQuitEvent>([&](const auto &event) { m_running = false; });
 
         m_dispatcher->subscribe<event::WindowResizeEvent>([&](const auto &event) {
             m_context->getGraphicsQueue().get().waitIdle();
@@ -34,14 +34,21 @@ public:
         });
 
         m_dispatcher->subscribe<event::MouseButtonEvent>([](const auto &event) {
-            if (event.inputState == input::InputState::Pressed && event.button == input::MouseButton::Left) {
+            if (event.down && event.button == input::MouseButton::Left) {
                 core::info("hello!");
             }
         });
 
-        m_dispatcher->subscribe<event::KeyEvent>([&](const auto &event) {
-            if (event.keycode == input::KeyCode::V && event.mods.isCtrlDown() && event.inputState == input::InputState::Pressed) {
-                core::info("{}", m_window->getClipboardContents());
+        m_fullscreen = mode == WindowMode::BorderlessFullscreen;
+
+        m_dispatcher->subscribe<event::KeyboardEvent>([&](const auto &event) {
+            if (event.scancode == input::Scancode::KeyV && event.mods.isCtrlDown() && event.down) {
+                m_window->setTitle(m_window->getClipboardText());
+            }
+
+            if (event.scancode == input::Scancode::Function11 && event.down) {
+                m_window->setMode(m_fullscreen ? WindowMode::Windowed : WindowMode::BorderlessFullscreen);
+                m_fullscreen = !m_fullscreen;
             }
         });
 
@@ -51,6 +58,7 @@ public:
     }
 
 private:
+    bool m_fullscreen{false};
 };
 
 auto createApplication(size_t argCount, char **argArray) -> Application * {

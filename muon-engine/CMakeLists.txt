@@ -101,8 +101,7 @@ target_sources(
         src/muon/graphics/swapchain.hpp
         src/muon/graphics/texture.hpp
 
-        src/muon/input/input_state.hpp
-        src/muon/input/key_code.hpp
+        src/muon/input/key.hpp
         src/muon/input/modifier.hpp
         src/muon/input/mouse.hpp
 
@@ -138,10 +137,10 @@ target_link_libraries(muon-engine PRIVATE
 )
 
 target_link_libraries(muon-engine PUBLIC
-    argparse
     fmt::fmt spdlog::spdlog_header_only
     tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
-    glfw eventpp::eventpp
+    SDL3::SDL3-static
+    eventpp::eventpp
     Vulkan::Headers Vulkan::Hpp
     VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
     glm

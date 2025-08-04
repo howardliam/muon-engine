@@ -1,6 +1,7 @@
 FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY  https://github.com/glfw/glfw.git
-    GIT_TAG         3.4
+    sdl
+    GIT_REPOSITORY  https://github.com/libsdl-org/SDL.git
+    GIT_TAG         release-3.2.18
 )
-FetchContent_MakeAvailable(glfw)
+set(SDL_TEST_LIBRARY OFF)
+FetchContent_MakeAvailable(sdl)

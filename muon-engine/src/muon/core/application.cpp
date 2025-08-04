@@ -33,7 +33,7 @@ Application::Application(
     m_context = std::make_unique<graphics::Context>(*m_window);
     m_renderer = std::make_unique<graphics::Renderer>(*m_window, *m_context, vSync);
 
-    m_onWindowClose = m_dispatcher->subscribe<event::WindowCloseEvent>([&](const auto &event) { m_running = false; });
+    m_onWindowClose = m_dispatcher->subscribe<event::WindowQuitEvent>([&](const auto &event) { m_running = false; });
 
     core::debug("created application");
 }

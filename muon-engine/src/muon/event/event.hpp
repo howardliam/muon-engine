@@ -1,51 +1,41 @@
 #pragma once
 
-#include "muon/input/input_state.hpp"
-#include "muon/input/key_code.hpp"
+#include "muon/input/key.hpp"
 #include "muon/input/modifier.hpp"
 #include "muon/input/mouse.hpp"
+#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
-#include <cstdint>
 #include <vector>
 
 namespace muon::event {
 
-struct WindowCloseEvent {};
+struct WindowQuitEvent {};
 
 struct WindowResizeEvent {
-    uint32_t width;
-    uint32_t height;
+    vk::Extent2D extent;
 };
 
 struct WindowFocusEvent {
     bool focused;
 };
 
-struct KeyEvent {
-    input::KeyCode keycode;
-    input::KeyCode scancode;
-    input::InputState inputState;
+struct KeyboardEvent {
+    input::Scancode scancode;
+    bool down;
+    bool held;
     input::Modifier mods;
 };
 
 struct MouseButtonEvent {
     input::MouseButton button;
-    input::InputState inputState;
-    input::Modifier mods;
+    bool down;
+    uint8_t clicks;
 };
 
-struct CursorPositionEvent {
-    double x;
-    double y;
-};
-
-struct CursorEnterEvent {
-    bool entered;
-};
-
-struct MouseScrollEvent {
-    double xOffset;
-    double yOffset;
+struct MouseMotionEvent {
+    float x;
+    float y;
 };
 
 struct FileDropEvent {
