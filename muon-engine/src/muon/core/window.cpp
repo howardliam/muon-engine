@@ -47,7 +47,7 @@ Window::Window(
     core::expect(displayMode, "failed to get desktop display mode: {}", SDL_GetError());
     m_refreshRate = static_cast<uint16_t>(displayMode->refresh_rate);
 
-    m_impl->window = SDL_CreateWindow(reinterpret_cast<const char *>(m_title.c_str()), m_extent.width, m_extent.height, SDL_WINDOW_VULKAN);
+    m_impl->window = SDL_CreateWindow(m_title.c_str(), m_extent.width, m_extent.height, SDL_WINDOW_VULKAN);
     core::expect(m_impl->window, "failed to create window: {}", SDL_GetError());
 
     bool success = SDL_SetWindowMinimumSize(m_impl->window, displayMode->w / 4, displayMode->h / 4);
