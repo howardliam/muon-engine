@@ -66,15 +66,15 @@ public:
         });
 
         m_dispatcher->subscribe<event::DropFileEvent>([](const auto &event) {
-            core::info(event.path);
+            core::info("{}", reinterpret_cast<const char *>(event.path));
         });
 
         m_dispatcher->subscribe<event::DropTextEvent>([](const auto &event) {
-            core::info(event.text);
+            core::info("{}", reinterpret_cast<const char *>(event.text));
         });
 
         m_dispatcher->subscribe<event::TextInputEvent>([](const auto &event) {
-            core::info(event.text);
+            core::info("{}", reinterpret_cast<const char *>(event.text));
         });
 
         pushLayer(new TestLayer{});

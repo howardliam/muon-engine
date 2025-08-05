@@ -120,7 +120,7 @@ void Context::createInstance(const Window &window) {
     vk::ApplicationInfo appInfo;
     appInfo.apiVersion = k_vulkanApiVersion;
 
-    appInfo.pApplicationName = Application::get().getName().data();
+    appInfo.pApplicationName = reinterpret_cast<const char *>(Application::get().getName().data());
     appInfo.applicationVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
 
     appInfo.pEngineName = "Muon";

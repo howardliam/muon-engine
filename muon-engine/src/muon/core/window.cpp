@@ -110,15 +110,21 @@ void Window::pollEvents() {
         }
 
         if (event.type == SDL_EVENT_TEXT_INPUT) {
-            m_dispatcher.dispatch<event::TextInputEvent>({event.text.text});
+            m_dispatcher.dispatch<event::TextInputEvent>({
+                reinterpret_cast<const char8_t *>(event.text.text),
+            });
         }
 
         if (event.type == SDL_EVENT_DROP_FILE) {
-            m_dispatcher.dispatch<event::DropFileEvent>({event.drop.data});
+            m_dispatcher.dispatch<event::DropFileEvent>({
+                reinterpret_cast<const char8_t *>(event.drop.data),
+            });
         }
 
         if (event.type == SDL_EVENT_DROP_TEXT) {
-            m_dispatcher.dispatch<event::DropTextEvent>({event.drop.data});
+            m_dispatcher.dispatch<event::DropTextEvent>({
+                reinterpret_cast<const char8_t *>(event.drop.data),
+            });
         }
     }
 }
