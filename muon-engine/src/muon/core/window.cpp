@@ -30,7 +30,7 @@ struct Window::Impl {
 };
 
 Window::Window(
-    const std::u8string_view title,
+    const std::string_view title,
     const vk::Extent2D &extent,
     const WindowMode mode,
     const event::Dispatcher &dispatcher
@@ -111,28 +111,28 @@ void Window::pollEvents() {
 
         if (event.type == SDL_EVENT_TEXT_INPUT) {
             m_dispatcher.dispatch<event::TextInputEvent>({
-                reinterpret_cast<const char8_t *>(event.text.text),
+                event.text.text,
             });
         }
 
         if (event.type == SDL_EVENT_DROP_FILE) {
             m_dispatcher.dispatch<event::DropFileEvent>({
-                reinterpret_cast<const char8_t *>(event.drop.data),
+                event.drop.data,
             });
         }
 
         if (event.type == SDL_EVENT_DROP_TEXT) {
             m_dispatcher.dispatch<event::DropTextEvent>({
-                reinterpret_cast<const char8_t *>(event.drop.data),
+                event.drop.data,
             });
         }
     }
 }
 
-auto Window::getTitle() -> const std::u8string_view { return m_title; }
-void Window::setTitle(const std::u8string_view title) {
+auto Window::getTitle() -> const std::string_view { return m_title; }
+void Window::setTitle(const std::string_view title) {
     m_title = title;
-    SDL_SetWindowTitle(m_impl->window, reinterpret_cast<const char *>(m_title.c_str()));
+    SDL_SetWindowTitle(m_impl->window, m_title.c_str());
 }
 
 auto Window::getExtent() const -> vk::Extent2D { return m_extent; }
@@ -163,7 +163,7 @@ void Window::requestAttention() const {
     }
 }
 
-auto Window::getClipboardText() const -> std::optional<std::u8string> {
+auto Window::getClipboardText() const -> std::optional<std::string> {
     if (!SDL_HasClipboardText()) {
         return std::nullopt;
     }
@@ -174,13 +174,13 @@ auto Window::getClipboardText() const -> std::optional<std::u8string> {
         return std::nullopt;
     }
 
-    std::u8string text{reinterpret_cast<const char8_t *>(rawText)};
+    std::string text = rawText;
     SDL_free(rawText);
     return text;
 }
 
-void Window::setClipboardText(const std::u8string_view text) const {
-    SDL_SetClipboardText(reinterpret_cast<const char *>(text.data()));
+void Window::setClipboardText(const std::string_view text) const {
+    SDL_SetClipboardText(text.data());
 }
 
 void Window::beginTextInput() {
@@ -224,7 +224,7 @@ auto Window::getDisplays() const -> std::optional<const std::vector<DisplayInfo>
             return std::nullopt;
         }
 
-        info.name = std::u8string{reinterpret_cast<const char8_t *>(name)};
+        info.name = name;
         info.extent = vk::Extent2D{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
         info.refreshRate = static_cast<uint16_t>(mode->refresh_rate);
     }

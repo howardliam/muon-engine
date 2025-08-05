@@ -6,6 +6,7 @@
 #include "muon/core/window.hpp"
 #include "muon/event/event.hpp"
 #include "muon/input/key.hpp"
+#include <string_view>
 
 namespace muon {
 
@@ -20,7 +21,7 @@ public:
 
 class MuonEditor final : public Application {
 public:
-    MuonEditor(const std::u8string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
+    MuonEditor(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
         : Application{name, extent, vsync, mode} {
         // override default window close handler if you need to
         auto success = m_dispatcher->unsubscribe<event::WindowQuitEvent>(m_onWindowClose);
@@ -42,7 +43,7 @@ public:
 
         m_dispatcher->subscribe<event::KeyboardEvent>([&](const auto &event) {
             if (event.scancode == input::Scancode::KeyC && event.mods.isCtrlDown() && event.down) {
-                m_window->setClipboardText(u8"foobar");
+                m_window->setClipboardText("foobar");
             }
 
             if (event.scancode == input::Scancode::KeyV && event.mods.isCtrlDown() && event.down) {
@@ -66,15 +67,15 @@ public:
         });
 
         m_dispatcher->subscribe<event::DropFileEvent>([](const auto &event) {
-            core::info("{}", reinterpret_cast<const char *>(event.path));
+            core::info("{}", event.path);
         });
 
         m_dispatcher->subscribe<event::DropTextEvent>([](const auto &event) {
-            core::info("{}", reinterpret_cast<const char *>(event.text));
+            core::info("{}", event.text);
         });
 
         m_dispatcher->subscribe<event::TextInputEvent>([](const auto &event) {
-            core::info("{}", reinterpret_cast<const char *>(event.text));
+            core::info("{}", event.text);
         });
 
         pushLayer(new TestLayer{});
@@ -86,7 +87,7 @@ private:
 
 auto createApplication(size_t argCount, char **argArray) -> Application * {
     return new MuonEditor{
-        u8"Muon Editor",
+        "Muon Editor",
         {1920, 1080},
         false,
         WindowMode::Windowed

@@ -37,15 +37,15 @@ struct MouseMotionEvent {
 };
 
 struct DropFileEvent {
-    const char8_t *path;
+    const char *path;
 };
 
 struct DropTextEvent {
-    const char8_t *text;
+    const char *text;
 };
 
 struct TextInputEvent {
-    const char8_t *text;
+    const char *text;
 };
 
 } // namespace muon::event

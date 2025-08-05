@@ -17,7 +17,7 @@ namespace muon {
 class Application : NoCopy, NoMove {
 public:
     Application(
-        const std::u8string_view name,
+        const std::string_view name,
         const vk::Extent2D &extent,
         const bool vSync,
         const WindowMode mode
@@ -29,11 +29,11 @@ public:
     void run();
 
 public:
-    auto getName() -> const std::u8string_view;
+    auto getName() -> const std::string_view;
     static auto get() -> Application &;
 
 protected:
-    std::u8string m_name;
+    std::string m_name;
 
     LayerStack m_layerStack;
 

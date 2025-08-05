@@ -12,7 +12,7 @@
 namespace muon {
 
 struct DisplayInfo {
-    std::u8string name;
+    std::string name;
     vk::Extent2D extent;
     uint16_t refreshRate;
 };
@@ -25,7 +25,7 @@ enum class WindowMode {
 class Window {
 public:
     Window(
-        const std::u8string_view title,
+        const std::string_view title,
         const vk::Extent2D &extent,
         const WindowMode mode,
         const event::Dispatcher &dispatcher
@@ -35,8 +35,8 @@ public:
     void pollEvents();
 
 public: // class getters/setters
-    auto getTitle() -> const std::u8string_view;
-    void setTitle(const std::u8string_view title);
+    auto getTitle() -> const std::string_view;
+    void setTitle(const std::string_view title);
 
     auto getExtent() const -> vk::Extent2D;
     auto getWidth() const -> uint32_t;
@@ -49,8 +49,8 @@ public: // class getters/setters
 public: // underlying SDL API re-exposure
     void requestAttention() const;
 
-    auto getClipboardText() const -> std::optional<std::u8string>;
-    void setClipboardText(const std::u8string_view text) const;
+    auto getClipboardText() const -> std::optional<std::string>;
+    void setClipboardText(const std::string_view text) const;
 
     void beginTextInput();
     void endTextInput();
@@ -65,7 +65,7 @@ private:
     void handleErrors() const;
 
 private:
-    std::u8string m_title;
+    std::string m_title;
     vk::Extent2D m_extent;
     uint16_t m_refreshRate;
     WindowMode m_mode;
