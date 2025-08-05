@@ -8,6 +8,7 @@
 #include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_vulkan.h"
+#include "magic_enum/magic_enum.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/event/dispatcher.hpp"
@@ -16,26 +17,41 @@
 #include "muon/input/modifier.hpp"
 #include "muon/input/mouse.hpp"
 #include "vulkan/vulkan_raii.hpp"
+#include "vulkan/vulkan_structs.hpp"
+
 #include <cstring>
+#include <vector>
 
 namespace muon {
 
+struct Window::Impl {
+    SDL_Window *window;
+    SDL_DisplayID currentDisplay;
+};
+
 Window::Window(
-    const std::string_view title,
+    const std::u8string_view title,
     const vk::Extent2D &extent,
     const WindowMode mode,
     const event::Dispatcher &dispatcher
 ) : m_title{title}, m_extent{extent}, m_mode{mode}, m_dispatcher{dispatcher} {
-    auto initialized = SDL_Init(SDL_INIT_VIDEO);
-    core::expect(initialized, "failed to initialize SDL3");
+    bool initialized = SDL_Init(SDL_INIT_VIDEO);
+    core::expect(initialized, "failed to initialize SDL3: {}", SDL_GetError());
 
-    m_display = SDL_GetPrimaryDisplay();
-    const auto *displayMode = SDL_GetDesktopDisplayMode(m_display);
+    m_impl = new Impl{};
 
-    m_window = SDL_CreateWindow(m_title.c_str(), m_extent.width, m_extent.height, SDL_WINDOW_VULKAN);
-    core::expect(m_window, "window must exist");
+    m_impl->currentDisplay = SDL_GetPrimaryDisplay();
+    core::expect(m_impl->currentDisplay, "failed to get primary display: {}", SDL_GetError());
 
-    SDL_SetWindowMinimumSize(m_window, displayMode->w / 4, displayMode->h / 4);
+    const SDL_DisplayMode *displayMode = SDL_GetDesktopDisplayMode(m_impl->currentDisplay);
+    core::expect(displayMode, "failed to get desktop display mode: {}", SDL_GetError());
+    m_refreshRate = static_cast<uint16_t>(displayMode->refresh_rate);
+
+    m_impl->window = SDL_CreateWindow(reinterpret_cast<const char *>(m_title.c_str()), m_extent.width, m_extent.height, SDL_WINDOW_VULKAN);
+    core::expect(m_impl->window, "failed to create window: {}", SDL_GetError());
+
+    bool success = SDL_SetWindowMinimumSize(m_impl->window, displayMode->w / 4, displayMode->h / 4);
+    core::expect(success, "failed to set window minimum size: {}", SDL_GetError());
 
     setMode(m_mode);
 
@@ -43,7 +59,7 @@ Window::Window(
 }
 
 Window::~Window() {
-    SDL_DestroyWindow(m_window);
+    SDL_DestroyWindow(m_impl->window);
     SDL_Quit();
     core::debug("destroyed window");
 }
@@ -52,41 +68,65 @@ void Window::pollEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
-            onWindowQuit();
+            m_dispatcher.dispatch<event::WindowQuitEvent>({});
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            onWindowResize(event.window.data1, event.window.data2);
+            m_extent = vk::Extent2D{
+                static_cast<uint32_t>(event.window.data1),
+                static_cast<uint32_t>(event.window.data2),
+            };
+            m_dispatcher.dispatch<event::WindowResizeEvent>({m_extent});
         }
 
         if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            onWindowFocusChange(true);
+            m_dispatcher.dispatch<event::WindowFocusEvent>({true});
         } else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            onWindowFocusChange(false);
+            m_dispatcher.dispatch<event::WindowFocusEvent>({false});
         }
 
-        if (event.type == SDL_EVENT_KEY_DOWN) {
-            onKeyboard(event.key.scancode, event.key.down, event.key.repeat, event.key.mod);
-        } else if (event.type == SDL_EVENT_KEY_UP) {
-            onKeyboard(event.key.scancode, event.key.down, event.key.repeat, event.key.mod);
+        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+            m_dispatcher.dispatch<event::KeyboardEvent>({
+                static_cast<input::Scancode>(event.key.scancode),
+                event.key.down,
+                event.key.repeat,
+                input::Modifier{event.key.mod},
+            });
         }
 
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-            onMouseButton(event.button.button, event.button.down, event.button.clicks);
-        } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-            onMouseButton(event.button.button, event.button.down, event.button.clicks);
+        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
+            m_dispatcher.dispatch<event::MouseButtonEvent>({
+                static_cast<input::MouseButton>(event.button.button),
+                event.button.down,
+                event.button.clicks,
+            });
         }
 
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
-            onMouseMotion(event.motion.xrel,event.motion.yrel);
+            m_dispatcher.dispatch<event::MouseMotionEvent>({
+                event.motion.xrel,
+                event.motion.yrel,
+            });
+        }
+
+        if (event.type == SDL_EVENT_TEXT_INPUT) {
+            m_dispatcher.dispatch<event::TextInputEvent>({event.text.text});
+        }
+
+        if (event.type == SDL_EVENT_DROP_FILE) {
+            m_dispatcher.dispatch<event::DropFileEvent>({event.drop.data});
+        }
+
+        if (event.type == SDL_EVENT_DROP_TEXT) {
+            m_dispatcher.dispatch<event::DropTextEvent>({event.drop.data});
         }
     }
 }
 
-auto Window::getTitle() -> const std::string_view { return m_title; }
-void Window::setTitle(const std::string_view title) {
+auto Window::getTitle() -> const std::u8string_view { return m_title; }
+void Window::setTitle(const std::u8string_view title) {
     m_title = title;
-    SDL_SetWindowTitle(m_window, m_title.c_str());
+    SDL_SetWindowTitle(m_impl->window, reinterpret_cast<const char *>(m_title.c_str()));
 }
 
 auto Window::getExtent() const -> vk::Extent2D { return m_extent; }
@@ -96,24 +136,28 @@ auto Window::getHeight() const -> uint32_t { return m_extent.height; }
 auto Window::getRefreshRate() const -> uint16_t { return m_refreshRate; }
 
 void Window::setMode(WindowMode mode) {
+    bool fullscreen = false;
     switch (mode) {
         case WindowMode::Windowed:
-            SDL_SetWindowFullscreen(m_window, false);
+            fullscreen = false;
             break;
 
         case WindowMode::BorderlessFullscreen:
-            SDL_SetWindowFullscreen(m_window, true);
+            fullscreen = true;
             break;
     }
+
+    bool success = SDL_SetWindowFullscreen(m_impl->window, fullscreen);
+    core::expect(success, "failed to set window mode to: {}, {}", magic_enum::enum_name(mode), SDL_GetError());
 }
 
 void Window::requestAttention() const {
-    if (!SDL_FlashWindow(m_window, SDL_FLASH_UNTIL_FOCUSED)) {
+    if (!SDL_FlashWindow(m_impl->window, SDL_FLASH_UNTIL_FOCUSED)) {
         handleErrors();
     }
 }
 
-auto Window::getClipboardText() const -> std::optional<std::string> {
+auto Window::getClipboardText() const -> std::optional<std::u8string> {
     if (!SDL_HasClipboardText()) {
         return std::nullopt;
     }
@@ -124,40 +168,68 @@ auto Window::getClipboardText() const -> std::optional<std::string> {
         return std::nullopt;
     }
 
-    std::string text{rawText};
+    std::u8string text{reinterpret_cast<const char8_t *>(rawText)};
     SDL_free(rawText);
     return text;
 }
 
-void Window::setClipboardText(const std::string_view text) const {
-    SDL_SetClipboardText(text.data());
+void Window::setClipboardText(const std::u8string_view text) const {
+    SDL_SetClipboardText(reinterpret_cast<const char *>(text.data()));
 }
 
 void Window::beginTextInput() {
     core::expect(!m_textInput, "cannot begin text input while already accepting text input");
 
-    if (SDL_StartTextInput(m_window)) {
+    if (SDL_StartTextInput(m_impl->window)) {
         m_textInput = true;
     } else {
         handleErrors();
-
     }
 }
 
 void Window::endTextInput() {
     core::expect(m_textInput, "cannot end text input while not accepting text input");
 
-    if (!SDL_StopTextInput(m_window)) {
+    if (SDL_StopTextInput(m_impl->window)) {
         m_textInput = false;
     } else {
         handleErrors();
     }
 }
 
+auto Window::getDisplays() const -> std::optional<const std::vector<DisplayInfo>> {
+    int32_t displayCount = 0;
+    SDL_DisplayID *displays = SDL_GetDisplays(&displayCount);
+
+    if (!displays) {
+        return std::nullopt;
+    }
+
+    std::vector<DisplayInfo> displayInfos(displayCount);
+
+    for (uint32_t i = 0; i < displayCount; i++) {
+        const auto displayId = displays[i];
+        DisplayInfo &info = displayInfos[i];
+
+        const char *name = SDL_GetDisplayName(displayId);
+        const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(displayId);
+
+        if (!name || !mode) {
+            return std::nullopt;
+        }
+
+        info.name = std::u8string{reinterpret_cast<const char8_t *>(name)};
+        info.extent = vk::Extent2D{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
+        info.refreshRate = static_cast<uint16_t>(mode->refresh_rate);
+    }
+
+    return displayInfos;
+}
+
 auto Window::createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR> {
     VkSurfaceKHR surface;
 
-    if (!SDL_Vulkan_CreateSurface(m_window, *instance, nullptr, &surface)) {
+    if (!SDL_Vulkan_CreateSurface(m_impl->window, *instance, nullptr, &surface)) {
         handleErrors();
         return std::nullopt;
     }
@@ -176,40 +248,6 @@ void Window::handleErrors() const {
     if (const char *error = SDL_GetError(); error) {
         core::error(error);
     }
-}
-
-void Window::onWindowQuit() {
-    m_dispatcher.dispatch<event::WindowQuitEvent>({});
-}
-
-void Window::onWindowResize(const uint32_t width, const uint32_t height) {
-    m_extent = vk::Extent2D{width, height};
-    m_dispatcher.dispatch<event::WindowResizeEvent>({m_extent});
-}
-
-void Window::onWindowFocusChange(const bool focused) {
-    m_dispatcher.dispatch<event::WindowFocusEvent>({focused});
-}
-
-void Window::onKeyboard(const SDL_Scancode scancode, const bool down, const bool held, const uint16_t mods) {
-    m_dispatcher.dispatch<event::KeyboardEvent>({
-        static_cast<input::Scancode>(scancode),
-        down,
-        held,
-        input::Modifier{mods},
-    });
-}
-
-void Window::onMouseButton(const uint8_t button, const bool down, const uint8_t clicks) {
-    m_dispatcher.dispatch<event::MouseButtonEvent>({
-        static_cast<input::MouseButton>(button),
-        down,
-        clicks,
-    });
-}
-
-void Window::onMouseMotion(const float x, const float y) {
-    m_dispatcher.dispatch<event::MouseMotionEvent>({x, y});
 }
 
 } // namespace muon

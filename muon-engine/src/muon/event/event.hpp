@@ -6,8 +6,6 @@
 #include "vulkan/vulkan.hpp"
 #include "vulkan/vulkan_structs.hpp"
 
-#include <vector>
-
 namespace muon::event {
 
 struct WindowQuitEvent {};
@@ -38,8 +36,16 @@ struct MouseMotionEvent {
     float y;
 };
 
-struct FileDropEvent {
-    std::vector<const char *> paths;
+struct DropFileEvent {
+    const char *path;
+};
+
+struct DropTextEvent {
+    const char *text;
+};
+
+struct TextInputEvent {
+    const char *text;
 };
 
 } // namespace muon::event
