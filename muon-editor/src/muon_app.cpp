@@ -88,8 +88,8 @@ auto createApplication(size_t argCount, char **argArray) -> Application * {
     return new MuonEditor{
         u8"Muon Editor",
         {1920, 1080},
-         false,
-         WindowMode::Windowed
+        false,
+        WindowMode::Windowed
     };
 }
 
