@@ -14,7 +14,7 @@
 namespace muon {
 
 Application::Application(
-    const std::string_view name,
+    const std::u8string_view name,
     const vk::Extent2D &extent,
     const bool vSync,
     const WindowMode mode
@@ -115,7 +115,7 @@ void Application::run() {
     m_context->getDevice().waitIdle();
 }
 
-auto Application::getName() -> const std::string_view { return m_name; }
+auto Application::getName() -> const std::u8string_view { return m_name; }
 auto Application::get() -> Application & { return *s_instance; }
 
 } // namespace muon
