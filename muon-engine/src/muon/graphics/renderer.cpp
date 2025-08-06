@@ -1,6 +1,7 @@
 #include "muon/graphics/renderer.hpp"
 
 #include "muon/core/expect.hpp"
+#include "muon/core/log.hpp"
 #include "muon/graphics/constants.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
@@ -14,9 +15,13 @@ Renderer::Renderer(const Window &window, const Context &context, bool vSync) : m
 
     createSwapchain();
     createCommandBuffers();
+
+    core::debug("created renderer");
 }
 
-Renderer::~Renderer() {}
+Renderer::~Renderer() {
+    core::debug("destroyed renderer");
+}
 
 auto Renderer::beginFrame() -> std::optional<vk::raii::CommandBuffer *> {
     core::expect(!m_frameInProgress, "cannot begin frame while frame is in progress");
