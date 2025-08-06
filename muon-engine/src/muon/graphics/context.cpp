@@ -40,7 +40,7 @@ Context::Context(const Window &window) {
     createLogicalDevice();
     createAllocator();
 
-    core::debug("created device");
+    core::debug("created graphics context");
 }
 
 Context::~Context() {
@@ -49,7 +49,7 @@ Context::~Context() {
     m_computeQueue.reset();
     m_transferQueue.reset();
 
-    core::debug("destroyed device");
+    core::debug("destroyed graphics context");
 }
 
 auto Context::getVramUsage() const -> uint64_t {
