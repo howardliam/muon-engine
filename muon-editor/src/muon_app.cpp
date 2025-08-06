@@ -14,8 +14,8 @@ class TestLayer final : public Layer {
 public:
     TestLayer() {}
 
-    auto onAttach() -> void override { core::debug("attached test layer"); }
-    auto onDetach() -> void override { core::debug("detached test layer"); }
+    auto onAttach() -> void override { client::debug("attached test layer"); }
+    auto onDetach() -> void override { client::debug("detached test layer"); }
     auto onUpdate() -> void override {}
 };
 
@@ -34,7 +34,7 @@ public:
 
         m_dispatcher->subscribe<event::MouseButtonEvent>([](const auto &event) {
             if (event.down && event.button == input::MouseButton::Left) {
-                core::info("hello!");
+                client::info("hello!");
             }
         });
 
@@ -66,15 +66,15 @@ public:
         });
 
         m_dispatcher->subscribe<event::DropFileEvent>([](const auto &event) {
-            core::info("{}", event.path);
+            client::info("{}", event.path);
         });
 
         m_dispatcher->subscribe<event::DropTextEvent>([](const auto &event) {
-            core::info("{}", event.text);
+            client::info("{}", event.text);
         });
 
         m_dispatcher->subscribe<event::TextInputEvent>([](const auto &event) {
-            core::info("{}", event.text);
+            client::info("{}", event.text);
         });
 
         pushLayer(new TestLayer{});
