@@ -1,5 +1,6 @@
 #pragma once
 
+#include "fmt/base.h"
 #include "muon/event/dispatcher.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
@@ -78,3 +79,17 @@ private:
 };
 
 } // namespace muon
+
+template <>
+struct fmt::formatter<muon::WindowMode> : formatter<string_view> {
+
+    auto format(muon::WindowMode mode, format_context& ctx) const -> format_context::iterator;
+
+};
+
+template <>
+struct fmt::formatter<muon::DisplayInfo> : formatter<string_view> {
+
+    auto format(muon::DisplayInfo info, format_context& ctx) const -> format_context::iterator;
+
+};

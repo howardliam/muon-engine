@@ -8,6 +8,8 @@
 #include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_vulkan.h"
+#include "fmt/base.h"
+#include "fmt/format.h"
 #include "magic_enum/magic_enum.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
@@ -257,3 +259,20 @@ void Window::handleErrors() const {
 }
 
 } // namespace muon
+
+auto fmt::formatter<muon::WindowMode>::format(muon::WindowMode mode, format_context& ctx) const -> format_context::iterator {
+    return formatter<string_view>::format(magic_enum::enum_name(mode), ctx);
+}
+
+auto fmt::formatter<muon::DisplayInfo>::format(muon::DisplayInfo info, format_context& ctx) const -> format_context::iterator {
+    return formatter<string_view>::format(
+        fmt::format(
+            "name: {}, extent: {}x{}, refresh rate: {} Hz",
+            info.name,
+            info.extent.width,
+            info.extent.height,
+            info.refreshRate
+        ),
+        ctx
+    );
+}
