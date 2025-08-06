@@ -1,12 +1,10 @@
 #include "muon/core/application.hpp"
 
-#include "muon/core/debug.hpp"
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
-#include "spdlog/spdlog.h"
 #include "vulkan/vulkan_enums.hpp"
 
 #include <memory>
