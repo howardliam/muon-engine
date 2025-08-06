@@ -194,6 +194,8 @@ void Renderer::probePresentModes() {
 void Renderer::createSwapchain() {
     const auto &[_, colorSpace, format] = *m_activeSurfaceFormat;
 
+    m_context.getGraphicsQueue().get().waitIdle();
+
     if (m_swapchain == nullptr) {
         m_swapchain = std::make_unique<Swapchain>(
             m_context,

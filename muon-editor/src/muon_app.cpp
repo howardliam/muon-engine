@@ -29,7 +29,6 @@ public:
         m_onWindowClose = m_dispatcher->subscribe<event::WindowQuitEvent>([&](const auto &event) { m_running = false; });
 
         m_dispatcher->subscribe<event::WindowResizeEvent>([&](const auto &event) {
-            m_context->getGraphicsQueue().get().waitIdle();
             m_renderer->rebuildSwapchain();
         });
 
