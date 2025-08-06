@@ -52,4 +52,46 @@ void init() {
 
 } // namespace log
 
+namespace core {
+
+void trace(const char *message) {
+    if constexpr (k_debugEnabled) {
+        log::internal::s_coreLogger->trace(message);
+    }
+}
+
+void debug(const char *message) {
+    if constexpr (k_debugEnabled) {
+        log::internal::s_coreLogger->debug(message);
+    }
+}
+
+void info(const char *message) { log::internal::s_coreLogger->info(message); }
+void warn(const char *message) { log::internal::s_coreLogger->warn(message); }
+void error(const char *message) { log::internal::s_coreLogger->error(message); }
+void critical(const char *message) { log::internal::s_coreLogger->critical(message); }
+
+} // namespace core
+
+namespace client {
+
+void trace(const char *message) {
+    if constexpr (k_debugEnabled) {
+        log::internal::s_clientLogger->trace(message);
+    }
+}
+
+void debug(const char *message) {
+    if constexpr (k_debugEnabled) {
+        log::internal::s_clientLogger->debug(message);
+    }
+}
+
+void info(const char *message) { log::internal::s_clientLogger->info(message); }
+void warn(const char *message) { log::internal::s_clientLogger->warn(message); }
+void error(const char *message) { log::internal::s_clientLogger->error(message); }
+void critical(const char *message) { log::internal::s_clientLogger->critical(message); }
+
+} // namespace client
+
 } // namespace muon

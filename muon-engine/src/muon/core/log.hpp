@@ -24,104 +24,88 @@ void init();
 namespace core {
 
 template <typename... Args>
-inline void trace(fmt::format_string<Args...> message, Args &&...args) {
+void trace(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
+        log::internal::s_coreLogger->trace(message, std::forward<Args>(args)...);
     }
-    log::internal::s_coreLogger->trace(message, std::forward<Args>(args)...);
 }
-inline void trace(const char *message) {
-    if constexpr (k_debugEnabled) {
-    }
-    log::internal::s_coreLogger->trace(message);
-}
+void trace(const char *message);
 
 template <typename... Args>
-inline void debug(fmt::format_string<Args...> message, Args &&...args) {
+void debug(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
+        log::internal::s_coreLogger->debug(message, std::forward<Args>(args)...);
     }
-    log::internal::s_coreLogger->debug(message, std::forward<Args>(args)...);
 }
-inline void debug(const char *message) {
-    if constexpr (k_debugEnabled) {
-    }
-    log::internal::s_coreLogger->debug(message);
-}
+void debug(const char *message);
 
 template <typename... Args>
-inline void info(fmt::format_string<Args...> message, Args &&...args) {
+void info(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_coreLogger->info(message, std::forward<Args>(args)...);
 }
-inline void info(const char *message) { log::internal::s_coreLogger->info(message); }
+void info(const char *message);
 
 template <typename... Args>
-inline void warn(fmt::format_string<Args...> message, Args &&...args) {
+void warn(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_coreLogger->warn(message, std::forward<Args>(args)...);
 }
-inline void warn(const char *message) { log::internal::s_coreLogger->warn(message); }
+void warn(const char *message);
 
 template <typename... Args>
-inline void error(fmt::format_string<Args...> message, Args &&...args) {
+void error(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_coreLogger->error(message, std::forward<Args>(args)...);
 }
-inline void error(const char *message) { log::internal::s_coreLogger->error(message); }
+void error(const char *message);
 
 template <typename... Args>
-inline void critical(fmt::format_string<Args...> message, Args &&...args) {
+void critical(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_coreLogger->critical(message, std::forward<Args>(args)...);
 }
-inline void critical(const char *message) { log::internal::s_coreLogger->critical(message); }
+void critical(const char *message);
 
 } // namespace core
 
 namespace client {
 
 template <typename... Args>
-inline void trace(fmt::format_string<Args...> message, Args &&...args) {
+void trace(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
         log::internal::s_clientLogger->trace(message, std::forward<Args>(args)...);
     }
 }
-inline void trace(const char *message) {
-    if constexpr (k_debugEnabled) {
-        log::internal::s_clientLogger->trace(message);
-    }
-}
+void trace(const char *message);
 
 template <typename... Args>
-inline void debug(fmt::format_string<Args...> message, Args &&...args) {
+void debug(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
         log::internal::s_clientLogger->debug(message, std::forward<Args>(args)...);
     }
 }
-inline void debug(const char *message) {
-    if constexpr (k_debugEnabled) {
-        log::internal::s_clientLogger->debug(message);
-    }
-}
+void debug(const char *message);
 
 template <typename... Args>
-inline void info(fmt::format_string<Args...> message, Args &&...args) {
+void info(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_clientLogger->info(message, std::forward<Args>(args)...);
 }
-inline void info(const char *message) { log::internal::s_clientLogger->info(message); }
+void info(const char *message);
 
 template <typename... Args>
-inline void warn(fmt::format_string<Args...> message, Args &&...args) {
+void warn(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_clientLogger->warn(message, std::forward<Args>(args)...);
 }
-inline void warn(const char *message) { log::internal::s_clientLogger->warn(message); }
+void warn(const char *message);
 
 template <typename... Args>
-inline void error(fmt::format_string<Args...> message, Args &&...args) {
+void error(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_clientLogger->error(message, std::forward<Args>(args)...);
 }
-inline void error(const char *message) { log::internal::s_clientLogger->error(message); }
+void error(const char *message);
 
 template <typename... Args>
-inline void critical(fmt::format_string<Args...> message, Args &&...args) {
+void critical(fmt::format_string<Args...> message, Args &&...args) {
     log::internal::s_clientLogger->critical(message, std::forward<Args>(args)...);
 }
-inline void critical(const char *message) { log::internal::s_clientLogger->critical(message); }
+void critical(const char *message);
 
 } // namespace client
 
