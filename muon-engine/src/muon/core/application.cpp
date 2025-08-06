@@ -22,12 +22,6 @@ Application::Application(
     core::expect(!s_instance, "application already exists");
     s_instance = this;
 
-    if constexpr (k_debugEnabled) {
-        spdlog::set_level(spdlog::level::trace);
-    } else {
-        spdlog::set_level(spdlog::level::info);
-    }
-
     m_dispatcher = std::make_unique<event::Dispatcher>();
     m_window = std::make_unique<Window>(m_name, extent, mode, *m_dispatcher);
     m_context = std::make_unique<graphics::Context>(*m_window);

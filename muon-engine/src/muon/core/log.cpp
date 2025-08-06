@@ -39,6 +39,12 @@ void init() {
         spdlog::register_logger(internal::s_clientLogger);
         internal::s_clientLogger->set_level(spdlog::level::trace);
         internal::s_clientLogger->flush_on(spdlog::level::trace);
+
+        if constexpr (k_debugEnabled) {
+            spdlog::set_level(spdlog::level::trace);
+        } else {
+            spdlog::set_level(spdlog::level::info);
+        }
     };
 
     std::call_once(g_loggerInit, initSpdlog);
