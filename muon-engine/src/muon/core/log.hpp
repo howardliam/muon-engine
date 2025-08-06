@@ -26,25 +26,25 @@ namespace core {
 template <typename... Args>
 inline void trace(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
-        log::internal::s_coreLogger->trace(message, std::forward<Args>(args)...);
     }
+    log::internal::s_coreLogger->trace(message, std::forward<Args>(args)...);
 }
 inline void trace(const char *message) {
     if constexpr (k_debugEnabled) {
-        log::internal::s_coreLogger->trace(message);
     }
+    log::internal::s_coreLogger->trace(message);
 }
 
 template <typename... Args>
 inline void debug(fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (k_debugEnabled) {
-        log::internal::s_coreLogger->debug(message, std::forward<Args>(args)...);
     }
+    log::internal::s_coreLogger->debug(message, std::forward<Args>(args)...);
 }
 inline void debug(const char *message) {
     if constexpr (k_debugEnabled) {
-        log::internal::s_coreLogger->debug(message);
     }
+    log::internal::s_coreLogger->debug(message);
 }
 
 template <typename... Args>
