@@ -21,8 +21,12 @@ public:
 
 class MuonEditor final : public Application {
 public:
-    MuonEditor(const std::string_view name, const vk::Extent2D &extent, const bool vsync, const WindowMode mode)
-        : Application{name, extent, vsync, mode} {
+    MuonEditor(
+        const std::string_view name,
+        const vk::Extent2D &extent,
+        const bool vSync,
+        const WindowMode mode
+    ) : Application{name, extent, vSync, mode} {
         // override default window close handler if you need to
         auto success = m_dispatcher->unsubscribe<event::WindowQuitEvent>(m_onWindowClose);
         client::expect(success, "failed to unsubscribe from default window close event handler");
@@ -62,6 +66,10 @@ public:
 
             if (event.scancode == input::Scancode::Function3 && event.down) {
                 m_window->endTextInput();
+            }
+
+            if (event.scancode == input::Scancode::KeyQ && event.mods.isCtrlDown() && event.down) {
+                m_running = false;
             }
         });
 
