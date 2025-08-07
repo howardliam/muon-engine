@@ -5,12 +5,12 @@
 
 namespace muon::serde {
 
-template <typename Data>
-concept BinarySerializable = Serializable<Data, Buffer>;
+template <typename From>
+concept BinarySerializable = Serializable<From, Buffer>;
 
 enum class BinaryDeserializeError {};
 
-template <typename Data>
-concept BinaryDeserializable = Deserializable<Data, Buffer, BinaryDeserializeError>;
+template <typename To>
+concept BinaryDeserializable = Deserializable<Buffer, To, BinaryDeserializeError>;
 
 }

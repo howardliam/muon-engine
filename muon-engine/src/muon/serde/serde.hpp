@@ -5,20 +5,20 @@
 
 namespace muon::serde {
 
-template <typename Data, typename To>
-auto serialize(const Data &data) -> To;
+template <typename From, typename To>
+auto serialize(const From &) -> To;
 
-template <typename Data, typename To>
-concept Serializable = requires(const Data &data) {
-    { serialize<Data, To>(data) } -> std::same_as<To>;
+template <typename From, typename To>
+concept Serializable = requires(const From &from) {
+    { serialize<From, To>(from) } -> std::same_as<To>;
 };
 
-template <typename From, typename Data, typename Error>
-auto deserialize(const From &from) -> std::expected<Data, Error>;
+template <typename From, typename To, typename Error>
+auto deserialize(const From &) -> std::expected<To, Error>;
 
-template <typename Data, typename From, typename Error>
+template <typename From, typename To, typename Error>
 concept Deserializable = requires(const From &from) {
-    { deserialize<From, Data, Error>(from) } -> std::same_as<std::expected<Data, Error>>;
+    { deserialize<From, To, Error>(from) } -> std::same_as<std::expected<To, Error>>;
 };
 
 }
