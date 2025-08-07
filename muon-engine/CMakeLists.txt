@@ -12,6 +12,7 @@ target_sources(
         src/muon/config/config_manager.cpp
 
         src/muon/core/application.cpp
+        src/muon/core/buffer.cpp
         src/muon/core/layer_stack.cpp
         src/muon/core/log.cpp
         src/muon/core/window.cpp
@@ -58,6 +59,7 @@ target_sources(
         src/muon/config/config_manager.hpp
 
         src/muon/core/application.hpp
+        src/muon/core/buffer.hpp
         src/muon/core/debug.hpp
         src/muon/core/entry_point.hpp
         src/muon/core/expect.hpp
