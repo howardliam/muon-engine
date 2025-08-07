@@ -55,7 +55,6 @@ target_sources(
         src/muon/asset/asset_loader.hpp
         src/muon/asset/asset_manager.hpp
 
-        src/muon/config/application.hpp
         src/muon/config/config_manager.hpp
 
         src/muon/core/application.hpp
