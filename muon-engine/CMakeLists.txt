@@ -67,7 +67,6 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
-        src/muon/core/serialization.hpp
         src/muon/core/window.hpp
 
         src/muon/crypto/hash.hpp
@@ -106,6 +105,10 @@ target_sources(
         src/muon/input/mouse.hpp
 
         src/muon/project/project.hpp
+
+        src/muon/serde/binary.hpp
+        src/muon/serde/serde.hpp
+        src/muon/serde/toml.hpp
 
         src/muon/utils/alignment.hpp
         src/muon/utils/platform.hpp
