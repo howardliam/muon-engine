@@ -6,6 +6,7 @@
 #include "muon/core/window.hpp"
 #include "muon/event/event.hpp"
 #include "muon/input/key.hpp"
+
 #include <string_view>
 
 namespace muon {
