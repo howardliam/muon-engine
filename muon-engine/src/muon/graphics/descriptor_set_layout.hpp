@@ -11,16 +11,10 @@ namespace muon::graphics {
 
 class DescriptorSetLayout {
 public:
-    struct Spec {
-        const Context &context;
-
-        std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> bindings{};
-
-        Spec(const Context &context) : context{context} {}
-    };
-
-public:
-    DescriptorSetLayout(const Spec &spec);
+    DescriptorSetLayout(
+        const Context &context,
+        const std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> &bindings
+    );
     ~DescriptorSetLayout();
 
     auto createDescriptorSet(const DescriptorPool &pool) -> std::expected<vk::raii::DescriptorSet, vk::Result>;
