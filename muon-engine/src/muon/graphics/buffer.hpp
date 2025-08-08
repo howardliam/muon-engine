@@ -11,20 +11,14 @@ namespace muon::graphics {
 
 class Buffer : NoCopy {
 public:
-    struct Spec {
-        const Context &context;
-
-        vk::DeviceSize instanceSize{};
-        uint32_t instanceCount{};
-        vk::BufferUsageFlags usageFlags{};
-        vma::MemoryUsage memoryUsage{vma::MemoryUsage::eAuto};
-        vk::DeviceSize minOffsetAlignment{1};
-
-        Spec(const Context &context) : context{context} {}
-    };
-
-public:
-    Buffer(const Spec &spec);
+    Buffer(
+        const Context &context,
+        vk::DeviceSize instanceSize,
+        uint32_t instanceCount,
+        vk::BufferUsageFlags bufferUsage,
+        vma::MemoryUsage memoryUsage = vma::MemoryUsage::eAuto,
+        vk::DeviceSize minOffsetAlignment = 1
+    );
     ~Buffer();
 
     Buffer(Buffer &&other) noexcept;

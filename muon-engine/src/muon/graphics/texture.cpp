@@ -169,11 +169,12 @@ auto Texture::uploadData(
     copyDi.pImageMemoryBarriers = &copyImb;
     commandBuffer.pipelineBarrier2(copyDi);
 
-    Buffer::Spec stagingSpec{m_context};
-    stagingSpec.instanceSize = pixelSize;
-    stagingSpec.instanceCount = textureData.size() / pixelSize;
-    stagingSpec.usageFlags = vk::BufferUsageFlagBits::eTransferSrc;
-    Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
+    Buffer &stagingBuffer = uploadBuffers->emplace_back(
+        m_context,
+        pixelSize,
+        textureData.size() / pixelSize,
+        vk::BufferUsageFlagBits::eTransferSrc
+    );
 
     auto result = stagingBuffer.map();
     core::expect(result, "failed to map texture staging buffer");

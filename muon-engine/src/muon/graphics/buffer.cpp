@@ -14,19 +14,24 @@
 
 namespace muon::graphics {
 
-Buffer::Buffer(const Spec &spec)
-    : m_context(spec.context), m_usageFlags(spec.usageFlags), m_instanceSize(spec.instanceSize),
-      m_instanceCount(spec.instanceCount) {
-    m_alignmentSize = spec.minOffsetAlignment > 0 ? utils::alignment(m_instanceSize, spec.minOffsetAlignment) : m_instanceSize;
+Buffer::Buffer(
+    const Context &context,
+    vk::DeviceSize instanceSize,
+    uint32_t instanceCount,
+    vk::BufferUsageFlags bufferUsage,
+    vma::MemoryUsage memoryUsage,
+    vk::DeviceSize minOffsetAlignment
+) : m_context(context), m_instanceSize(instanceSize), m_instanceCount(instanceCount), m_usageFlags(bufferUsage) {
+    m_alignmentSize = minOffsetAlignment > 0 ? utils::alignment(m_instanceSize, minOffsetAlignment) : m_instanceSize;
     m_size = m_alignmentSize * m_instanceCount;
 
     vk::BufferCreateInfo bufferCi;
-    bufferCi.usage = spec.usageFlags;
+    bufferCi.usage = bufferUsage;
     bufferCi.size = m_size;
     bufferCi.sharingMode = vk::SharingMode::eExclusive;
 
     vma::AllocationCreateInfo allocationCi;
-    allocationCi.usage = spec.memoryUsage;
+    allocationCi.usage = memoryUsage;
     allocationCi.flags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite;
 
     vma::AllocationInfo allocationInfo;

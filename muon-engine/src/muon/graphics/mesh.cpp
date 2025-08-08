@@ -39,22 +39,24 @@ auto Mesh::createBuffer(
     vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const void *data, VkDeviceSize instanceSize,
     size_t instanceCount, vk::BufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
 ) -> void {
-    Buffer::Spec stagingSpec{m_context};
-    stagingSpec.instanceSize = instanceSize;
-    stagingSpec.instanceCount = instanceCount;
-    stagingSpec.usageFlags = vk::BufferUsageFlagBits::eTransferSrc;
-    Buffer &stagingBuffer = uploadBuffers->emplace_back(stagingSpec);
+    Buffer &stagingBuffer = uploadBuffers->emplace_back(
+        m_context,
+        instanceSize,
+        instanceCount,
+        vk::BufferUsageFlagBits::eTransferSrc
+    );
 
     auto result = stagingBuffer.map();
     core::expect(!result, "failed to map staging buffer");
 
     stagingBuffer.write(data);
 
-    Buffer::Spec spec{m_context};
-    spec.instanceSize = instanceSize;
-    spec.instanceCount = instanceCount;
-    spec.usageFlags = bufferUsage | vk::BufferUsageFlagBits::eTransferDst;
-    buffer = std::make_unique<Buffer>(spec);
+    buffer = std::make_unique<Buffer>(
+        m_context,
+        instanceSize,
+        instanceCount,
+        bufferUsage | vk::BufferUsageFlagBits::eTransferDst
+    );
 
     vk::BufferCopy copy;
     copy.srcOffset = 0;
