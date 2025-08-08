@@ -4,6 +4,7 @@
 #include "muon/core/log.hpp"
 #include "muon/graphics/constants.hpp"
 #include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_to_string.hpp"
 
 #include <algorithm>
 
@@ -162,10 +163,15 @@ void Renderer::probeSurfaceFormats() {
         auto it = std::ranges::find_if(m_availableSurfaceFormats, [](const SurfaceFormat &format) { return format.isHdr; });
         if (it != m_availableSurfaceFormats.end()) {
             m_activeSurfaceFormat = it.base();
+        } else {
+            m_activeSurfaceFormat = &m_availableSurfaceFormats.front();
         }
     } else {
         m_activeSurfaceFormat = &m_availableSurfaceFormats.front();
     }
+
+    const auto &[isHdr, colorSpace, format] = *m_activeSurfaceFormat;
+    core::trace("selected {} color space: {}, format: {}", isHdr ? "HDR" : "SDR", vk::to_string(colorSpace), vk::to_string(format));
 }
 
 void Renderer::probePresentModes() {
@@ -194,13 +200,14 @@ void Renderer::probePresentModes() {
             m_vSync = true;
         }
     }
+
+    core::trace("selected present mode: {}", vk::to_string(*m_activePresentMode));
 }
 
 void Renderer::createSwapchain() {
-    const auto &[_, colorSpace, format] = *m_activeSurfaceFormat;
-
     m_context.getGraphicsQueue().get().waitIdle();
 
+    const auto &[_, colorSpace, format] = *m_activeSurfaceFormat;
     if (m_swapchain == nullptr) {
         m_swapchain = std::make_unique<Swapchain>(
             m_context,
@@ -232,6 +239,8 @@ void Renderer::createCommandBuffers() {
     core::expect(commandBufferResult, "failed to allocate command buffers");
 
     m_commandBuffers = std::move(*commandBufferResult);
+
+    core::trace("created command buffers");
 }
 
 } // namespace muon::graphics
