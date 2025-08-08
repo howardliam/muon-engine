@@ -174,12 +174,15 @@ void Swapchain::createSwapchain(vk::Extent2D windowExtent, vk::PresentModeKHR pr
     core::expect(swapchainCreateResult, "failed to create the swapchain");
     m_swapchain = std::move(*swapchainCreateResult);
 
+    core::trace("created swapchain");
+
     m_images = m_swapchain.getImages();
     core::expect(m_images.size() > 0, "failed to get swapchain images");
     m_imageCount = m_images.size();
 
-    m_extent = extent;
+    core::trace("retrieved {} swapchain images", m_imageCount);
 
+    m_extent = extent;
     m_oldSwapchain = nullptr;
 }
 
@@ -211,6 +214,8 @@ void Swapchain::createImageViews() {
 
         m_imageViews.emplace_back(std::move(*imageViewResult));
     }
+
+    core::trace("created {} image views", m_imageCount);
 }
 
 void Swapchain::createSyncObjects() {
@@ -236,6 +241,8 @@ void Swapchain::createSyncObjects() {
     }
 
     m_imagesInFlight.resize(m_imageCount, nullptr);
+
+    core::trace("created synchronization objects");
 }
 
 } // namespace muon::graphics
