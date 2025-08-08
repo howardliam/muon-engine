@@ -12,10 +12,10 @@
 namespace muon {
 
 Application::Application(
-    const std::string_view name,
+    std::string_view name,
     const vk::Extent2D &extent,
-    const bool vSync,
-    const WindowMode mode
+    bool vSync,
+    WindowMode mode
 ) : m_name{name} {
     core::expect(!s_instance, "application already exists");
     s_instance = this;
@@ -107,7 +107,7 @@ void Application::run() {
     m_context->getDevice().waitIdle();
 }
 
-auto Application::getName() -> const std::string_view { return m_name; }
+auto Application::getName() const -> std::string_view { return m_name; }
 auto Application::get() -> Application & { return *s_instance; }
 
 } // namespace muon

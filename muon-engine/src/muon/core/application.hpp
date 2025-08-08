@@ -17,10 +17,10 @@ namespace muon {
 class Application : NoCopy, NoMove {
 public:
     Application(
-        const std::string_view name,
+        std::string_view name,
         const vk::Extent2D &extent,
-        const bool vSync,
-        const WindowMode mode
+        bool vSync,
+        WindowMode mode
     );
     virtual ~Application();
 
@@ -29,7 +29,7 @@ public:
     void run();
 
 public:
-    auto getName() -> const std::string_view;
+    auto getName() const -> std::string_view;
     static auto get() -> Application &;
 
 protected:
