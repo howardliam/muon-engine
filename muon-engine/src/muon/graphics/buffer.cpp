@@ -111,7 +111,7 @@ auto Buffer::map() -> std::expected<void, vk::Result> {
 }
 
 void Buffer::unmap() {
-    if (m_mapped == nullptr) {
+    if (!m_mapped) {
         return;
     }
 
@@ -146,7 +146,8 @@ auto Buffer::getMappedMemory() const -> void * { return m_mapped; }
 
 auto Buffer::getDeviceAddress() const -> VkDeviceAddress {
     core::expect(
-        m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress, "buffer must be created with shader context address usage"
+        m_usageFlags & vk::BufferUsageFlagBits::eShaderDeviceAddress,
+        "buffer must be created with shader context address usage"
     );
     return m_deviceAddress;
 }
