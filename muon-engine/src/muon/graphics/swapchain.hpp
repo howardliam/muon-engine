@@ -37,13 +37,13 @@ public:
     auto getFormat() const -> vk::Format;
     auto isImageHdr() const -> bool;
 
-    auto getImageCount() const -> size_t;
+    auto getImageCount() const -> uint32_t;
 
-    auto getImage(size_t index) -> vk::Image &;
-    auto getImage(size_t index) const -> const vk::Image &;
+    auto getImage(uint32_t index) -> vk::Image &;
+    auto getImage(uint32_t index) const -> const vk::Image &;
 
-    auto getImageView(size_t index) -> vk::raii::ImageView &;
-    auto getImageView(size_t index) const -> const vk::raii::ImageView &;
+    auto getImageView(uint32_t index) -> vk::raii::ImageView &;
+    auto getImageView(uint32_t index) const -> const vk::raii::ImageView &;
 
     auto getExtent() const -> vk::Extent2D;
     auto getWidth() const -> uint32_t;

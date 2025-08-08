@@ -119,13 +119,13 @@ auto Swapchain::isImageHdr() const -> bool {
     }
 }
 
-auto Swapchain::getImageCount() const -> size_t { return m_imageCount; }
+auto Swapchain::getImageCount() const -> uint32_t { return m_imageCount; }
 
-auto Swapchain::getImage(size_t index) -> vk::Image & { return m_images[index]; }
-auto Swapchain::getImage(size_t index) const -> const vk::Image & { return m_images[index]; }
+auto Swapchain::getImage(uint32_t index) -> vk::Image & { return m_images[index]; }
+auto Swapchain::getImage(uint32_t index) const -> const vk::Image & { return m_images[index]; }
 
-auto Swapchain::getImageView(size_t index) -> vk::raii::ImageView & { return m_imageViews[index]; }
-auto Swapchain::getImageView(size_t index) const -> const vk::raii::ImageView & { return m_imageViews[index]; }
+auto Swapchain::getImageView(uint32_t index) -> vk::raii::ImageView & { return m_imageViews[index]; }
+auto Swapchain::getImageView(uint32_t index) const -> const vk::raii::ImageView & { return m_imageViews[index]; }
 
 auto Swapchain::getExtent() const -> vk::Extent2D { return m_extent; }
 auto Swapchain::getWidth() const -> uint32_t { return m_extent.width; }
@@ -194,7 +194,7 @@ void Swapchain::createImageViews() {
         swizzle = true;
     }
 
-    for (size_t i = 0; i < m_imageCount; i++) {
+    for (uint32_t i = 0; i < m_imageCount; i++) {
         vk::ImageViewCreateInfo imageViewCi;
         imageViewCi.image = m_images[i];
         imageViewCi.viewType = vk::ImageViewType::e2D;
