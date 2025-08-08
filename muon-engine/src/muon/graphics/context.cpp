@@ -371,26 +371,26 @@ void Context::createLogicalDevice() {
     nextQueueIndices[*computeIndex] = 0;
     nextQueueIndices[*transferIndex] = 0;
 
-    Queue::Spec graphicsSpec{m_device};
-    graphicsSpec.queueFamilyIndex = *graphicsIndex;
-    graphicsSpec.queueIndex = nextQueueIndices[*graphicsIndex]++;
-    graphicsSpec.name = "graphics";
-    m_graphicsQueue = std::make_unique<Queue>(graphicsSpec);
-    core::expect(m_graphicsQueue, "graphics queue must not be null");
+    m_graphicsQueue = std::make_unique<Queue>(
+        m_device,
+        *graphicsIndex,
+        nextQueueIndices[*graphicsIndex]++,
+        "graphics"
+    );
 
-    Queue::Spec computeSpec{m_device};
-    computeSpec.queueFamilyIndex = *computeIndex;
-    computeSpec.queueIndex = nextQueueIndices[*computeIndex]++;
-    computeSpec.name = "compute";
-    m_computeQueue = std::make_unique<Queue>(computeSpec);
-    core::expect(m_computeQueue, "compute queue must not be null");
+    m_computeQueue = std::make_unique<Queue>(
+        m_device,
+        *computeIndex,
+        nextQueueIndices[*computeIndex]++,
+        "compute"
+    );
 
-    Queue::Spec transferSpec{m_device};
-    transferSpec.queueFamilyIndex = *transferIndex;
-    transferSpec.queueIndex = nextQueueIndices[*transferIndex]++;
-    transferSpec.name = "transfer";
-    m_transferQueue = std::make_unique<Queue>(transferSpec);
-    core::expect(m_transferQueue, "transfer queue must not be null");
+    m_transferQueue = std::make_unique<Queue>(
+        m_device,
+        *transferIndex,
+        nextQueueIndices[*transferIndex]++,
+        "transfer"
+    );
 }
 
 void Context::createAllocator() {

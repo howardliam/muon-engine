@@ -5,28 +5,22 @@
 #include "vulkan/vulkan_raii.hpp"
 
 #include <functional>
-#include <limits>
+#include <string_view>
 
 namespace muon::graphics {
 
 class Queue : NoCopy, NoMove {
 public:
-    struct Spec {
-        const vk::raii::Device &device;
-
-        uint32_t queueFamilyIndex{std::numeric_limits<uint32_t>().max()};
-        uint32_t queueIndex{std::numeric_limits<uint32_t>().max()};
-        const char *name{nullptr};
-
-        Spec(const vk::raii::Device &device) : device{device} {}
-    };
-
-public:
-    Queue(const Spec &spec);
+    Queue(
+        const vk::raii::Device &device,
+        uint32_t familyIndex,
+        uint32_t index,
+        std::string_view name
+    );
     ~Queue();
 
 public:
-    auto executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) -> void;
+    void executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn);
 
 public:
     auto get() -> vk::raii::Queue &;
@@ -44,10 +38,10 @@ private:
     vk::raii::Queue m_queue{nullptr};
     vk::raii::CommandPool m_commandPool{nullptr};
 
-    uint32_t m_familyIndex{std::numeric_limits<uint32_t>().max()};
-    uint32_t m_index{std::numeric_limits<uint32_t>().max()};
+    uint32_t m_familyIndex;
+    uint32_t m_index;
 
-    const char *m_name{nullptr};
+    const std::string m_name;
 };
 
 } // namespace muon::graphics

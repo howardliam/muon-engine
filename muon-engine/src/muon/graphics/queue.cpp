@@ -10,13 +10,18 @@
 
 namespace muon::graphics {
 
-Queue::Queue(const Spec &spec) : m_device(spec.device), m_name(spec.name) {
-    auto queueResult = m_device.getQueue(spec.queueFamilyIndex, spec.queueIndex);
+Queue::Queue(
+    const vk::raii::Device &device,
+    uint32_t familyIndex,
+    uint32_t index,
+    std::string_view name
+) : m_device{device}, m_name{name} {
+    auto queueResult = m_device.getQueue(familyIndex, index);
     core::expect(queueResult, "failed to get queue from device");
     m_queue = std::move(*queueResult);
 
     vk::CommandPoolCreateInfo commandPoolCi;
-    commandPoolCi.queueFamilyIndex = spec.queueFamilyIndex;
+    commandPoolCi.queueFamilyIndex = familyIndex;
     commandPoolCi.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
     auto commandPoolResult = m_device.createCommandPool(commandPoolCi);
@@ -28,7 +33,7 @@ Queue::Queue(const Spec &spec) : m_device(spec.device), m_name(spec.name) {
 
 Queue::~Queue() { core::debug("destroyed {} queue", m_name); }
 
-auto Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) -> void {
+void Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandBuffer)> const &recordFn) {
     vk::CommandBufferAllocateInfo commandBufferAi;
     commandBufferAi.level = vk::CommandBufferLevel::ePrimary;
     commandBufferAi.commandPool = m_commandPool;
@@ -36,7 +41,7 @@ auto Queue::executeCommands(std::function<void(vk::raii::CommandBuffer &commandB
 
     auto commandBufferResult = m_device.allocateCommandBuffers(commandBufferAi);
     core::expect(commandBufferResult, "failed to allocate single time command buffer");
-    auto &commandBuffer = (*commandBufferResult)[0];
+    auto &commandBuffer = commandBufferResult->front();
 
     vk::CommandBufferBeginInfo commandBufferBi;
     commandBufferBi.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
