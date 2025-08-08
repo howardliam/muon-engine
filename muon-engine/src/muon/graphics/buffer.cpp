@@ -130,11 +130,11 @@ void Buffer::write(const void *data, vk::DeviceSize size, vk::DeviceSize offset)
 }
 
 void Buffer::flush(vk::DeviceSize size, vk::DeviceSize offset) {
-    vmaFlushAllocation(m_context.getAllocator(), m_allocation, offset, size);
+    m_context.getAllocator().flushAllocation(m_allocation, offset, size);
 }
 
 void Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) {
-    vmaInvalidateAllocation(m_context.getAllocator(), m_allocation, offset, size);
+    m_context.getAllocator().invalidateAllocation(m_allocation, offset, size);
 }
 
 auto Buffer::get() -> vk::raii::Buffer & { return m_buffer; }
