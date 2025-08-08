@@ -9,22 +9,16 @@ namespace muon::graphics {
 
 class Image : NoCopy, NoMove {
 public:
-    struct Spec {
-        const Context &context;
-        vk::raii::CommandBuffer &commandBuffer;
-
-        vk::Extent2D extent;
-        vk::Format format;
-        vk::ImageLayout layout;
-        vk::ImageUsageFlags usageFlags;
-        vk::AccessFlags2 accessFlags;
-        vk::PipelineStageFlags2 stageFlags;
-
-        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer) : context{context}, commandBuffer{commandBuffer} {}
-    };
-
-public:
-    Image(const Spec &spec);
+    Image(
+        const Context &context,
+        vk::raii::CommandBuffer &commandBuffer,
+        vk::Extent2D extent,
+        vk::Format format,
+        vk::ImageLayout layout,
+        vk::ImageUsageFlags usageFlags,
+        vk::AccessFlags2 accessFlags,
+        vk::PipelineStageFlags2 stageFlags
+    );
     ~Image();
 
 public:
@@ -43,9 +37,9 @@ public:
     auto getDescriptorInfo() const -> const vk::DescriptorImageInfo &;
 
 private:
-    auto createImage() -> void;
-    auto createImageView() -> void;
-    auto transitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void;
+    void createImage();
+    void createImageView();
+    void transitionLayout(vk::raii::CommandBuffer &commandBuffer);
 
 private:
     const Context &m_context;

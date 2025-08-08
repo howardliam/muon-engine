@@ -10,13 +10,21 @@
 
 namespace muon::graphics {
 
-Image::Image(const Spec &spec)
-    : m_context(spec.context), m_extent(spec.extent), m_format(spec.format), m_layout(spec.layout), m_usageFlags(spec.usageFlags),
-      m_accessFlags(spec.accessFlags), m_stageFlags(spec.stageFlags) {
+Image::Image(
+    const Context &context,
+    vk::raii::CommandBuffer &commandBuffer,
+    vk::Extent2D extent,
+    vk::Format format,
+    vk::ImageLayout layout,
+    vk::ImageUsageFlags usageFlags,
+    vk::AccessFlags2 accessFlags,
+    vk::PipelineStageFlags2 stageFlags
+) : m_context{context}, m_extent{extent}, m_format{format}, m_layout{layout},
+m_usageFlags{usageFlags}, m_accessFlags{accessFlags}, m_stageFlags{stageFlags} {
     createImage();
     createImageView();
 
-    transitionLayout(spec.commandBuffer);
+    transitionLayout(commandBuffer);
 
     core::debug("created image with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, format::formatBytes(m_bytes));
 }
@@ -37,7 +45,7 @@ auto Image::getAccessFlags() const -> vk::AccessFlags2 { return m_accessFlags; }
 auto Image::getStageFlags() const -> vk::PipelineStageFlags2 { return m_stageFlags; }
 auto Image::getDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
 
-auto Image::createImage() -> void {
+void Image::createImage() {
     vk::ImageCreateInfo imageCi;
     imageCi.flags = vk::ImageCreateFlags{};
     imageCi.imageType = vk::ImageType::e2D;
@@ -71,7 +79,7 @@ auto Image::createImage() -> void {
     m_bytes = allocInfo.size;
 }
 
-auto Image::createImageView() -> void {
+void Image::createImageView() {
     m_aspectMask = [](vk::Format format) -> vk::ImageAspectFlags {
         switch (format) {
             case vk::Format::eUndefined: {
@@ -123,7 +131,7 @@ auto Image::createImageView() -> void {
     m_descriptorInfo.sampler = nullptr;
 }
 
-auto Image::transitionLayout(vk::raii::CommandBuffer &commandBuffer) -> void {
+void Image::transitionLayout(vk::raii::CommandBuffer &commandBuffer) {
     vk::ImageMemoryBarrier2 barrier;
     barrier.image = m_image;
     barrier.subresourceRange.aspectMask = m_aspectMask;
