@@ -36,7 +36,7 @@ public:
     void pollEvents();
 
 public: // class getters/setters
-    auto getTitle() -> const std::string_view;
+    auto getTitle() const -> const std::string_view;
     void setTitle(const std::string_view title);
 
     auto getExtent() const -> vk::Extent2D;
@@ -45,6 +45,7 @@ public: // class getters/setters
 
     auto getRefreshRate() const -> uint16_t;
 
+    auto getMode() const -> WindowMode;
     void setMode(WindowMode mode);
 
 public: // underlying SDL API re-exposure

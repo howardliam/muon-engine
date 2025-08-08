@@ -49,6 +49,8 @@ Window::Window(
     core::expect(displayMode, "failed to get desktop display mode: {}", SDL_GetError());
     m_refreshRate = static_cast<uint16_t>(displayMode->refresh_rate);
 
+    core::trace("selected display: {}", SDL_GetDisplayName(m_impl->currentDisplay));
+
     m_impl->window = SDL_CreateWindow(m_title.c_str(), m_extent.width, m_extent.height, SDL_WINDOW_VULKAN);
     core::expect(m_impl->window, "failed to create window: {}", SDL_GetError());
 
@@ -131,7 +133,7 @@ void Window::pollEvents() {
     }
 }
 
-auto Window::getTitle() -> const std::string_view { return m_title; }
+auto Window::getTitle() const -> const std::string_view { return m_title; }
 void Window::setTitle(const std::string_view title) {
     m_title = title;
     SDL_SetWindowTitle(m_impl->window, m_title.c_str());
@@ -143,9 +145,12 @@ auto Window::getHeight() const -> uint32_t { return m_extent.height; }
 
 auto Window::getRefreshRate() const -> uint16_t { return m_refreshRate; }
 
+auto Window::getMode() const -> WindowMode { return m_mode; }
 void Window::setMode(WindowMode mode) {
+    m_mode = mode;
+
     bool fullscreen = false;
-    switch (mode) {
+    switch (m_mode) {
         case WindowMode::Windowed:
             fullscreen = false;
             break;
@@ -156,7 +161,7 @@ void Window::setMode(WindowMode mode) {
     }
 
     bool success = SDL_SetWindowFullscreen(m_impl->window, fullscreen);
-    core::expect(success, "failed to set window mode to: {}, {}", magic_enum::enum_name(mode), SDL_GetError());
+    core::expect(success, "failed to set window mode to: {}, {}", m_mode, SDL_GetError());
 }
 
 void Window::requestAttention() const {
