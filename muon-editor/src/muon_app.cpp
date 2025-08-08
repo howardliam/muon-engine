@@ -93,7 +93,7 @@ private:
     bool m_fullscreen{false};
 };
 
-auto createApplication(size_t argCount, char **argArray) -> Application * {
+auto createApplication(uint64_t argCount, char **argArray) -> Application * {
     return new MuonEditor{
         "Muon Editor",
         {1920, 1080},

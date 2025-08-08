@@ -7,7 +7,7 @@
 
 #include <cstdlib>
 
-extern auto muon::createApplication(size_t argCount, char **argArray) -> Application *;
+extern auto muon::createApplication(uint64_t argCount, char **argArray) -> Application *;
 
 auto main(int32_t argCount, char **argArray) -> int32_t {
     muon::log::init();

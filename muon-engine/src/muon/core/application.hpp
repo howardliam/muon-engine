@@ -50,6 +50,6 @@ protected:
     static inline Application *s_instance{nullptr};
 };
 
-auto createApplication(size_t argCount, char **argArray) -> Application *;
+auto createApplication(uint64_t argCount, char **argArray) -> Application *;
 
 } // namespace muon
