@@ -5,19 +5,34 @@
 #include "muon/graphics/buffer.hpp"
 #include "vulkan/vulkan_enums.hpp"
 
-#include <memory>
-
 namespace muon::graphics {
 
-Mesh::Mesh(const Spec &spec) : m_context(spec.context) {
+Mesh::Mesh(
+    const Context &context,
+    vk::raii::CommandBuffer &commandBuffer,
+    std::deque<Buffer> &uploadBuffers,
+    const std::vector<uint8_t> &vertexData,
+    uint32_t vertexStride,
+    const std::vector<uint32_t> &indices
+) : m_context{context} {
     createBuffer(
-        spec.commandBuffer, spec.uploadBuffers, spec.vertexData->data(), spec.vertexStride,
-        spec.vertexData->size() / spec.vertexStride, vk::BufferUsageFlagBits::eVertexBuffer, m_vertexBuffer
+        commandBuffer,
+        uploadBuffers,
+        vertexData.data(),
+        vertexStride,
+        vertexData.size() / vertexStride,
+        vk::BufferUsageFlagBits::eVertexBuffer,
+        m_vertexBuffer
     );
 
     createBuffer(
-        spec.commandBuffer, spec.uploadBuffers, spec.indices->data(), sizeof(uint32_t), spec.indices->size(),
-        vk::BufferUsageFlagBits::eIndexBuffer, m_indexBuffer
+        commandBuffer,
+        uploadBuffers,
+        indices.data(),
+        sizeof(uint32_t),
+        indices.size(),
+        vk::BufferUsageFlagBits::eIndexBuffer,
+        m_indexBuffer
     );
 
     core::debug("created mesh with: {} vertices", m_vertexCount);
@@ -25,7 +40,7 @@ Mesh::Mesh(const Spec &spec) : m_context(spec.context) {
 
 Mesh::~Mesh() { core::debug("destroyed mesh"); }
 
-auto Mesh::bind(vk::raii::CommandBuffer &commandBuffer) -> void {
+void Mesh::bind(vk::raii::CommandBuffer &commandBuffer) {
     const auto &buffer = m_vertexBuffer->get();
     const VkDeviceSize offset = 0;
 
@@ -33,13 +48,18 @@ auto Mesh::bind(vk::raii::CommandBuffer &commandBuffer) -> void {
     commandBuffer.bindIndexBuffer(m_indexBuffer->get(), 0, vk::IndexType::eUint32);
 }
 
-auto Mesh::draw(vk::raii::CommandBuffer &commandBuffer) -> void { commandBuffer.drawIndexed(m_indexCount, 1, 0, 0, 0); }
+void Mesh::draw(vk::raii::CommandBuffer &commandBuffer) { commandBuffer.drawIndexed(m_indexCount, 1, 0, 0, 0); }
 
-auto Mesh::createBuffer(
-    vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const void *data, VkDeviceSize instanceSize,
-    size_t instanceCount, vk::BufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
-) -> void {
-    Buffer &stagingBuffer = uploadBuffers->emplace_back(
+void Mesh::createBuffer(
+    vk::raii::CommandBuffer &commandBuffer,
+    std::deque<Buffer> &uploadBuffers,
+    const void *data,
+    vk::DeviceSize instanceSize,
+    size_t instanceCount,
+    vk::BufferUsageFlagBits bufferUsage,
+    std::unique_ptr<Buffer> &buffer
+) {
+    Buffer &stagingBuffer = uploadBuffers.emplace_back(
         m_context,
         instanceSize,
         instanceCount,

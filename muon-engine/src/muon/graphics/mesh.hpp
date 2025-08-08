@@ -14,30 +14,29 @@ namespace muon::graphics {
 
 class Mesh : NoCopy, NoMove {
 public:
-    struct Spec {
-        const Context &context;
-        vk::raii::CommandBuffer &commandBuffer;
-        std::deque<Buffer> *uploadBuffers{nullptr};
-
-        const std::vector<uint8_t> *vertexData{nullptr};
-        uint32_t vertexStride{0};
-        const std::vector<uint32_t> *indices{nullptr};
-
-        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer) : context{context}, commandBuffer{commandBuffer} {}
-    };
-
-public:
-    Mesh(const Spec &spec);
+    Mesh(
+        const Context &context,
+        vk::raii::CommandBuffer &commandBuffer,
+        std::deque<Buffer> &uploadBuffers,
+        const std::vector<uint8_t> &vertexData,
+        uint32_t vertexStride,
+        const std::vector<uint32_t> &indices
+    );
     ~Mesh();
 
-    auto bind(vk::raii::CommandBuffer &commandBuffer) -> void;
-    auto draw(vk::raii::CommandBuffer &commandBuffer) -> void;
+    void bind(vk::raii::CommandBuffer &commandBuffer);
+    void draw(vk::raii::CommandBuffer &commandBuffer);
 
 private:
-    auto createBuffer(
-        vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const void *data, vk::DeviceSize instanceSize,
-        size_t instanceCount, vk::BufferUsageFlagBits bufferUsage, std::unique_ptr<Buffer> &buffer
-    ) -> void;
+    void createBuffer(
+        vk::raii::CommandBuffer &commandBuffer,
+        std::deque<Buffer> &uploadBuffers,
+        const void *data,
+        vk::DeviceSize instanceSize,
+        size_t instanceCount,
+        vk::BufferUsageFlagBits bufferUsage,
+        std::unique_ptr<Buffer> &buffer
+    );
 
 private:
     const Context &m_context;
