@@ -40,7 +40,7 @@ void Application::pushLayer(Layer *layer) {
 void Application::run() {
     std::unique_lock<std::mutex> lock{m_runMutex};
 
-    core::info("running application");
+    core::info("running {}", m_name);
 
     while (m_running) {
         m_window->pollEvents();
