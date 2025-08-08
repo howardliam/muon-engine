@@ -13,17 +13,11 @@ class DescriptorSetLayout;
 
 class DescriptorWriter {
 public:
-    struct Spec {
-        const Context &context;
-        DescriptorPool &pool;
-        DescriptorSetLayout &setLayout;
-
-        Spec(const Context &context, DescriptorPool &pool, DescriptorSetLayout &setLayout)
-            : context{context}, pool{pool}, setLayout{setLayout} {}
-    };
-
-public:
-    DescriptorWriter(const Spec &spec);
+    DescriptorWriter(
+        const Context &context,
+        DescriptorPool &pool,
+        DescriptorSetLayout &setLayout
+    );
     ~DescriptorWriter();
 
     auto addBufferWrite(uint32_t binding, size_t position, vk::DescriptorBufferInfo *info) -> DescriptorWriter &;

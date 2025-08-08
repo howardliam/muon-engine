@@ -5,7 +5,11 @@
 
 namespace muon::graphics {
 
-DescriptorWriter::DescriptorWriter(const Spec &spec) : m_context{spec.context}, m_pool{spec.pool}, m_setLayout{spec.setLayout} {
+DescriptorWriter::DescriptorWriter(
+    const Context &context,
+    DescriptorPool &pool,
+    DescriptorSetLayout &setLayout
+) : m_context{context}, m_pool{pool}, m_setLayout{setLayout} {
     core::debug("created descriptor writer");
 }
 
