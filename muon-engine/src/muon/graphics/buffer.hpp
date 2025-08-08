@@ -25,11 +25,11 @@ public:
     auto operator=(Buffer &&other) noexcept -> Buffer &;
 
     auto map() -> std::expected<void, vk::Result>;
-    auto unmap() -> void;
+    void unmap();
 
-    auto write(const void *data, vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
-    auto flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
-    auto invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0) -> void;
+    void write(const void *data, vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
+    void flush(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
+    void invalidate(vk::DeviceSize size = vk::WholeSize, vk::DeviceSize offset = 0);
 
 public:
     auto get() -> vk::raii::Buffer &;

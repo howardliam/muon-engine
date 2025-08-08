@@ -110,7 +110,7 @@ auto Buffer::map() -> std::expected<void, vk::Result> {
     return {};
 }
 
-auto Buffer::unmap() -> void {
+void Buffer::unmap() {
     if (m_mapped == nullptr) {
         return;
     }
@@ -119,7 +119,7 @@ auto Buffer::unmap() -> void {
     m_mapped = nullptr;
 }
 
-auto Buffer::write(const void *data, vk::DeviceSize size, vk::DeviceSize offset) -> void {
+void Buffer::write(const void *data, vk::DeviceSize size, vk::DeviceSize offset) {
     if (size == vk::WholeSize) {
         std::memcpy(m_mapped, data, m_size);
     } else {
@@ -129,11 +129,11 @@ auto Buffer::write(const void *data, vk::DeviceSize size, vk::DeviceSize offset)
     }
 }
 
-auto Buffer::flush(vk::DeviceSize size, vk::DeviceSize offset) -> void {
+void Buffer::flush(vk::DeviceSize size, vk::DeviceSize offset) {
     vmaFlushAllocation(m_context.getAllocator(), m_allocation, offset, size);
 }
 
-auto Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) -> void {
+void Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) {
     vmaInvalidateAllocation(m_context.getAllocator(), m_allocation, offset, size);
 }
 
