@@ -15,9 +15,9 @@ namespace muon::graphics {
 Swapchain::Swapchain(
     const Context &context,
     const vk::Extent2D &extent,
-    const vk::ColorSpaceKHR &colorSpace,
-    const vk::Format &format,
-    const vk::PresentModeKHR &presentMode,
+    vk::ColorSpaceKHR colorSpace,
+    vk::Format format,
+    vk::PresentModeKHR presentMode,
     std::shared_ptr<Swapchain> oldSwapchain
 ) : m_context(context), m_graphicsQueue(m_context.getGraphicsQueue()), m_oldSwapchain(oldSwapchain),
 m_format(format), m_colorSpace(colorSpace) {
@@ -52,8 +52,10 @@ auto Swapchain::acquireNextImage() -> std::expected<uint32_t, vk::Result> {
     return index;
 }
 
-auto Swapchain::submitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
-    -> std::expected<void, vk::Result> {
+auto Swapchain::submitCommandBuffers(
+    const vk::raii::CommandBuffer &commandBuffer,
+    uint32_t imageIndex
+) -> std::expected<void, vk::Result> {
     if (m_imagesInFlight[imageIndex] != nullptr) {
         auto waitResult = m_context.getDevice().waitForFences({m_imagesInFlight[imageIndex]}, true, k_waitDuration);
         core::expect(waitResult == vk::Result::eSuccess, "failed to wait for fences");

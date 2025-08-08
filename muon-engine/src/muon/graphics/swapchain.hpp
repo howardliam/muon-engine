@@ -17,16 +17,18 @@ public:
     Swapchain(
         const Context &context,
         const vk::Extent2D &extent,
-        const vk::ColorSpaceKHR &colorSpace,
-        const vk::Format &format,
-        const vk::PresentModeKHR &presentMode,
+        vk::ColorSpaceKHR colorSpace,
+        vk::Format format,
+        vk::PresentModeKHR presentMode,
         std::shared_ptr<Swapchain> oldSwapchain = nullptr
     );
     ~Swapchain();
 
     auto acquireNextImage() -> std::expected<uint32_t, vk::Result>;
-    auto submitCommandBuffers(const vk::raii::CommandBuffer &commandBuffer, uint32_t imageIndex)
-        -> std::expected<void, vk::Result>;
+    auto submitCommandBuffers(
+        const vk::raii::CommandBuffer &commandBuffer,
+        uint32_t imageIndex
+    ) -> std::expected<void, vk::Result>;
 
 public:
     auto get() -> vk::raii::SwapchainKHR &;
