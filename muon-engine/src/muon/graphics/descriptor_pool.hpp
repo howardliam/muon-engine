@@ -9,17 +9,11 @@ namespace muon::graphics {
 
 class DescriptorPool {
 public:
-    struct Spec {
-        const Context &context;
-
-        uint32_t maxSets;
-        std::vector<vk::DescriptorPoolSize> poolSizes;
-
-        Spec(const Context &context) : context{context} {}
-    };
-
-public:
-    DescriptorPool(const Spec &spec);
+    DescriptorPool(
+        const Context &context,
+        uint32_t maxSets,
+        const std::vector<vk::DescriptorPoolSize> &poolSizes
+    );
     ~DescriptorPool();
 
 public:

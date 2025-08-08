@@ -5,11 +5,15 @@
 
 namespace muon::graphics {
 
-DescriptorPool::DescriptorPool(const Spec &spec) : m_context{spec.context} {
+DescriptorPool::DescriptorPool(
+    const Context &context,
+    uint32_t maxSets,
+    const std::vector<vk::DescriptorPoolSize> &poolSizes
+) : m_context{context} {
     vk::DescriptorPoolCreateInfo descriptorPoolCi;
-    descriptorPoolCi.maxSets = spec.maxSets;
-    descriptorPoolCi.poolSizeCount = spec.poolSizes.size();
-    descriptorPoolCi.pPoolSizes = spec.poolSizes.data();
+    descriptorPoolCi.maxSets = maxSets;
+    descriptorPoolCi.poolSizeCount = poolSizes.size();
+    descriptorPoolCi.pPoolSizes = poolSizes.data();
     descriptorPoolCi.flags = vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
 
     auto descriptorPoolResult = m_context.getDevice().createDescriptorPool(descriptorPoolCi);
