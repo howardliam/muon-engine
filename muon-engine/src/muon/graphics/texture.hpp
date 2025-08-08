@@ -11,22 +11,15 @@ namespace muon::graphics {
 
 class Texture : NoCopy {
 public:
-    struct Spec {
-        const Context &context;
-        vk::raii::CommandBuffer &commandBuffer;
-        std::deque<Buffer> *uploadBuffers{nullptr};
-        const std::vector<uint8_t> textureData;
-
-        vk::Extent2D extent{};
-        vk::Format format{};
-        uint32_t pixelSize{};
-
-        Spec(const Context &context, vk::raii::CommandBuffer &commandBuffer, std::vector<uint8_t> &&textureData)
-            : context{context}, commandBuffer{commandBuffer}, textureData{textureData} {}
-    };
-
-public:
-    Texture(const Spec &spec);
+    Texture(
+        const Context &context,
+        vk::raii::CommandBuffer &commandBuffer,
+        std::deque<Buffer> &uploadBuffers,
+        const std::vector<uint8_t> &textureData,
+        vk::Extent2D extent,
+        vk::Format format,
+        uint32_t pixelSize
+    );
     ~Texture();
 
     Texture(Texture &&other);
@@ -45,14 +38,16 @@ public:
     auto getDescriptorInfo() const -> const vk::DescriptorImageInfo &;
 
 private:
-    auto createImage() -> void;
-    auto createImageView() -> void;
-    auto createSampler() -> void;
+    void createImage();
+    void createImageView();
+    void createSampler();
 
-    auto uploadData(
-        vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData,
+    void uploadData(
+        vk::raii::CommandBuffer &commandBuffer,
+        std::deque<Buffer> &uploadBuffers,
+        const std::vector<uint8_t> &textureData,
         uint32_t pixelSize
-    ) -> void;
+    );
 
 private:
     const Context &m_context;

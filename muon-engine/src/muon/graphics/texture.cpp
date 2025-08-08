@@ -12,7 +12,15 @@
 
 namespace muon::graphics {
 
-Texture::Texture(const Spec &spec) : m_context{spec.context}, m_extent{spec.extent}, m_format{spec.format} {
+Texture::Texture(
+    const Context &context,
+    vk::raii::CommandBuffer &commandBuffer,
+    std::deque<Buffer> &uploadBuffers,
+    const std::vector<uint8_t> &textureData,
+    vk::Extent2D extent,
+    vk::Format format,
+    uint32_t pixelSize
+) : m_context{context}, m_extent{extent}, m_format{format} {
     createImage();
     createImageView();
     createSampler();
@@ -21,7 +29,7 @@ Texture::Texture(const Spec &spec) : m_context{spec.context}, m_extent{spec.exte
     m_descriptorInfo.imageView = m_imageView;
     m_descriptorInfo.sampler = m_sampler;
 
-    uploadData(spec.commandBuffer, spec.uploadBuffers, spec.textureData, spec.pixelSize);
+    uploadData(commandBuffer, uploadBuffers, textureData, pixelSize);
 
     core::debug("created texture with dimensions: {}x{}, and size: {}", m_extent.width, m_extent.height, format::formatBytes(m_size));
 }
@@ -62,7 +70,7 @@ auto Texture::getSampler() const -> const vk::raii::Sampler & { return m_sampler
 
 auto Texture::getDescriptorInfo() const -> const vk::DescriptorImageInfo & { return m_descriptorInfo; }
 
-auto Texture::createImage() -> void {
+void Texture::createImage() {
     vk::ImageCreateInfo imageCi;
     imageCi.extent = vk::Extent3D{m_extent.width, m_extent.height, 1};
     imageCi.imageType = vk::ImageType::e2D;
@@ -99,7 +107,7 @@ auto Texture::createImage() -> void {
     m_size = allocInfo.size;
 }
 
-auto Texture::createImageView() -> void {
+void Texture::createImageView() {
     vk::ImageViewCreateInfo imageViewCi;
     imageViewCi.image = *m_image;
     imageViewCi.viewType = vk::ImageViewType::e2D;
@@ -119,7 +127,7 @@ auto Texture::createImageView() -> void {
     m_imageView = std::move(*imageViewResult);
 }
 
-auto Texture::createSampler() -> void {
+void Texture::createSampler() {
     vk::SamplerCreateInfo samplerCi;
     samplerCi.minFilter = vk::Filter::eLinear;
     samplerCi.magFilter = vk::Filter::eLinear;
@@ -141,10 +149,12 @@ auto Texture::createSampler() -> void {
     m_sampler = std::move(*samplerResult);
 }
 
-auto Texture::uploadData(
-    vk::raii::CommandBuffer &commandBuffer, std::deque<Buffer> *uploadBuffers, const std::vector<uint8_t> &textureData,
+void Texture::uploadData(
+    vk::raii::CommandBuffer &commandBuffer,
+    std::deque<Buffer> &uploadBuffers,
+    const std::vector<uint8_t> &textureData,
     uint32_t pixelSize
-) -> void {
+) {
     vk::ImageMemoryBarrier2 copyImb;
     copyImb.image = m_image;
     copyImb.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -169,7 +179,7 @@ auto Texture::uploadData(
     copyDi.pImageMemoryBarriers = &copyImb;
     commandBuffer.pipelineBarrier2(copyDi);
 
-    Buffer &stagingBuffer = uploadBuffers->emplace_back(
+    Buffer &stagingBuffer = uploadBuffers.emplace_back(
         m_context,
         pixelSize,
         textureData.size() / pixelSize,
