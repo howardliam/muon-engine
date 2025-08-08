@@ -138,6 +138,8 @@ void Context::createInstance(const Window &window) {
     auto instanceResult = m_context.createInstance(instanceCi);
     core::expect(instanceResult, "failed to create instance");
     m_instance = std::move(*instanceResult);
+
+    core::trace("created instance");
 }
 
 void Context::createDebugMessenger() {
@@ -188,6 +190,8 @@ void Context::createDebugMessenger() {
         auto debugMessengerResult = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCi);
         core::expect(debugMessengerResult, "failed to create debug messenger");
         m_debugMessenger = std::move(*debugMessengerResult);
+
+        core::trace("created debug messenger");
     }
 }
 
@@ -195,7 +199,8 @@ void Context::createSurface(const Window &window) {
     auto surfaceResult = window.createSurface(m_instance);
     core::expect(surfaceResult, "failed to create window surface");
     m_surface = std::move(*surfaceResult);
-    core::expect(*m_surface, "surface must not be null");
+
+    core::trace("created surface");
 }
 
 void Context::selectPhysicalDevice() {
@@ -227,6 +232,8 @@ void Context::selectPhysicalDevice() {
     }
 
     core::expect(gpuSelected, "failed to select a suitable GPU");
+
+    core::trace("selected GPU: {}", m_physicalDevice.getProperties().deviceName.data());
 }
 
 void Context::createLogicalDevice() {
@@ -357,6 +364,8 @@ void Context::createLogicalDevice() {
     core::expect(deviceResult, "failed to create device");
     m_device = std::move(*deviceResult);
 
+    core::trace("created logical device");
+
     std::map<uint32_t, uint32_t> nextQueueIndices;
     nextQueueIndices[*graphicsIndex] = 0;
     nextQueueIndices[*computeIndex] = 0;
@@ -394,6 +403,8 @@ void Context::createAllocator() {
     auto [result, allocator] = vma::createAllocator(createInfo);
     core::expect(result == vk::Result::eSuccess, "failed to create allocator");
     m_allocator = allocator;
+
+    core::trace("created allocator");
 }
 
 } // namespace muon::graphics
