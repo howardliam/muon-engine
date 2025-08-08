@@ -26,9 +26,9 @@ enum class WindowMode {
 class Window {
 public:
     Window(
-        const std::string_view title,
+        std::string_view title,
         const vk::Extent2D &extent,
-        const WindowMode mode,
+        WindowMode mode,
         const event::Dispatcher &dispatcher
     );
     ~Window();
@@ -36,8 +36,8 @@ public:
     void pollEvents();
 
 public: // class getters/setters
-    auto getTitle() const -> const std::string_view;
-    void setTitle(const std::string_view title);
+    auto getTitle() const -> std::string_view;
+    void setTitle(std::string_view title);
 
     auto getExtent() const -> vk::Extent2D;
     auto getWidth() const -> uint32_t;
@@ -52,7 +52,7 @@ public: // underlying SDL API re-exposure
     void requestAttention() const;
 
     auto getClipboardText() const -> std::optional<std::string>;
-    void setClipboardText(const std::string_view text) const;
+    void setClipboardText(std::string_view text) const;
 
     void beginTextInput();
     void endTextInput();

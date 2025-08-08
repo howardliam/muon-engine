@@ -32,9 +32,9 @@ struct Window::Impl {
 };
 
 Window::Window(
-    const std::string_view title,
+    std::string_view title,
     const vk::Extent2D &extent,
-    const WindowMode mode,
+    WindowMode mode,
     const event::Dispatcher &dispatcher
 ) : m_title{title}, m_extent{extent}, m_mode{mode}, m_dispatcher{dispatcher} {
     bool initialized = SDL_Init(SDL_INIT_VIDEO);
@@ -133,8 +133,8 @@ void Window::pollEvents() {
     }
 }
 
-auto Window::getTitle() const -> const std::string_view { return m_title; }
-void Window::setTitle(const std::string_view title) {
+auto Window::getTitle() const -> std::string_view { return m_title; }
+void Window::setTitle(std::string_view title) {
     m_title = title;
     SDL_SetWindowTitle(m_impl->window, m_title.c_str());
 }
