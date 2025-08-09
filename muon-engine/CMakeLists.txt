@@ -14,6 +14,7 @@ target_sources(
         src/muon/core/buffer.cpp
         src/muon/core/layer_stack.cpp
         src/muon/core/log.cpp
+        src/muon/core/uuid.cpp
         src/muon/core/window.cpp
 
         src/muon/crypto/hash.cpp
@@ -65,6 +66,7 @@ target_sources(
         src/muon/core/log.hpp
         src/muon/core/no_copy.hpp
         src/muon/core/no_move.hpp
+        src/muon/core/uuid.hpp
         src/muon/core/window.hpp
 
         src/muon/crypto/hash.hpp
@@ -161,6 +163,8 @@ if(MUON_ENGINE_TESTS)
         muon-tests
         PRIVATE
             tests/main.cpp
+
+            tests/core/uuid.cpp
 
             tests/utils/alignment.cpp
     )
