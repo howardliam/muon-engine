@@ -26,11 +26,9 @@ Application::Application(
     m_renderer = std::make_unique<graphics::Renderer>(*m_window, *m_context, vSync);
 
     m_onWindowClose = m_dispatcher->subscribe<event::WindowQuitEvent>([&](const auto &event) { m_running = false; });
-
-    core::debug("created application");
 }
 
-Application::~Application() { core::debug("destroyed application"); }
+Application::~Application() {}
 
 void Application::pushLayer(Layer *layer) {
     m_layerStack.pushLayer(layer);
@@ -40,7 +38,7 @@ void Application::pushLayer(Layer *layer) {
 void Application::run() {
     std::unique_lock<std::mutex> lock{m_runMutex};
 
-    core::info("running {}", m_name);
+    client::info("running {}", m_name);
 
     while (m_running) {
         m_window->pollEvents();

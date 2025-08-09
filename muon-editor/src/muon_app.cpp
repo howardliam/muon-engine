@@ -87,6 +87,12 @@ public:
         });
 
         pushLayer(new TestLayer{});
+
+        client::info("created {}", m_name);
+    }
+
+    ~MuonEditor() {
+        client::info("destroyed {}", m_name);
     }
 
 private:
