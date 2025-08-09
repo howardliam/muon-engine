@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <expected>
 #include <fstream>
+#include <string_view>
 
 namespace muon::crypto {
 
@@ -13,7 +14,11 @@ enum class HashError {
     FinalizationFailure,
 };
 
-auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, 32>, HashError>;
-auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, 32>, HashError>;
+constexpr uint64_t k_hashSize = 32;
+
+auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t, k_hashSize>, HashError>;
+auto hash(std::string_view string) -> std::expected<std::array<uint8_t, k_hashSize>, HashError>;
+
+auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, k_hashSize>, HashError>;
 
 } // namespace muon::crypto

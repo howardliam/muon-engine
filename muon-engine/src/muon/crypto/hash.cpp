@@ -14,6 +14,10 @@ auto hash(const uint8_t *data, size_t size) -> std::expected<std::array<uint8_t,
     return output;
 }
 
+auto hash(std::string_view string) -> std::expected<std::array<uint8_t, k_hashSize>, HashError> {
+    return hash(reinterpret_cast<const uint8_t *>(string.data()), string.size());
+}
+
 auto hash(std::ifstream &file) -> std::expected<std::array<uint8_t, 32>, HashError> {
     crypto_generichash_state state;
 
