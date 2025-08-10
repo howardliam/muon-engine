@@ -21,7 +21,7 @@ template <boolean_testable Condition, typename... Args>
 void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (debug_enabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
-            log::internal::s_coreLogger->error(message, std::forward<Args>(args)...);
+            log::internal::core_logger->error(message, std::forward<Args>(args)...);
             utils::invokeDebugTrap();
         }
     }
@@ -35,7 +35,7 @@ template <boolean_testable Condition, typename... Args>
 void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
     if constexpr (debug_enabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
-            log::internal::s_clientLogger->error(message, std::forward<Args>(args)...);
+            log::internal::client_logger->error(message, std::forward<Args>(args)...);
             utils::invokeDebugTrap();
         }
     }
