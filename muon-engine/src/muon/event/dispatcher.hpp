@@ -8,33 +8,33 @@
 
 namespace muon::event {
 
-class Dispatcher : NoCopy, NoMove {
+class dispatcher : no_copy, no_move {
 private:
-    using EventDispatcher = eventpp::EventDispatcher<std::type_index, void(const void *)>;
+    using event_dispatcher = eventpp::EventDispatcher<std::type_index, void(const void *)>;
 
 public:
-    using Handle = EventDispatcher::Handle;
+    using handle = event_dispatcher::Handle;
 
 public:
     template <typename Event>
-    auto subscribe(std::function<void(const Event &)> listener) -> Handle {
-        return m_dispatcher.appendListener(typeid(Event), [listener](const void *event) {
+    auto subscribe(std::function<void(const Event &)> listener) -> handle {
+        return dispatcher_.appendListener(typeid(Event), [listener](const void *event) {
             listener(*static_cast<const Event *>(event));
         });
     }
 
     template <typename Event>
-    [[nodiscard]] auto unsubscribe(const Handle &handle) -> bool {
-        return m_dispatcher.removeListener(typeid(Event), handle);
+    [[nodiscard]] auto unsubscribe(const handle &handle) -> bool {
+        return dispatcher_.removeListener(typeid(Event), handle);
     }
 
     template <typename Event>
-    auto dispatch(const Event &event) const -> void {
-        m_dispatcher.dispatch(typeid(Event), &event);
+    void dispatch(const Event &event) const {
+        dispatcher_.dispatch(typeid(Event), &event);
     }
 
 private:
-    EventDispatcher m_dispatcher;
+    event_dispatcher dispatcher_;
 };
 
 } // namespace muon::event
