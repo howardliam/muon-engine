@@ -16,13 +16,18 @@ auto uuid::end() const noexcept -> const_iterator { return data.end(); }
 constexpr auto uuid::size() const noexcept -> size_type { return data.size(); }
 
 auto uuid::to_string() const -> std::string {
-    const auto part1 = fmt::format("{:02x}{:02x}{:02x}{:02x}", data[0], data[1], data[2], data[3]);
-    const auto part2 = fmt::format("{:02x}{:02x}", data[4], data[5]);
-    const auto part3 = fmt::format("{:02x}{:02x}", data[6], data[7]);
-    const auto part4 = fmt::format("{:02x}{:02x}", data[8], data[9]);
-    const auto part5 = fmt::format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", data[10], data[11], data[12], data[13], data[14], data[15]);
-
-    return fmt::format("{}-{}-{}-{}-{}", part1, part2, part3, part4, part5);
+    return fmt::format(
+        "{:02x}{:02x}{:02x}{:02x}-"
+        "{:02x}{:02x}-"
+        "{:02x}{:02x}-"
+        "{:02x}{:02x}-"
+        "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+        data[0], data[1], data[2], data[3],
+        data[4], data[5],
+        data[6], data[7],
+        data[8], data[9],
+        data[10], data[11], data[12], data[13], data[14], data[15]
+    );
 }
 
 auto uuid::is_nil() const noexcept -> bool {
