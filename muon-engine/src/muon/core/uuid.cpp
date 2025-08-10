@@ -13,7 +13,7 @@ auto uuid::begin() const noexcept -> const_iterator { return data.begin(); }
 auto uuid::end() noexcept -> iterator { return data.end(); }
 auto uuid::end() const noexcept -> const_iterator { return data.end(); }
 
-constexpr auto uuid::size() const noexcept -> size_type { return data.size(); }
+auto uuid::size() const noexcept -> size_type { return data.size(); }
 
 auto uuid::to_string() const -> std::string {
     return fmt::format(

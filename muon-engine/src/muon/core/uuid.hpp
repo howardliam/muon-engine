@@ -22,7 +22,7 @@ struct uuid {
     auto end() noexcept -> iterator;
     auto end() const noexcept -> const_iterator;
 
-    constexpr auto size() const noexcept -> size_type;
+    auto size() const noexcept -> size_type;
 
     auto is_nil() const noexcept -> bool;
 
