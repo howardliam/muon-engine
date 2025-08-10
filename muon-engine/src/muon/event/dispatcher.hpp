@@ -1,14 +1,14 @@
 #pragma once
 
-#include "muon/core/no_copy.hpp"
-#include "muon/core/no_move.hpp"
+#include "muon/utils/no_copy.hpp"
+#include "muon/utils/no_move.hpp"
 
 #include <eventpp/eventdispatcher.h>
 #include <typeindex>
 
 namespace muon::event {
 
-class dispatcher : no_copy, no_move {
+class dispatcher : utils::no_copy, utils::no_move {
 private:
     using event_dispatcher = eventpp::EventDispatcher<std::type_index, void(const void *)>;
 

@@ -41,8 +41,6 @@ target_sources(
         src/muon/core/layer.hpp
         src/muon/core/layer_stack.hpp
         src/muon/core/log.hpp
-        src/muon/core/no_copy.hpp
-        src/muon/core/no_move.hpp
         src/muon/core/uuid.hpp
         src/muon/core/window.hpp
 
@@ -67,6 +65,8 @@ target_sources(
         src/muon/serde/serde.hpp
         src/muon/serde/toml.hpp
 
+        src/muon/utils/no_copy.hpp
+        src/muon/utils/no_move.hpp
         src/muon/utils/platform.hpp
 )
 

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace muon {
+namespace muon::utils {
 
 struct no_copy {
     no_copy() = default;
@@ -9,4 +9,4 @@ struct no_copy {
     auto operator=(const no_copy &) -> no_copy & = delete;
 };
 
-} // namespace muon
+} // namespace muon::utils

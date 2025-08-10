@@ -1,6 +1,6 @@
 #pragma once
 
-namespace muon {
+namespace muon::utils {
 
 struct no_move {
     no_move() = default;
@@ -9,4 +9,4 @@ struct no_move {
     auto operator=(no_move &&) -> no_move & = delete;
 };
 
-} // namespace muon
+} // namespace muon::utils

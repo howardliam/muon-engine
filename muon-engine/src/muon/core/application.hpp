@@ -1,8 +1,8 @@
 #pragma once
 
 #include "muon/core/layer_stack.hpp"
-#include "muon/core/no_copy.hpp"
-#include "muon/core/no_move.hpp"
+#include "muon/utils/no_copy.hpp"
+#include "muon/utils/no_move.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 
@@ -12,7 +12,7 @@
 
 namespace muon {
 
-class application : no_copy, no_move {
+class application : utils::no_copy, utils::no_move {
 public:
     using pointer = application *;
     using reference = application &;
