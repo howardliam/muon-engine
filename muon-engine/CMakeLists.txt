@@ -23,26 +23,6 @@ target_sources(
 
         src/muon/fs/fs.cpp
 
-        src/muon/graphics/buffer.cpp
-        src/muon/graphics/context.cpp
-        src/muon/graphics/descriptor_pool.cpp
-        src/muon/graphics/descriptor_set_layout.cpp
-        src/muon/graphics/descriptor_writer.cpp
-        src/muon/graphics/gpu.cpp
-        src/muon/graphics/image.cpp
-        src/muon/graphics/mesh.cpp
-        src/muon/graphics/pipeline_base.cpp
-        src/muon/graphics/pipeline_compute.cpp
-        src/muon/graphics/pipeline_graphics.cpp
-        src/muon/graphics/pipeline_layout.cpp
-        src/muon/graphics/pipeline_meshlet.cpp
-        src/muon/graphics/queue.cpp
-        src/muon/graphics/queue_family_info.cpp
-        src/muon/graphics/renderer.cpp
-        src/muon/graphics/shader_compiler.cpp
-        src/muon/graphics/swapchain.cpp
-        src/muon/graphics/texture.cpp
-
         src/muon/input/modifier.cpp
 
         src/muon/project/project.cpp
@@ -77,28 +57,6 @@ target_sources(
         src/muon/format/bytes.hpp
 
         src/muon/fs/fs.hpp
-
-        src/muon/graphics/buffer.hpp
-        src/muon/graphics/constants.hpp
-        src/muon/graphics/context.hpp
-        src/muon/graphics/descriptor_pool.hpp
-        src/muon/graphics/descriptor_set_layout.hpp
-        src/muon/graphics/descriptor_writer.hpp
-        src/muon/graphics/extensions.hpp
-        src/muon/graphics/gpu.hpp
-        src/muon/graphics/image.hpp
-        src/muon/graphics/mesh.hpp
-        src/muon/graphics/pipeline_base.hpp
-        src/muon/graphics/pipeline_compute.hpp
-        src/muon/graphics/pipeline_graphics.hpp
-        src/muon/graphics/pipeline_layout.hpp
-        src/muon/graphics/pipeline_meshlet.hpp
-        src/muon/graphics/queue.hpp
-        src/muon/graphics/queue_family_info.hpp
-        src/muon/graphics/renderer.hpp
-        src/muon/graphics/shader_compiler.hpp
-        src/muon/graphics/swapchain.hpp
-        src/muon/graphics/texture.hpp
 
         src/muon/input/key.hpp
         src/muon/input/modifier.hpp

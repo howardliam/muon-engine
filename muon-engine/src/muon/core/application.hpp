@@ -5,8 +5,6 @@
 #include "muon/core/no_move.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
-#include "muon/graphics/context.hpp"
-#include "muon/graphics/renderer.hpp"
 
 #include <memory>
 #include <mutex>
@@ -14,42 +12,43 @@
 
 namespace muon {
 
-class Application : NoCopy, NoMove {
+class application : no_copy, no_move {
 public:
-    Application(
+    using pointer = application *;
+    using reference = application &;
+
+    application(
         std::string_view name,
         const vk::Extent2D &extent,
-        bool vSync,
-        WindowMode mode
+        bool v_sync,
+        window_mode mode
     );
-    virtual ~Application();
+    virtual ~application();
 
-    void pushLayer(Layer *layer);
+    void push_layer(layer *layer);
 
     void run();
 
 public:
-    auto getName() const -> std::string_view;
-    static auto get() -> Application &;
+    auto name() const -> std::string_view;
+    static auto instance() -> reference;
 
 protected:
-    std::string m_name;
+    std::string name_;
 
-    LayerStack m_layerStack;
+    layer_stack layer_stack_;
 
-    std::unique_ptr<event::Dispatcher> m_dispatcher{nullptr};
-    event::Dispatcher::Handle m_onWindowClose{};
+    std::unique_ptr<event::dispatcher> dispatcher_{nullptr};
+    event::dispatcher::handle on_window_close_{};
 
-    std::unique_ptr<Window> m_window{nullptr};
-    std::unique_ptr<graphics::Context> m_context{nullptr};
-    std::unique_ptr<graphics::Renderer> m_renderer{nullptr};
+    std::unique_ptr<window> window_{nullptr};
 
-    std::mutex m_runMutex;
-    bool m_running{true};
+    std::mutex run_mutex_;
+    bool running_{true};
 
-    static inline Application *s_instance{nullptr};
+    static inline pointer instance_{nullptr};
 };
 
-auto createApplication(uint64_t argCount, char **argArray) -> Application *;
+auto create_application(size_t count, char **arguments) -> application::pointer;
 
 } // namespace muon

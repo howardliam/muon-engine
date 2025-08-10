@@ -11,100 +11,98 @@
 
 namespace muon {
 
-class TestLayer final : public Layer {
+class test_layer final : public layer {
 public:
-    TestLayer() {}
+    test_layer() {}
 
-    auto onAttach() -> void override { client::debug("attached test layer"); }
-    auto onDetach() -> void override { client::debug("detached test layer"); }
-    auto onUpdate() -> void override {}
+    auto on_attach() -> void override { client::debug("attached test layer"); }
+    auto on_detach() -> void override { client::debug("detached test layer"); }
+    auto on_update() -> void override {}
 };
 
-class MuonEditor final : public Application {
+class muon_editor final : public application {
 public:
-    MuonEditor(
-        const std::string_view name,
+    muon_editor(
         const vk::Extent2D &extent,
-        const bool vSync,
-        const WindowMode mode
-    ) : Application{name, extent, vSync, mode} {
+        const bool v_sync,
+        const window_mode mode
+    ) : application{"Muon Editor", extent, v_sync, mode} {
         // override default window close handler if you need to
-        auto success = m_dispatcher->unsubscribe<event::WindowQuitEvent>(m_onWindowClose);
+        auto success = dispatcher_->unsubscribe<event::window_quit_event>(on_window_close_);
         client::expect(success, "failed to unsubscribe from default window close event handler");
-        m_onWindowClose = m_dispatcher->subscribe<event::WindowQuitEvent>([&](const auto &event) { m_running = false; });
+        on_window_close_ = dispatcher_->subscribe<event::window_quit_event>([&](const auto &event) { running_ = false; });
 
-        m_dispatcher->subscribe<event::WindowResizeEvent>([&](const auto &event) {
-            m_renderer->rebuildSwapchain();
+        dispatcher_->subscribe<event::window_resize_event>([&](const auto &event) {
+            renderer_->rebuildSwapchain();
         });
 
-        m_dispatcher->subscribe<event::MouseButtonEvent>([](const auto &event) {
+        dispatcher_->subscribe<event::mouse_button_event>([](const auto &event) {
             if (event.down && event.button == input::MouseButton::Left) {
                 client::info("hello!");
             }
         });
 
-        m_fullscreen = mode == WindowMode::BorderlessFullscreen;
+        fullscreen_ = mode == window_mode::borderless_fullscreen;
 
-        m_dispatcher->subscribe<event::KeyboardEvent>([&](const auto &event) {
+        dispatcher_->subscribe<event::keyboard_event>([&](const auto &event) {
             if (event.scancode == input::Scancode::KeyC && event.mods.isCtrlDown() && event.down) {
-                m_window->setClipboardText("foobar");
+                window_->set_clipboard_text("foobar");
             }
 
             if (event.scancode == input::Scancode::KeyV && event.mods.isCtrlDown() && event.down) {
-                if (const auto text = m_window->getClipboardText(); text) {
-                    m_window->setTitle(*text);
+                if (const auto text = window_->get_clipboard_text(); text) {
+                    window_->set_title(*text);
                 }
             }
 
             if (event.scancode == input::Scancode::Function11 && event.down) {
-                m_window->setMode(m_fullscreen ? WindowMode::Windowed : WindowMode::BorderlessFullscreen);
-                m_fullscreen = !m_fullscreen;
+                window_->set_mode(fullscreen_ ? window_mode::windowed : window_mode::borderless_fullscreen);
+                fullscreen_ = !fullscreen_;
             }
 
             if (event.scancode == input::Scancode::Function2 && event.down) {
-                m_window->beginTextInput();
+                window_->begin_text_input();
             }
 
             if (event.scancode == input::Scancode::Function3 && event.down) {
-                m_window->endTextInput();
+                window_->end_text_input();
             }
 
             if (event.scancode == input::Scancode::KeyQ && event.mods.isCtrlDown() && event.down) {
-                m_running = false;
+                running_ = false;
             }
         });
 
-        m_dispatcher->subscribe<event::DropFileEvent>([](const auto &event) {
+        dispatcher_->subscribe<event::drop_file_event>([](const auto &event) {
             client::info("{}", event.path);
         });
 
-        m_dispatcher->subscribe<event::DropTextEvent>([](const auto &event) {
+        dispatcher_->subscribe<event::drop_text_event>([](const auto &event) {
             client::info("{}", event.text);
         });
 
-        m_dispatcher->subscribe<event::TextInputEvent>([](const auto &event) {
+        dispatcher_->subscribe<event::text_input_event>([](const auto &event) {
             client::info("{}", event.text);
         });
 
-        pushLayer(new TestLayer{});
+        push_layer(new test_layer);
 
-        client::info("created {}", m_name);
+        client::info("created {}", name_);
     }
 
-    ~MuonEditor() {
-        client::info("destroyed {}", m_name);
+    ~muon_editor() {
+        client::info("destroyed {}", name_);
     }
 
 private:
-    bool m_fullscreen{false};
+    bool fullscreen_{false};
 };
 
-auto createApplication(uint64_t argCount, char **argArray) -> Application * {
-    return new MuonEditor{
-        "Muon Editor",
+auto create_application(size_t count, char **arguments) -> application::pointer {
+    return new muon_editor{
         {1920, 1080},
         false,
-        WindowMode::Windowed
+        window_mode::windowed
     };
 }
 

@@ -7,9 +7,9 @@
 
 #include <cstdlib>
 
-extern auto muon::createApplication(uint64_t argCount, char **argArray) -> Application *;
+extern auto muon::create_application(size_t count, char **arguments) -> application::pointer;
 
-auto main(int32_t argCount, char **argArray) -> int32_t {
+auto main(int32_t count, char **arguments) -> int32_t {
     muon::log::init();
 
     if (muon::utils::isRunAsRoot()) {
@@ -17,7 +17,7 @@ auto main(int32_t argCount, char **argArray) -> int32_t {
         std::exit(1);
     }
 
-    auto app = muon::createApplication(argCount, argArray);
+    auto app = muon::create_application(count, arguments);
     muon::core::expect(app, "application must exist");
 
     app->run();
