@@ -82,21 +82,17 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 target_link_libraries(muon-engine PRIVATE
-    spirv-reflect-static SPIRV-Tools glslang
     sodium
 )
 
 target_link_libraries(muon-engine PUBLIC
     fmt::fmt spdlog::spdlog_header_only
-    tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
+    tomlplusplus::tomlplusplus
     SDL3::SDL3-static
     eventpp::eventpp
     Vulkan::Headers Vulkan::Hpp
     VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
-    glm
     magic_enum::magic_enum
-    spng_static
-    SQLiteCpp
 )
 
 add_compile_definitions(
