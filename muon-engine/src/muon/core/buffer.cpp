@@ -1,37 +1,67 @@
 #include "muon/core/buffer.hpp"
 
+#include <algorithm>
+#include <compare>
 #include <cstring>
 
 namespace muon {
 
-RawBuffer::RawBuffer(uint64_t size) { allocate(size); }
-
-RawBuffer::RawBuffer(const RawBuffer &other) {
-    allocate(other.m_size);
-    std::memcpy(m_data, other.m_data, m_size);
+raw_buffer::raw_buffer(size_t size) { allocate(size); }
+raw_buffer::raw_buffer(const raw_buffer &other) {
+    allocate(other.size_);
+    std::memcpy(data_, other.data_, size_);
 }
 
-void RawBuffer::allocate(uint64_t size) {
+void raw_buffer::allocate(size_t size) {
     release();
 
-    m_size = size;
-    m_data = new uint8_t[m_size];
+    size_ = size;
+    data_ = new value_type[size_];
 }
 
-void RawBuffer::release() {
-    delete[] m_data;
-    m_data = nullptr;
-    m_size = 0;
+void raw_buffer::release() {
+    delete[] data_;
+    data_ = nullptr;
+    size_ = 0;
 }
 
-auto RawBuffer::getData() -> uint8_t * { return m_data; }
+auto raw_buffer::data() noexcept -> pointer { return data_; }
+auto raw_buffer::data() const noexcept -> const_pointer { return data_; }
 
-auto RawBuffer::getSize() -> uint64_t { return m_size; }
+auto raw_buffer::begin() noexcept -> iterator { return data_; }
+auto raw_buffer::begin() const noexcept -> const_iterator { return data_; }
 
-Buffer::Buffer(uint64_t size) : RawBuffer{size} {}
+auto raw_buffer::end() noexcept -> iterator { return data_ + size_; }
+auto raw_buffer::end() const noexcept -> const_iterator { return data_ + size_; }
 
-Buffer::Buffer(const RawBuffer &other) : RawBuffer{other} {}
+constexpr auto raw_buffer::size() const noexcept -> size_type { return size_; }
 
-Buffer::~Buffer() { release(); }
+auto operator==(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> bool {
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
+    return std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0;
+}
+
+auto operator<=>(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> std::strong_ordering {
+    const auto min_size = std::min(lhs.size(), rhs.size());
+    int32_t compare = std::memcmp(lhs.data(), rhs.data(), min_size);
+
+    if (compare < 0) {
+        return std::strong_ordering::less;
+    }
+
+    if (compare > 0) {
+        return std::strong_ordering::greater;
+    }
+
+    return lhs.size() <=> rhs.size();
+}
+
+buffer::buffer(size_t size) : raw_buffer{size} {}
+
+buffer::buffer(const buffer &other) : raw_buffer{other} {}
+
+buffer::~buffer() { release(); }
 
 }
