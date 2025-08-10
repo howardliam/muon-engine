@@ -19,7 +19,6 @@
 #include "muon/input/modifier.hpp"
 #include "muon/input/mouse.hpp"
 #include "vulkan/vulkan_raii.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 #include <cstring>
 #include <vector>
@@ -33,7 +32,7 @@ struct window::impl {
 
 window::window(
     std::string_view title,
-    const vk::Extent2D &extent,
+    extent2d extent,
     window_mode mode,
     const event::dispatcher &dispatcher
 ) : title_{title}, extent_{extent}, mode_{mode}, dispatcher_{dispatcher} {
@@ -137,7 +136,7 @@ void window::set_title(std::string_view title) {
     SDL_SetWindowTitle(impl_->window, title_.c_str());
 }
 
-auto window::extent() const -> vk::Extent2D { return extent_; }
+auto window::extent() const -> extent2d { return extent_; }
 
 auto window::refresh_rate() const -> uint16_t { return refresh_rate_; }
 
@@ -228,7 +227,7 @@ auto window::displays() const -> std::optional<const std::vector<display_info>> 
         }
 
         info.name = name;
-        info.extent = vk::Extent2D{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
+        info.extent = extent2d{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
         info.refresh_rate = static_cast<uint16_t>(mode->refresh_rate);
     }
 
