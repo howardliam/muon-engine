@@ -91,7 +91,6 @@ endif()
 target_link_libraries(muon-engine PRIVATE
     spirv-reflect-static SPIRV-Tools glslang
     sodium
-    mimalloc
 )
 
 target_link_libraries(muon-engine PUBLIC
