@@ -2,13 +2,6 @@
 
 namespace muon {
 
-struct NoMove {
-    NoMove() = default;
-
-    NoMove(NoMove &&other) = delete;
-    auto operator=(NoMove &&other) -> NoMove & = delete;
-};
-
 struct no_move {
     no_move() = default;
 
