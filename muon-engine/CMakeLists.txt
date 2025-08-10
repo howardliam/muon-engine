@@ -6,8 +6,6 @@ add_library(muon::engine ALIAS muon-engine)
 target_sources(
     muon-engine
     PRIVATE
-        src/muon/config/config_manager.cpp
-
         src/muon/core/application.cpp
         src/muon/core/buffer.cpp
         src/muon/core/layer_stack.cpp
@@ -25,14 +23,10 @@ target_sources(
 
         src/muon/maths/alignment.cpp
 
-        src/muon/project/project.cpp
-
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS src/
     FILES
-        src/muon/config/config_manager.hpp
-
         src/muon/core/application.hpp
         src/muon/core/buffer.hpp
         src/muon/core/debug.hpp
@@ -59,8 +53,6 @@ target_sources(
         src/muon/input/mouse.hpp
 
         src/muon/maths/alignment.hpp
-
-        src/muon/project/project.hpp
 
         src/muon/serde/binary.hpp
         src/muon/serde/serde.hpp
