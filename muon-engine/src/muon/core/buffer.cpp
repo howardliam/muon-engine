@@ -1,7 +1,5 @@
 #include "muon/core/buffer.hpp"
 
-#include <algorithm>
-#include <compare>
 #include <cstring>
 
 namespace muon {
@@ -34,7 +32,7 @@ auto raw_buffer::begin() const noexcept -> const_iterator { return data_; }
 auto raw_buffer::end() noexcept -> iterator { return data_ + size_; }
 auto raw_buffer::end() const noexcept -> const_iterator { return data_ + size_; }
 
-constexpr auto raw_buffer::size() const noexcept -> size_type { return size_; }
+auto raw_buffer::size() const noexcept -> size_type { return size_; }
 
 auto operator==(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> bool {
     if (lhs.size() != rhs.size()) {
