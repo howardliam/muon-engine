@@ -1,50 +1,70 @@
 #include "muon/core/buffer.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
 namespace muon {
 
-raw_buffer::raw_buffer(size_t size) { allocate(size); }
-raw_buffer::raw_buffer(const raw_buffer &other) {
-    allocate(other.size_);
-    std::memcpy(data_, other.data_, size_);
+buffer::buffer(size_type size) noexcept : size_{size} { allocate(); }
+
+buffer::buffer(pointer data, size_type size) noexcept : size_{size} {
+    allocate();
+    std::memcpy(data_, data, size_);
 }
 
-void raw_buffer::allocate(size_t size) {
-    release();
-
-    size_ = size;
-    data_ = new value_type[size_];
+buffer::buffer(std::string_view text) noexcept : size_{text.size()} {
+    allocate();
+    std::memcpy(data_, text.data(), size_);
 }
 
-void raw_buffer::release() {
-    delete[] data_;
-    data_ = nullptr;
-    size_ = 0;
+buffer::buffer(const buffer &other) noexcept : size_{other.size()} {
+    allocate();
+    std::memcpy(data_, other.data(), size_);
 }
 
-auto raw_buffer::data() noexcept -> pointer { return data_; }
-auto raw_buffer::data() const noexcept -> const_pointer { return data_; }
+buffer::~buffer() noexcept {
+    free(data_);
+}
 
-auto raw_buffer::begin() noexcept -> iterator { return data_; }
-auto raw_buffer::begin() const noexcept -> const_iterator { return data_; }
+auto buffer::data() noexcept -> pointer { return data_; }
+auto buffer::data() const noexcept -> const_pointer { return data_; }
 
-auto raw_buffer::end() noexcept -> iterator { return data_ + size_; }
-auto raw_buffer::end() const noexcept -> const_iterator { return data_ + size_; }
+auto buffer::begin() noexcept -> iterator { return data_; }
+auto buffer::begin() const noexcept -> const_iterator { return data_; }
 
-auto raw_buffer::size() const noexcept -> size_type { return size_; }
+auto buffer::end() noexcept -> iterator { return data_ + size_; }
+auto buffer::end() const noexcept -> const_iterator { return data_ + size_; }
 
-auto operator==(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> bool {
+auto buffer::size() const noexcept -> size_type { return size_; }
+
+void buffer::allocate() {
+    data_ = static_cast<pointer>(calloc(size_, sizeof(value_type)));
+}
+
+auto operator==(const buffer &lhs, const buffer &rhs) noexcept -> bool {
     if (lhs.size() != rhs.size()) {
         return false;
     }
     return std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0;
 }
 
-buffer::buffer(size_t size) : raw_buffer{size} {}
+buffer_view::buffer_view(const buffer &buffer) noexcept : data_{buffer.data()}, size_{buffer.size()} {}
 
-buffer::buffer(const buffer &other) : raw_buffer{other} {}
+buffer_view::buffer_view(const buffer_view &other) noexcept : data_{other.data()}, size_{other.size()} {}
 
-buffer::~buffer() { release(); }
+auto buffer_view::data() const noexcept -> const_pointer { return data_; }
+
+auto buffer_view::begin() const noexcept -> const_iterator { return data_; }
+
+auto buffer_view::end() const noexcept -> const_iterator { return data_ + size_; }
+
+auto buffer_view::size() const noexcept -> size_type { return size_; }
+
+auto operator==(const buffer_view &lhs, const buffer_view &rhs) noexcept -> bool {
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
+    return std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0;
+}
 
 }

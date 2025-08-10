@@ -2,10 +2,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 
 namespace muon {
 
-class raw_buffer {
+class buffer {
 public:
     using value_type = std::uint8_t;
     using size_type = std::size_t;
@@ -14,12 +15,13 @@ public:
     using iterator = value_type *;
     using const_iterator = const value_type *;
 
-    raw_buffer() = default;
-    raw_buffer(size_t size);
-    raw_buffer(const raw_buffer &other);
+    buffer() = delete;
+    buffer(size_type size) noexcept;
+    buffer(pointer data, size_type size) noexcept;
+    buffer(std::string_view text) noexcept;
+    buffer(const buffer &other) noexcept;
 
-    void allocate(size_t size);
-    void release();
+    ~buffer() noexcept;
 
     auto data() noexcept -> pointer;
     auto data() const noexcept -> const_pointer;
@@ -37,20 +39,50 @@ public:
         return reinterpret_cast<T *>(data_);
     }
 
+    template <typename T>
+    auto as() const -> const T * {
+        return reinterpret_cast<const T *>(data_);
+    }
+
 private:
-    value_type *data_{nullptr};
+    void allocate();
+
+private:
+    pointer data_{nullptr};
     size_type size_{0};
 };
 
-auto operator==(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> bool;
+auto operator==(const buffer &lhs, const buffer &rhs) noexcept -> bool;
 
-class buffer final : public raw_buffer {
+class buffer_view {
 public:
-    buffer() = default;
-    buffer(size_t size);
-    buffer(const buffer &other);
+    using value_type = std::uint8_t;
+    using size_type = std::size_t;
+    using const_pointer = const value_type *;
+    using const_iterator = const value_type *;
 
-    ~buffer();
+    buffer_view() = delete;
+    buffer_view(const buffer &buffer) noexcept;
+    buffer_view(const buffer_view &other) noexcept;
+
+    auto data() const noexcept -> const_pointer;
+
+    auto begin() const noexcept -> const_iterator;
+
+    auto end() const noexcept -> const_iterator;
+
+    auto size() const noexcept -> size_type;
+
+    template <typename T>
+    auto as() const -> const T * {
+        return reinterpret_cast<const T *>(data_);
+    }
+
+private:
+    const_pointer data_{nullptr};
+    size_type size_{0};
 };
+
+auto operator==(const buffer_view &lhs, const buffer_view &rhs) noexcept -> bool;
 
 }
