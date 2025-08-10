@@ -61,7 +61,10 @@ auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_order
 auto uuid4_generator::operator()() -> uuid {
     uuid uuid;
 
-    randombytes_buf(uuid.begin(), uuid.size());
+    randombytes_buf(uuid.begin(), 6);
+    randombytes_buf(uuid.begin() + 6, 2);
+    randombytes_buf(uuid.begin() + 8, 8);
+
     *(uuid.begin() + 6) &= 0x0f;
     *(uuid.begin() + 6) |= 0x40;
 
