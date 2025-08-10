@@ -12,7 +12,7 @@ extern auto muon::create_application(size_t count, char **arguments) -> applicat
 auto main(int32_t count, char **arguments) -> int32_t {
     muon::log::init();
 
-    if (muon::utils::isRunAsRoot()) {
+    if (muon::utils::has_elevated_privileges()) {
         muon::core::error("cannot be run with elevated privileges");
         std::exit(1);
     }

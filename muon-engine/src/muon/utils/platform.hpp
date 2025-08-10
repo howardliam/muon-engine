@@ -6,18 +6,25 @@
 
 namespace muon::utils {
 
-enum class DynamicLibraryError {
-    LibraryOpenFailure,
-    SymbolLoadFailure,
-    LibraryCloseFailure,
+enum class library_error {
+    library_open_failure,
+    symbol_load_failure,
+    library_close_failure,
 };
 
-auto openDynamicLibrary(const std::filesystem::path &path) -> std::expected<void *, DynamicLibraryError>;
-auto loadSymbol(void *handle, const std::string_view name) -> std::expected<void *, DynamicLibraryError>;
-auto closeDynamicLibrary(void *handle) -> std::expected<void, DynamicLibraryError>;
+using library_handle = void *;
+using symbol_handle = void *;
 
-void invokeDebugTrap();
+auto open_library(const std::filesystem::path &path) -> std::expected<library_handle, library_error>;
+auto load_symbol(library_handle handle, const std::string_view name) -> std::expected<symbol_handle, library_error>;
+auto close_library(library_handle handle) -> std::expected<void, library_error>;
 
-auto isRunAsRoot() -> bool;
+enum class signal {
+    debug_trap,
+};
+
+void invoke_signal(signal signal);
+
+auto has_elevated_privileges() -> bool;
 
 } // namespace muon

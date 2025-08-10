@@ -22,7 +22,7 @@ void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
     if constexpr (debug_enabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::core_logger->error(message, std::forward<Args>(args)...);
-            utils::invokeDebugTrap();
+            utils::invoke_signal(utils::signal::debug_trap);
         }
     }
 }
@@ -36,7 +36,7 @@ void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
     if constexpr (debug_enabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::client_logger->error(message, std::forward<Args>(args)...);
-            utils::invokeDebugTrap();
+            utils::invoke_signal(utils::signal::debug_trap);
         }
     }
 }

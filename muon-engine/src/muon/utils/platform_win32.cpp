@@ -7,7 +7,7 @@
 
 namespace muon::utils {
 
-void printError(const DWORD errorCode) {
+void print_error(const DWORD errorCode) {
     void *msgBuffer;
     FormatMessage(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -25,39 +25,45 @@ void printError(const DWORD errorCode) {
 }
 
 
-auto openDynamicLibrary(const std::filesystem::path &path) -> std::expected<void *, DynamicLibraryError> {
+auto open_library(const std::filesystem::path &path) -> std::expected<library_handle, library_error> {
     void *handle = LoadLibrary(path.c_str());
     if (!handle) {
-        printError(GetLastError());
-        return std::unexpected(DynamicLibraryError::LibraryOpenFailure);
+        print_error(GetLastError());
+        return std::unexpected(library_error::library_open_failure);
     }
 
     return handle;
 }
 
-auto loadSymbol(void *handle, const std::string_view name) -> std::expected<void *, DynamicLibraryError> {
+auto load_symbol(library_handle handle, const std::string_view name) -> std::expected<symbol_handle, library_error> {
     void *symbol = GetProcAddress(handle, name.data());
     if (!symbol) {
-        printError(GetLastError());
-        return std::unexpected(DynamicLibraryError::SymbolLoadFailure);
+        print_error(GetLastError());
+        return std::unexpected(library_error::symbol_load_failure);
     }
 
     return symbol;
 }
 
-auto closeDynamicLibrary(void *handle) -> std::expected<void, DynamicLibraryError> {
+auto close_library(library_handle handle) -> std::expected<void, library_error> {
     int32_t result = FreeLibrary(handle);
     if (result != 0) {
-        printError(GetLastError());
-        return std::unexpected(DynamicLibraryError::LibraryCloseFailure);
+        print_error(GetLastError());
+        return std::unexpected(library_error::library_close_failure);
     }
 
     return {};
 }
 
-void invokeDebugTrap() { __debugbreak(); }
+void invoke_signal(signal signal) {
+    switch (signal) {
+        case signal::debug_trap:
+            __debugbreak();
+            break;
+    }
+}
 
-auto isRunAsRoot() -> bool {
+auto has_elevated_privileges() -> bool {
     BOOL isAdmin = FALSE;
     PSID administratorsGroup = nullptr;
     SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_GROUP;
