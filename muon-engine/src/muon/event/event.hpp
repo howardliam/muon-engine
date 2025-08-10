@@ -10,7 +10,7 @@ namespace muon::event {
 struct window_quit_event {};
 
 struct window_resize_event {
-    extent2d extent;
+    extent_2d extent;
 };
 
 struct window_focus_event {
