@@ -6,8 +6,6 @@ add_library(muon::engine ALIAS muon-engine)
 target_sources(
     muon-engine
     PRIVATE
-        src/muon/asset/asset_manager.cpp
-
         src/muon/config/config_manager.cpp
 
         src/muon/core/application.cpp
@@ -31,9 +29,6 @@ target_sources(
     FILE_SET HEADERS
     BASE_DIRS src/
     FILES
-        src/muon/asset/asset_loader.hpp
-        src/muon/asset/asset_manager.hpp
-
         src/muon/config/config_manager.hpp
 
         src/muon/core/application.hpp
