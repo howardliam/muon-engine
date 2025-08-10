@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fmt/base.h"
+#include "muon/core/types.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
@@ -14,7 +15,7 @@ namespace muon {
 
 struct display_info {
     std::string name;
-    vk::Extent2D extent;
+    extent2d extent;
     uint16_t refresh_rate;
 };
 
@@ -27,7 +28,7 @@ class window {
 public:
     window(
         std::string_view title,
-        const vk::Extent2D &extent,
+        extent2d extent,
         window_mode mode,
         const event::dispatcher &dispatcher
     );
@@ -39,7 +40,7 @@ public: // class getters/setters
     auto get_title() const -> std::string_view;
     void set_title(std::string_view title);
 
-    auto extent() const -> vk::Extent2D;
+    auto extent() const -> extent2d;
 
     auto refresh_rate() const -> uint16_t;
 
@@ -66,7 +67,7 @@ private:
 
 private:
     std::string title_;
-    vk::Extent2D extent_;
+    extent2d extent_;
     uint16_t refresh_rate_;
     window_mode mode_;
     const event::dispatcher &dispatcher_;

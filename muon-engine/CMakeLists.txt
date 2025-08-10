@@ -41,6 +41,7 @@ target_sources(
         src/muon/core/layer.hpp
         src/muon/core/layer_stack.hpp
         src/muon/core/log.hpp
+        src/muon/core/types.hpp
         src/muon/core/uuid.hpp
         src/muon/core/window.hpp
 

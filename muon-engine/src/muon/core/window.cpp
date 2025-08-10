@@ -76,7 +76,7 @@ void window::poll_events() {
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            extent_ = vk::Extent2D{
+            extent_ = extent2d{
                 static_cast<uint32_t>(event.window.data1),
                 static_cast<uint32_t>(event.window.data2),
             };
