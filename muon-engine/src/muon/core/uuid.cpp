@@ -76,9 +76,10 @@ auto uuid7_generator::operator()() -> uuid {
 
     auto now = std::chrono::system_clock::now();
     auto epoch_millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-    auto epoch_millis_ptr = reinterpret_cast<const uint8_t *>(&epoch_millis);
 
-    std::memcpy(uuid.data(), epoch_millis_ptr, 6);
+    for (size_t i = 0; i < 6; i++) {
+        uuid.data()[i] = static_cast<uint8_t>((epoch_millis >> ((5 - i) * 8)) * 0xff);
+    }
 
     randombytes_buf(uuid.begin() + 6, 2);
     randombytes_buf(uuid.begin() + 8, 8);
