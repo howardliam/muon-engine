@@ -15,7 +15,7 @@ namespace muon {
 
 struct display_info {
     std::string name;
-    extent2d extent;
+    extent_2d extent;
     uint16_t refresh_rate;
 };
 
@@ -28,7 +28,7 @@ class window {
 public:
     window(
         std::string_view title,
-        extent2d extent,
+        extent_2d extent,
         window_mode mode,
         const event::dispatcher &dispatcher
     );
@@ -40,7 +40,7 @@ public: // class getters/setters
     auto get_title() const -> std::string_view;
     void set_title(std::string_view title);
 
-    auto extent() const -> extent2d;
+    auto extent() const -> extent_2d;
 
     auto refresh_rate() const -> uint16_t;
 
@@ -67,7 +67,7 @@ private:
 
 private:
     std::string title_;
-    extent2d extent_;
+    extent_2d extent_;
     uint16_t refresh_rate_;
     window_mode mode_;
     const event::dispatcher &dispatcher_;

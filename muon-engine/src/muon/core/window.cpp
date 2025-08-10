@@ -32,7 +32,7 @@ struct window::impl {
 
 window::window(
     std::string_view title,
-    extent2d extent,
+    extent_2d extent,
     window_mode mode,
     const event::dispatcher &dispatcher
 ) : title_{title}, extent_{extent}, mode_{mode}, dispatcher_{dispatcher} {
@@ -75,7 +75,7 @@ void window::poll_events() {
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            extent_ = extent2d{
+            extent_ = extent_2d{
                 static_cast<uint32_t>(event.window.data1),
                 static_cast<uint32_t>(event.window.data2),
             };
@@ -136,7 +136,7 @@ void window::set_title(std::string_view title) {
     SDL_SetWindowTitle(impl_->window, title_.c_str());
 }
 
-auto window::extent() const -> extent2d { return extent_; }
+auto window::extent() const -> extent_2d { return extent_; }
 
 auto window::refresh_rate() const -> uint16_t { return refresh_rate_; }
 
@@ -227,7 +227,7 @@ auto window::displays() const -> std::optional<const std::vector<display_info>> 
         }
 
         info.name = name;
-        info.extent = extent2d{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
+        info.extent = extent_2d{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
         info.refresh_rate = static_cast<uint16_t>(mode->refresh_rate);
     }
 

@@ -23,7 +23,7 @@ public:
 class muon_editor final : public application {
 public:
     muon_editor(
-        extent2d extent,
+        extent_2d extent,
         const bool v_sync,
         const window_mode mode
     ) : application{"Muon Editor", extent, v_sync, mode} {
