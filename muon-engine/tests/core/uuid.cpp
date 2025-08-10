@@ -1,6 +1,6 @@
 #include "muon/core/uuid.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "catch2/catch_test_macros.hpp"
 
 namespace muon {
 
@@ -12,8 +12,13 @@ TEST_CASE("default uuid is nil", "[uuid]") {
 TEST_CASE("v4 uuid adheres to spec", "[uuid]") {
     uuid4_generator gen;
     uuid uuid = gen();
-    REQUIRE(((uuid.data[6] & 0xf0) >> 4) == 4);
-    REQUIRE(((uuid.data[8] & 0xc0) >> 6) == 0b10);
+    REQUIRE(uuid.version() == uuid::version_random_number_based);
+}
+
+TEST_CASE("v7 uuid adheres to spec", "[uuid]") {
+    uuid7_generator gen;
+    uuid uuid = gen();
+    REQUIRE(uuid.version() == uuid::version_unix_time_based);
 }
 
 } // namespace muon
