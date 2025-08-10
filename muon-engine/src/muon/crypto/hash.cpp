@@ -4,7 +4,7 @@
 
 namespace muon::crypto {
 
-auto hash(const buffer &buffer) -> std::expected<hash_result, hash_error> {
+auto hash(const raw_buffer &buffer) -> std::expected<hash_result, hash_error> {
     hash_result output;
     int32_t result = crypto_generichash(
         output.data(), output.size(),

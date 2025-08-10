@@ -18,7 +18,7 @@ enum class hash_error {
     finalization_failure,
 };
 
-auto hash(const buffer &buffer) -> std::expected<hash_result, hash_error>;
+auto hash(const raw_buffer &buffer) -> std::expected<hash_result, hash_error>;
 auto hash(std::string_view text) -> std::expected<hash_result, hash_error>;
 
 auto hash(std::ifstream &file) -> std::expected<hash_result, hash_error>;
