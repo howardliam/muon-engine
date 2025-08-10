@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
 #include <string>
 
 namespace muon::format {
 
-auto formatBytes(uint64_t byteCount) -> std::string;
+auto bytes(size_t byte_count) -> std::string;
 
 } // namespace muon::format

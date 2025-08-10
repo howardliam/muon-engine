@@ -6,17 +6,17 @@
 
 namespace muon::format {
 
-constexpr std::array<const char *, 4> k_byteSuffixes = {"B", "kB", "MB", "GB"};
+constexpr std::array<const char *, 4> byte_suffixes = {"B", "kB", "MB", "GB"};
 
-auto formatBytes(uint64_t byteCount) -> std::string {
-    double size = static_cast<double>(byteCount);
+auto bytes(size_t byte_count) -> std::string {
+    double size = static_cast<double>(byte_count);
     size_t index = 0;
-    while (size >= 1000.0 && index < (k_byteSuffixes.size() - 1)) {
+    while (size >= 1000.0 && index < (byte_suffixes.size() - 1)) {
         size /= 1000.0;
         index += 1;
     }
 
-    return fmt::format("{:.2f} {}", size, k_byteSuffixes[index]);
+    return fmt::format("{:.2f} {}", size, byte_suffixes[index]);
 }
 
 } // namespace muon::format
