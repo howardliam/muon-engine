@@ -59,13 +59,13 @@ auto uuid4_generator::operator()() -> uuid {
 
 }
 
-namespace std {
-
-auto hash<muon::uuid>::operator()(const muon::uuid &uuid) const -> size_t {
+auto std::hash<muon::uuid>::operator()(const muon::uuid &uuid) const -> size_t {
     const uint64_t *ptr = reinterpret_cast<const uint64_t *>(uuid.data.data());
     size_t hash1 = std::hash<uint64_t>{}(ptr[0]);
     size_t hash2 = std::hash<uint64_t>{}(ptr[1]);
     return hash1 ^ (hash2 << 1);
 }
 
-} // namespace std
+auto fmt::formatter<muon::uuid>::format(const muon::uuid &uuid, format_context &ctx) const -> format_context::iterator {
+    return formatter<string_view>::format(uuid.to_string(), ctx);
+}

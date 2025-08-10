@@ -10,7 +10,7 @@ namespace muon::crypto {
 hash::hash() : raw_buffer{32} {}
 hash::~hash() { release(); }
 
-auto hash::to_string() -> std::string {
+auto hash::to_string() const -> std::string {
     return fmt::format("{:02x}", fmt::join(begin(), end(), ""));
 }
 
@@ -78,3 +78,7 @@ auto hash::from_file(std::ifstream &file) -> std::expected<hash, hash_error> {
 }
 
 } // namespace muon::crypto
+
+auto fmt::formatter<muon::crypto::hash>::format(const muon::crypto::hash &hash, format_context &ctx) const -> format_context::iterator {
+    return formatter<string_view>::format(hash.to_string(), ctx);
+}

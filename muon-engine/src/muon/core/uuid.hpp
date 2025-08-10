@@ -1,5 +1,7 @@
 #pragma once
 
+#include "fmt/base.h"
+
 #include <array>
 #include <compare>
 #include <cstdint>
@@ -41,11 +43,12 @@ public:
 
 } // namespace muon
 
-namespace std {
-
 template<>
-struct hash<muon::uuid> {
+struct std::hash<muon::uuid> {
     auto operator()(const muon::uuid &uuid) const -> size_t;
 };
 
-} // namespace std
+template <>
+struct fmt::formatter<muon::uuid> : formatter<string_view> {
+    auto format(const muon::uuid &uuid, format_context &ctx) const -> format_context::iterator;
+};
