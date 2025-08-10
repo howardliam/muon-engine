@@ -26,71 +26,71 @@
 
 namespace muon {
 
-struct Window::Impl {
+struct window::impl {
     SDL_Window *window;
-    SDL_DisplayID currentDisplay;
+    SDL_DisplayID current_display;
 };
 
-Window::Window(
+window::window(
     std::string_view title,
     const vk::Extent2D &extent,
-    WindowMode mode,
-    const event::Dispatcher &dispatcher
-) : m_title{title}, m_extent{extent}, m_mode{mode}, m_dispatcher{dispatcher} {
+    window_mode mode,
+    const event::dispatcher &dispatcher
+) : title_{title}, extent_{extent}, mode_{mode}, dispatcher_{dispatcher} {
     bool initialized = SDL_Init(SDL_INIT_VIDEO);
     core::expect(initialized, "failed to initialize SDL3: {}", SDL_GetError());
 
-    m_impl = new Impl{};
+    impl_ = new impl;
 
-    m_impl->currentDisplay = SDL_GetPrimaryDisplay();
-    core::expect(m_impl->currentDisplay, "failed to get primary display: {}", SDL_GetError());
+    impl_->current_display = SDL_GetPrimaryDisplay();
+    core::expect(impl_->current_display, "failed to get primary display: {}", SDL_GetError());
 
-    const SDL_DisplayMode *displayMode = SDL_GetDesktopDisplayMode(m_impl->currentDisplay);
+    const SDL_DisplayMode *displayMode = SDL_GetDesktopDisplayMode(impl_->current_display);
     core::expect(displayMode, "failed to get desktop display mode: {}", SDL_GetError());
-    m_refreshRate = static_cast<uint16_t>(displayMode->refresh_rate);
+    refresh_rate_ = static_cast<uint16_t>(displayMode->refresh_rate);
 
-    core::trace("selected display: {}", SDL_GetDisplayName(m_impl->currentDisplay));
+    core::trace("selected display: {}", SDL_GetDisplayName(impl_->current_display));
 
-    m_impl->window = SDL_CreateWindow(m_title.c_str(), m_extent.width, m_extent.height, SDL_WINDOW_VULKAN);
-    core::expect(m_impl->window, "failed to create window: {}", SDL_GetError());
+    impl_->window = SDL_CreateWindow(title_.c_str(), extent_.width, extent_.height, SDL_WINDOW_VULKAN);
+    core::expect(impl_->window, "failed to create window: {}", SDL_GetError());
 
-    bool success = SDL_SetWindowMinimumSize(m_impl->window, displayMode->w / 4, displayMode->h / 4);
+    bool success = SDL_SetWindowMinimumSize(impl_->window, displayMode->w / 4, displayMode->h / 4);
     core::expect(success, "failed to set window minimum size: {}", SDL_GetError());
 
-    setMode(m_mode);
+    set_mode(mode_);
 
-    core::debug("created window with dimensions: {}x{}", m_extent.width, m_extent.height);
+    core::debug("created window with dimensions: {}x{}", extent_.width, extent_.height);
 }
 
-Window::~Window() {
-    SDL_DestroyWindow(m_impl->window);
+window::~window() {
+    SDL_DestroyWindow(impl_->window);
     SDL_Quit();
     core::debug("destroyed window");
 }
 
-void Window::pollEvents() {
+void window::poll_events() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
-            m_dispatcher.dispatch<event::WindowQuitEvent>({});
+            dispatcher_.dispatch<event::WindowQuitEvent>({});
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            m_extent = vk::Extent2D{
+            extent_ = vk::Extent2D{
                 static_cast<uint32_t>(event.window.data1),
                 static_cast<uint32_t>(event.window.data2),
             };
-            m_dispatcher.dispatch<event::WindowResizeEvent>({m_extent});
+            dispatcher_.dispatch<event::WindowResizeEvent>({extent_});
         }
 
         if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            m_dispatcher.dispatch<event::WindowFocusEvent>({true});
+            dispatcher_.dispatch<event::WindowFocusEvent>({true});
         } else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            m_dispatcher.dispatch<event::WindowFocusEvent>({false});
+            dispatcher_.dispatch<event::WindowFocusEvent>({false});
         }
 
         if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
-            m_dispatcher.dispatch<event::KeyboardEvent>({
+            dispatcher_.dispatch<event::KeyboardEvent>({
                 static_cast<input::Scancode>(event.key.scancode),
                 event.key.down,
                 event.key.repeat,
@@ -99,7 +99,7 @@ void Window::pollEvents() {
         }
 
         if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-            m_dispatcher.dispatch<event::MouseButtonEvent>({
+            dispatcher_.dispatch<event::MouseButtonEvent>({
                 static_cast<input::MouseButton>(event.button.button),
                 event.button.down,
                 event.button.clicks,
@@ -107,70 +107,68 @@ void Window::pollEvents() {
         }
 
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
-            m_dispatcher.dispatch<event::MouseMotionEvent>({
+            dispatcher_.dispatch<event::MouseMotionEvent>({
                 event.motion.xrel,
                 event.motion.yrel,
             });
         }
 
         if (event.type == SDL_EVENT_TEXT_INPUT) {
-            m_dispatcher.dispatch<event::TextInputEvent>({
+            dispatcher_.dispatch<event::TextInputEvent>({
                 event.text.text,
             });
         }
 
         if (event.type == SDL_EVENT_DROP_FILE) {
-            m_dispatcher.dispatch<event::DropFileEvent>({
+            dispatcher_.dispatch<event::DropFileEvent>({
                 event.drop.data,
             });
         }
 
         if (event.type == SDL_EVENT_DROP_TEXT) {
-            m_dispatcher.dispatch<event::DropTextEvent>({
+            dispatcher_.dispatch<event::DropTextEvent>({
                 event.drop.data,
             });
         }
     }
 }
 
-auto Window::getTitle() const -> std::string_view { return m_title; }
-void Window::setTitle(std::string_view title) {
-    m_title = title;
-    SDL_SetWindowTitle(m_impl->window, m_title.c_str());
+auto window::get_title() const -> std::string_view { return title_; }
+void window::set_title(std::string_view title) {
+    title_ = title;
+    SDL_SetWindowTitle(impl_->window, title_.c_str());
 }
 
-auto Window::getExtent() const -> vk::Extent2D { return m_extent; }
-auto Window::getWidth() const -> uint32_t { return m_extent.width; }
-auto Window::getHeight() const -> uint32_t { return m_extent.height; }
+auto window::extent() const -> vk::Extent2D { return extent_; }
 
-auto Window::getRefreshRate() const -> uint16_t { return m_refreshRate; }
+auto window::refresh_rate() const -> uint16_t { return refresh_rate_; }
 
-auto Window::getMode() const -> WindowMode { return m_mode; }
-void Window::setMode(WindowMode mode) {
-    m_mode = mode;
+auto window::get_mode() const -> window_mode { return mode_; }
+void window::set_mode(window_mode mode) {
+    mode_ = mode;
 
     bool fullscreen = false;
-    switch (m_mode) {
-        case WindowMode::Windowed:
+    switch (mode_) {
+        case window_mode::windowed:
             fullscreen = false;
             break;
 
-        case WindowMode::BorderlessFullscreen:
+        case window_mode::borderless_fullscreen:
             fullscreen = true;
             break;
     }
 
-    bool success = SDL_SetWindowFullscreen(m_impl->window, fullscreen);
-    core::expect(success, "failed to set window mode to: {}, {}", m_mode, SDL_GetError());
+    bool success = SDL_SetWindowFullscreen(impl_->window, fullscreen);
+    core::expect(success, "failed to set window mode to: {}, {}", mode_, SDL_GetError());
 }
 
-void Window::requestAttention() const {
-    if (!SDL_FlashWindow(m_impl->window, SDL_FLASH_UNTIL_FOCUSED)) {
-        handleErrors();
+void window::request_attention() const {
+    if (!SDL_FlashWindow(impl_->window, SDL_FLASH_UNTIL_FOCUSED)) {
+        handle_error();
     }
 }
 
-auto Window::getClipboardText() const -> std::optional<std::string> {
+auto window::get_clipboard_text() const -> std::optional<std::string> {
     if (!SDL_HasClipboardText()) {
         return std::nullopt;
     }
@@ -186,46 +184,46 @@ auto Window::getClipboardText() const -> std::optional<std::string> {
     return text;
 }
 
-void Window::setClipboardText(const std::string_view text) const {
+void window::set_clipboard_text(const std::string_view text) {
     SDL_SetClipboardText(text.data());
 }
 
-void Window::beginTextInput() {
-    core::expect(!m_textInput, "cannot begin text input while already accepting text input");
+void window::begin_text_input() {
+    core::expect(!text_input_, "cannot begin text input while already accepting text input");
 
-    if (SDL_StartTextInput(m_impl->window)) {
-        m_textInput = true;
+    if (SDL_StartTextInput(impl_->window)) {
+        text_input_ = true;
     } else {
-        handleErrors();
+        handle_error();
     }
 }
 
-void Window::endTextInput() {
-    core::expect(m_textInput, "cannot end text input while not accepting text input");
+void window::end_text_input() {
+    core::expect(text_input_, "cannot end text input while not accepting text input");
 
-    if (SDL_StopTextInput(m_impl->window)) {
-        m_textInput = false;
+    if (SDL_StopTextInput(impl_->window)) {
+        text_input_ = false;
     } else {
-        handleErrors();
+        handle_error();
     }
 }
 
-auto Window::getDisplays() const -> std::optional<const std::vector<DisplayInfo>> {
-    int32_t displayCount = 0;
-    SDL_DisplayID *displays = SDL_GetDisplays(&displayCount);
+auto window::displays() const -> std::optional<const std::vector<display_info>> {
+    int32_t display_count = 0;
+    SDL_DisplayID *display_ids = SDL_GetDisplays(&display_count);
 
-    if (!displays) {
+    if (!display_ids) {
         return std::nullopt;
     }
 
-    std::vector<DisplayInfo> displayInfos(displayCount);
+    std::vector<display_info> display_infos(display_count);
 
-    for (uint32_t i = 0; i < displayCount; i++) {
-        const auto displayId = displays[i];
-        DisplayInfo &info = displayInfos[i];
+    for (uint32_t i = 0; i < display_count; i++) {
+        const auto display_id = display_ids[i];
+        display_info &info = display_infos[i];
 
-        const char *name = SDL_GetDisplayName(displayId);
-        const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(displayId);
+        const char *name = SDL_GetDisplayName(display_id);
+        const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(display_id);
 
         if (!name || !mode) {
             return std::nullopt;
@@ -233,31 +231,31 @@ auto Window::getDisplays() const -> std::optional<const std::vector<DisplayInfo>
 
         info.name = name;
         info.extent = vk::Extent2D{static_cast<uint32_t>(mode->w), static_cast<uint32_t>(mode->h)};
-        info.refreshRate = static_cast<uint16_t>(mode->refresh_rate);
+        info.refresh_rate = static_cast<uint16_t>(mode->refresh_rate);
     }
 
-    return displayInfos;
+    return display_infos;
 }
 
-auto Window::createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR> {
+auto window::create_surface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR> {
     VkSurfaceKHR surface;
 
-    if (!SDL_Vulkan_CreateSurface(m_impl->window, *instance, nullptr, &surface)) {
-        handleErrors();
+    if (!SDL_Vulkan_CreateSurface(impl_->window, *instance, nullptr, &surface)) {
+        handle_error();
         return std::nullopt;
     }
 
     return vk::raii::SurfaceKHR{instance, surface};
 }
 
-auto Window::getRequiredExtensions() const -> std::vector<const char *> {
+auto window::get_required_extensions() const -> std::vector<const char *> {
     uint32_t count = 0;
-    const char *const *sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&count);
-    std::vector<const char *> extensions(sdlExtensions, sdlExtensions + count);
+    const char *const *sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+    std::vector<const char *> extensions(sdl_extensions, sdl_extensions + count);
     return extensions;
 }
 
-void Window::handleErrors() const {
+void window::handle_error() const {
     if (const char *error = SDL_GetError(); error) {
         core::error(error);
     }
@@ -265,18 +263,18 @@ void Window::handleErrors() const {
 
 } // namespace muon
 
-auto fmt::formatter<muon::WindowMode>::format(muon::WindowMode mode, format_context& ctx) const -> format_context::iterator {
+auto fmt::formatter<muon::window_mode>::format(muon::window_mode mode, format_context& ctx) const -> format_context::iterator {
     return formatter<string_view>::format(magic_enum::enum_name(mode), ctx);
 }
 
-auto fmt::formatter<muon::DisplayInfo>::format(muon::DisplayInfo info, format_context& ctx) const -> format_context::iterator {
+auto fmt::formatter<muon::display_info>::format(muon::display_info info, format_context& ctx) const -> format_context::iterator {
     return formatter<string_view>::format(
         fmt::format(
             "name: {}, extent: {}x{}, refresh rate: {} Hz",
             info.name,
             info.extent.width,
             info.extent.height,
-            info.refreshRate
+            info.refresh_rate
         ),
         ctx
     );

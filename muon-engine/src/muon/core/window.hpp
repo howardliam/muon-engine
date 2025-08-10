@@ -12,85 +12,83 @@
 
 namespace muon {
 
-struct DisplayInfo {
+struct display_info {
     std::string name;
     vk::Extent2D extent;
-    uint16_t refreshRate;
+    uint16_t refresh_rate;
 };
 
-enum class WindowMode {
-    Windowed,
-    BorderlessFullscreen,
+enum class window_mode {
+    windowed,
+    borderless_fullscreen,
 };
 
-class Window {
+class window {
 public:
-    Window(
+    window(
         std::string_view title,
         const vk::Extent2D &extent,
-        WindowMode mode,
-        const event::Dispatcher &dispatcher
+        window_mode mode,
+        const event::dispatcher &dispatcher
     );
-    ~Window();
+    ~window();
 
-    void pollEvents();
+    void poll_events();
 
 public: // class getters/setters
-    auto getTitle() const -> std::string_view;
-    void setTitle(std::string_view title);
+    auto get_title() const -> std::string_view;
+    void set_title(std::string_view title);
 
-    auto getExtent() const -> vk::Extent2D;
-    auto getWidth() const -> uint32_t;
-    auto getHeight() const -> uint32_t;
+    auto extent() const -> vk::Extent2D;
 
-    auto getRefreshRate() const -> uint16_t;
+    auto refresh_rate() const -> uint16_t;
 
-    auto getMode() const -> WindowMode;
-    void setMode(WindowMode mode);
+    auto get_mode() const -> window_mode;
+    void set_mode(window_mode mode);
 
 public: // underlying SDL API re-exposure
-    void requestAttention() const;
+    void request_attention() const;
 
-    auto getClipboardText() const -> std::optional<std::string>;
-    void setClipboardText(std::string_view text) const;
+    auto get_clipboard_text() const -> std::optional<std::string>;
+    void set_clipboard_text(std::string_view text);
 
-    void beginTextInput();
-    void endTextInput();
+    void begin_text_input();
+    void end_text_input();
 
-    auto getDisplays() const -> std::optional<const std::vector<DisplayInfo>>;
+    auto displays() const -> std::optional<const std::vector<display_info>>;
 
 public: // Vulkan
-    auto createSurface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR>;
-    auto getRequiredExtensions() const -> std::vector<const char *>;
+    auto create_surface(const vk::raii::Instance &instance) const -> std::optional<vk::raii::SurfaceKHR>;
+    auto get_required_extensions() const -> std::vector<const char *>;
 
 private:
-    void handleErrors() const;
+    void handle_error() const;
 
 private:
-    std::string m_title;
-    vk::Extent2D m_extent;
-    uint16_t m_refreshRate;
-    WindowMode m_mode;
-    const event::Dispatcher &m_dispatcher;
+    std::string title_;
+    vk::Extent2D extent_;
+    uint16_t refresh_rate_;
+    window_mode mode_;
+    const event::dispatcher &dispatcher_;
 
-    struct Impl;
-    Impl *m_impl;
+    struct impl;
+    impl *impl_;
 
-    bool m_textInput{false};
+    bool text_input_{false};
 };
 
 } // namespace muon
 
 template <>
-struct fmt::formatter<muon::WindowMode> : formatter<string_view> {
+struct fmt::formatter<muon::window_mode> : formatter<string_view> {
 
-    auto format(muon::WindowMode mode, format_context& ctx) const -> format_context::iterator;
+    auto format(muon::window_mode mode, format_context& ctx) const -> format_context::iterator;
 
 };
 
 template <>
-struct fmt::formatter<muon::DisplayInfo> : formatter<string_view> {
+struct fmt::formatter<muon::display_info> : formatter<string_view> {
 
-    auto format(muon::DisplayInfo info, format_context& ctx) const -> format_context::iterator;
+    auto format(muon::display_info info, format_context& ctx) const -> format_context::iterator;
 
 };
