@@ -43,21 +43,6 @@ auto operator==(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> bool {
     return std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0;
 }
 
-auto operator<=>(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> std::strong_ordering {
-    const auto min_size = std::min(lhs.size(), rhs.size());
-    int32_t compare = std::memcmp(lhs.data(), rhs.data(), min_size);
-
-    if (compare < 0) {
-        return std::strong_ordering::less;
-    }
-
-    if (compare > 0) {
-        return std::strong_ordering::greater;
-    }
-
-    return lhs.size() <=> rhs.size();
-}
-
 buffer::buffer(size_t size) : raw_buffer{size} {}
 
 buffer::buffer(const buffer &other) : raw_buffer{other} {}

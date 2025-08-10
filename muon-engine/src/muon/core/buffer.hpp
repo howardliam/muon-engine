@@ -1,6 +1,5 @@
 #pragma once
 
-#include <compare>
 #include <cstddef>
 #include <cstdint>
 
@@ -44,7 +43,6 @@ private:
 };
 
 auto operator==(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> bool;
-auto operator<=>(const raw_buffer &lhs, const raw_buffer &rhs) noexcept -> std::strong_ordering;
 
 class buffer final : public raw_buffer {
 public:
