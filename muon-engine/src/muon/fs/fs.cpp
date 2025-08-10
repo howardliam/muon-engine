@@ -16,7 +16,11 @@ auto check_file(const std::filesystem::path &path) -> std::expected<void, rw_err
         return std::unexpected(rw_error::not_regular_file);
     }
 
-    if (std::filesystem::status(path).permissions() != std::filesystem::perms::owner_read) {
+    auto permissions = std::filesystem::status(path).permissions();
+    bool can_read = (permissions & std::filesystem::perms::owner_read) != std::filesystem::perms::none;
+    bool can_write = (permissions & std::filesystem::perms::owner_write) != std::filesystem::perms::none;
+
+    if (!can_read && !can_write) {
         return std::unexpected(rw_error::insufficient_permissions);
     }
 
