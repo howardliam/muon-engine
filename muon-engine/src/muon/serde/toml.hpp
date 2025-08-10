@@ -6,13 +6,13 @@
 namespace muon::serde {
 
 template <typename From>
-concept TomlSerializable = Serializable<From, toml::table>;
+concept toml_serializable = serializable<From, toml::table>;
 
-enum class TomlDeserializeError {
+enum class toml_deserialize_error {
     FieldNotPresent,
 };
 
 template <typename To>
-concept TomlDeserializable = Deserializable<toml::table, To, TomlDeserializeError>;
+concept toml_deserializable = deserializable<toml::table, To, toml_deserialize_error>;
 
 }
