@@ -10,13 +10,24 @@
 
 namespace muon {
 
-struct uuid {
-    using data_type = std::array<uint8_t, 16>;
-    using iterator = data_type::iterator;
-    using const_iterator = data_type::const_iterator;
-    using size_type = data_type::size_type;
+class uuid {
+public:
+    using value_type = std::array<uint8_t, 16>;
+    using pointer = value_type::pointer;
+    using const_pointer = value_type::const_pointer;
+    using iterator = value_type::iterator;
+    using const_iterator = value_type::const_iterator;
+    using size_type = value_type::size_type;
+    enum version_type {
+        version_unknown,
+        version_random_number_based = 4,
+        version_unix_time_based = 7,
+    };
 
-    data_type data{};
+    auto version() const noexcept -> version_type;
+
+    auto data() noexcept -> pointer;
+    auto data() const noexcept -> const_pointer;
 
     auto begin() noexcept -> iterator;
     auto begin() const noexcept -> const_iterator;
@@ -29,6 +40,12 @@ struct uuid {
     auto is_nil() const noexcept -> bool;
 
     auto to_string() const -> std::string;
+
+    friend auto operator==(const uuid &lhs, const uuid &rhs) noexcept -> bool;
+    friend auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_ordering;
+
+private:
+    value_type bytes_{};
 };
 
 auto operator==(const uuid &lhs, const uuid &rhs) noexcept -> bool;
@@ -36,7 +53,14 @@ auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_order
 
 class uuid4_generator {
 public:
-    uuid4_generator();
+    uuid4_generator() = default;
+
+    auto operator()() -> uuid;
+};
+
+class uuid7_generator {
+public:
+    uuid7_generator() = default;
 
     auto operator()() -> uuid;
 };
