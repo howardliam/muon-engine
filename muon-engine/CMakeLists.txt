@@ -23,6 +23,8 @@ target_sources(
 
         src/muon/input/modifier.cpp
 
+        src/muon/maths/alignment.cpp
+
         src/muon/project/project.cpp
 
     PUBLIC
@@ -57,13 +59,14 @@ target_sources(
         src/muon/input/modifier.hpp
         src/muon/input/mouse.hpp
 
+        src/muon/maths/alignment.hpp
+
         src/muon/project/project.hpp
 
         src/muon/serde/binary.hpp
         src/muon/serde/serde.hpp
         src/muon/serde/toml.hpp
 
-        src/muon/utils/alignment.hpp
         src/muon/utils/platform.hpp
 )
 
@@ -119,7 +122,7 @@ if(MUON_ENGINE_TESTS)
 
             tests/core/uuid.cpp
 
-            tests/utils/alignment.cpp
+            tests/maths/alignment.cpp
     )
 
     target_link_libraries(muon-tests PRIVATE
