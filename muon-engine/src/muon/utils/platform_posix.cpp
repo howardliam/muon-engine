@@ -18,7 +18,7 @@ auto open_library(const std::filesystem::path &path) -> std::expected<library_ha
     return handle;
 }
 
-auto load_symbol(library_handle handle, const std::string_view name) -> std::expected<symbol_handle, library_error> {
+auto load_symbol(library_handle handle, std::string_view name) -> std::expected<symbol_handle, library_error> {
     symbol_handle symbol = dlsym(handle, name.data());
     if (!symbol) {
         core::error(dlerror());
