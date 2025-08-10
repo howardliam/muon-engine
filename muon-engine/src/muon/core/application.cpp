@@ -12,7 +12,7 @@ namespace muon {
 
 application::application(
     std::string_view name,
-    const vk::Extent2D &extent,
+    extent2d extent,
     bool v_sync,
     window_mode mode
 ) : name_{name} {
