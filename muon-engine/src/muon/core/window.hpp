@@ -82,14 +82,10 @@ private:
 
 template <>
 struct fmt::formatter<muon::window_mode> : formatter<string_view> {
-
-    auto format(muon::window_mode mode, format_context& ctx) const -> format_context::iterator;
-
+    auto format(muon::window_mode mode, format_context &ctx) const -> format_context::iterator;
 };
 
 template <>
 struct fmt::formatter<muon::display_info> : formatter<string_view> {
-
-    auto format(muon::display_info info, format_context& ctx) const -> format_context::iterator;
-
+    auto format(muon::display_info info, format_context &ctx) const -> format_context::iterator;
 };
