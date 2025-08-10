@@ -11,15 +11,15 @@
 namespace muon {
 
 template <typename T>
-concept BooleanTestable = requires(T &&t) {
+concept boolean_testable = requires(T &&t) {
     { static_cast<bool>(std::forward<T>(t)) } -> std::same_as<bool>;
 };
 
 namespace core {
 
-template <BooleanTestable Condition, typename... Args>
+template <boolean_testable Condition, typename... Args>
 void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (k_debugEnabled) {
+    if constexpr (debug_enabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::s_coreLogger->error(message, std::forward<Args>(args)...);
             utils::invokeDebugTrap();
@@ -31,9 +31,9 @@ void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
 
 namespace client {
 
-template <BooleanTestable Condition, typename... Args>
+template <boolean_testable Condition, typename... Args>
 void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (k_debugEnabled) {
+    if constexpr (debug_enabled) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::s_clientLogger->error(message, std::forward<Args>(args)...);
             utils::invokeDebugTrap();
