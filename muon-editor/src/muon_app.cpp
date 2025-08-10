@@ -33,7 +33,6 @@ public:
         on_window_close_ = dispatcher_->subscribe<event::window_quit_event>([&](const auto &event) { running_ = false; });
 
         dispatcher_->subscribe<event::window_resize_event>([&](const auto &event) {
-            renderer_->rebuildSwapchain();
         });
 
         dispatcher_->subscribe<event::mouse_button_event>([](const auto &event) {
