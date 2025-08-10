@@ -1,16 +1,12 @@
 #pragma once
 
 #include "muon/core/buffer.hpp"
-#include <array>
-#include <cstdint>
+
 #include <expected>
 #include <fstream>
 #include <string_view>
 
 namespace muon::crypto {
-
-constexpr size_t hash_size = 32;
-using hash_result = std::array<uint8_t, hash_size>;
 
 enum class hash_error {
     initialization_failure,
@@ -18,9 +14,15 @@ enum class hash_error {
     finalization_failure,
 };
 
-auto hash(const raw_buffer &buffer) -> std::expected<hash_result, hash_error>;
-auto hash(std::string_view text) -> std::expected<hash_result, hash_error>;
+struct hash : public raw_buffer {
+    hash();
+    ~hash();
 
-auto hash(std::ifstream &file) -> std::expected<hash_result, hash_error>;
+    auto to_string() -> std::string;
+
+    static auto from_buffer(const raw_buffer &buffer) -> std::expected<hash, hash_error>;
+    static auto from_text(std::string_view text) -> std::expected<hash, hash_error>;
+    static auto from_file(std::ifstream &file) -> std::expected<hash, hash_error>;
+};
 
 } // namespace muon::crypto

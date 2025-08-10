@@ -1,11 +1,21 @@
 #include "muon/crypto/hash.hpp"
 
+#include "fmt/format.h"
+#include "fmt/ranges.h"
+#include "muon/core/buffer.hpp"
 #include "sodium/crypto_generichash.h"
 
 namespace muon::crypto {
 
-auto hash(const raw_buffer &buffer) -> std::expected<hash_result, hash_error> {
-    hash_result output;
+hash::hash() : raw_buffer{32} {}
+hash::~hash() { release(); }
+
+auto hash::to_string() -> std::string {
+    return fmt::format("{:02x}", fmt::join(begin(), end(), ""));
+}
+
+auto hash::from_buffer(const raw_buffer &buffer) -> std::expected<hash, hash_error> {
+    hash output;
     int32_t result = crypto_generichash(
         output.data(), output.size(),
         buffer.data(), buffer.size(),
@@ -19,8 +29,8 @@ auto hash(const raw_buffer &buffer) -> std::expected<hash_result, hash_error> {
     return output;
 }
 
-auto hash(std::string_view text) -> std::expected<hash_result, hash_error> {
-    hash_result output;
+auto hash::from_text(std::string_view text) -> std::expected<hash, hash_error> {
+    hash output;
     int32_t result = crypto_generichash(
         output.data(), output.size(),
         reinterpret_cast<const uint8_t *>(text.data()), text.size(),
@@ -34,10 +44,10 @@ auto hash(std::string_view text) -> std::expected<hash_result, hash_error> {
     return output;
 }
 
-auto hash(std::ifstream &file) -> std::expected<hash_result, hash_error> {
+auto hash::from_file(std::ifstream &file) -> std::expected<hash, hash_error> {
     crypto_generichash_state state;
 
-    int32_t result = crypto_generichash_init(&state, nullptr, 0, hash_size);
+    int32_t result = crypto_generichash_init(&state, nullptr, 0, 32);
     if (result != 0) {
         return std::unexpected(hash_error::initialization_failure);
     }
@@ -58,7 +68,7 @@ auto hash(std::ifstream &file) -> std::expected<hash_result, hash_error> {
     file.clear();
     file.seekg(0, std::ios::beg);
 
-    hash_result output;
+    hash output;
     result = crypto_generichash_final(&state, output.data(), output.size());
     if (result != 0) {
         return std::unexpected(hash_error::finalization_failure);
