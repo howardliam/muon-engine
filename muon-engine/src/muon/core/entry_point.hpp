@@ -14,7 +14,7 @@ auto main(int32_t count, char **arguments) -> int32_t {
 
     if (muon::utils::has_elevated_privileges()) {
         muon::core::error("cannot be run with elevated privileges");
-        std::exit(1);
+        std::abort();
     }
 
     auto app = muon::create_application(count, arguments);
