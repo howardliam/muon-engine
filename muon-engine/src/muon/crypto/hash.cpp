@@ -7,14 +7,13 @@
 
 namespace muon::crypto {
 
-hash::hash() : raw_buffer{32} {}
-hash::~hash() { release(); }
+hash::hash() : buffer{32} {}
 
 auto hash::to_string() const -> std::string {
     return fmt::format("{:02x}", fmt::join(begin(), end(), ""));
 }
 
-auto hash::from_buffer(const raw_buffer &buffer) -> std::expected<hash, hash_error> {
+auto hash::from_buffer(buffer_view buffer) -> std::expected<hash, hash_error> {
     hash output;
     int32_t result = crypto_generichash(
         output.data(), output.size(),
