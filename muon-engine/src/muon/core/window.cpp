@@ -72,7 +72,7 @@ void window::poll_events() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
-            dispatcher_.dispatch<event::WindowQuitEvent>({});
+            dispatcher_.dispatch<event::window_quit_event>({});
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
@@ -80,17 +80,17 @@ void window::poll_events() {
                 static_cast<uint32_t>(event.window.data1),
                 static_cast<uint32_t>(event.window.data2),
             };
-            dispatcher_.dispatch<event::WindowResizeEvent>({extent_});
+            dispatcher_.dispatch<event::window_resize_event>({extent_});
         }
 
         if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            dispatcher_.dispatch<event::WindowFocusEvent>({true});
+            dispatcher_.dispatch<event::window_focus_event>({true});
         } else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            dispatcher_.dispatch<event::WindowFocusEvent>({false});
+            dispatcher_.dispatch<event::window_focus_event>({false});
         }
 
         if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
-            dispatcher_.dispatch<event::KeyboardEvent>({
+            dispatcher_.dispatch<event::keyboard_event>({
                 static_cast<input::Scancode>(event.key.scancode),
                 event.key.down,
                 event.key.repeat,
@@ -99,7 +99,7 @@ void window::poll_events() {
         }
 
         if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-            dispatcher_.dispatch<event::MouseButtonEvent>({
+            dispatcher_.dispatch<event::mouse_button_event>({
                 static_cast<input::MouseButton>(event.button.button),
                 event.button.down,
                 event.button.clicks,
@@ -107,26 +107,26 @@ void window::poll_events() {
         }
 
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
-            dispatcher_.dispatch<event::MouseMotionEvent>({
+            dispatcher_.dispatch<event::mouse_motion_event>({
                 event.motion.xrel,
                 event.motion.yrel,
             });
         }
 
         if (event.type == SDL_EVENT_TEXT_INPUT) {
-            dispatcher_.dispatch<event::TextInputEvent>({
+            dispatcher_.dispatch<event::text_input_event>({
                 event.text.text,
             });
         }
 
         if (event.type == SDL_EVENT_DROP_FILE) {
-            dispatcher_.dispatch<event::DropFileEvent>({
+            dispatcher_.dispatch<event::drop_file_event>({
                 event.drop.data,
             });
         }
 
         if (event.type == SDL_EVENT_DROP_TEXT) {
-            dispatcher_.dispatch<event::DropTextEvent>({
+            dispatcher_.dispatch<event::drop_text_event>({
                 event.drop.data,
             });
         }

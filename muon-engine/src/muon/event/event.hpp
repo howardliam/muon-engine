@@ -8,43 +8,43 @@
 
 namespace muon::event {
 
-struct WindowQuitEvent {};
+struct window_quit_event {};
 
-struct WindowResizeEvent {
+struct window_resize_event {
     vk::Extent2D extent;
 };
 
-struct WindowFocusEvent {
+struct window_focus_event {
     bool focused;
 };
 
-struct KeyboardEvent {
+struct keyboard_event {
     input::Scancode scancode;
     bool down;
     bool held;
     input::Modifier mods;
 };
 
-struct MouseButtonEvent {
+struct mouse_button_event {
     input::MouseButton button;
     bool down;
     uint8_t clicks;
 };
 
-struct MouseMotionEvent {
+struct mouse_motion_event {
     float x;
     float y;
 };
 
-struct DropFileEvent {
+struct drop_file_event {
     const char *path;
 };
 
-struct DropTextEvent {
+struct drop_text_event {
     const char *text;
 };
 
-struct TextInputEvent {
+struct text_input_event {
     const char *text;
 };
 
