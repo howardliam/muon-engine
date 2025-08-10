@@ -1,49 +1,90 @@
 #include "muon/fs/fs.hpp"
 
-#include "muon/core/log.hpp"
-
+#include <expected>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
 namespace muon::fs {
 
-auto readFile(const std::filesystem::path &path) -> std::optional<std::string> {
-    std::ifstream file{path};
+auto check_file(const std::filesystem::path &path) -> std::expected<void, rw_error> {
+    if (!std::filesystem::exists(path)) {
+        return std::unexpected(rw_error::file_not_found);
+    }
 
-    if (!file.is_open()) {
-        core::error("failed to open file for reading: {}", path.string());
-        return std::nullopt;
+    if (!std::filesystem::is_regular_file(path)) {
+        return std::unexpected(rw_error::not_regular_file);
+    }
+
+    if (std::filesystem::status(path).permissions() != std::filesystem::perms::owner_read) {
+        return std::unexpected(rw_error::insufficient_permissions);
+    }
+
+    return {};
+}
+
+auto read_file_text(const std::filesystem::path &path) -> std::expected<std::string, rw_error> {
+    auto result = check_file(path);
+    if (!result) {
+        return std::unexpected(result.error());
+    }
+
+    std::ifstream file{path};
+    if (!file) {
+        return std::unexpected(rw_error::open_failure);
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
-
     return buffer.str();
 }
 
-auto readFileBinary(const std::filesystem::path &path) -> std::optional<std::vector<uint8_t>> {
-    std::ifstream file{path, std::ios::ate | std::ios::binary};
-
-    if (!file.is_open()) {
-        core::error("failed to open file for reading: {}", path.string());
-        return std::nullopt;
+auto read_file_binary(const std::filesystem::path &path) -> std::expected<buffer, rw_error> {
+    auto result = check_file(path);
+    if (!result) {
+        return std::unexpected(result.error());
     }
 
-    std::vector<uint8_t> buffer(file.tellg());
-    file.seekg(0);
+    std::ifstream file{path, std::ios::ate | std::ios::binary};
+    if (!file) {
+        return std::unexpected(rw_error::open_failure);
+    }
+
+    buffer buffer(file.tellg());
+    file.seekg(0, std::ios::beg);
     file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
 
     return buffer;
 }
 
-auto writeFile(const uint8_t *data, size_t size, const std::filesystem::path &path) -> bool {
-    std::ofstream file{path, std::ios::binary};
-    if (!file.is_open()) {
-        return false;
+auto write_file_text(std::string_view text, const std::filesystem::path &path) -> std::expected<void, rw_error> {
+    auto result = check_file(path);
+    if (!result) {
+        return std::unexpected(result.error());
     }
 
-    file.write(reinterpret_cast<const char *>(data), size);
-    return true;
+    std::ofstream file{path};
+    if (!file.is_open()) {
+        return std::unexpected(rw_error::open_failure);
+    }
+
+    file.write(text.data(), text.size());
+    return {};
+}
+
+auto write_file_binary(const buffer &buffer, const std::filesystem::path &path) -> std::expected<void, rw_error> {
+    auto result = check_file(path);
+    if (!result) {
+        return std::unexpected(result.error());
+    }
+
+    std::ofstream file{path, std::ios::binary};
+    if (!file.is_open()) {
+        return std::unexpected(rw_error::open_failure);
+    }
+
+    file.write(reinterpret_cast<const char *>(buffer.data()), buffer.size());
+    return {};
 }
 
 } // namespace muon::fs

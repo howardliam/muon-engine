@@ -1,16 +1,25 @@
 #pragma once
 
-#include <cstdint>
+#include "muon/core/buffer.hpp"
+#include <expected>
 #include <filesystem>
-#include <optional>
 #include <string>
-#include <vector>
 
 namespace muon::fs {
 
-auto readFile(const std::filesystem::path &path) -> std::optional<std::string>;
-auto readFileBinary(const std::filesystem::path &path) -> std::optional<std::vector<uint8_t>>;
+enum class rw_error {
+    file_not_found,
+    not_regular_file,
+    insufficient_permissions,
+    open_failure,
+};
 
-auto writeFile(const uint8_t *data, size_t size, const std::filesystem::path &path) -> bool;
+auto check_file(const std::filesystem::path &path) -> std::expected<void, rw_error>;
+
+auto read_file_text(const std::filesystem::path &path) -> std::expected<std::string, rw_error>;
+auto read_file_binary(const std::filesystem::path &path) -> std::expected<buffer, rw_error>;
+
+auto write_file_text(std::string_view text, const std::filesystem::path &path) -> std::expected<void, rw_error>;
+auto write_file_binary(const buffer &buffer, const std::filesystem::path &path) -> std::expected<void, rw_error>;
 
 } // namespace muon::fs
