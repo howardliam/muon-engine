@@ -25,16 +25,16 @@ auto uuid::to_string() const -> std::string {
     return fmt::format("{}-{}-{}-{}-{}", part1, part2, part3, part4, part5);
 }
 
-auto uuid::operator==(const uuid &rhs) noexcept -> bool {
-    return data == rhs.data;
-}
-
-auto uuid::operator<=>(const uuid &rhs) noexcept -> std::strong_ordering {
-    return data <=> rhs.data;
-}
-
 auto uuid::is_nil() const noexcept -> bool {
     return std::all_of(data.begin(), data.end(), [](uint8_t byte) { return byte == 0; });
+}
+
+auto operator==(const uuid &lhs, const uuid &rhs) noexcept -> bool {
+    return lhs.data == rhs.data;
+}
+
+auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_ordering {
+    return lhs.data <=> rhs.data;
 }
 
 uuid4_generator::uuid4_generator() {}
