@@ -83,10 +83,8 @@ void window::poll_events() {
             dispatcher_.dispatch<event::window_resize_event>({extent_});
         }
 
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            dispatcher_.dispatch<event::window_focus_event>({true});
-        } else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            dispatcher_.dispatch<event::window_focus_event>({false});
+        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED || event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
+            dispatcher_.dispatch<event::window_focus_event>({event.type == SDL_EVENT_WINDOW_FOCUS_GAINED});
         }
 
         if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
