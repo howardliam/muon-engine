@@ -6,38 +6,38 @@
 
 namespace muon {
 
-class layer_stack {
+class LayerStack {
 public:
-    using data_type = std::vector<layer *>;
-    using size_type = data_type::size_type;
-    using iterator = data_type::iterator;
-    using const_iterator = data_type::const_iterator;
-    using reverse_iterator = data_type::reverse_iterator;
-    using const_reverse_iterator = data_type::const_reverse_iterator;
+    using ValueType = std::vector<Layer *>;
+    using SizeType = ValueType::size_type;
+    using Iterator = ValueType::iterator;
+    using ConstIterator = ValueType::const_iterator;
+    using ReverseIterator = ValueType::reverse_iterator;
+    using ConstReverseIterator = ValueType::const_reverse_iterator;
 
-    layer_stack();
-    ~layer_stack();
+    LayerStack();
+    ~LayerStack();
 
-    void push_layer(layer *layer);
-    void pop_layer(layer *layer);
+    void push_layer(Layer *layer);
+    void pop_layer(Layer *layer);
 
-    auto begin() noexcept -> iterator;
-    auto begin() const noexcept -> const_iterator;
+    auto begin() noexcept -> Iterator;
+    auto begin() const noexcept -> ConstIterator;
 
-    auto end() noexcept -> iterator;
-    auto end() const noexcept -> const_iterator;
+    auto end() noexcept -> Iterator;
+    auto end() const noexcept -> ConstIterator;
 
-    auto rbegin() noexcept -> reverse_iterator;
-    auto rbegin() const noexcept -> const_reverse_iterator;
+    auto rbegin() noexcept -> ReverseIterator;
+    auto rbegin() const noexcept -> ConstReverseIterator;
 
-    auto rend() noexcept -> reverse_iterator;
-    auto rend() const noexcept -> const_reverse_iterator;
+    auto rend() noexcept -> ReverseIterator;
+    auto rend() const noexcept -> ConstReverseIterator;
 
-    constexpr auto size() const noexcept -> size_type;
+    auto size() const noexcept -> SizeType;
 
 private:
-    data_type layers_{};
-    iterator layer_insert_;
+    ValueType layers_{};
+    Iterator layer_insert_;
 };
 
 } // namespace muon

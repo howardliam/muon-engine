@@ -6,11 +6,11 @@
 namespace muon::serde {
 
 template <typename From>
-concept binary_serializable = serializable<From, buffer>;
+concept BinarySerializable = Serializable<From, Buffer>;
 
-enum class binary_deserialize_error {};
+enum class BinaryDeserializeError {};
 
 template <typename To>
-concept binary_deserializable = deserializable<buffer, To, binary_deserialize_error>;
+concept Binarydeserializable = Deserializable<BufferView, To, BinaryDeserializeError>;
 
 }

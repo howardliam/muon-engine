@@ -9,57 +9,8 @@
 
 namespace muon {
 
-auto uuid::version() const noexcept -> version_type {
-    const auto &octet9 = bytes_[6];
-    if ((octet9 & 0xf0) == 0x40) {
-        return version_random_number_based;
-    } else if ((octet9 & 0xf0) == 0x70) {
-        return version_unix_time_based;
-    } else {
-        return version_unknown;
-    }
-}
-
-auto uuid::data() noexcept -> pointer { return bytes_.data(); }
-auto uuid::data() const noexcept -> const_pointer { return bytes_.data(); }
-
-auto uuid::begin() noexcept -> iterator { return bytes_.begin(); }
-auto uuid::begin() const noexcept -> const_iterator { return bytes_.begin(); }
-
-auto uuid::end() noexcept -> iterator { return bytes_.end(); }
-auto uuid::end() const noexcept -> const_iterator { return bytes_.end(); }
-
-auto uuid::size() const noexcept -> size_type { return bytes_.size(); }
-
-auto uuid::to_string() const -> std::string {
-    return fmt::format(
-        "{:02x}{:02x}{:02x}{:02x}-"
-        "{:02x}{:02x}-"
-        "{:02x}{:02x}-"
-        "{:02x}{:02x}-"
-        "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-        bytes_[0], bytes_[1], bytes_[2], bytes_[3],
-        bytes_[4], bytes_[5],
-        bytes_[6], bytes_[7],
-        bytes_[8], bytes_[9],
-        bytes_[10], bytes_[11], bytes_[12], bytes_[13], bytes_[14], bytes_[15]
-    );
-}
-
-auto uuid::is_nil() const noexcept -> bool {
-    return std::all_of(bytes_.begin(), bytes_.end(), [](uint8_t byte) { return byte == 0; });
-}
-
-auto operator==(const uuid &lhs, const uuid &rhs) noexcept -> bool {
-    return lhs.bytes_ == rhs.bytes_;
-}
-
-auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_ordering {
-    return lhs.bytes_ <=> rhs.bytes_;
-}
-
-auto uuid4_generator::operator()() -> uuid {
-    uuid uuid;
+auto Uuid::uuid4() noexcept -> Uuid {
+    Uuid uuid;
 
     randombytes_buf(uuid.begin(), 6);
     randombytes_buf(uuid.begin() + 6, 2);
@@ -74,8 +25,8 @@ auto uuid4_generator::operator()() -> uuid {
     return uuid;
 }
 
-auto uuid7_generator::operator()() -> uuid {
-    uuid uuid;
+auto Uuid::uuid7() noexcept -> Uuid {
+    Uuid uuid;
 
     auto now = std::chrono::system_clock::now();
     auto epoch_millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
@@ -95,15 +46,64 @@ auto uuid7_generator::operator()() -> uuid {
     return uuid;
 }
 
+auto Uuid::data() noexcept -> Pointer { return data_.data(); }
+auto Uuid::data() const noexcept -> ConstPointer { return data_.data(); }
+
+auto Uuid::size() const noexcept -> SizeType { return data_.size(); }
+
+auto Uuid::version() const noexcept -> UuidVersion {
+    const auto &octet9 = data_[6];
+    if ((octet9 & 0xf0) == 0x40) {
+        return UuidVersion::RandomNumber;
+    } else if ((octet9 & 0xf0) == 0x70) {
+        return UuidVersion::UnixTime;
+    } else {
+        return UuidVersion::Unknown;
+    }
 }
 
-auto std::hash<muon::uuid>::operator()(const muon::uuid &uuid) const -> size_t {
+auto Uuid::is_nil() const noexcept -> bool {
+    return std::all_of(data_.begin(), data_.end(), [](uint8_t byte) { return byte == 0; });
+}
+
+auto Uuid::to_string() const -> std::string {
+    return fmt::format(
+        "{:02x}{:02x}{:02x}{:02x}-"
+        "{:02x}{:02x}-"
+        "{:02x}{:02x}-"
+        "{:02x}{:02x}-"
+        "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+        data_[0], data_[1], data_[2], data_[3],
+        data_[4], data_[5],
+        data_[6], data_[7],
+        data_[8], data_[9],
+        data_[10], data_[11], data_[12], data_[13], data_[14], data_[15]
+    );
+}
+
+auto Uuid::begin() noexcept -> Iterator { return data_.begin(); }
+auto Uuid::begin() const noexcept -> ConstIterator { return data_.begin(); }
+
+auto Uuid::end() noexcept -> Iterator { return data_.end(); }
+auto Uuid::end() const noexcept -> ConstIterator { return data_.end(); }
+
+auto Uuid::operator==(const Uuid &rhs) noexcept -> bool {
+    return data_ == rhs.data_;
+}
+
+auto Uuid::operator<=>(const Uuid &rhs) noexcept -> std::strong_ordering {
+    return data_ <=> rhs.data_;
+}
+
+}
+
+auto std::hash<muon::Uuid>::operator()(const muon::Uuid &uuid) const -> size_t {
     const uint64_t *ptr = reinterpret_cast<const uint64_t *>(uuid.data());
     size_t hash1 = std::hash<uint64_t>{}(ptr[0]);
     size_t hash2 = std::hash<uint64_t>{}(ptr[1]);
     return hash1 ^ (hash2 << 1);
 }
 
-auto fmt::formatter<muon::uuid>::format(const muon::uuid &uuid, format_context &ctx) const -> format_context::iterator {
+auto fmt::formatter<muon::Uuid>::format(const muon::Uuid &uuid, format_context &ctx) const -> format_context::iterator {
     return formatter<string_view>::format(uuid.to_string(), ctx);
 }

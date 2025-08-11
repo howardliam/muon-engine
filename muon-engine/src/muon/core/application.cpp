@@ -2,6 +2,7 @@
 
 #include "muon/core/expect.hpp"
 #include "muon/core/log.hpp"
+#include "muon/core/types.hpp"
 #include "muon/core/window.hpp"
 #include "muon/event/dispatcher.hpp"
 #include "muon/event/event.hpp"
@@ -10,29 +11,29 @@
 
 namespace muon {
 
-application::application(
+Application::Application(
     std::string_view name,
-    extent_2d extent,
+    Extent2D extent,
     bool v_sync,
-    window_mode mode
+    WindowMode mode
 ) : name_{name} {
     core::expect(!instance_, "application already exists");
     instance_ = this;
 
-    dispatcher_ = std::make_unique<event::dispatcher>();
-    window_ = std::make_unique<window>(name_, extent, mode, *dispatcher_);
+    dispatcher_ = std::make_unique<event::Dispatcher>();
+    window_ = std::make_unique<Window>(name_, extent, mode, *dispatcher_);
 
-    on_window_close_ = dispatcher_->subscribe<event::window_quit_event>([&](const auto &event) { running_ = false; });
+    on_window_close_ = dispatcher_->subscribe<event::WindowQuit>([&](const auto &event) { running_ = false; });
 }
 
-application::~application() {}
+Application::~Application() {}
 
-void application::push_layer(layer *layer) {
+void Application::push_layer(Layer *layer) {
     layer_stack_.push_layer(layer);
     layer->on_attach();
 }
 
-void application::run() {
+void Application::run() {
     std::unique_lock<std::mutex> lock{run_mutex_};
 
     client::info("running {}", name_);
@@ -46,7 +47,7 @@ void application::run() {
     }
 }
 
-auto application::name() const -> std::string_view { return name_; }
-auto application::instance() -> reference { return *instance_; }
+auto Application::name() const -> std::string_view { return name_; }
+auto Application::instance() -> Reference { return *instance_; }
 
 } // namespace muon

@@ -25,7 +25,7 @@ namespace core {
 
 template <typename... Args>
 void trace(fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::core_logger->trace(message, std::forward<Args>(args)...);
     }
 }
@@ -33,7 +33,7 @@ void trace(const char *message);
 
 template <typename... Args>
 void debug(fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::core_logger->debug(message, std::forward<Args>(args)...);
     }
 }
@@ -69,7 +69,7 @@ namespace client {
 
 template <typename... Args>
 void trace(fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::client_logger->trace(message, std::forward<Args>(args)...);
     }
 }
@@ -77,7 +77,7 @@ void trace(const char *message);
 
 template <typename... Args>
 void debug(fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::client_logger->debug(message, std::forward<Args>(args)...);
     }
 }

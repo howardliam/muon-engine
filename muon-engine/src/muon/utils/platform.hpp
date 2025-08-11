@@ -6,24 +6,24 @@
 
 namespace muon::utils {
 
-enum class library_error {
-    library_open_failure,
-    symbol_load_failure,
-    library_close_failure,
+enum class LibraryError {
+    LibraryOpenFailure,
+    SymbolLoadFailure,
+    LibraryCloseFailure,
 };
 
-using library_handle = void *;
-using symbol_handle = void *;
+using LibraryHandle = void *;
+using SymbolHandle = void *;
 
-auto open_library(const std::filesystem::path &path) -> std::expected<library_handle, library_error>;
-auto load_symbol(library_handle handle, std::string_view name) -> std::expected<symbol_handle, library_error>;
-auto close_library(library_handle handle) -> std::expected<void, library_error>;
+auto open_library(const std::filesystem::path &path) -> std::expected<LibraryHandle, LibraryError>;
+auto load_symbol(LibraryHandle handle, std::string_view name) -> std::expected<SymbolHandle, LibraryError>;
+auto close_library(LibraryHandle handle) -> std::expected<void, LibraryError>;
 
-enum class signal {
-    debug_trap,
+enum class Signal {
+    DebugTrap,
 };
 
-void invoke_signal(signal signal);
+void invoke_signal(Signal signal);
 
 auto has_elevated_privileges() -> bool;
 

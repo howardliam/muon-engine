@@ -7,14 +7,14 @@
 
 namespace muon::crypto {
 
-hash::hash() : buffer{32} {}
+Hash::Hash() : Buffer{32} {}
 
-auto hash::to_string() const -> std::string {
+auto Hash::to_string() const -> std::string {
     return fmt::format("{:02x}", fmt::join(begin(), end(), ""));
 }
 
-auto hash::from_buffer(buffer_view buffer) -> std::expected<hash, hash_error> {
-    hash output;
+auto Hash::from_buffer(BufferView buffer) -> std::expected<Hash, HashError> {
+    Hash output;
     int32_t result = crypto_generichash(
         output.data(), output.size(),
         buffer.data(), buffer.size(),
@@ -22,14 +22,14 @@ auto hash::from_buffer(buffer_view buffer) -> std::expected<hash, hash_error> {
     );
 
     if (result != 0) {
-        return std::unexpected(hash_error::processing_failure);
+        return std::unexpected(HashError::ProcessingFailure);
     }
 
     return output;
 }
 
-auto hash::from_text(std::string_view text) -> std::expected<hash, hash_error> {
-    hash output;
+auto Hash::from_text(std::string_view text) -> std::expected<Hash, HashError> {
+    Hash output;
     int32_t result = crypto_generichash(
         output.data(), output.size(),
         reinterpret_cast<const uint8_t *>(text.data()), text.size(),
@@ -37,18 +37,18 @@ auto hash::from_text(std::string_view text) -> std::expected<hash, hash_error> {
     );
 
     if (result != 0) {
-        return std::unexpected(hash_error::processing_failure);
+        return std::unexpected(HashError::ProcessingFailure);
     }
 
     return output;
 }
 
-auto hash::from_file(std::ifstream &file) -> std::expected<hash, hash_error> {
+auto Hash::from_file(std::ifstream &file) -> std::expected<Hash, HashError> {
     crypto_generichash_state state;
 
     int32_t result = crypto_generichash_init(&state, nullptr, 0, 32);
     if (result != 0) {
-        return std::unexpected(hash_error::initialization_failure);
+        return std::unexpected(HashError::InitializationFailuer);
     }
 
     // make sure to reset read position
@@ -59,7 +59,7 @@ auto hash::from_file(std::ifstream &file) -> std::expected<hash, hash_error> {
     while (std::getline(file, line)) {
         result = crypto_generichash_update(&state, reinterpret_cast<const uint8_t *>(line.data()), line.size());
         if (result != 0) {
-            return std::unexpected(hash_error::processing_failure);
+            return std::unexpected(HashError::ProcessingFailure);
         }
     }
 
@@ -67,10 +67,10 @@ auto hash::from_file(std::ifstream &file) -> std::expected<hash, hash_error> {
     file.clear();
     file.seekg(0, std::ios::beg);
 
-    hash output;
+    Hash output;
     result = crypto_generichash_final(&state, output.data(), output.size());
     if (result != 0) {
-        return std::unexpected(hash_error::finalization_failure);
+        return std::unexpected(HashError::FinalizationFailure);
     }
 
     return output;
@@ -78,6 +78,6 @@ auto hash::from_file(std::ifstream &file) -> std::expected<hash, hash_error> {
 
 } // namespace muon::crypto
 
-auto fmt::formatter<muon::crypto::hash>::format(const muon::crypto::hash &hash, format_context &ctx) const -> format_context::iterator {
+auto fmt::formatter<muon::crypto::Hash>::format(const muon::crypto::Hash &hash, format_context &ctx) const -> format_context::iterator {
     return formatter<string_view>::format(hash.to_string(), ctx);
 }

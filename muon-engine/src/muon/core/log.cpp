@@ -40,7 +40,7 @@ void init() {
         internal::client_logger->set_level(spdlog::level::trace);
         internal::client_logger->flush_on(spdlog::level::trace);
 
-        if constexpr (debug_enabled) {
+        if constexpr (DEBUG_ENABLED) {
             spdlog::set_level(spdlog::level::trace);
         } else {
             spdlog::set_level(spdlog::level::info);
@@ -55,13 +55,13 @@ void init() {
 namespace core {
 
 void trace(const char *message) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::core_logger->trace(message);
     }
 }
 
 void debug(const char *message) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::core_logger->debug(message);
     }
 }
@@ -76,13 +76,13 @@ void critical(const char *message) { log::internal::core_logger->critical(messag
 namespace client {
 
 void trace(const char *message) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::client_logger->trace(message);
     }
 }
 
 void debug(const char *message) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         log::internal::client_logger->debug(message);
     }
 }

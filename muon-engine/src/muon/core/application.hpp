@@ -1,6 +1,8 @@
 #pragma once
 
+#include "muon/core/layer.hpp"
 #include "muon/core/layer_stack.hpp"
+#include "muon/core/types.hpp"
 #include "muon/utils/no_copy.hpp"
 #include "muon/utils/no_move.hpp"
 #include "muon/core/window.hpp"
@@ -12,43 +14,45 @@
 
 namespace muon {
 
-class application : utils::no_copy, utils::no_move {
+class Application : utils::NoCopy, utils::NoMove {
 public:
-    using pointer = application *;
-    using reference = application &;
+    using Pointer = Application *;
+    using ConstPointer = const Application *;
+    using Reference = Application &;
+    using ConstReference = const Application &;
 
-    application(
+    Application(
         std::string_view name,
-        extent_2d extent,
+        Extent2D extent,
         bool v_sync,
-        window_mode mode
+        WindowMode mode
     );
-    virtual ~application();
+    virtual ~Application();
 
-    void push_layer(layer *layer);
+    void push_layer(Layer *layer);
 
     void run();
 
 public:
     auto name() const -> std::string_view;
-    static auto instance() -> reference;
+    static auto instance() -> Reference;
 
 protected:
     std::string name_;
 
-    layer_stack layer_stack_;
+    LayerStack layer_stack_;
 
-    std::unique_ptr<event::dispatcher> dispatcher_{nullptr};
-    event::dispatcher::handle on_window_close_{};
+    std::unique_ptr<event::Dispatcher> dispatcher_{nullptr};
+    event::Dispatcher::Handle on_window_close_{};
 
-    std::unique_ptr<window> window_{nullptr};
+    std::unique_ptr<Window> window_{nullptr};
 
     std::mutex run_mutex_;
     bool running_{true};
 
-    static inline pointer instance_{nullptr};
+    static inline Pointer instance_{nullptr};
 };
 
-auto create_application(size_t count, char **arguments) -> application::pointer;
+auto create_application(size_t count, char **arguments) -> Application::Pointer;
 
 } // namespace muon

@@ -11,18 +11,18 @@
 namespace muon {
 
 template <typename T>
-concept boolean_testable = requires(T &&t) {
+concept BooleanTestable = requires(T &&t) {
     { static_cast<bool>(std::forward<T>(t)) } -> std::same_as<bool>;
 };
 
 namespace core {
 
-template <boolean_testable Condition, typename... Args>
+template <BooleanTestable Condition, typename... Args>
 void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::core_logger->error(message, std::forward<Args>(args)...);
-            utils::invoke_signal(utils::signal::debug_trap);
+            utils::invoke_signal(utils::Signal::DebugTrap);
         }
     }
 }
@@ -31,12 +31,12 @@ void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&.
 
 namespace client {
 
-template <boolean_testable Condition, typename... Args>
+template <BooleanTestable Condition, typename... Args>
 void expect(Condition &&condition, fmt::format_string<Args...> message, Args &&...args) {
-    if constexpr (debug_enabled) {
+    if constexpr (DEBUG_ENABLED) {
         if (!static_cast<bool>(std::forward<Condition>(condition))) {
             log::internal::client_logger->error(message, std::forward<Args>(args)...);
-            utils::invoke_signal(utils::signal::debug_trap);
+            utils::invoke_signal(utils::Signal::DebugTrap);
         }
     }
 }

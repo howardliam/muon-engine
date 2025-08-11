@@ -2,11 +2,11 @@
 
 namespace muon::utils {
 
-struct no_copy {
-    no_copy() = default;
+struct NoCopy {
+    NoCopy() = default;
 
-    no_copy(const no_copy &) = delete;
-    auto operator=(const no_copy &) -> no_copy & = delete;
+    NoCopy(const NoCopy &) = delete;
+    auto operator=(const NoCopy &) -> NoCopy & = delete;
 };
 
 } // namespace muon::utils

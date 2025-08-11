@@ -8,39 +8,39 @@
 
 namespace muon::utils {
 
-auto open_library(const std::filesystem::path &path) -> std::expected<library_handle, library_error> {
-    library_handle handle = dlopen(path.c_str(), RTLD_LAZY);
+auto open_library(const std::filesystem::path &path) -> std::expected<LibraryHandle, LibraryError> {
+    LibraryHandle handle = dlopen(path.c_str(), RTLD_LAZY);
     if (!handle) {
         core::error(dlerror());
-        return std::unexpected(library_error::library_open_failure);
+        return std::unexpected(LibraryError::LibraryOpenFailure);
     }
 
     return handle;
 }
 
-auto load_symbol(library_handle handle, std::string_view name) -> std::expected<symbol_handle, library_error> {
-    symbol_handle symbol = dlsym(handle, name.data());
+auto load_symbol(LibraryHandle handle, std::string_view name) -> std::expected<SymbolHandle, LibraryError> {
+    SymbolHandle symbol = dlsym(handle, name.data());
     if (!symbol) {
         core::error(dlerror());
-        return std::unexpected(library_error::symbol_load_failure);
+        return std::unexpected(LibraryError::LibraryCloseFailure);
     }
 
     return symbol;
 }
 
-auto close_library(library_handle handle) -> std::expected<void, library_error> {
+auto close_library(LibraryHandle handle) -> std::expected<void, LibraryError> {
     int32_t result = dlclose(handle);
     if (result != 0) {
         core::error(dlerror());
-        return std::unexpected(library_error::library_close_failure);
+        return std::unexpected(LibraryError::LibraryCloseFailure);
     }
 
     return {};
 }
 
-void invoke_signal(signal signal) {
+void invoke_signal(Signal signal) {
     switch (signal) {
-        case signal::debug_trap:
+        case Signal::DebugTrap:
             raise(SIGTRAP);
             break;
     }

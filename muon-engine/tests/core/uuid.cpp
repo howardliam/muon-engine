@@ -5,20 +5,18 @@
 namespace muon {
 
 TEST_CASE("default uuid is nil", "[uuid]") {
-    uuid uuid;
+    Uuid uuid;
     REQUIRE(uuid.is_nil());
 }
 
 TEST_CASE("v4 uuid adheres to spec", "[uuid]") {
-    uuid4_generator gen;
-    uuid uuid = gen();
-    REQUIRE(uuid.version() == uuid::version_random_number_based);
+    Uuid uuid = Uuid::uuid4();
+    REQUIRE(uuid.version() == UuidVersion::RandomNumber);
 }
 
 TEST_CASE("v7 uuid adheres to spec", "[uuid]") {
-    uuid7_generator gen;
-    uuid uuid = gen();
-    REQUIRE(uuid.version() == uuid::version_unix_time_based);
+    Uuid uuid = Uuid::uuid7();
+    REQUIRE(uuid.version() == UuidVersion::UnixTime);
 }
 
 } // namespace muon

@@ -5,66 +5,66 @@
 
 namespace muon {
 
-buffer::buffer(size_type size) noexcept : size_{size} { allocate(); }
+Buffer::Buffer(SizeType size) noexcept : size_{size} { allocate(); }
 
-buffer::buffer(pointer data, size_type size) noexcept : size_{size} {
+Buffer::Buffer(Pointer data, SizeType size) noexcept : size_{size} {
     allocate();
     std::memcpy(data_, data, size_);
 }
 
-buffer::buffer(std::string_view text) noexcept : size_{text.size()} {
+Buffer::Buffer(std::string_view text) noexcept : size_{text.size()} {
     allocate();
     std::memcpy(data_, text.data(), size_);
 }
 
-buffer::buffer(const buffer &other) noexcept : size_{other.size()} {
+Buffer::Buffer(const Buffer &other) noexcept : size_{other.size()} {
     allocate();
     std::memcpy(data_, other.data(), size_);
 }
 
-buffer::~buffer() noexcept {
+Buffer::~Buffer() noexcept {
     free(data_);
 }
 
-auto buffer::data() noexcept -> pointer { return data_; }
-auto buffer::data() const noexcept -> const_pointer { return data_; }
+auto Buffer::data() noexcept -> Pointer { return data_; }
+auto Buffer::data() const noexcept -> ConstPointer { return data_; }
 
-auto buffer::begin() noexcept -> iterator { return data_; }
-auto buffer::begin() const noexcept -> const_iterator { return data_; }
+auto Buffer::begin() noexcept -> Iterator { return data_; }
+auto Buffer::begin() const noexcept -> ConstIterator { return data_; }
 
-auto buffer::end() noexcept -> iterator { return data_ + size_; }
-auto buffer::end() const noexcept -> const_iterator { return data_ + size_; }
+auto Buffer::end() noexcept -> Iterator { return data_ + size_; }
+auto Buffer::end() const noexcept -> ConstIterator { return data_ + size_; }
 
-auto buffer::size() const noexcept -> size_type { return size_; }
+auto Buffer::size() const noexcept -> SizeType { return size_; }
 
-void buffer::allocate() {
-    data_ = static_cast<pointer>(calloc(size_, sizeof(value_type)));
+void Buffer::allocate() {
+    data_ = static_cast<Pointer>(calloc(size_, sizeof(ValueType)));
 }
 
-auto operator==(const buffer &lhs, const buffer &rhs) noexcept -> bool {
-    if (lhs.size() != rhs.size()) {
+auto Buffer::operator==(const Buffer &rhs) const noexcept -> bool {
+    if (size() != rhs.size()) {
         return false;
     }
-    return std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0;
+    return std::memcmp(data(), rhs.data(), size()) == 0;
 }
 
-buffer_view::buffer_view(const buffer &buffer) noexcept : data_{buffer.data()}, size_{buffer.size()} {}
+BufferView::BufferView(const Buffer &buffer) noexcept : data_{buffer.data()}, size_{buffer.size()} {}
 
-buffer_view::buffer_view(const buffer_view &other) noexcept : data_{other.data()}, size_{other.size()} {}
+BufferView::BufferView(const BufferView &other) noexcept : data_{other.data()}, size_{other.size()} {}
 
-auto buffer_view::data() const noexcept -> const_pointer { return data_; }
+auto BufferView::data() const noexcept -> ConstPointer { return data_; }
 
-auto buffer_view::begin() const noexcept -> const_iterator { return data_; }
+auto BufferView::begin() const noexcept -> ConstIterator { return data_; }
 
-auto buffer_view::end() const noexcept -> const_iterator { return data_ + size_; }
+auto BufferView::end() const noexcept -> ConstIterator { return data_ + size_; }
 
-auto buffer_view::size() const noexcept -> size_type { return size_; }
+auto BufferView::size() const noexcept -> SizeType { return size_; }
 
-auto operator==(const buffer_view &lhs, const buffer_view &rhs) noexcept -> bool {
-    if (lhs.size() != rhs.size()) {
+auto BufferView::operator==(const BufferView &rhs) const noexcept -> bool {
+    if (size() != rhs.size()) {
         return false;
     }
-    return std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0;
+    return std::memcmp(data(), rhs.data(), size()) == 0;
 }
 
 }

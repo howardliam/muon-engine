@@ -6,33 +6,33 @@
 
 namespace muon {
 
-class buffer {
+class Buffer {
 public:
-    using value_type = std::uint8_t;
-    using size_type = std::size_t;
-    using pointer = value_type *;
-    using const_pointer = const value_type *;
-    using iterator = value_type *;
-    using const_iterator = const value_type *;
+    using ValueType = std::uint8_t;
+    using SizeType = std::size_t;
+    using Pointer = ValueType *;
+    using ConstPointer = const ValueType *;
+    using Iterator = ValueType *;
+    using ConstIterator = const ValueType *;
 
-    buffer() = delete;
-    buffer(size_type size) noexcept;
-    buffer(pointer data, size_type size) noexcept;
-    buffer(std::string_view text) noexcept;
-    buffer(const buffer &other) noexcept;
+    Buffer() = delete;
+    Buffer(SizeType size) noexcept;
+    Buffer(Pointer data, SizeType size) noexcept;
+    Buffer(std::string_view text) noexcept;
+    Buffer(const Buffer &other) noexcept;
 
-    ~buffer() noexcept;
+    ~Buffer() noexcept;
 
-    auto data() noexcept -> pointer;
-    auto data() const noexcept -> const_pointer;
+    auto data() noexcept -> Pointer;
+    auto data() const noexcept -> ConstPointer;
 
-    auto begin() noexcept -> iterator;
-    auto begin() const noexcept -> const_iterator;
+    auto begin() noexcept -> Iterator;
+    auto begin() const noexcept -> ConstIterator;
 
-    auto end() noexcept -> iterator;
-    auto end() const noexcept -> const_iterator;
+    auto end() noexcept -> Iterator;
+    auto end() const noexcept -> ConstIterator;
 
-    auto size() const noexcept -> size_type;
+    auto size() const noexcept -> SizeType;
 
     template <typename T>
     auto as() -> T * {
@@ -44,45 +44,46 @@ public:
         return reinterpret_cast<const T *>(data_);
     }
 
+    auto operator==(const Buffer &rhs) const noexcept -> bool;
+
 private:
     void allocate();
 
 private:
-    pointer data_{nullptr};
-    size_type size_{0};
+    Pointer data_{nullptr};
+    SizeType size_{0};
 };
 
-auto operator==(const buffer &lhs, const buffer &rhs) noexcept -> bool;
 
-class buffer_view {
+class BufferView {
 public:
-    using value_type = std::uint8_t;
-    using size_type = std::size_t;
-    using const_pointer = const value_type *;
-    using const_iterator = const value_type *;
+    using ValueType = std::uint8_t;
+    using SizeType = std::size_t;
+    using ConstPointer = const ValueType *;
+    using ConstIterator = const ValueType *;
 
-    buffer_view() = delete;
-    buffer_view(const buffer &buffer) noexcept;
-    buffer_view(const buffer_view &other) noexcept;
+    BufferView() = delete;
+    BufferView(const Buffer &buffer) noexcept;
+    BufferView(const BufferView &other) noexcept;
 
-    auto data() const noexcept -> const_pointer;
+    auto data() const noexcept -> ConstPointer;
 
-    auto begin() const noexcept -> const_iterator;
+    auto begin() const noexcept -> ConstIterator;
 
-    auto end() const noexcept -> const_iterator;
+    auto end() const noexcept -> ConstIterator;
 
-    auto size() const noexcept -> size_type;
+    auto size() const noexcept -> SizeType;
 
     template <typename T>
     auto as() const -> const T * {
         return reinterpret_cast<const T *>(data_);
     }
 
-private:
-    const_pointer data_{nullptr};
-    size_type size_{0};
-};
+    auto operator==(const BufferView &rhs) const noexcept -> bool;
 
-auto operator==(const buffer_view &lhs, const buffer_view &rhs) noexcept -> bool;
+private:
+    ConstPointer data_{nullptr};
+    SizeType size_{0};
+};
 
 }

@@ -4,7 +4,7 @@
 
 namespace muon {
 
-struct extent_2d {
+struct Extent2D {
     uint32_t width{0};
     uint32_t height{0};
 };

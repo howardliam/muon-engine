@@ -9,25 +9,25 @@
 
 namespace muon::crypto {
 
-enum class hash_error {
-    initialization_failure,
-    processing_failure,
-    finalization_failure,
+enum class HashError {
+    InitializationFailuer,
+    ProcessingFailure,
+    FinalizationFailure,
 };
 
-struct hash : public buffer {
-    hash();
+struct Hash : public Buffer {
+    Hash();
 
     auto to_string() const -> std::string;
 
-    static auto from_buffer(buffer_view buffer) -> std::expected<hash, hash_error>;
-    static auto from_text(std::string_view text) -> std::expected<hash, hash_error>;
-    static auto from_file(std::ifstream &file) -> std::expected<hash, hash_error>;
+    static auto from_buffer(BufferView buffer) -> std::expected<Hash, HashError>;
+    static auto from_text(std::string_view text) -> std::expected<Hash, HashError>;
+    static auto from_file(std::ifstream &file) -> std::expected<Hash, HashError>;
 };
 
 } // namespace muon::crypto
 
 template <>
-struct fmt::formatter<muon::crypto::hash> : formatter<string_view> {
-    auto format(const muon::crypto::hash &hash, format_context &ctx) const -> format_context::iterator;
+struct fmt::formatter<muon::crypto::Hash> : formatter<string_view> {
+    auto format(const muon::crypto::Hash &hash, format_context &ctx) const -> format_context::iterator;
 };

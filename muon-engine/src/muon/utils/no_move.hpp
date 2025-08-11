@@ -2,11 +2,11 @@
 
 namespace muon::utils {
 
-struct no_move {
-    no_move() = default;
+struct NoMove {
+    NoMove() = default;
 
-    no_move(no_move &&) = delete;
-    auto operator=(no_move &&) -> no_move & = delete;
+    NoMove(NoMove &&) = delete;
+    auto operator=(NoMove &&) -> NoMove & = delete;
 };
 
 } // namespace muon::utils

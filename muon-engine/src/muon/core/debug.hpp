@@ -3,9 +3,9 @@
 namespace muon {
 
 #ifdef MU_DEBUG
-constexpr bool debug_enabled = true;
+constexpr bool DEBUG_ENABLED = true;
 #else
-constexpr bool debug_enabled = false;
+constexpr bool DEBUG_ENABLED = false;
 #endif
 
 } // namespace muon

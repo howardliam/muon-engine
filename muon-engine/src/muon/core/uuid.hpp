@@ -10,69 +10,55 @@
 
 namespace muon {
 
-class uuid {
+enum class UuidVersion {
+    Unknown,
+    RandomNumber = 4,
+    UnixTime =7,
+};
+
+class Uuid {
 public:
-    using value_type = std::array<uint8_t, 16>;
-    using pointer = value_type::pointer;
-    using const_pointer = value_type::const_pointer;
-    using iterator = value_type::iterator;
-    using const_iterator = value_type::const_iterator;
-    using size_type = value_type::size_type;
-    enum version_type {
-        version_unknown,
-        version_random_number_based = 4,
-        version_unix_time_based = 7,
-    };
+    using ValueType = std::array<uint8_t, 16>;
+    using Pointer = ValueType::pointer;
+    using ConstPointer = ValueType::const_pointer;
+    using Iterator = ValueType::iterator;
+    using ConstIterator = ValueType::const_iterator;
+    using SizeType = ValueType::size_type;
 
-    auto version() const noexcept -> version_type;
+    static auto uuid4() noexcept -> Uuid;
+    static auto uuid7() noexcept -> Uuid;
 
-    auto data() noexcept -> pointer;
-    auto data() const noexcept -> const_pointer;
+    auto data() noexcept -> Pointer;
+    auto data() const noexcept -> ConstPointer;
 
-    auto begin() noexcept -> iterator;
-    auto begin() const noexcept -> const_iterator;
+    auto size() const noexcept -> SizeType;
 
-    auto end() noexcept -> iterator;
-    auto end() const noexcept -> const_iterator;
-
-    auto size() const noexcept -> size_type;
-
+    auto version() const noexcept -> UuidVersion;
     auto is_nil() const noexcept -> bool;
 
     auto to_string() const -> std::string;
 
-    friend auto operator==(const uuid &lhs, const uuid &rhs) noexcept -> bool;
-    friend auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_ordering;
+    auto begin() noexcept -> Iterator;
+    auto begin() const noexcept -> ConstPointer;
+
+    auto end() noexcept -> Iterator;
+    auto end() const noexcept -> ConstPointer;
+
+    auto operator==(const Uuid &rhs) noexcept -> bool;
+    auto operator<=>(const Uuid &rhs) noexcept -> std::strong_ordering;
 
 private:
-    value_type bytes_{};
-};
-
-auto operator==(const uuid &lhs, const uuid &rhs) noexcept -> bool;
-auto operator<=>(const uuid &lhs, const uuid &rhs) noexcept -> std::strong_ordering;
-
-class uuid4_generator {
-public:
-    uuid4_generator() = default;
-
-    auto operator()() -> uuid;
-};
-
-class uuid7_generator {
-public:
-    uuid7_generator() = default;
-
-    auto operator()() -> uuid;
+    ValueType data_{};
 };
 
 } // namespace muon
 
 template<>
-struct std::hash<muon::uuid> {
-    auto operator()(const muon::uuid &uuid) const -> size_t;
+struct std::hash<muon::Uuid> {
+    auto operator()(const muon::Uuid &uuid) const -> size_t;
 };
 
 template <>
-struct fmt::formatter<muon::uuid> : formatter<string_view> {
-    auto format(const muon::uuid &uuid, format_context &ctx) const -> format_context::iterator;
+struct fmt::formatter<muon::Uuid> : formatter<string_view> {
+    auto format(const muon::Uuid &uuid, format_context &ctx) const -> format_context::iterator;
 };

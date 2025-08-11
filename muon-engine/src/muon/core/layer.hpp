@@ -2,9 +2,9 @@
 
 namespace muon {
 
-class layer {
+class Layer {
 public:
-    virtual ~layer() = default;
+    virtual ~Layer() = default;
 
     virtual void on_attach() = 0;
     virtual void on_detach() = 0;

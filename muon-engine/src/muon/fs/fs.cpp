@@ -7,13 +7,13 @@
 
 namespace muon::fs {
 
-auto check_file(const std::filesystem::path &path) -> std::expected<void, rw_error> {
+auto check_file(const std::filesystem::path &path) -> std::expected<void, RwError> {
     if (!std::filesystem::exists(path)) {
-        return std::unexpected(rw_error::file_not_found);
+        return std::unexpected(RwError::FileNotFound);
     }
 
     if (!std::filesystem::is_regular_file(path)) {
-        return std::unexpected(rw_error::not_regular_file);
+        return std::unexpected(RwError::NotRegularFile);
     }
 
     auto permissions = std::filesystem::status(path).permissions();
@@ -21,13 +21,13 @@ auto check_file(const std::filesystem::path &path) -> std::expected<void, rw_err
     bool can_write = (permissions & std::filesystem::perms::owner_write) != std::filesystem::perms::none;
 
     if (!can_read && !can_write) {
-        return std::unexpected(rw_error::insufficient_permissions);
+        return std::unexpected(RwError::InsufficientPermissions);
     }
 
     return {};
 }
 
-auto read_file_text(const std::filesystem::path &path) -> std::expected<std::string, rw_error> {
+auto read_file_text(const std::filesystem::path &path) -> std::expected<std::string, RwError> {
     auto result = check_file(path);
     if (!result) {
         return std::unexpected(result.error());
@@ -35,7 +35,7 @@ auto read_file_text(const std::filesystem::path &path) -> std::expected<std::str
 
     std::ifstream file{path};
     if (!file) {
-        return std::unexpected(rw_error::open_failure);
+        return std::unexpected(RwError::OpenFailure);
     }
 
     std::stringstream buffer;
@@ -43,7 +43,7 @@ auto read_file_text(const std::filesystem::path &path) -> std::expected<std::str
     return buffer.str();
 }
 
-auto read_file_binary(const std::filesystem::path &path) -> std::expected<buffer, rw_error> {
+auto read_file_binary(const std::filesystem::path &path) -> std::expected<Buffer, RwError> {
     auto result = check_file(path);
     if (!result) {
         return std::unexpected(result.error());
@@ -51,17 +51,17 @@ auto read_file_binary(const std::filesystem::path &path) -> std::expected<buffer
 
     std::ifstream file{path, std::ios::ate | std::ios::binary};
     if (!file) {
-        return std::unexpected(rw_error::open_failure);
+        return std::unexpected(RwError::OpenFailure);
     }
 
-    buffer buffer(file.tellg());
+    Buffer buffer(file.tellg());
     file.seekg(0, std::ios::beg);
     file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
 
     return buffer;
 }
 
-auto write_file_text(std::string_view text, const std::filesystem::path &path) -> std::expected<void, rw_error> {
+auto write_file_text(std::string_view text, const std::filesystem::path &path) -> std::expected<void, RwError> {
     auto result = check_file(path);
     if (!result) {
         return std::unexpected(result.error());
@@ -69,14 +69,14 @@ auto write_file_text(std::string_view text, const std::filesystem::path &path) -
 
     std::ofstream file{path};
     if (!file.is_open()) {
-        return std::unexpected(rw_error::open_failure);
+        return std::unexpected(RwError::OpenFailure);
     }
 
     file.write(text.data(), text.size());
     return {};
 }
 
-auto write_file_binary(const buffer &buffer, const std::filesystem::path &path) -> std::expected<void, rw_error> {
+auto write_file_binary(BufferView buffer, const std::filesystem::path &path) -> std::expected<void, RwError> {
     auto result = check_file(path);
     if (!result) {
         return std::unexpected(result.error());
@@ -84,7 +84,7 @@ auto write_file_binary(const buffer &buffer, const std::filesystem::path &path) 
 
     std::ofstream file{path, std::ios::binary};
     if (!file.is_open()) {
-        return std::unexpected(rw_error::open_failure);
+        return std::unexpected(RwError::OpenFailure);
     }
 
     file.write(reinterpret_cast<const char *>(buffer.data()), buffer.size());
